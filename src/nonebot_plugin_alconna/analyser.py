@@ -14,7 +14,7 @@ from nonebot.adapters import Message
 class MessageContainer(DataCollectionContainer):
     @staticmethod
     def generate_token(data: list[Any | list[str]]) -> int:
-        return hash(''.join(i.__repr__() for i in data))
+        return hash("".join(i.__repr__() for i in data))
 
     def build(self, data: Message) -> Self:
         if not isinstance(data, Message):
@@ -36,7 +36,9 @@ class MessageContainer(DataCollectionContainer):
                 self.raw_data.append(unit)
             i += 1
         if i < 1:
-            raise NullMessage(config.lang.analyser_handle_null_message.format(target=data))
+            raise NullMessage(
+                config.lang.analyser_handle_null_message.format(target=data)
+            )
         self.ndata = i
         self.bak_data = self.raw_data.copy()
         if self.message_cache:

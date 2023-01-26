@@ -6,7 +6,6 @@ from typing import Generic, TypeVar
 from arclet.alconna import Arparma, command_manager
 from arclet.alconna.core import T_Duplication
 
-
 T = TypeVar("T")
 
 
@@ -17,6 +16,7 @@ class Match(Generic[T]):
     result (T): 匹配结果
     available (bool): 匹配状态
     """
+
     result: T
     available: bool
 

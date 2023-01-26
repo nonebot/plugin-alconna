@@ -34,3 +34,5 @@ dev = [
     "fix-future-annotations>=0.5.0",
     "nonebot-adapter-onebot>=2.2.1",
 ]
+[tool.pdm.build]
+includes = ["src/nonebot_plugin_alconna"]

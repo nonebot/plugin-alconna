@@ -12,7 +12,7 @@ _✨ Alconna Usage For NoneBot2 ✨_
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/ArcletProject/nonebot-plugin-alconna/master/LICENSE">
-    <img src="https://img.shields.io/github/license/ArcletProject/nonebot_plugin_alconna.svg" alt="license">
+    <img src="https://img.shields.io/github/license/ArcletProject/nonebot-plugin-alconna.svg" alt="license">
   </a>
   <a href="https://pypi.python.org/pypi/nonebot-plugin-alconna">
     <img src="https://img.shields.io/pypi/v/nonebot-plugin-alconna.svg" alt="pypi">
@@ -20,18 +20,37 @@ _✨ Alconna Usage For NoneBot2 ✨_
   <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="python">
 </p>
 
+该插件提供了 [Alconna](https://github.com/ArcletProject/Alconna) 的 `Nonebot2` 适配版本与工具
+
 ## 使用方法
 
 ### Matcher 与 依赖注入
 ```python
-from nonebot_plugin_alconna import on_alconna, Match, AlconnaMatch
-from arclet.alconna import Alconna, Args
+from nonebot_plugin_alconna import (
+    on_alconna, 
+    Match, 
+    AlconnaMatch, 
+    AlconnaResult, 
+    AlconnaMatches,
+    AlconnaCommandResult
+)
+from arclet.alconna import Alconna, Args, Arparma
 
 test = on_alconna(Alconna("test", Args["foo", int]["bar", bool]))
 
 
 @test.handle()
-async def handle_echo(foo: Match[int] = AlconnaMatch("foo")):
+async def handle_test1(result: AlconnaCommandResult = AlconnaResult()):
+    await test.send(f"matched: {result.matched}")
+    await test.send(f"maybe output: {result.output}")
+
+@test.handle()
+async def handle_test2(result: Arparma = AlconnaMatches()):
+    await test.send(f"head result: {result.header_result}")
+    await test.send(f"args: {result.all_matched_args}")
+
+@test.handle()
+async def handle_test3(foo: Match[int] = AlconnaMatch("foo")):
     if foo.available:    
         await test.send(f"foo={foo.result}")
 ```

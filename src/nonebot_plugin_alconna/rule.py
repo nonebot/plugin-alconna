@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from arclet.alconna import Alconna, Duplication, output_manager, Arparma
+from arclet.alconna import Alconna, Arparma, Duplication, output_manager
+from nonebot.adapters import Event
 from nonebot.internal.rule import Rule as Rule
 from nonebot.typing import T_State
-from nonebot.adapters import Event
-from .model import AlconnaCommandResult
+
 from .consts import ALCONNA_RESULT
+from .model import AlconnaCommandResult
 
 
 class AlconnaRule:
@@ -55,14 +56,16 @@ class AlconnaRule:
             except Exception as e:
                 arp = Arparma(self.command.path, msg, False, error_info=repr(e))
         may_help_text: str | None = cap.get("output", None)
-        if not may_help_text and not arp.matched and ((not arp.head_matched) or self.skip):
+        if (
+            not may_help_text
+            and not arp.matched
+            and ((not arp.head_matched) or self.skip)
+        ):
             return False
         if not may_help_text and arp.error_info:
             may_help_text = arp.error_info.strip("'").strip("\\n").split("\\n")[-1]
         state[ALCONNA_RESULT] = AlconnaCommandResult(
-            arp.token,
-            may_help_text,
-            self.duplication
+            arp.token, may_help_text, self.duplication
         )
         return True
 

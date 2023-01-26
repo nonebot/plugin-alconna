@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from nonebot.matcher import Matcher
-from nonebot.rule import Rule
-from nonebot.typing import T_RuleChecker
-from nonebot.plugin.on import on_message
 from arclet.alconna.core import Alconna, T_Duplication
 from arclet.alconna.tools import AlconnaString
+from nonebot.matcher import Matcher
+from nonebot.plugin.on import on_message
+from nonebot.rule import Rule
+from nonebot.typing import T_RuleChecker
+
 from .rule import alconna
 
 
@@ -17,12 +18,13 @@ def on_alconna(
     _depth: int = 0,
     **kwargs,
 ) -> type[Matcher]:
-    """注册一个消息事件响应器，并且当消息的**文本部分**以指定内容开头时响应。
+    """注册一个消息事件响应器，并且当消息由指定 Alconna 解析并传出有效结果时响应。
 
     参数:
-        msg: 指定消息开头内容
+        command: Alconna 命令
         rule: 事件响应规则
-        ignorecase: 是否忽略大小写
+        duplication: 可选的 Duplication 类型
+        skip_for_unmatch: 是否在解析失败时跳过
         permission: 事件响应权限
         handlers: 事件处理函数列表
         temp: 是否为临时事件响应器（仅执行一次）
