@@ -5,6 +5,7 @@ MessageContainer.config(
     preprocessors={"MessageSegment": lambda x: str(x) if x.type == "text" else None}
 )
 
+Text = str
 AtAll = gen_unit("at", lambda x: "isAtAll" in x.data)
 AtMobiles = gen_unit("at", lambda x: "atMobiles" in x.data)
 AtDingtalkIds = gen_unit("at", lambda x: "atDingtalkIds" in x.data)

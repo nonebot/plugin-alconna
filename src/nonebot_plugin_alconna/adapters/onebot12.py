@@ -8,20 +8,19 @@ from nepattern import (
 from nepattern.main import INTEGER, URL
 
 MessageContainer.config(
-    preprocessors={
-        "MessageSegment": lambda x: str(x) if x.type == "text" else None,
-        "Text": lambda x: str(x)
-    }
+    preprocessors={"MessageSegment": lambda x: str(x) if x.type == "text" else None}
 )
 
 Text = str
-Ark = gen_unit("ark")
-Embed = gen_unit("embed")
-Emoji = gen_unit("emoji")
-Image = gen_unit("attachment")
-FileImage = gen_unit("file_image")
-MentionUser = gen_unit("mention_user")
-MentionChannel = gen_unit("mention_channel")
+Mention = gen_unit("mention")
+MentionAll = gen_unit("mention_all")
+Image = gen_unit("image")
+Audio = gen_unit("audio")
+Voice = gen_unit("voice")
+File = gen_unit("file")
+Video = gen_unit("video")
+Location = gen_unit("location")
+Reply = gen_unit("reply")
 
 ImgOrUrl = (
     UnionArg(
@@ -48,8 +47,8 @@ MentionID = (
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,
                 origin=int,
-                alias="MentionUser",
-                accepts=[MentionUser],
+                alias="Mention",
+                accepts=[Mention],
                 converter=lambda _, x: int(x.data["user_id"]),
             ),
             BasePattern(

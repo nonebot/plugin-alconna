@@ -8,6 +8,7 @@ MessageContainer.config(
     }
 )
 
+Text = str
 Location = gen_unit("location")
 Venue = gen_unit("venue")
 Poll = gen_unit("poll")

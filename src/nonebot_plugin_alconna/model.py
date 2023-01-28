@@ -21,8 +21,31 @@ class Match(Generic[T]):
     available: bool
 
 
+class Query(Generic[T]):
+    """
+    查询项，表示参数是否可由 `Arparma.query` 查询并获得结果
+
+    result (T): 查询结果
+
+    available (bool): 查询状态
+
+    path (str): 查询路径
+    """
+    result: T
+    available: bool
+    path: str
+
+    def __init__(self, path: str, default: T | None = None):
+        self.path = path
+        self.result = default
+        self.available = False
+
+    def __repr__(self):
+        return f"Query({self.path}, {self.result})"
+
+
 @dataclass(frozen=True)
-class AlconnaCommandResult:
+class CommandResult:
     token: int
     output: str | None = field(default=None)
     duplication_type: type[T_Duplication] | None = field(default=None)
