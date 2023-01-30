@@ -30,6 +30,11 @@ _✨ Alconna Usage For NoneBot2 ✨_
 - 现有全部协议的 Segment 标注
 - match_value, match_path 等检查函数
 
+## 讨论
+
+QQ 交流群: [链接](https://jq.qq.com/?_wv=1027&k=PUPOnCSH)
+
+
 ## 使用方法
 
 ### 消息解析
