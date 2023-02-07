@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Awaitable
 
-from arclet.alconna import Alconna, Arparma, Empty
+from arclet.alconna import Alconna, Arparma
 from arclet.alconna.core import T_Duplication
 from arclet.alconna.tools import AlconnaString
 from nonebot.matcher import Matcher
+from nonebot.adapters import Message
 from nonebot.plugin.on import on_message
 from nonebot.rule import Rule
 from nonebot.typing import T_RuleChecker
@@ -64,6 +65,7 @@ def on_alconna(
     duplication: type[T_Duplication] | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
+    output_converter: Callable[[str], Message | Awaitable[Message]] | None = None,
     _depth: int = 0,
     **kwargs,
 ) -> type[Matcher]:
@@ -76,6 +78,7 @@ def on_alconna(
         duplication: 可选的 Duplication 类型
         skip_for_unmatch: 是否在解析失败时跳过
         auto_send_output: 是否自动发送输出信息并跳过
+        output_converter: 输出信息字符串转换为 Message 方法
         permission: 事件响应权限
         handlers: 事件处理函数列表
         temp: 是否为临时事件响应器（仅执行一次）
@@ -93,6 +96,7 @@ def on_alconna(
             duplication=duplication,
             skip_for_unmatch=skip_for_unmatch,
             auto_send_output=auto_send_output,
+            output_converter=output_converter
         ) & rule,
         **kwargs,
         _depth=_depth + 1  # type: ignore

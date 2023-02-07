@@ -162,6 +162,7 @@ def on_alconna(
     duplication: type[T_Duplication] | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
+    output_converter: Callable[[str], Message | Awaitable[Message]] | None = None,
     **kwargs,
 ) -> type[Matcher]:
 ```
@@ -171,6 +172,7 @@ def on_alconna(
 - `duplication`: 可选的自定义 Duplication 类型
 - `skip_for_unmatch`: 是否在命令不匹配时跳过该响应
 - `auto_send_output`: 是否自动发送输出信息并跳过响应
+- `output_converter`: 输出信息字符串转换为 Message 方法
 
 
 ## 提供了 MessageSegment标注 的协议:
