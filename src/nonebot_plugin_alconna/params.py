@@ -35,12 +35,16 @@ def AlconnaMatch(name: str) -> Match:
     return Depends(_alconna_match, use_cache=False)
 
 
-def AlconnaQuery(path: str, default: T | None = None) -> Query[T]:
+def AlconnaQuery(path: str, default: T = Empty) -> Query[T]:
     def _alconna_query(state: T_State) -> Query:
         arp = _alconna_result(state).result
         q = Query(path, default)
-        q.result = arp.query(path, Empty)
-        q.available = q.result != Empty
+        result = arp.query(path, Empty)
+        q.available = result != Empty
+        if q.available:
+            q.result = result
+        elif default != Empty:
+            q.available = True
         return q
 
     return Depends(_alconna_query, use_cache=False)

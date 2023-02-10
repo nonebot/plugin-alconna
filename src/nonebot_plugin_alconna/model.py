@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Generic, TypeVar
 
-from arclet.alconna import Arparma, command_manager
+from arclet.alconna import Arparma, command_manager, Empty
 from arclet.alconna.core import T_Duplication
 
 T = TypeVar("T")
@@ -35,7 +35,7 @@ class Query(Generic[T]):
     available: bool
     path: str
 
-    def __init__(self, path: str, default: T | None = None):
+    def __init__(self, path: str, default: T = Empty):
         self.path = path
         self.result = default
         self.available = False

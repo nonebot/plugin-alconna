@@ -46,7 +46,7 @@ class AlconnaRule:
         self.skip = skip_for_unmatch
         self.checkers = checker
         self.auto_send = auto_send_output
-        self.output_converter = output_converter or self.default_converter
+        self.output_converter = output_converter or self.__class__.default_converter
         if not is_coroutine_callable(self.output_converter):
             self.output_converter = run_sync(self.output_converter)
 
@@ -68,7 +68,7 @@ class AlconnaRule:
             return False
         try:
             msg = getattr(event, 'original_message', event.get_message())
-        except Exception:
+        except NotImplementedError:
             return False
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
