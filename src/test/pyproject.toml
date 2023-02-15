@@ -1,0 +1,14 @@
+[project]
+name = "nonebot_plugin_test"
+version = "0.1.0"
+description = "nonebot_plugin_test"
+readme = "README.md"
+requires-python = ">=3.8, <4.0"
+
+[tool.nonebot]
+adapters = [
+    { name = "Console", module_name = "nonebot.adapters.console" },
+]
+plugins = []
+plugin_dirs = ["src/plugins"]
+builtin_plugins = []

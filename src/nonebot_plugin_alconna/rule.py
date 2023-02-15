@@ -1,11 +1,8 @@
-from __future__ import annotations
-
-import contextlib
-from typing import Callable, Awaitable, ClassVar
-
+from typing import Callable, Awaitable, ClassVar, cast, Type, Optional, Union
+from typing_extensions import get_args
+from inspect import signature
 from arclet.alconna import Alconna, Arparma, Duplication, output_manager
-from nonebot.adapters import Event, Message
-from nonebot.internal.matcher.matcher import current_bot
+from nonebot.adapters import Message, Bot, Event
 from nonebot.internal.rule import Rule as Rule
 from nonebot.typing import T_State
 from nonebot.utils import run_sync, is_coroutine_callable
@@ -27,7 +24,7 @@ class AlconnaRule:
     """
 
     default_converter: ClassVar[
-        Callable[[str],  Message | Awaitable[Message]]
+        Callable[[str],  Union[Message, Awaitable[Message]]]
     ] = lambda x: Message(x)
 
     __slots__ = ("command", "duplication", "skip", "checkers", "auto_send", "output_converter")
@@ -36,10 +33,10 @@ class AlconnaRule:
         self,
         command: Alconna,
         *checker: Callable[[Arparma], bool],
-        duplication: type[Duplication] | None = None,
+        duplication: Optional[Type[Duplication]] = None,
         skip_for_unmatch: bool = True,
         auto_send_output: bool = False,
-        output_converter: Callable[[str], Message | Awaitable[Message]] | None = None
+        output_converter: Optional[Callable[[str],  Union[Message, Awaitable[Message]]]] = None
     ):
         self.command = command
         self.duplication = duplication
@@ -63,7 +60,7 @@ class AlconnaRule:
     def __hash__(self) -> int:
         return hash((self.command.__hash__(), self.duplication))
 
-    async def __call__(self, event: Event, state: T_State) -> bool:
+    async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
         if event.get_type() != "message":
             return False
         try:
@@ -76,7 +73,7 @@ class AlconnaRule:
                 arp = self.command.parse(msg)
             except Exception as e:
                 arp = Arparma(self.command.path, msg, False, error_info=repr(e))
-            may_help_text: str | None = cap.get("output", None)
+            may_help_text: Optional[str] = cap.get("output", None)
         if (
             not may_help_text
             and not arp.matched
@@ -84,10 +81,13 @@ class AlconnaRule:
         ):
             return False
         if self.auto_send and may_help_text:
-            with contextlib.suppress(LookupError):
-                bot = current_bot.get()
+            try:
                 await bot.send(event, await self.output_converter(may_help_text))
-                return False
+            except NotImplementedError:
+                msg_anno = signature(bot.send).parameters['message'].annotation
+                msg_type = cast(Type[Message], next(filter(lambda x: x.__name__ == "Message", get_args(msg_anno))))
+                await bot.send(event, msg_type(may_help_text))
+            return False
         for checker in self.checkers:
             if not checker(arp):
                 return False
@@ -100,10 +100,10 @@ class AlconnaRule:
 def alconna(
     command: Alconna,
     *checker: Callable[[Arparma], bool],
-    duplication: type[Duplication] | None = None,
+    duplication: Optional[Type[Duplication]] = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
-    output_converter: Callable[[str], Message | Awaitable[Message]] | None = None
+    output_converter: Optional[Callable[[str], Union[Message, Awaitable[Message]]]] = None
 ) -> Rule:
     return Rule(
         AlconnaRule(
@@ -115,3 +115,7 @@ def alconna(
             output_converter=output_converter
         )
     )
+
+
+def set_converter(fn: Callable[[str], Union[Message, Awaitable[Message]]]):
+    AlconnaRule.default_converter = fn

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from arclet.alconna import Arparma, Empty
 from arclet.alconna.core import T_Duplication
 from nonebot.internal.params import Depends as Depends
@@ -22,7 +20,7 @@ def _alconna_matches(state: T_State) -> Arparma:
 
 
 def AlconnaMatches() -> Arparma:
-    return Depends(_alconna_result, use_cache=False)
+    return Depends(_alconna_matches, use_cache=False)
 
 
 def AlconnaMatch(name: str) -> Match:

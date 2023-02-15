@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, field
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Optional, Type
 
 from arclet.alconna import Arparma, command_manager, Empty
 from arclet.alconna.core import T_Duplication
@@ -47,8 +45,8 @@ class Query(Generic[T]):
 @dataclass(frozen=True)
 class CommandResult:
     token: int
-    output: str | None = field(default=None)
-    duplication_type: type[T_Duplication] | None = field(default=None)
+    output: Optional[str] = field(default=None)
+    duplication_type: Optional[Type[T_Duplication]] = field(default=None)
 
     @property
     def result(self) -> Arparma:

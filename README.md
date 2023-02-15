@@ -174,7 +174,6 @@ def on_alconna(
 - `auto_send_output`: 是否自动发送输出信息并跳过响应
 - `output_converter`: 输出信息字符串转换为 Message 方法
 
-
 ## 提供了 MessageSegment标注 的协议:
 
 | 协议名称                                                                      | 路径                                   |
@@ -193,3 +192,8 @@ def on_alconna(
 | [BiliBili Live](https://github.com/wwweww/adapter-bilibili)               | adapters.bilibili                    |
 
 
+
+
+## 体验
+
+[demo bot](./src/test/plugins/demo.py)
