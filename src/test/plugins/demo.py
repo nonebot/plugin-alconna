@@ -1,4 +1,6 @@
-import nonebot_plugin_alconna.adapters.console  # noqa # 应与使用的 adapter 对应
+# 应与使用的 adapter 对应
+# 不加也可以，做了兼容
+import nonebot_plugin_alconna.adapters.console  # noqa
 from arclet.alconna import Args, Arparma, Option, Subcommand, command_manager, namespace
 from arclet.alconna.tools import MarkdownTextFormatter
 from importlib_metadata import distributions

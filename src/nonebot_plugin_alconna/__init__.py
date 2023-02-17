@@ -8,6 +8,6 @@ from .model import Match, CommandResult, Query
 from .analyser import NonebotCommandAnalyser
 from .config import Config
 
-global_config = get_driver().config
-config = Config.parse_obj(global_config)
+# global_config = get_driver().config
+# config = Config.parse_obj(global_config)
 Alconna: Type[Alconna[NonebotCommandAnalyser]] = Alconna.default_analyser(NonebotCommandAnalyser)

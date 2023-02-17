@@ -28,6 +28,8 @@ class MessageContainer(DataCollectionContainer):
                 continue
             if (proc := self.preprocessors.get(uname)) and (res := proc(unit)):
                 unit = res
+            elif unit.is_text():
+                unit = str(unit)
             if isinstance(unit, str):
                 if not (res := unit.strip()):
                     continue

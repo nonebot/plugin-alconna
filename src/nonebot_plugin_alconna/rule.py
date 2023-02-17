@@ -1,6 +1,5 @@
 from typing import Callable, Awaitable, ClassVar, cast, Type, Optional, Union
-from typing_extensions import get_args
-from inspect import signature
+from typing_extensions import get_args, get_type_hints
 from arclet.alconna import Alconna, Arparma, Duplication, output_manager
 from nonebot.adapters import Message, Bot, Event
 from nonebot.internal.rule import Rule as Rule
@@ -84,7 +83,7 @@ class AlconnaRule:
             try:
                 await bot.send(event, await self.output_converter(may_help_text))
             except NotImplementedError:
-                msg_anno = signature(bot.send).parameters['message'].annotation
+                msg_anno = get_type_hints(bot.send)['message']
                 msg_type = cast(Type[Message], next(filter(lambda x: x.__name__ == "Message", get_args(msg_anno))))
                 await bot.send(event, msg_type(may_help_text))
             return False
