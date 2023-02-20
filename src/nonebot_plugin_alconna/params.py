@@ -1,10 +1,14 @@
-from arclet.alconna import Arparma, Empty
-from arclet.alconna.core import T_Duplication
+from typing import Optional, Type, TypeVar, overload
+
+from arclet.alconna import Arparma, Duplication, Empty
+from arclet.alconna.duplication import generate_duplication
 from nonebot.internal.params import Depends as Depends
 from nonebot.typing import T_State
 
 from .consts import ALCONNA_RESULT
 from .model import CommandResult, Match, Query, T
+
+T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 
 
 def _alconna_result(state: T_State) -> CommandResult:
@@ -48,9 +52,19 @@ def AlconnaQuery(path: str, default: T = Empty) -> Query[T]:
     return Depends(_alconna_query, use_cache=False)
 
 
-def _alconna_duplication(state: T_State) -> T_Duplication:
-    return _alconna_result(state).duplication
+@overload
+def AlconnaDuplication() -> Duplication:
+    ...
 
 
-def AlconnaDuplication() -> T_Duplication:
-    return Depends(_alconna_duplication, use_cache=False)
+@overload
+def AlconnaDuplication(__t: Type[T_Duplication]) -> T_Duplication:
+    ...
+
+
+def AlconnaDuplication(__t: Optional[Type[T_Duplication]] = None) -> Duplication:
+    def _alconna_match(state: T_State) -> Duplication:
+        arp = _alconna_result(state).result
+        return __t(arp) if __t else generate_duplication(arp)
+
+    return Depends(_alconna_match, use_cache=False)

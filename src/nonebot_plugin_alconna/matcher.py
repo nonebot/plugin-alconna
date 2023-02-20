@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any, Callable, Awaitable
 
 from arclet.alconna import Alconna, Arparma
-from arclet.alconna.core import T_Duplication
 from arclet.alconna.tools import AlconnaString
 from nonebot.matcher import Matcher
 from nonebot.adapters import Message
@@ -62,7 +61,6 @@ def on_alconna(
     command: Alconna | str,
     *checker: Callable[[Arparma], bool],
     rule: Rule | T_RuleChecker | None = None,
-    duplication: type[T_Duplication] | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     output_converter: Callable[[str], Message | Awaitable[Message]] | None = None,
@@ -75,7 +73,6 @@ def on_alconna(
         command: Alconna 命令
         checker: Arparma 检查器，会在解析后使用
         rule: 事件响应规则
-        duplication: 可选的 Duplication 类型
         skip_for_unmatch: 是否在解析失败时跳过
         auto_send_output: 是否自动发送输出信息并跳过
         output_converter: 输出信息字符串转换为 Message 方法
@@ -93,7 +90,6 @@ def on_alconna(
         alconna(
             command,
             *checker,
-            duplication=duplication,
             skip_for_unmatch=skip_for_unmatch,
             auto_send_output=auto_send_output,
             output_converter=output_converter

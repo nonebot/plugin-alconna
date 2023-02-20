@@ -73,6 +73,11 @@ assert res.target.data['user_id'] == '123'
 
 ### Matcher 与 依赖注入
 ```python
+...
+from nonebot import require
+require("nonebot_plugin_alconna")
+...
+
 from nonebot_plugin_alconna import (
     on_alconna, 
     Match,
@@ -119,6 +124,11 @@ async def handle_test4(qux: Query[bool] = AlconnaQuery("baz.qux", False)):
 ### 条件控制
 
 ```python
+...
+from nonebot import require
+require("nonebot_plugin_alconna")
+...
+
 from arclet.alconna import Alconna, Subcommand, Option, Args
 from nonebot_plugin_alconna import assign, on_alconna, AlconnaResult, CommandResult
 
@@ -153,13 +163,48 @@ async def install(arp: CommandResult = AlconnaResult()):
     ...
 ```
 
+
+### Duplication
+
+```python
+...
+from nonebot import require
+require("nonebot_plugin_alconna")
+...
+
+from nonebot_plugin_alconna import (
+    on_alconna, 
+    AlconnaDuplication
+)
+from arclet.alconna import Alconna, Args, Duplication, Option, OptionStub
+
+test = on_alconna(
+    Alconna(
+        "test",
+        Option("foo", Args["bar", int]),
+        Option("baz", Args["qux", bool, False])
+    ),
+    auto_send_output=True
+)
+
+class MyResult(Duplication):
+    bar: int
+    qux: bool
+    foo: OptionStub
+
+@test.handle()
+async def handle_test1(result: MyResult = AlconnaDuplication(MyResult)):
+    await test.send(f"matched: bar={result.bar}, qux={result.qux}")
+    await test.send(f"options: foo={result.foo.origin}")
+
+```
+
 ## 参数解释
 
 ```python
 def on_alconna(
     command: Alconna | str,
     *checker: Callable[[Arparma], bool],
-    duplication: type[T_Duplication] | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     output_converter: Callable[[str], Message | Awaitable[Message]] | None = None,
@@ -169,7 +214,6 @@ def on_alconna(
 
 - `command`: Alconna 命令
 - `checker`: 命令解析结果的检查器
-- `duplication`: 可选的自定义 Duplication 类型
 - `skip_for_unmatch`: 是否在命令不匹配时跳过该响应
 - `auto_send_output`: 是否自动发送输出信息并跳过响应
 - `output_converter`: 输出信息字符串转换为 Message 方法

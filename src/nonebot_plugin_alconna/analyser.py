@@ -5,8 +5,8 @@ from typing_extensions import Self
 
 from arclet.alconna.exceptions import NullMessage
 from arclet.alconna.config import config
-from arclet.alconna.analysis.analyser import Analyser
-from arclet.alconna.analysis.container import DataCollectionContainer
+from arclet.alconna.analyser import Analyser
+from arclet.alconna.container import DataCollectionContainer
 
 from nonebot.adapters import Message
 

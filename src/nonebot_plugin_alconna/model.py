@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Generic, TypeVar, Optional, Type
+from typing import Generic, TypeVar, Optional
 
 from arclet.alconna import Arparma, command_manager, Empty
-from arclet.alconna.core import T_Duplication
+from arclet.alconna.duplication import Duplication
 
 T = TypeVar("T")
+T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 
 
 @dataclass
@@ -46,7 +47,6 @@ class Query(Generic[T]):
 class CommandResult:
     token: int
     output: Optional[str] = field(default=None)
-    duplication_type: Optional[Type[T_Duplication]] = field(default=None)
 
     @property
     def result(self) -> Arparma:
@@ -55,7 +55,3 @@ class CommandResult:
     @property
     def matched(self) -> bool:
         return self.result.matched
-
-    @property
-    def duplication(self) -> T_Duplication:
-        return self.result.get_duplication(self.duplication_type)
