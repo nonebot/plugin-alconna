@@ -199,6 +199,13 @@ async def handle_test1(result: MyResult = AlconnaDuplication(MyResult)):
 
 ```
 
+## 配置
+
+目前配置项有：
+
+- ALCONNA_AUTO_SEND_OUTPUT : 是否全局启用输出信息自动发送
+- ALCONNA_USE_COMMAND_START : 是否将 COMMAND_START 作为全局命令前缀
+
 ## 参数解释
 
 ```python

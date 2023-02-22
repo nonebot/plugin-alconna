@@ -23,6 +23,11 @@ def test_v11():
     assert not alc2.parse(Message([MessageSegment.at(11454), "chat"])).matched
     assert not alc2.parse(Message([img, "chat"])).matched
 
+    alc3 = Alconna([At], "give")
+    assert alc3.parse(Message([MessageSegment.at(114514), "give"])).matched
+    assert alc3.parse(Message([MessageSegment.at(1919810), "give"])).matched
+    assert not alc3.parse(Message([img, "give"])).matched
+
 
 def test_v12():
     from nonebot_plugin_alconna.adapters.onebot12 import Mention, Image
@@ -55,7 +60,11 @@ def test_v12():
     assert res1.query("foo.foo") == 123
     assert not alc3.parse(Message(["Hello!", img])).matched
 
+    alc4 = Alconna([Mention], "give")
+    assert alc4.parse(Message([MessageSegment.mention('114514'), "give"])).matched
+    assert alc4.parse(Message([MessageSegment.mention('1919810'), "give"])).matched
+    assert not alc4.parse(Message([img, "give"])).matched
+
 
 test_v11()
 test_v12()
-

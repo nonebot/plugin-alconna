@@ -1,13 +1,13 @@
 [project]
 name = "nonebot-plugin-alconna"
-version = "0.3.0"
+version = "0.3.1"
 description = "Alconna Adapter for Nonebot"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
     "nonebot2>=2.0.0rc3",
-    "arclet-alconna<1.7.0, >=1.6.0",
+    "arclet-alconna<1.7.0, >=1.6.5",
     "arclet-alconna-tools<0.6.0, >=0.5.0",
 ]
 requires-python = ">=3.8"

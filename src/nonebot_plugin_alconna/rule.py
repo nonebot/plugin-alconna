@@ -1,6 +1,6 @@
 from typing import Callable, Awaitable, ClassVar, cast, Type, Optional, Union
 from typing_extensions import get_args, get_type_hints
-from arclet.alconna import Alconna, Arparma, output_manager
+from arclet.alconna import Alconna, Arparma, output_manager, command_manager
 from nonebot import get_driver
 from nonebot.adapters import Message, Bot, Event
 from nonebot.internal.rule import Rule as Rule
@@ -37,12 +37,20 @@ class AlconnaRule:
         auto_send_output: bool = False,
         output_converter: Optional[Callable[[str],  Union[Message, Awaitable[Message]]]] = None
     ):
-        global_config = get_driver().config
-        config = Config.parse_obj(global_config)
+        try:
+            global_config = get_driver().config
+            config = Config.parse_obj(global_config)
+            self.auto_send = auto_send_output or config.alconna_auto_send_output
+            if config.alconna_use_command_start and global_config.command_start:
+                command_manager.delete(command)
+                command.headers = list(global_config.command_start)
+                command._hash = command._calc_hash()
+                command_manager.register(command)
+        except ValueError:
+            self.auto_send = auto_send_output
         self.command = command
         self.skip = skip_for_unmatch
         self.checkers = checker
-        self.auto_send = auto_send_output or config.alconna_auto_send_output
         self.output_converter = output_converter or self.__class__.default_converter
         if not is_coroutine_callable(self.output_converter):
             self.output_converter = run_sync(self.output_converter)

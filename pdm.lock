@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.6.2"
+version = "1.6.5"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -342,9 +342,9 @@ content_hash = "sha256:9aef65b6479c08602fa13af27b9ace727f84cb451059354f2731aa3a4
     {url = "https://files.pythonhosted.org/packages/77/2b/b4c0b7a3f3d61adb1a1e0b78f90a94e2b6162a043880704b7437ef297cad/anyio-3.6.2-py3-none-any.whl", hash = "sha256:fbbe32bd270d2a2ef3ed1c5d45041250284e31fc0a4df4a5a6071842051a51e3"},
     {url = "https://files.pythonhosted.org/packages/8b/94/6928d4345f2bc1beecbff03325cad43d320717f51ab74ab5a571324f4f5a/anyio-3.6.2.tar.gz", hash = "sha256:25ea0d673ae30af41a0c442f81cf3b38c7e79fdc7b60335a4c14e05eb0947421"},
 ]
-"arclet-alconna 1.6.2" = [
-    {url = "https://files.pythonhosted.org/packages/1e/31/53a2ddefe37cdd81ab5a76872bf5aa13b638344a4ed3d9879559b4f0500a/arclet_alconna-1.6.2-py3-none-any.whl", hash = "sha256:95f89f37ab90b3c53761e3c55ffeb880493b8b876646baa5536c2d4cce00c70e"},
-    {url = "https://files.pythonhosted.org/packages/90/5e/af99822c4633f0bc088655937a85243faf45d03a36bc4c80b11aafa676c3/arclet-alconna-1.6.2.tar.gz", hash = "sha256:6144c0441b81a3515476914f74b369ddd37c4ee21180f1be27d82d2d6a176dd5"},
+"arclet-alconna 1.6.5" = [
+    {url = "https://files.pythonhosted.org/packages/5f/4b/435718b7d0ec7f382ecc6fde2ceff73d987a9e1f4b7dd93e042ea0d06df6/arclet-alconna-1.6.5.tar.gz", hash = "sha256:1d310e740af8a34bb395bc358cd6b7175399bd9c75152b3fb155421ffa88d21b"},
+    {url = "https://files.pythonhosted.org/packages/91/5f/a5ab557e7d0b250bc82062973600076c05fa9e6f0c35b55640c4553b367b/arclet_alconna-1.6.5-py3-none-any.whl", hash = "sha256:a71a5695d428067062b29ba050a9282728a32d02c2ffb703054728074e08805e"},
 ]
 "arclet-alconna-tools 0.5.0" = [
     {url = "https://files.pythonhosted.org/packages/0e/44/48afc0f97ea493ef000127bdfcd62445231ffe88cccf6384cc30410a8110/arclet_alconna_tools-0.5.0-py3-none-any.whl", hash = "sha256:ae63b006c6bd61f2e9d3daee90ed269003f02e9440491d998194d09272bb0d94"},
