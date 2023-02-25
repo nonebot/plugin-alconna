@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Awaitable
 
-from arclet.alconna import Alconna, Arparma
+from arclet.alconna import Alconna, Arparma, command_manager
 from arclet.alconna.tools import AlconnaString
 from nonebot.matcher import Matcher
 from nonebot.adapters import Message
@@ -64,6 +64,7 @@ def on_alconna(
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     output_converter: Callable[[str], Message | Awaitable[Message]] | None = None,
+    aliases: set[str | tuple[str, ...]] | None = None,
     _depth: int = 0,
     **kwargs,
 ) -> type[Matcher]:
@@ -76,6 +77,7 @@ def on_alconna(
         skip_for_unmatch: 是否在解析失败时跳过
         auto_send_output: 是否自动发送输出信息并跳过
         output_converter: 输出信息字符串转换为 Message 方法
+        aliases: 命令别名
         permission: 事件响应权限
         handlers: 事件处理函数列表
         temp: 是否为临时事件响应器（仅执行一次）
@@ -86,6 +88,12 @@ def on_alconna(
     """
     if isinstance(command, str):
         command = AlconnaString(command)
+    if aliases and command.command:
+        command_manager.delete(command)
+        aliases.add(str(command.command))
+        command.command = "(" + "|".join(aliases) + ")"
+        command._hash = command._calc_hash()
+        command_manager.register(command)
     return on_message(
         alconna(
             command,

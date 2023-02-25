@@ -28,6 +28,7 @@ with namespace("nbtest") as ns:
 
     # auto_send already set in .env
     pipcmd = on_alconna(pip)  # , auto_send_output=True)
+    ali = on_alconna(Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=False)
 
     class PipResult(Duplication):
         list: SubcommandStub
@@ -59,3 +60,11 @@ async def ll(res: PipResult = AlconnaDuplication(PipResult)):
         await pipcmd.send(MessageSegment.markdown(md))
     elif res.pak != Empty:
         await pipcmd.send(f"pip installing {res.pak}...")
+
+
+@ali.handle()
+async def yiyan(res: Arparma = AlconnaMatches()):
+    if res.matched:
+        await ali.send("WIP...")
+    else:
+        await ali.send(f"[hitokoto] Unmatched: {res}")

@@ -83,7 +83,8 @@ class AlconnaRule:
         if (
             not may_help_text
             and not arp.matched
-            and ((not arp.head_matched) or self.skip)
+            and not arp.head_matched
+            and self.skip
         ):
             return False
         if self.auto_send and may_help_text:
@@ -98,7 +99,7 @@ class AlconnaRule:
             if not checker(arp):
                 return False
         state[ALCONNA_RESULT] = CommandResult(
-            arp.token, may_help_text
+            arp, may_help_text
         )
         return True
 
