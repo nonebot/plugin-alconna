@@ -12,6 +12,7 @@ set_output_converter(lambda x: Message([MessageSegment.markdown(x)]))
 with namespace("nbtest") as ns:
     ns.headers = ["/"]
     ns.formatter_type = MarkdownTextFormatter
+    ns.builtin_option_name["help"] = {"-h", "帮助", "--help"}
 
     help_cmd = on_alconna(Alconna("help"))
 

@@ -1,4 +1,5 @@
 from typing import Optional, Type, TypeVar, overload
+from typing_extensions import Annotated
 
 from arclet.alconna import Arparma, Duplication, Empty
 from arclet.alconna.duplication import generate_duplication
@@ -68,3 +69,7 @@ def AlconnaDuplication(__t: Optional[Type[T_Duplication]] = None) -> Duplication
         return __t(arp) if __t else generate_duplication(arp)
 
     return Depends(_alconna_match, use_cache=False)
+
+
+AlcResult = Annotated[CommandResult, AlconnaResult()]
+AlcMatches = Annotated[Arparma, AlconnaMatches()]

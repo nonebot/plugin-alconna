@@ -85,8 +85,8 @@ from nonebot_plugin_alconna import (
     AlconnaMatch, 
     AlconnaQuery,
     AlconnaResult, 
-    AlconnaMatches,
-    CommandResult
+    AlcMatches,
+    AlcResult
 )
 from arclet.alconna import Alconna, Args, Arparma, Option
 
@@ -101,12 +101,12 @@ test = on_alconna(
 
 
 @test.handle()
-async def handle_test1(result: CommandResult = AlconnaResult()):
+async def handle_test1(result: AlcResult):
     await test.send(f"matched: {result.matched}")
     await test.send(f"maybe output: {result.output}")
 
 @test.handle()
-async def handle_test2(result: Arparma = AlconnaMatches()):
+async def handle_test2(result: AlcMatches):
     await test.send(f"head result: {result.header_result}")
     await test.send(f"args: {result.all_matched_args}")
 
