@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Any, TypeVar, Generic
+from typing import Callable, Any, TypeVar, Generic, Literal
 from typing_extensions import ParamSpec
 from tarina import lang
 from nepattern import BasePattern, PatternModel, MatchFailed
@@ -45,3 +45,6 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> TMS:
         return self.call(*args, **kwargs)  # type: ignore
+
+
+OutputType = Literal["help", "shortcut", "completion"]

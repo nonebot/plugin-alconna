@@ -1,13 +1,13 @@
 # 应与使用的 adapter 对应
 # 不加也可以，做了兼容
 import nonebot_plugin_alconna.adapters.console  # noqa
-from arclet.alconna import Args, Arparma, Option, Subcommand, command_manager, namespace, Duplication, SubcommandStub, Empty
+from arclet.alconna import Alconna, Args, Arparma, Option, Subcommand, command_manager, namespace, Duplication, SubcommandStub, Empty
 from arclet.alconna.tools import MarkdownTextFormatter
 from importlib_metadata import distributions
 from nonebot.adapters.console.message import Message, MessageSegment
-from nonebot_plugin_alconna import Alconna, AlconnaMatches, on_alconna, set_output_converter, AlconnaDuplication
+from nonebot_plugin_alconna import AlconnaMatches, on_alconna, set_output_converter, AlconnaDuplication
 
-set_output_converter(lambda x: Message([MessageSegment.markdown(x)]))
+set_output_converter(lambda t, x: Message([MessageSegment.markdown(x)]))
 
 with namespace("nbtest") as ns:
     ns.headers = ["/"]
@@ -28,7 +28,7 @@ with namespace("nbtest") as ns:
     )
 
     # auto_send already set in .env
-    pipcmd = on_alconna(pip)  # , auto_send_output=True)
+    pipcmd = on_alconna(pip, comp_config={})  # , auto_send_output=True)
     ali = on_alconna(Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=False)
 
     class PipResult(Duplication):
@@ -50,7 +50,6 @@ def get_dist_map() -> dict:
 
 @help_cmd.handle()
 async def _help(arp: Arparma = AlconnaMatches()):
-    await help_cmd.send(str(arp))
     await help_cmd.send(MessageSegment.markdown(command_manager.all_command_help()))
 
 
@@ -67,5 +66,5 @@ async def ll(res: PipResult = AlconnaDuplication(PipResult)):
 async def yiyan(res: Arparma = AlconnaMatches()):
     if res.matched:
         await ali.send("WIP...")
-    else:
-        await ali.send(f"[hitokoto] Unmatched: {res}")
+    # else:
+    #     await ali.send(f"[hitokoto] Unmatched: {res}")

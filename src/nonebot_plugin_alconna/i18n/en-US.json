@@ -1,0 +1,7 @@
+{
+  "alconna/nonebot": {
+    "tab": "Send a {cmd} to toggle prompt",
+    "enter": "Send {cmd} [xxx] to confirm the input",
+    "exit": "Send {cmd} to exit the completion session"
+  }
+}

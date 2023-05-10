@@ -17,6 +17,5 @@ argv_config(
     MessageArgv,
     filter_out=[],
     checker=lambda x: isinstance(x, Message),
-    to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
-    converter=lambda x: Message(x)
+    to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None
 )

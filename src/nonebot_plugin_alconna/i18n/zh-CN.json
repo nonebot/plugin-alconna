@@ -1,0 +1,7 @@
+{
+  "alconna/nonebot": {
+    "tab": "发送 {cmd} 切换提示",
+    "enter": "发送 {cmd} [xxx] 确认输入",
+    "exit": "发送 {cmd} 退出补全会话"
+  }
+}

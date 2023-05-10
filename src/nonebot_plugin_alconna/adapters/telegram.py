@@ -1,7 +1,7 @@
 from nonebot_plugin_alconna.typings import SegmentPattern
 from nonebot_plugin_alconna.argv import MessageArgv
 from arclet.alconna import set_default_argv_type, argv_config
-from nonebot.adapters.telegram.message import MessageSegment, Message
+from nonebot.adapters.telegram.message import MessageSegment, Message, BaseMessage
 from nonebot.adapters.telegram.message import Entity, File, UnCombinFile
 from nepattern import UnionPattern
 
@@ -18,7 +18,7 @@ set_default_argv_type(TelegramMessageArgv)
 argv_config(
     TelegramMessageArgv,
     filter_out=[],
-    checker=lambda x: isinstance(x, Message),
+    checker=lambda x: isinstance(x, BaseMessage),
     to_text=lambda x: x if x.__class__ is str else str(x) if is_text(x) else None,
     converter=lambda x: Message(x)
 )

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Generic, TypeVar, Optional
+from typing import Generic, TypeVar, Optional, TypedDict
+from typing_extensions import NotRequired
 
 from arclet.alconna import Arparma, Empty
 from arclet.alconna.duplication import Duplication
@@ -51,3 +52,10 @@ class CommandResult:
     @property
     def matched(self) -> bool:
         return self.result.matched
+
+
+class CompConfig(TypedDict):
+    priority: NotRequired[int]
+    tab: NotRequired[str]
+    enter: NotRequired[str]
+    exit: NotRequired[str]

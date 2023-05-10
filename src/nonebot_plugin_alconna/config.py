@@ -9,3 +9,6 @@ class Config(BaseModel, extra=Extra.ignore):
 
     alconna_use_command_start: bool = False
     """是否将 COMMAND_START 作为全局命令前缀"""
+
+    alconna_auto_completion: bool = False
+    """是否全局启用命令自动补全"""

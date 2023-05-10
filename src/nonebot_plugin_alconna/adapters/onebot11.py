@@ -6,11 +6,23 @@ from nepattern import (
     UnionPattern,
 )
 from nepattern.main import INTEGER
-from nonebot.adapters.onebot.v11.message import MessageSegment
+from nonebot.adapters.onebot.v11.message import MessageSegment, BaseMessage, Message
 from nonebot_plugin_alconna.argv import MessageArgv
-from arclet.alconna import set_default_argv_type
+from arclet.alconna import set_default_argv_type, argv_config
 
-set_default_argv_type(MessageArgv)
+
+class Ob11MessageArgv(MessageArgv):
+    ...
+
+
+set_default_argv_type(Ob11MessageArgv)
+argv_config(
+    Ob11MessageArgv,
+    filter_out=[],
+    checker=lambda x: isinstance(x, BaseMessage),
+    to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
+    converter=lambda x: Message(x)
+)
 
 Anonymous = SegmentPattern("anonymous", MessageSegment, MessageSegment.anonymous)
 Text = str

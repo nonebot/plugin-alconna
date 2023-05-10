@@ -11,6 +11,8 @@ from nonebot.rule import Rule
 from nonebot.typing import T_RuleChecker
 
 from .rule import alconna
+from .model import CompConfig
+from .typings import OutputType
 
 
 def match_path(path: str):
@@ -59,12 +61,14 @@ def assign(
 
 def on_alconna(
     command: Alconna | str,
-    *checker: Callable[[Arparma], bool],
+    checker: list[Callable[[Arparma], bool]] | None = None,
     rule: Rule | T_RuleChecker | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
-    output_converter: Callable[[str], Message | Awaitable[Message]] | None = None,
+    output_converter: Callable[[OutputType, str], Message | Awaitable[Message]] | None = None,
     aliases: set[str | tuple[str, ...]] | None = None,
+    comp_config: CompConfig | None = None,
+    *args,
     _depth: int = 0,
     **kwargs,
 ) -> type[Matcher]:
@@ -78,6 +82,7 @@ def on_alconna(
         auto_send_output: 是否自动发送输出信息并跳过
         output_converter: 输出信息字符串转换为 Message 方法
         aliases: 命令别名
+        comp_config: 补全会话配置, 不传入则不启用补全会话
         permission: 事件响应权限
         handlers: 事件处理函数列表
         temp: 是否为临时事件响应器（仅执行一次）
@@ -97,11 +102,13 @@ def on_alconna(
     return on_message(
         alconna(
             command,
-            *checker,
-            skip_for_unmatch=skip_for_unmatch,
-            auto_send_output=auto_send_output,
-            output_converter=output_converter
+            checker or [],
+            skip_for_unmatch,
+            auto_send_output,
+            output_converter,
+            comp_config
         ) & rule,
+        *args,
         **kwargs,
         _depth=_depth + 1  # type: ignore
     )

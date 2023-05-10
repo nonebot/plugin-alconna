@@ -5,7 +5,7 @@ from nepattern import (
     UnionPattern,
 )
 from nepattern.main import INTEGER, URL
-from nonebot.adapters.qqguild.message import MessageSegment
+from nonebot.adapters.qqguild.message import MessageSegment, Message, BaseMessage
 from nonebot.adapters.qqguild.message import Emoji as _Emoji
 from nonebot.adapters.qqguild.message import MentionUser as _MentionUser
 from nonebot.adapters.qqguild.message import MentionChannel as _MentionChannel
@@ -16,9 +16,22 @@ from nonebot.adapters.qqguild.message import Ark as _Ark
 from nonebot.adapters.qqguild.message import LocalImage as _LocalImage
 from nonebot.adapters.qqguild.message import Reference as _Reference
 from nonebot_plugin_alconna.argv import MessageArgv
-from arclet.alconna import set_default_argv_type
+from arclet.alconna import set_default_argv_type, argv_config
 
-set_default_argv_type(MessageArgv)
+
+class QQGuildMessageArgv(MessageArgv):
+    ...
+
+
+set_default_argv_type(QQGuildMessageArgv)
+argv_config(
+    QQGuildMessageArgv,
+    filter_out=[],
+    checker=lambda x: isinstance(x, BaseMessage),
+    to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
+    converter=lambda x: Message(x)
+)
+
 
 Text = str
 Ark = SegmentPattern("ark", _Ark, MessageSegment.ark)
