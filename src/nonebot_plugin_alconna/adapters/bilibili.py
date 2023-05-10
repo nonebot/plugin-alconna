@@ -1,7 +1,5 @@
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
 
-MessageContainer.config(
-    preprocessors={"MessageSegment": lambda x: str(x) if x.type == "danmu" else None}
-)
-
+set_default_argv_type(MessageArgv)
 Danmu = str

@@ -1,30 +1,43 @@
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.typings import SegmentPattern
 from nepattern import (
     BasePattern,
     PatternModel,
-    UnionArg,
+    UnionPattern,
 )
 from nepattern.main import INTEGER, URL
+from nonebot.adapters.qqguild.message import MessageSegment
+from nonebot.adapters.qqguild.message import Emoji as _Emoji
+from nonebot.adapters.qqguild.message import MentionUser as _MentionUser
+from nonebot.adapters.qqguild.message import MentionChannel as _MentionChannel
+from nonebot.adapters.qqguild.message import MentionEveryone as _MentionEveryone
+from nonebot.adapters.qqguild.message import Attachment as _Attachment
+from nonebot.adapters.qqguild.message import Embed as _Embed
+from nonebot.adapters.qqguild.message import Ark as _Ark
+from nonebot.adapters.qqguild.message import LocalImage as _LocalImage
+from nonebot.adapters.qqguild.message import Reference as _Reference
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
 
-MessageContainer.config(
-    preprocessors={
-        "MessageSegment": lambda x: str(x) if x.type == "text" else None,
-        "Text": lambda x: str(x)
-    }
-)
+set_default_argv_type(MessageArgv)
 
 Text = str
-Ark = gen_unit("ark")
-Embed = gen_unit("embed")
-Emoji = gen_unit("emoji")
-Image = gen_unit("attachment")
-FileImage = gen_unit("file_image")
-MentionUser = gen_unit("mention_user")
-MentionChannel = gen_unit("mention_channel")
+Ark = SegmentPattern("ark", _Ark, MessageSegment.ark)
+Embed = SegmentPattern("embed", _Embed, MessageSegment.embed)
+Emoji = SegmentPattern("emoji", _Emoji, MessageSegment.emoji)
+Image = SegmentPattern("attachment", _Attachment, MessageSegment.image)
+FileImage = SegmentPattern("file_image", _LocalImage, MessageSegment.file_image)
+MentionUser = SegmentPattern("mention_user", _MentionUser, MessageSegment.mention_user)
+MentionChannel = SegmentPattern(
+    "mention_channel", _MentionChannel, MessageSegment.mention_channel
+)
+MentionEveryone = SegmentPattern(
+    "mention_everyone", _MentionEveryone, MessageSegment.mention_everyone
+)
+Reference = SegmentPattern("reference", _Reference, MessageSegment.reference)
+
 
 ImgOrUrl = (
-    UnionArg(
+    UnionPattern(
         [
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,
@@ -43,7 +56,7 @@ ImgOrUrl = (
 """
 
 MentionID = (
-    UnionArg(
+    UnionPattern(
         [
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,

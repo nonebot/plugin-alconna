@@ -1,13 +1,15 @@
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot.adapters.ntchat.message import MessageSegment
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
 
-MessageContainer.config(
-    preprocessors={"MessageSegment": lambda x: str(x) if x.type in ("text", "room_at_msg") else None}
-)
+set_default_argv_type(MessageArgv)
 
-Card = gen_unit("card")
-Link = gen_unit("link")
-Image = gen_unit("image")
-File = gen_unit("file")
-Video = gen_unit("video")
-XML = gen_unit("xml")
+Text = str
+RoomAtMsg = SegmentPattern("room_at_msg", MessageSegment, MessageSegment.room_at_msg)
+Card = SegmentPattern("card", MessageSegment, MessageSegment.card)
+Link = SegmentPattern("link", MessageSegment, MessageSegment.link)
+Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
+File = SegmentPattern("file", MessageSegment, MessageSegment.file)
+Video = SegmentPattern("video", MessageSegment, MessageSegment.video)
+XML = SegmentPattern("xml", MessageSegment, MessageSegment.xml)

@@ -1,24 +1,16 @@
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot.adapters.kaiheila.message import MessageSegment
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
 
-
-def is_text(seg) -> bool:
-    if seg.type == "kmarkdown":
-        return seg.data["is_plain_text"]
-    else:
-        return seg.type == "text"
-
-
-MessageContainer.config(
-    preprocessors={
-        "MessageSegment": lambda x: str(x) if is_text(x) else None,
-    }
-)
+set_default_argv_type(MessageArgv)
 
 Text = str
-Image = gen_unit("image")
-Video = gen_unit("video")
-File = gen_unit("file")
-Audio = gen_unit("audio")
-KMarkdown = gen_unit("kmarkdown")
-Card = gen_unit("card")
+At = SegmentPattern("at", MessageSegment, MessageSegment.at)
+Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
+Video = SegmentPattern("video", MessageSegment, MessageSegment.video)
+File = SegmentPattern("file", MessageSegment, MessageSegment.file)
+Audio = SegmentPattern("audio", MessageSegment, MessageSegment.audio)
+KMarkdown = SegmentPattern("kmarkdown", MessageSegment, MessageSegment.kmarkdown)
+Card = SegmentPattern("card", MessageSegment, MessageSegment.card)
+Quote = SegmentPattern("quote", MessageSegment, MessageSegment.quote)

@@ -1,39 +1,40 @@
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.typings import SegmentPattern
 from nepattern import (
     URL,
     BasePattern,
     PatternModel,
-    UnionArg,
+    UnionPattern,
 )
 from nepattern.main import INTEGER
+from nonebot.adapters.mirai2.message import MessageSegment
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
 
-MessageContainer.config(
-    preprocessors={"MessageSegment": lambda x: str(x) if x.type == "Plain" else None}
-)
+set_default_argv_type(MessageArgv)
 
-Source = gen_unit("Source")
-Quote = gen_unit("Quote")
+Source = SegmentPattern("Source", MessageSegment, MessageSegment.source)
+Quote = SegmentPattern("Quote", MessageSegment, MessageSegment.quote)
 Plain = str
-At = gen_unit("At")
-AtAll = gen_unit("AtAll")
-Face = gen_unit("Face")
-Image = gen_unit("Image")
-FlashImage = gen_unit("FlashImage")
-Voice = gen_unit("Voice")
-Xml = gen_unit("Xml")
-Json = gen_unit("Json")
-App = gen_unit("App")
-Dice = gen_unit("Dice")
-Poke = gen_unit("Poke")
-MarketFace = gen_unit("MarketFace")
-MusicShare = gen_unit("MusicShare")
-Forward = gen_unit("Forward")
-File = gen_unit("File")
-MiraiCode = gen_unit("MiraiCode")
+At = SegmentPattern("At", MessageSegment, MessageSegment.at)
+AtAll = SegmentPattern("AtAll", MessageSegment, MessageSegment.at_all)
+Face = SegmentPattern("Face", MessageSegment, MessageSegment.face)
+Image = SegmentPattern("Image", MessageSegment, MessageSegment.image)
+FlashImage = SegmentPattern("FlashImage", MessageSegment, MessageSegment.flash_image)
+Voice = SegmentPattern("Voice", MessageSegment, MessageSegment.voice)
+Xml = SegmentPattern("Xml", MessageSegment, MessageSegment.xml)
+Json = SegmentPattern("Json", MessageSegment, MessageSegment.json)
+App = SegmentPattern("App", MessageSegment, MessageSegment.app)
+Dice = SegmentPattern("Dice", MessageSegment, MessageSegment.Dice)
+Poke = SegmentPattern("Poke", MessageSegment, MessageSegment.poke)
+MarketFace = SegmentPattern("MarketFace", MessageSegment, MessageSegment.market_face)
+MusicShare = SegmentPattern("MusicShare", MessageSegment, MessageSegment.music_share)
+Forward = SegmentPattern("Forward", MessageSegment, MessageSegment.forward)
+File = SegmentPattern("File", MessageSegment, MessageSegment.file)
+MiraiCode = SegmentPattern("MiraiCode", MessageSegment, MessageSegment.mirai_code)
+
 
 ImgOrUrl = (
-    UnionArg(
+    UnionPattern(
         [
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,
@@ -52,7 +53,7 @@ ImgOrUrl = (
 """
 
 AtID = (
-    UnionArg(
+    UnionPattern(
         [
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,

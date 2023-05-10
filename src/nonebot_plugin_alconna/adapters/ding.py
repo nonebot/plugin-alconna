@@ -1,19 +1,37 @@
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot.adapters.ding.message import MessageSegment
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
 
-MessageContainer.config(
-    preprocessors={"MessageSegment": lambda x: str(x) if x.type == "text" else None}
-)
+set_default_argv_type(MessageArgv)
 
 Text = str
-AtAll = gen_unit("at", lambda x: "isAtAll" in x.data)
-AtMobiles = gen_unit("at", lambda x: "atMobiles" in x.data)
-AtDingtalkIds = gen_unit("at", lambda x: "atDingtalkIds" in x.data)
-Image = gen_unit("image")
-Extension = gen_unit("extension")
-Code = gen_unit("code")
-Markdown = gen_unit("markdown")
-ActionCardSingleBtn = gen_unit("actionCard", lambda x: "singleTitle" in x.data)
-ActionCardMultiBtns = gen_unit("actionCard", lambda x: "btns" in x.data)
-FeedCard = gen_unit("feedCard")
-Raw = gen_unit("raw")
+AtAll = SegmentPattern(
+    "at", MessageSegment, MessageSegment.atAll, lambda x: "isAtAll" in x.data
+)
+AtMobiles = SegmentPattern(
+    "at", MessageSegment, MessageSegment.atMobiles, lambda x: "atMobiles" in x.data
+)
+AtDingtalkIds = SegmentPattern(
+    "at",
+    MessageSegment,
+    MessageSegment.atDingtalkIds,
+    lambda x: "atDingtalkIds" in x.data,
+)
+Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
+Extension = SegmentPattern("extension", MessageSegment, MessageSegment.extension)
+Markdown = SegmentPattern("markdown", MessageSegment, MessageSegment.markdown)
+ActionCardSingleBtn = SegmentPattern(
+    "actionCard",
+    MessageSegment,
+    MessageSegment.actionCardSingleBtn,
+    lambda x: "singleTitle" in x.data,
+)
+ActionCardMultiBtns = SegmentPattern(
+    "actionCard",
+    MessageSegment,
+    MessageSegment.actionCardMultiBtns,
+    lambda x: "btns" in x.data,
+)
+FeedCard = SegmentPattern("feedCard", MessageSegment, MessageSegment.feedCard)
+Raw = SegmentPattern("raw", MessageSegment, MessageSegment.raw)

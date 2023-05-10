@@ -1,30 +1,31 @@
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.typings import SegmentPattern
 from nepattern import (
     BasePattern,
     PatternModel,
-    UnionArg,
+    UnionPattern,
 )
 from nepattern.main import INTEGER
-MessageContainer.config(
-    preprocessors={"MessageSegment": lambda x: str(x) if x.type == "text" else None}
-)
+from nonebot.adapters.feishu.message import MessageSegment
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
+
+set_default_argv_type(MessageArgv)
 
 Text = str
-At = gen_unit("at")
-Post = gen_unit("post")
-Image = gen_unit("image")
-Interactive = gen_unit("interactive")
-ShareChat = gen_unit("share_chat")
-ShareUser = gen_unit("share_user")
-Audio = gen_unit("audio")
-Media = gen_unit("media")
-File = gen_unit("File")
-Sticker = gen_unit("sticker")
+At = SegmentPattern("at", MessageSegment, MessageSegment.at)
+Post = SegmentPattern("post", MessageSegment, MessageSegment.post)
+Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
+Interactive = SegmentPattern("interactive", MessageSegment, MessageSegment.interactive)
+ShareChat = SegmentPattern("share_chat", MessageSegment, MessageSegment.share_chat)
+ShareUser = SegmentPattern("share_user", MessageSegment, MessageSegment.share_user)
+Audio = SegmentPattern("audio", MessageSegment, MessageSegment.audio)
+Media = SegmentPattern("media", MessageSegment, MessageSegment.media)
+File = SegmentPattern("File", MessageSegment, MessageSegment.file)
+Sticker = SegmentPattern("sticker", MessageSegment, MessageSegment.sticker)
 
 
 AtID = (
-    UnionArg(
+    UnionPattern(
         [
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,

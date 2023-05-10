@@ -1,40 +1,41 @@
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.typings import SegmentPattern
 from nepattern import (
     URL,
     BasePattern,
     PatternModel,
-    UnionArg,
+    UnionPattern,
 )
 from nepattern.main import INTEGER
-MessageContainer.config(
-    preprocessors={"MessageSegment": lambda x: str(x) if x.type == "text" else None}
-)
+from nonebot.adapters.onebot.v11.message import MessageSegment
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
 
-Anonymous = gen_unit("anonymous")
+set_default_argv_type(MessageArgv)
+
+Anonymous = SegmentPattern("anonymous", MessageSegment, MessageSegment.anonymous)
 Text = str
-At = gen_unit("at")
-Contact = gen_unit("contact")
-Dice = gen_unit("dice")
-Face = gen_unit("face")
-Forward = gen_unit("forward")
-Image = gen_unit("image")
-Json = gen_unit("json")
-Location = gen_unit("location")
-Music = gen_unit("music")
-Node = gen_unit("node")
-Poke = gen_unit("poke")
-Record = gen_unit("record")
-Reply = gen_unit("reply")
-RPS = gen_unit("rps")
-Shake = gen_unit("shake")
-Share = gen_unit("share")
-Video = gen_unit("video")
-Xml = gen_unit("xml")
+At = SegmentPattern("at", MessageSegment, MessageSegment.at)
+Contact = SegmentPattern("contact", MessageSegment, MessageSegment.contact)
+Dice = SegmentPattern("dice", MessageSegment, MessageSegment.dice)
+Face = SegmentPattern("face", MessageSegment, MessageSegment.face)
+Forward = SegmentPattern("forward", MessageSegment, MessageSegment.forward)
+Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
+Json = SegmentPattern("json", MessageSegment, MessageSegment.json)
+Location = SegmentPattern("location", MessageSegment, MessageSegment.location)
+Music = SegmentPattern("music", MessageSegment, MessageSegment.music)
+Node = SegmentPattern("node", MessageSegment, MessageSegment.node)
+Poke = SegmentPattern("poke", MessageSegment, MessageSegment.poke)
+Record = SegmentPattern("record", MessageSegment, MessageSegment.record)
+Reply = SegmentPattern("reply", MessageSegment, MessageSegment.reply)
+RPS = SegmentPattern("rps", MessageSegment, MessageSegment.rps)
+Shake = SegmentPattern("shake", MessageSegment, MessageSegment.shake)
+Share = SegmentPattern("share", MessageSegment, MessageSegment.share)
+Video = SegmentPattern("video", MessageSegment, MessageSegment.video)
+Xml = SegmentPattern("xml", MessageSegment, MessageSegment.xml)
 
 
 ImgOrUrl = (
-    UnionArg(
+    UnionPattern(
         [
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,
@@ -53,7 +54,7 @@ ImgOrUrl = (
 """
 
 AtID = (
-    UnionArg(
+    UnionPattern(
         [
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,

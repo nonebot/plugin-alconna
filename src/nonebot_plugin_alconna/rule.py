@@ -43,7 +43,7 @@ class AlconnaRule:
             self.auto_send = auto_send_output or config.alconna_auto_send_output
             if config.alconna_use_command_start and global_config.command_start:
                 command_manager.delete(command)
-                command.headers = list(global_config.command_start)
+                command.prefixes = list(global_config.command_start)
                 command._hash = command._calc_hash()
                 command_manager.register(command)
         except ValueError:

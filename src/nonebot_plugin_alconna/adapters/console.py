@@ -1,17 +1,15 @@
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot.adapters.console.message import MessageSegment
+from nonebot.adapters.console.message import Emoji as _Emoji
+from nonebot.adapters.console.message import Markup as _Markup
+from nonebot.adapters.console.message import Markdown as _Markdown
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
 
-MessageContainer.config(
-    preprocessors={
-        "MessageSegment": lambda x: x.data["text"] if x.type == "text" else None,
-        "Text": lambda x: x.data["text"],
-        "Emoji": lambda x: None,
-        "Markup": lambda x: None,
-        "Markdown": lambda x: None
-    }
-)
+set_default_argv_type(MessageArgv)
 
-Emoje = gen_unit("emoji")
-Markup = gen_unit("markup")
-Markdown = gen_unit("markdown")
+Emoji = SegmentPattern("emoji", _Emoji, MessageSegment.emoji)
+Markup = SegmentPattern("markup", _Markup, MessageSegment.markup)
+Markdown = SegmentPattern("markdown", _Markdown, MessageSegment.markdown)
+
 Text = str

@@ -58,17 +58,16 @@ assert not alc.parse(Message(["Hello!", img])).matched
 
 ```python
 from nonebot_plugin_alconna.adapters.onebot12 import Mention
-from nonebot.adapters.onebot.v12 import Message, MessageSegment
+from nonebot.adapters.onebot.v12 import Message
 from arclet.alconna import Alconna, Args
-from arclet.alconna.tools import AlconnaString
 
-msg = Message(["Hello!", MessageSegment.mention("123")])
+msg = Message(["Hello!", Mention("123")])
 print(msg)  # Hello![mention:user_id=123]
 
-alc = AlconnaString("Hello! <target:Mention>")
+alc = Alconna("Hello!", Args["target", Mention])
 res = alc.parse(msg)
 assert res.matched
-assert res.target.data['user_id'] == '123'
+assert res.query("target").data['user_id'] == '123'
 ```
 
 ### Matcher 与 依赖注入
@@ -227,20 +226,20 @@ def on_alconna(
 
 ## 提供了 MessageSegment标注 的协议:
 
-| 协议名称                                                                      | 路径                                   |
-|---------------------------------------------------------------------------|--------------------------------------|
-| [OneBot 协议](https://onebot.dev/)                                          | adapters.onebot11, adapters.onebot12 |
-| [Telegram](https://core.telegram.org/bots/api)                            | adapters.telegram                    |
-| [飞书](https://open.feishu.cn/document/home/index)                          | adapters.feishu                      |
-| [GitHub](https://docs.github.com/en/developers/apps)                      | adapters.github                      |
-| [QQ 频道](https://bot.q.qq.com/wiki/)                                       | adapters.qqguild                     |
-| [钉钉](https://open.dingtalk.com/document/)                                 | adapters.ding                        |
-| [Console](https://github.com/nonebot/adapter-console)                     | adapters.console                     |
-| [开黑啦](https://developer.kookapp.cn/)                                      | adapters.kook                        |
-| [Mirai](https://docs.mirai.mamoe.net/mirai-api-http/)                     | adapters.mirai                       |
-| [Ntchat](https://github.com/JustUndertaker/adapter-ntchat)                | adapters.ntchat                      |
-| [MineCraft (Spigot)](https://github.com/17TheWord/nonebot-adapter-spigot) | adapters.spigot                      |
-| [BiliBili Live](https://github.com/wwweww/adapter-bilibili)               | adapters.bilibili                    |
+| 协议名称                                                                | 路径                                   |
+|---------------------------------------------------------------------|--------------------------------------|
+| [OneBot 协议](https://onebot.dev/)                                    | adapters.onebot11, adapters.onebot12 |
+| [Telegram](https://core.telegram.org/bots/api)                      | adapters.telegram                    |
+| [飞书](https://open.feishu.cn/document/home/index)                    | adapters.feishu                      |
+| [GitHub](https://docs.github.com/en/developers/apps)                | adapters.github                      |
+| [QQ 频道](https://bot.q.qq.com/wiki/)                                 | adapters.qqguild                     |
+| [钉钉](https://open.dingtalk.com/document/)                           | adapters.ding                        |
+| [Console](https://github.com/nonebot/adapter-console)               | adapters.console                     |
+| [开黑啦](https://developer.kookapp.cn/)                                | adapters.kook                        |
+| [Mirai](https://docs.mirai.mamoe.net/mirai-api-http/)               | adapters.mirai                       |
+| [Ntchat](https://github.com/JustUndertaker/adapter-ntchat)          | adapters.ntchat                      |
+| [MineCraft](https://github.com/17TheWord/nonebot-adapter-minecraft) | adapters.minecraft                   |
+| [BiliBili Live](https://github.com/wwweww/adapter-bilibili)         | adapters.bilibili                    |
 
 
 

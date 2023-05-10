@@ -1,29 +1,29 @@
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot_plugin_alconna.analyser import MessageContainer
+from nonebot_plugin_alconna.typings import SegmentPattern
 from nepattern import (
     BasePattern,
     PatternModel,
-    UnionArg,
+    UnionPattern,
 )
 from nepattern.main import INTEGER, URL
+from nonebot.adapters.onebot.v12.message import MessageSegment
+from nonebot_plugin_alconna.argv import MessageArgv
+from arclet.alconna import set_default_argv_type
 
-MessageContainer.config(
-    preprocessors={"MessageSegment": lambda x: str(x) if x.type == "text" else None}
-)
+set_default_argv_type(MessageArgv)
 
 Text = str
-Mention = gen_unit("mention")
-MentionAll = gen_unit("mention_all")
-Image = gen_unit("image")
-Audio = gen_unit("audio")
-Voice = gen_unit("voice")
-File = gen_unit("file")
-Video = gen_unit("video")
-Location = gen_unit("location")
-Reply = gen_unit("reply")
+Mention = SegmentPattern("mention", MessageSegment, MessageSegment.mention)
+MentionAll = SegmentPattern("mention_all", MessageSegment, MessageSegment.mention_all)
+Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
+Audio = SegmentPattern("audio", MessageSegment, MessageSegment.audio)
+Voice = SegmentPattern("voice", MessageSegment, MessageSegment.voice)
+File = SegmentPattern("file", MessageSegment, MessageSegment.file)
+Video = SegmentPattern("video", MessageSegment, MessageSegment.video)
+Location = SegmentPattern("location", MessageSegment, MessageSegment.location)
+Reply = SegmentPattern("reply", MessageSegment, MessageSegment.reply)
 
 ImgOrUrl = (
-    UnionArg(
+    UnionPattern(
         [
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,
@@ -42,7 +42,7 @@ ImgOrUrl = (
 """
 
 MentionID = (
-    UnionArg(
+    UnionPattern(
         [
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,
