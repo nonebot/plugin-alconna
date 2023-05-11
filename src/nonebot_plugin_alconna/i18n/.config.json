@@ -1,9 +1,9 @@
 {
   "default": "zh-CN",
   "frozen": [
-    "alconna/nonebot"
+    "comp/nonebot"
   ],
   "require": [
-    "alconna/nonebot"
+    "comp/nonebot"
   ]
 }

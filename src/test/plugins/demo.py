@@ -28,7 +28,7 @@ with namespace("nbtest") as ns:
     )
 
     # auto_send already set in .env
-    pipcmd = on_alconna(pip, comp_config={})  # , auto_send_output=True)
+    pipcmd = on_alconna(pip, comp_config={'timeout': 10})  # , auto_send_output=True)
     ali = on_alconna(Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=False)
 
     class PipResult(Duplication):

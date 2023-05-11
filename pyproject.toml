@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-alconna"
-version = "0.4.0"
+version = "0.4.1"
 description = "Alconna Adapter for Nonebot"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},

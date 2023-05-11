@@ -1,7 +1,9 @@
 {
-  "alconna/nonebot": {
+  "comp/nonebot": {
     "tab": "Send a {cmd} to toggle prompt",
     "enter": "Send {cmd} [xxx] to confirm the input",
-    "exit": "Send {cmd} to exit the completion session"
+    "exit": "Send {cmd} to exit the completion session",
+    "timeout": "Completion session timed out. Exited automatically",
+    "exited": "Completion session exited"
   }
 }
