@@ -118,11 +118,25 @@ class AlconnaRule:
 
         @_waiter.handle()
         async def _waiter_handle(content: Message = EventMessage()):
-            _futures["_"].set_result(content)
+            if _exit.parse(content).matched:
+                _futures["_"].set_result(False)
+                await _waiter.finish()
+            if (mat := _tab.parse(content)).matched:
+                interface.tab(mat.offset)
+                await self.send("\n".join(interface.lines()), bot, event, res)
+                await _waiter.reject()
+            if (mat := _enter.parse(content)).matched:
+                _futures["_"].set_result(mat.content)
+                await _waiter.finish()
+            await self.send(interface.current(), bot, event, res)
+            await _waiter.reject()
 
         def clear():
             interface.clear()
             _waiter.destroy()
+            command_manager.delete(_tab)
+            command_manager.delete(_enter)
+            command_manager.delete(_exit)
 
         with interface:
             res = self.command.parse(msg)
@@ -135,36 +149,26 @@ class AlconnaRule:
                 f"{lang.require('alconna/nonebot', 'exit').format(cmd=_exit.command)}",
                 bot, event, res
             )
-            while True:
-                _future = _futures.setdefault("_", asyncio.Future())
-                _future.add_done_callback(lambda x: _futures.pop("_"))
-                try:
-                    await asyncio.wait_for(_future, timeout=30)
-                except asyncio.TimeoutError:
-                    clear()
-                    return res
-                content: Message = _future.result()
-                if _exit.parse(content).matched:
-                    clear()
-                    return res
-                if (mat := _tab.parse(content)).matched:
-                    interface.tab(mat.offset)
-                    await self.send("\n".join(interface.lines()), bot, event, res)
-                    continue
-                if (mat := _enter.parse(content)).matched:
-                    param = list(mat.content)
-                    if not param or not param[0]:
-                        param = None
-                    try:
-                        with interface:
-                            res = interface.enter(param)
-                    except Exception as e:
-                        traceback.print_exc()
-                        await self.send(str(e), bot, event, res)
-                        continue
-                    break
-                else:
-                    await self.send(interface.current(), bot, event, res)
+            _future = _futures.setdefault("_", asyncio.get_running_loop().create_future())
+            _future.add_done_callback(lambda x: _futures.pop("_"))
+            try:
+                await asyncio.wait_for(_future, timeout=60)
+            except asyncio.TimeoutError:
+                clear()
+                return res
+            content: Union[Message, bool] = _future.result()
+            if content is False:
+                clear()
+                return res
+            param = list(content)
+            if not param or not param[0]:
+                param = None
+            try:
+                with interface:
+                    res = interface.enter(param)
+            except Exception as e:
+                traceback.print_exc()
+                await self.send(str(e), bot, event, res)
         clear()
         return res
 
