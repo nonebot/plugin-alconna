@@ -29,6 +29,7 @@ _✨ Alconna Usage For NoneBot2 ✨_
 - 自动回复命令帮助信息 (help, shortcut, completion) 选项
 - 现有全部协议的 Segment 标注
 - match_value, match_path 等检查函数
+- 补全会话支持
 
 ## 讨论
 
@@ -56,6 +57,8 @@ assert not alc.parse(Message(["Hello!", img])).matched
 
 ### MessageSegment 标注
 
+特定适配器:
+
 ```python
 from nonebot_plugin_alconna.adapters.onebot12 import Mention
 from nonebot.adapters.onebot.v12 import Message
@@ -68,6 +71,29 @@ alc = Alconna("Hello!", Args["target", Mention])
 res = alc.parse(msg)
 assert res.matched
 assert res.query("target").data['user_id'] == '123'
+```
+
+通用标注:
+
+```python
+from nonebot.adapters.onebot.v12 import Message as Ob12M, MessageSegment as Ob12MS
+from nonebot.adapters.onebot.v11 import Message as Ob11M, MessageSegment as Ob11MS
+from nonebot_plugin_alconna.adapters import At
+from arclet.alconna import Alconna, Args
+
+msg1 = Ob12M(["Hello!", Ob12MS.mention("123")])
+print(msg1)  # Hello![mention:user_id=123]
+msg2 = Ob11M(["Hello!", Ob11MS.at(123)])
+print(msg2)  # Hello![CQ:at,qq=123]
+
+alc = Alconna("Hello!", Args["target", At])
+res1 = alc.parse(msg1)
+assert res1.matched
+assert res1.query("target").data['user_id'] == '123'
+
+res2 = alc.parse(msg2)
+assert res2.matched
+assert res2.query("target").data['qq'] == 123
 ```
 
 ### Matcher 与 依赖注入
@@ -83,11 +109,10 @@ from nonebot_plugin_alconna import (
     Query,
     AlconnaMatch, 
     AlconnaQuery,
-    AlconnaResult, 
     AlcMatches,
     AlcResult
 )
-from arclet.alconna import Alconna, Args, Arparma, Option
+from arclet.alconna import Alconna, Args, Option
 
 test = on_alconna(
     Alconna(
@@ -145,9 +170,9 @@ pip = Alconna(
     )
 )
 
-pip_update = on_alconna(pip, assign("install.pak", "pip"))
-pip_match_install = on_alconna(pip, assign("install"))
-pip_match_list = on_alconna(pip, assign("list"))
+pip_update = on_alconna(pip, [assign("install.pak", "pip")])
+pip_match_install = on_alconna(pip, [assign("install")])
+pip_match_list = on_alconna(pip, [assign("list")])
 
 @pip_update.handle()
 async def update(arp: CommandResult = AlconnaResult()):
@@ -204,16 +229,19 @@ async def handle_test1(result: MyResult = AlconnaDuplication(MyResult)):
 
 - ALCONNA_AUTO_SEND_OUTPUT : 是否全局启用输出信息自动发送
 - ALCONNA_USE_COMMAND_START : 是否将 COMMAND_START 作为全局命令前缀
+- ALCONNA_AUTO_COMPLETION: 是否全局启用补全会话功能
 
 ## 参数解释
 
 ```python
 def on_alconna(
     command: Alconna | str,
-    *checker: Callable[[Arparma], bool],
+    checker: list[Callable[[Arparma], bool]] | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
-    output_converter: Callable[[str], Message | Awaitable[Message]] | None = None,
+    output_converter: Callable[[OutputType, str], Message | Awaitable[Message]] | None = None,
+    aliases: set[str | tuple[str, ...]] | None = None,
+    comp_config: CompConfig | None = None,
     **kwargs,
 ) -> type[Matcher]:
 ```
@@ -223,6 +251,8 @@ def on_alconna(
 - `skip_for_unmatch`: 是否在命令不匹配时跳过该响应
 - `auto_send_output`: 是否自动发送输出信息并跳过响应
 - `output_converter`: 输出信息字符串转换为 Message 方法
+- `aliases`: 命令别名, 作用类似于 `on_command`
+- `comp_config`: 补全会话配置, 不传入则不启用补全会话
 
 ## 提供了 MessageSegment标注 的协议:
 

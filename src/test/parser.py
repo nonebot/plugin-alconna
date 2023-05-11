@@ -5,7 +5,7 @@ def test_v11():
     from nonebot_plugin_alconna.adapters.onebot11 import At, Image
     from nonebot.adapters.onebot.v11 import Message
 
-    msg = MessageChain(["Hello!11", At(123)])
+    msg = Message(["Hello!11", At(123)])
     img = Image(b'123')
     print(msg)
 
@@ -66,5 +66,33 @@ def test_v12():
     assert not alc4.parse(Message([img, "give"])).matched
 
 
+def test_generic():
+    from nonebot_plugin_alconna.adapters import At as GenericAt
+    from nonebot_plugin_alconna.adapters import Image as GenericImage
+
+    from nonebot_plugin_alconna.adapters.onebot11 import At as Onebot11At
+    from nonebot_plugin_alconna.adapters.onebot12 import Mention as Onebot12Mention
+    from nonebot_plugin_alconna.adapters.onebot11 import Image as Onebot11Image
+    from nonebot_plugin_alconna.adapters.onebot12 import Image as Onebot12Image
+
+    from nonebot.adapters.onebot.v11 import Message as Onebot11Message
+    from nonebot.adapters.onebot.v12 import Message as Onebot12Message
+
+    msg11 = Onebot11Message(["Hello!", Onebot11At(123)])
+    msg12 = Onebot12Message(["Hello!", Onebot12Mention("123")])
+    img11 = Onebot11Image(b'123')
+    img12 = Onebot12Image("1.png")
+    print(msg11)
+    print(msg12)
+
+    alc = Alconna("Hello!", Args["target", GenericAt])
+
+    assert alc.parse(msg11).matched
+    assert alc.parse(msg12).matched
+    assert not alc.parse(Onebot11Message(["Hello!", img11])).matched
+    assert not alc.parse(Onebot12Message(["Hello!", img12])).matched
+
+
 test_v11()
 test_v12()
+test_generic()

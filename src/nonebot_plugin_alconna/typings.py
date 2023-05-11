@@ -10,10 +10,6 @@ TMS = TypeVar("TMS", bound=MessageSegment)
 P = ParamSpec("P")
 
 
-def _isinstance(self: BasePattern, seg: MessageSegment):
-    return seg if self.pattern == seg.type else None
-
-
 class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
     def __init__(
         self,
@@ -48,3 +44,20 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
 
 
 OutputType = Literal["help", "shortcut", "completion"]
+
+
+def _isinstance(seg: MessageSegment, accepts: set[str]):
+    return seg if seg.type.lower() in accepts else None
+
+
+def gen_unit(
+    name: str, accepts: set[str], additional: Callable[..., bool] | None = None
+) -> BasePattern[MessageSegment]:
+    return BasePattern(
+        name,
+        PatternModel.TYPE_CONVERT,
+        Any,
+        lambda self, x: _isinstance(x, accepts),
+        accepts=[MessageSegment],
+        validators=[additional] if additional else [],
+    )
