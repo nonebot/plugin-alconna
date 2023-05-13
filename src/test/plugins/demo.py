@@ -6,6 +6,7 @@ from arclet.alconna.tools import MarkdownTextFormatter
 from importlib_metadata import distributions
 from nonebot.adapters.console.message import Message, MessageSegment
 from nonebot_plugin_alconna import AlconnaMatches, on_alconna, set_output_converter, AlconnaDuplication
+from tarina import lang
 
 set_output_converter(lambda t, x: Message([MessageSegment.markdown(x)]))
 
@@ -30,6 +31,7 @@ with namespace("nbtest") as ns:
     # auto_send already set in .env
     pipcmd = on_alconna(pip, comp_config={'timeout': 10})  # , auto_send_output=True)
     ali = on_alconna(Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=False)
+    i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
 
     class PipResult(Duplication):
         list: SubcommandStub
@@ -51,6 +53,15 @@ def get_dist_map() -> dict:
 @help_cmd.handle()
 async def _help(arp: Arparma = AlconnaMatches()):
     await help_cmd.send(MessageSegment.markdown(command_manager.all_command_help()))
+
+
+@i18n.handle()
+async def _i18n(arp: Arparma = AlconnaMatches()):
+    try:
+        lang.select(arp["lang"])
+    except ValueError as e:
+        await i18n.finish(str(e))
+    await i18n.send("ok")
 
 
 @pipcmd.handle()

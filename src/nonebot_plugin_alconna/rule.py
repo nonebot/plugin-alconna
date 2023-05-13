@@ -185,7 +185,7 @@ class AlconnaRule:
             except Exception as e:
                 arp = Arparma(self.command.path, msg, False, error_info=repr(e))
             may_help_text: Optional[str] = cap.get("output", None)
-        if not may_help_text and not arp.matched and not arp.head_matched and self.skip:
+        if not arp.matched and not may_help_text and self.skip:
             return False
         if self.auto_send and may_help_text:
             await bot.send(event, await self._convert(may_help_text, event, arp))
