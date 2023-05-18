@@ -1,8 +1,9 @@
-from typing import Optional, Type, TypeVar, overload
+from typing import Optional, Type, TypeVar, overload, Any, Callable
 from typing_extensions import Annotated
 
 from arclet.alconna import Arparma, Duplication, Empty
 from arclet.alconna.duplication import generate_duplication
+from nonebot.internal.matcher import Matcher as Matcher
 from nonebot.internal.params import Depends as Depends
 from nonebot.typing import T_State
 
@@ -73,3 +74,57 @@ def AlconnaDuplication(__t: Optional[Type[T_Duplication]] = None) -> Duplication
 
 AlcResult = Annotated[CommandResult, AlconnaResult()]
 AlcMatches = Annotated[Arparma, AlconnaMatches()]
+
+
+def match_path(path: str):
+    """
+    当 Arpamar 解析成功后, 依据 path 是否存在以继续执行事件处理
+
+    当 path 为 ‘$main’ 时表示认定当且仅当主命令匹配
+    """
+
+    def wrapper(result: Arparma):
+        if path == "$main":
+            return not result.components
+        else:
+            return result.query(path, "\0") != "\0"
+
+    return wrapper
+
+
+def match_value(path: str, value: Any, or_not: bool = False):
+    """
+    当 Arpamar 解析成功后, 依据查询 path 得到的结果是否符合传入的值以继续执行事件处理
+
+    当 or_not 为真时允许查询 path 失败时继续执行事件处理
+    """
+
+    def wrapper(result: Arparma):
+        if result.query(path, "\0") == value:
+            return True
+        return or_not and result.query(path, "\0") == "\0"
+
+    return wrapper
+
+
+_seminal = type("_seminal", (object,), {})
+
+
+def assign(
+    path: str, value: Any = _seminal, or_not: bool = False
+) -> Callable[[Arparma], bool]:
+    if value != _seminal:
+        return match_value(path, value, or_not)
+    if or_not:
+        return lambda x: match_path("$main") or match_path(path)  # type: ignore
+    return match_path(path)
+
+
+def Check(fn: Callable[[Arparma], bool]) -> bool:
+    async def _arparma_check(state: T_State, matcher: Matcher) -> bool:
+        arp = _alconna_result(state).result
+        if not (ans := fn(arp)):
+            await matcher.skip()
+        return ans
+
+    return Depends(_arparma_check, use_cache=False)

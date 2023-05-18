@@ -1,7 +1,4 @@
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
-from .matcher import assign as assign
-from .matcher import match_path as match_path
-from .matcher import match_value as match_value
 from .matcher import on_alconna as on_alconna
 from .model import CommandResult as CommandResult
 from .model import Match as Match
@@ -13,6 +10,10 @@ from .params import AlconnaMatches as AlconnaMatches
 from .params import AlconnaQuery as AlconnaQuery
 from .params import AlconnaResult as AlconnaResult
 from .params import AlcResult as AlcResult
+from .params import assign as assign
+from .params import match_path as match_path
+from .params import match_value as match_value
+from .params import Check as Check
 from .rule import alconna as alconna
 from .rule import set_output_converter as set_output_converter
 from .argv import MessageArgv as MessageArgv

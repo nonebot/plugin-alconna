@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, Awaitable, Callable
+from typing import Awaitable, Callable
 
 from arclet.alconna import Alconna, Arparma
 from nonebot.adapters import Message
@@ -13,14 +13,9 @@ from nonebot.typing import T_Handler, T_PermissionChecker, T_RuleChecker, T_Stat
 from nonebot_plugin_alconna.typings import OutputType
 from nonebot_plugin_alconna.model import CompConfig
 
-def match_path(path: str): ...
-def match_value(path: str, value: Any, or_not: bool = False): ...
-def assign(
-    path: str, value: Any = ..., or_not: bool = False
-) -> Callable[[Arparma], bool]: ...
+
 def on_alconna(
     command: Alconna | str,
-    checker: list[Callable[[Arparma], bool]] | None = None,
     rule: Rule | T_RuleChecker | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,

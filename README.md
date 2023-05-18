@@ -154,7 +154,7 @@ require("nonebot_plugin_alconna")
 ...
 
 from arclet.alconna import Alconna, Subcommand, Option, Args
-from nonebot_plugin_alconna import assign, on_alconna, AlconnaResult, CommandResult
+from nonebot_plugin_alconna import assign, on_alconna, AlconnaResult, CommandResult, Check
 
 pip = Alconna(
     "pip",
@@ -170,19 +170,17 @@ pip = Alconna(
     )
 )
 
-pip_update = on_alconna(pip, [assign("install.pak", "pip")])
-pip_match_install = on_alconna(pip, [assign("install")])
-pip_match_list = on_alconna(pip, [assign("list")])
+pip_cmd = on_alconna(pip)
 
-@pip_update.handle()
+@pip_cmd.handle([Check(assign("install.pak", "pip"))])
 async def update(arp: CommandResult = AlconnaResult()):
     ...
 
-@pip_match_list.handle()
+@pip_cmd.handle([Check(assign("list"))])
 async def list_(arp: CommandResult = AlconnaResult()):
     ...
 
-@pip_match_install.handle()
+@pip_cmd.handle([Check(assign("install"))])
 async def install(arp: CommandResult = AlconnaResult()):
     ...
 ```
@@ -236,7 +234,6 @@ async def handle_test1(result: MyResult = AlconnaDuplication(MyResult)):
 ```python
 def on_alconna(
     command: Alconna | str,
-    checker: list[Callable[[Arparma], bool]] | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     output_converter: Callable[[OutputType, str], Message | Awaitable[Message]] | None = None,
@@ -247,7 +244,6 @@ def on_alconna(
 ```
 
 - `command`: Alconna 命令
-- `checker`: 命令解析结果的检查器
 - `skip_for_unmatch`: 是否在命令不匹配时跳过该响应
 - `auto_send_output`: 是否自动发送输出信息并跳过响应
 - `output_converter`: 输出信息字符串转换为 Message 方法

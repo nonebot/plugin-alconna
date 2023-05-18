@@ -5,7 +5,10 @@ from arclet.alconna import Alconna, Args, Arparma, Option, Subcommand, command_m
 from arclet.alconna.tools import MarkdownTextFormatter
 from importlib_metadata import distributions
 from nonebot.adapters.console.message import Message, MessageSegment
-from nonebot_plugin_alconna import AlconnaMatches, on_alconna, set_output_converter, AlconnaDuplication
+from nonebot_plugin_alconna import (
+    AlconnaMatches, on_alconna, set_output_converter, AlconnaDuplication,
+    Check, assign
+)
 from tarina import lang
 
 set_output_converter(lambda t, x: Message([MessageSegment.markdown(x)]))
@@ -29,7 +32,7 @@ with namespace("nbtest") as ns:
     )
 
     # auto_send already set in .env
-    pipcmd = on_alconna(pip, comp_config={'timeout': 10})  # , auto_send_output=True)
+    pipcmd = on_alconna(pip, comp_config={'timeout': 10}, block=True)  # , auto_send_output=True)
     ali = on_alconna(Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=False)
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
 
@@ -64,13 +67,20 @@ async def _i18n(arp: Arparma = AlconnaMatches()):
     await i18n.send("ok")
 
 
-@pipcmd.handle()
+@pipcmd.handle([Check(assign("list"))])
+async def ll():
+    md = "\n".join([f"- {k} {v}" for k, v in get_dist_map().items()])
+    await pipcmd.send(MessageSegment.markdown(md))
+
+
+@pipcmd.handle([Check(assign("install.pak"))])
 async def ll(res: PipResult = AlconnaDuplication(PipResult)):
-    if res.list.available:
-        md = "\n".join([f"- {k} {v}" for k, v in get_dist_map().items()])
-        await pipcmd.send(MessageSegment.markdown(md))
-    elif res.pak != Empty:
-        await pipcmd.send(f"pip installing {res.pak}...")
+    await pipcmd.send(f"pip installing {res.pak}...")
+
+
+@pipcmd.handle()
+async def ll():
+    await pipcmd.send("WIP...")
 
 
 @ali.handle()

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Awaitable, Callable, ClassVar, List, Optional, Union, Dict
+from typing import Awaitable, Callable, ClassVar, Optional, Union, Dict
 
 from arclet.alconna import (
     Alconna,
@@ -15,6 +15,7 @@ import traceback
 from arclet.alconna.exceptions import SpecialOptionTriggered
 from nonebot import get_driver
 from nonebot.adapters import Bot, Event, Message
+from nonebot.internal.matcher import matchers
 from nonebot.internal.rule import Rule as Rule
 from nonebot.plugin.on import on_message
 from nonebot.params import EventMessage
@@ -33,7 +34,6 @@ class AlconnaRule:
 
     参数:
         command: Alconna 命令
-        checker: 命令解析结果的检查器
         skip_for_unmatch: 是否在命令不匹配时跳过该响应
         auto_send_output: 是否自动发送输出信息并跳过响应
         output_converter: 输出信息字符串转换为 Message 方法
@@ -47,7 +47,6 @@ class AlconnaRule:
     __slots__ = (
         "command",
         "skip",
-        "checkers",
         "auto_send",
         "output_converter",
         "comp_config",
@@ -56,7 +55,6 @@ class AlconnaRule:
     def __init__(
         self,
         command: Alconna,
-        checker: Optional[List[Callable[[Arparma], bool]]] = None,
         skip_for_unmatch: bool = True,
         auto_send_output: bool = False,
         output_converter: Optional[
@@ -80,7 +78,6 @@ class AlconnaRule:
             self.auto_send = auto_send_output
         self.command = command
         self.skip = skip_for_unmatch
-        self.checkers = checker
         self.output_converter = output_converter or self.__class__.default_converter
         if not is_coroutine_callable(self.output_converter):
             self.output_converter = run_sync(self.output_converter)
@@ -107,7 +104,8 @@ class AlconnaRule:
             _tab = Alconna(self.comp_config.get("tab", "/tab"), Args["offset", int, 1])
             _enter = Alconna(self.comp_config.get("enter", "/enter"), Args["content", AllParam, []])
             _exit = Alconna(self.comp_config.get("exit", "/exit"))
-        _waiter = on_message(priority=self.comp_config.get('priority', -100), block=True)
+
+        _waiter = on_message(priority=self.comp_config.get('priority', -1), block=True)
         _futures: Dict[str, asyncio.Future] = {}
         res = Arparma(self.command.path, msg, False, error_info=SpecialOptionTriggered("completion"))
 
@@ -119,16 +117,18 @@ class AlconnaRule:
             if (mat := _tab.parse(content)).matched:
                 interface.tab(mat.offset)
                 await _waiter.send(await self._convert("\n".join(interface.lines()), _event, res))
-                await _waiter.reject()
+                await _waiter.skip()
             if (mat := _enter.parse(content)).matched:
                 _futures["_"].set_result(mat.content)
                 await _waiter.finish()
             await _waiter.send(await self._convert(interface.current(), _event, res))
-            await _waiter.reject()
+            await _waiter.skip()
 
         def clear():
             interface.clear()
             _waiter.destroy()
+            _waiter.handlers.clear()
+            matchers.pop(-1)
             command_manager.delete(_tab)
             command_manager.delete(_enter)
             command_manager.delete(_exit)
@@ -190,9 +190,6 @@ class AlconnaRule:
         if self.auto_send and may_help_text:
             await bot.send(event, await self._convert(may_help_text, event, arp))
             return False
-        for checker in self.checkers:
-            if not checker(arp):
-                return False
         state[ALCONNA_RESULT] = CommandResult(arp, may_help_text)
         return True
 
@@ -210,7 +207,6 @@ class AlconnaRule:
 
 def alconna(
     command: Alconna,
-    checker: Optional[List[Callable[[Arparma], bool]]] = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     output_converter: Optional[
@@ -221,7 +217,6 @@ def alconna(
     return Rule(
         AlconnaRule(
             command,
-            checker,
             skip_for_unmatch,
             auto_send_output,
             output_converter,
