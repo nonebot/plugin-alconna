@@ -9,7 +9,7 @@ from arclet.alconna import (
     AllParam,
     command_manager,
     output_manager,
-    namespace
+    CommandMeta
 )
 import traceback
 from arclet.alconna.exceptions import SpecialOptionTriggered
@@ -97,13 +97,14 @@ class AlconnaRule:
         interface = CompSession(self.command)
         if self.comp_config is None:
             return self.command.parse(msg)
-        with namespace("#completion") as ns:
-            ns.prefixes = []
-            ns.compact = True
-            ns.hide = True
-            _tab = Alconna(self.comp_config.get("tab", "/tab"), Args["offset", int, 1])
-            _enter = Alconna(self.comp_config.get("enter", "/enter"), Args["content", AllParam, []])
-            _exit = Alconna(self.comp_config.get("exit", "/exit"))
+
+        with interface:
+            res = self.command.parse(msg)
+
+        meta = CommandMeta(compact=True, hide=True)
+        _tab = Alconna(self.comp_config.get("tab", ".tab"), Args["offset", int, 1], [], meta=meta)
+        _enter = Alconna(self.comp_config.get("enter", ".enter"), Args["content", AllParam, []], [], meta=meta)
+        _exit = Alconna(self.comp_config.get("exit", ".exit"), [], meta=meta)
 
         _waiter = on_message(priority=self.comp_config.get('priority', -1), block=True)
         _futures: Dict[str, asyncio.Future] = {}
@@ -133,8 +134,6 @@ class AlconnaRule:
             command_manager.delete(_enter)
             command_manager.delete(_exit)
 
-        with interface:
-            res = self.command.parse(msg)
         while interface.available:
             await bot.send(event, await self._convert(str(interface), event, res))
             await bot.send(
