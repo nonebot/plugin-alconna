@@ -182,14 +182,16 @@ class AlconnaRule:
             try:
                 arp = await self.handle(bot, event, msg)
             except Exception as e:
-                arp = Arparma(self.command.path, msg, False, error_info=repr(e))
+                arp = Arparma(self.command.path, msg, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
         if not arp.matched and not may_help_text and self.skip:
             return False
+        if not may_help_text and arp.error_info:
+            may_help_text = repr(arp.error_info)
         if self.auto_send and may_help_text:
             await bot.send(event, await self._convert(may_help_text, event, arp))
             return False
-        state[ALCONNA_RESULT] = CommandResult(arp, may_help_text)
+        state[ALCONNA_RESULT] = CommandResult(self.command, arp, may_help_text)
         return True
 
     async def _convert(self, text: str, event: Event, arp: Arparma) -> Message:

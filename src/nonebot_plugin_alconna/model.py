@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Generic, TypeVar, Optional, TypedDict
 from typing_extensions import NotRequired
 
-from arclet.alconna import Arparma, Empty
+from arclet.alconna import Arparma, Empty, Alconna
 from arclet.alconna.duplication import Duplication
 
 T = TypeVar("T")
@@ -46,6 +46,7 @@ class Query(Generic[T]):
 
 @dataclass(frozen=True)
 class CommandResult:
+    source: Alconna
     result: Arparma
     output: Optional[str] = field(default=None)
 

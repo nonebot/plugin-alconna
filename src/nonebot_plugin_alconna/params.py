@@ -2,7 +2,7 @@ from typing import Optional, Type, TypeVar, overload, Any, Callable
 from typing_extensions import Annotated
 
 from arclet.alconna import Arparma, Duplication, Empty
-from arclet.alconna.duplication import generate_duplication
+from arclet.alconna.builtin import generate_duplication
 from nonebot.internal.matcher import Matcher as Matcher
 from nonebot.internal.params import Depends as Depends
 from nonebot.typing import T_State
@@ -66,8 +66,9 @@ def AlconnaDuplication(__t: Type[T_Duplication]) -> T_Duplication:
 
 def AlconnaDuplication(__t: Optional[Type[T_Duplication]] = None) -> Duplication:
     def _alconna_match(state: T_State) -> Duplication:
-        arp = _alconna_result(state).result
-        return __t(arp) if __t else generate_duplication(arp)
+        res = _alconna_result(state)
+        gt = __t or generate_duplication(res.source)
+        return gt(res.result)
 
     return Depends(_alconna_match, use_cache=False)
 
