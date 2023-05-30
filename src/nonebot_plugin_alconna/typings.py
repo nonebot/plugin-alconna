@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Callable, Any, TypeVar, Generic, Literal
-from typing_extensions import ParamSpec
+from typing import Callable, Any, TypeVar, Generic, Literal, Awaitable, Union
+from typing_extensions import ParamSpec, TypeAlias
 from tarina import lang
 from nepattern import BasePattern, PatternModel, MatchFailed
-from nonebot.internal.adapter.message import MessageSegment
+from nonebot.internal.adapter.message import MessageSegment, Message
 
 TMS = TypeVar("TMS", bound=MessageSegment)
 P = ParamSpec("P")
@@ -44,6 +44,7 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
 
 
 OutputType = Literal["help", "shortcut", "completion"]
+TConvert: TypeAlias = Callable[[OutputType, str], Union[Message, Awaitable[Message]]]
 
 
 def _isinstance(seg: MessageSegment, accepts: set[str]):

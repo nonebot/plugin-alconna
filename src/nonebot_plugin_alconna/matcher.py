@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-from typing import Callable, Awaitable
-
 from arclet.alconna import Alconna, command_manager
 from arclet.alconna.tools import AlconnaString
 from nonebot.matcher import Matcher
-from nonebot.adapters import Message
 from nonebot.plugin.on import on_message
 from nonebot.rule import Rule
 from nonebot.typing import T_RuleChecker
 
 from .rule import alconna
 from .model import CompConfig
-from .typings import OutputType
+from .typings import TConvert
 
 
 def on_alconna(
@@ -20,7 +17,7 @@ def on_alconna(
     rule: Rule | T_RuleChecker | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
-    output_converter: Callable[[OutputType, str], Message | Awaitable[Message]] | None = None,
+    output_converter: TConvert | None = None,
     aliases: set[str | tuple[str, ...]] | None = None,
     comp_config: CompConfig | None = None,
     *args,
@@ -50,7 +47,7 @@ def on_alconna(
     if aliases and command.command:
         command_manager.delete(command)
         aliases.add(str(command.command))
-        command.command = "(" + "|".join(aliases) + ")"
+        command.command = "re:(" + "|".join(aliases) + ")"
         command._hash = command._calc_hash()
         command_manager.register(command)
     return on_message(

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Awaitable, Callable, ClassVar, Optional, Union, Dict
+from typing import ClassVar, Optional, Union, Dict
 
 from arclet.alconna import (
     Alconna,
@@ -26,7 +26,7 @@ from tarina import lang
 from .config import Config
 from .consts import ALCONNA_RESULT
 from .model import CommandResult, CompConfig
-from .typings import OutputType
+from .typings import TConvert
 
 
 class AlconnaRule:
@@ -40,9 +40,7 @@ class AlconnaRule:
         comp_config: 自动补全配置
     """
 
-    default_converter: ClassVar[
-        Callable[[OutputType, str], Union[Message, Awaitable[Message]]]
-    ] = lambda _, x: Message(x)
+    default_converter: ClassVar[TConvert] = lambda _, x: Message(x)
 
     __slots__ = (
         "command",
@@ -57,9 +55,7 @@ class AlconnaRule:
         command: Alconna,
         skip_for_unmatch: bool = True,
         auto_send_output: bool = False,
-        output_converter: Optional[
-            Callable[[OutputType, str], Union[Message, Awaitable[Message]]]
-        ] = None,
+        output_converter: Optional[TConvert] = None,
         comp_config: Optional[CompConfig] = None,
     ):
         self.comp_config = comp_config
@@ -210,9 +206,7 @@ def alconna(
     command: Alconna,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
-    output_converter: Optional[
-        Callable[[OutputType, str], Union[Message, Awaitable[Message]]]
-    ] = None,
+    output_converter: Optional[TConvert] = None,
     comp_config: Optional[CompConfig] = None,
 ) -> Rule:
     return Rule(
@@ -226,5 +220,5 @@ def alconna(
     )
 
 
-def set_output_converter(fn: Callable[[OutputType, str], Union[Message, Awaitable[Message]]]):
+def set_output_converter(fn: TConvert):
     AlconnaRule.default_converter = fn
