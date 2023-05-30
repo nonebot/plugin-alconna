@@ -3,13 +3,13 @@ from .matcher import on_alconna as on_alconna
 from .model import CommandResult as CommandResult
 from .model import Match as Match
 from .model import Query as Query
+from .params import AlcResult as AlcResult
 from .params import AlcMatches as AlcMatches
 from .params import AlconnaDuplication as AlconnaDuplication
 from .params import AlconnaMatch as AlconnaMatch
 from .params import AlconnaMatches as AlconnaMatches
 from .params import AlconnaQuery as AlconnaQuery
 from .params import AlconnaResult as AlconnaResult
-from .params import AlcResult as AlcResult
 from .params import assign as assign
 from .params import match_path as match_path
 from .params import match_value as match_value
