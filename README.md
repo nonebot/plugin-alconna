@@ -38,6 +38,8 @@ QQ 交流群: [链接](https://jq.qq.com/?_wv=1027&k=PUPOnCSH)
 
 ## 使用方法
 
+详细介绍: [📦这里](/docs.md)
+
 ### 消息解析
 
 ```python
