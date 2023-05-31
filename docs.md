@@ -7,6 +7,28 @@
 
 ## Plugin
 
+### 展示
+
+```python
+from nonebot.adapters.onebot.v12 import Message, MessageSegment as Ob12MS
+from nonebot_plugin_alconna import on_alconna, AlconnaMatches
+from nonebot_plugin_alconna.adapters import At
+from nonebot_plugin_alconna.adapters.onebot12 import Image
+from arclet.alconna import Alconna, Args, Option, Arparma
+
+alc = Alconna("Hello!", Option("--spec", Args["target", At]))
+hello = on_alconna(alc, auto_send_output=True)
+
+@hello.handle()
+async def _(result: Arparma = AlconnaMatches()):
+    if result.find("spec"):
+        target: Ob12MS = result.query("spec.target")
+        seed = target.data['user_id']
+        await hello.finish(Message(Image(await gen_image(seed))))
+    else:
+        await hello.finish("Hello!")
+```
+
 ### 安装
 
 ```shell
@@ -75,41 +97,11 @@ def on_alconna(
 
 ### MessageSegment 标注
 
-本插件提供了一系列便捷的 `MessageSegment` 标注，可用于匹配消息中除 text 外的其他 `MessageSegment`，也可用于快速创建 `MessageSegment`。
+本插件提供了一系列便捷的 `MessageSegment` 标注。
+
+标注可用于在 `Alconna` 中匹配消息中除 text 外的其他 `MessageSegment`，也可用于快速创建各适配器下的 `MessageSegment`。
 
 所有标注位于 `nonebot_plugin_alconna.adapters` 中。
-
-特定适配器:
-
-```python
-from nonebot_plugin_alconna.adapters.onebot12 import Mention
-from nonebot.adapters.onebot.v12 import Message
-from arclet.alconna import Alconna, Args
-
-msg = Message(["Hello!", Mention("123")])
-print(msg)  # Hello![mention:user_id=123]
-
-alc = Alconna("Hello!", Args["target", Mention])
-assert alc.parse(msg).query("target").data['user_id'] == '123'
-```
-
-通用标注:
-
-```python
-from nonebot.adapters.onebot.v12 import Message as Ob12M, MessageSegment as Ob12MS
-from nonebot.adapters.onebot.v11 import Message as Ob11M, MessageSegment as Ob11MS
-from nonebot_plugin_alconna.adapters import At
-from arclet.alconna import Alconna, Args
-
-msg1 = Ob12M(["Hello!", Ob12MS.mention("123")])
-print(msg1)  # Hello![mention:user_id=123]
-msg2 = Ob11M(["Hello!", Ob11MS.at(123)])
-print(msg2)  # Hello![CQ:at,qq=123]
-
-alc = Alconna("Hello!", Args["target", At])
-assert alc.parse(msg1).query("target").data['user_id'] == '123'
-assert alc.parse(msg2).query("target").data['qq'] == 123
-```
 
 ## Alconna
 
