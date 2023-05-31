@@ -7,6 +7,18 @@
 
 ## Plugin
 
+### 安装
+
+```shell
+pip install nonebot-plugin-alconna
+```
+
+或
+
+```shell
+nb plugin install nonebot-plugin-alconna
+```
+
 ### 展示
 
 ```python
@@ -27,18 +39,6 @@ async def _(result: Arparma = AlconnaMatches()):
         await hello.finish(Message(Image(await gen_image(seed))))
     else:
         await hello.finish("Hello!")
-```
-
-### 安装
-
-```shell
-pip install nonebot-plugin-alconna
-```
-
-或
-
-```shell
-nb plugin install nonebot-plugin-alconna
 ```
 
 ### 基础使用
@@ -277,10 +277,10 @@ class MyDup(Duplication):
 
 ## References
 
-插件仓库: [📦](https://github.com/ArcletProject/nonebot-plugin-alconna)
+插件仓库: [📦这里](https://github.com/ArcletProject/nonebot-plugin-alconna)
 
 官方文档: [👉指路](https://arclet.top/)
 
-QQ 交流群: [链接](https://jq.qq.com/?_wv=1027&k=PUPOnCSH)
+QQ 交流群: [🔗链接](https://jq.qq.com/?_wv=1027&k=PUPOnCSH)
 
 友链: [📚文档](https://graiax.cn/guide/message_parser/alconna.html)
