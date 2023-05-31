@@ -1,22 +1,19 @@
-from nonebot_plugin_alconna.typings import SegmentPattern
-from nepattern import (
-    BasePattern,
-    PatternModel,
-    UnionPattern,
-)
+from arclet.alconna import argv_config, set_default_argv_type
+from nepattern import BasePattern, PatternModel, UnionPattern
 from nepattern.main import INTEGER, URL
-from nonebot.adapters.qqguild.message import MessageSegment, Message, BaseMessage
+from nonebot.adapters.qqguild.message import Ark as _Ark
+from nonebot.adapters.qqguild.message import Attachment as _Attachment
+from nonebot.adapters.qqguild.message import BaseMessage
+from nonebot.adapters.qqguild.message import Embed as _Embed
 from nonebot.adapters.qqguild.message import Emoji as _Emoji
-from nonebot.adapters.qqguild.message import MentionUser as _MentionUser
+from nonebot.adapters.qqguild.message import LocalImage as _LocalImage
 from nonebot.adapters.qqguild.message import MentionChannel as _MentionChannel
 from nonebot.adapters.qqguild.message import MentionEveryone as _MentionEveryone
-from nonebot.adapters.qqguild.message import Attachment as _Attachment
-from nonebot.adapters.qqguild.message import Embed as _Embed
-from nonebot.adapters.qqguild.message import Ark as _Ark
-from nonebot.adapters.qqguild.message import LocalImage as _LocalImage
+from nonebot.adapters.qqguild.message import MentionUser as _MentionUser
+from nonebot.adapters.qqguild.message import Message, MessageSegment
 from nonebot.adapters.qqguild.message import Reference as _Reference
 from nonebot_plugin_alconna.argv import MessageArgv
-from arclet.alconna import set_default_argv_type, argv_config
+from nonebot_plugin_alconna.typings import SegmentPattern
 
 
 class QQGuildMessageArgv(MessageArgv):

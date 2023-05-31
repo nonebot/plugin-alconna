@@ -1,4 +1,4 @@
-from typing import Optional, Type, TypeVar, overload, Any, Callable
+from typing import Any, Callable, Optional, Type, TypeVar, overload
 from typing_extensions import Annotated
 
 from arclet.alconna import Arparma, Duplication, Empty

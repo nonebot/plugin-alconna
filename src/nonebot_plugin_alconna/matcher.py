@@ -7,8 +7,8 @@ from nonebot.plugin.on import on_message
 from nonebot.rule import Rule
 from nonebot.typing import T_RuleChecker
 
-from .rule import alconna
 from .model import CompConfig
+from .rule import alconna
 from .typings import TConvert
 
 

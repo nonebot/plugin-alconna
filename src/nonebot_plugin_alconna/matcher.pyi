@@ -8,9 +8,8 @@ from nonebot.matcher import Matcher
 from nonebot.permission import Permission
 from nonebot.rule import Rule
 from nonebot.typing import T_Handler, T_PermissionChecker, T_RuleChecker, T_State
-from nonebot_plugin_alconna.typings import TConvert
 from nonebot_plugin_alconna.model import CompConfig
-
+from nonebot_plugin_alconna.typings import TConvert
 
 def on_alconna(
     command: Alconna | str,

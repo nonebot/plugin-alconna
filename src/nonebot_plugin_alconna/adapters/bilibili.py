@@ -1,6 +1,6 @@
-from nonebot.adapters.billibili.message import Message, BaseMessage
+from arclet.alconna import argv_config, set_default_argv_type
+from nonebot.adapters.billibili.message import BaseMessage, Message
 from nonebot_plugin_alconna.argv import MessageArgv
-from arclet.alconna import set_default_argv_type, argv_config
 
 
 class BiliMessageArgv(MessageArgv):

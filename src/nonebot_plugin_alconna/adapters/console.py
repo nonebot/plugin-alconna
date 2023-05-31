@@ -1,10 +1,11 @@
-from nonebot_plugin_alconna.typings import SegmentPattern
-from nonebot.adapters.console.message import MessageSegment, Message, BaseMessage
+from arclet.alconna import argv_config, set_default_argv_type
+from nonebot.adapters.console.message import BaseMessage
 from nonebot.adapters.console.message import Emoji as _Emoji
-from nonebot.adapters.console.message import Markup as _Markup
 from nonebot.adapters.console.message import Markdown as _Markdown
+from nonebot.adapters.console.message import Markup as _Markup
+from nonebot.adapters.console.message import Message, MessageSegment
 from nonebot_plugin_alconna.argv import MessageArgv
-from arclet.alconna import set_default_argv_type, argv_config
+from nonebot_plugin_alconna.typings import SegmentPattern
 
 
 class ConsoleMessageArgv(MessageArgv):

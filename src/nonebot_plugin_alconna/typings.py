@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Callable, Any, TypeVar, Generic, Literal, Awaitable, Union
+from typing import Any, Awaitable, Callable, Generic, Literal, TypeVar, Union
 from typing_extensions import ParamSpec, TypeAlias
+
+from nepattern import BasePattern, MatchFailed, PatternModel
+from nonebot.internal.adapter.message import Message, MessageSegment
 from tarina import lang
-from nepattern import BasePattern, PatternModel, MatchFailed
-from nonebot.internal.adapter.message import MessageSegment, Message
 
 TMS = TypeVar("TMS", bound=MessageSegment)
 P = ParamSpec("P")

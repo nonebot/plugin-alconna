@@ -1,14 +1,9 @@
-from nonebot_plugin_alconna.typings import SegmentPattern
-from nepattern import (
-    URL,
-    BasePattern,
-    PatternModel,
-    UnionPattern,
-)
+from arclet.alconna import argv_config, set_default_argv_type
+from nepattern import URL, BasePattern, PatternModel, UnionPattern
 from nepattern.main import INTEGER
-from nonebot.adapters.mirai2.message import MessageSegment, BaseMessage, MessageChain
+from nonebot.adapters.mirai2.message import BaseMessage, MessageChain, MessageSegment
 from nonebot_plugin_alconna.argv import MessageArgv
-from arclet.alconna import set_default_argv_type, argv_config
+from nonebot_plugin_alconna.typings import SegmentPattern
 
 
 class MiraiMessageArgv(MessageArgv):

@@ -1,7 +1,7 @@
-from nonebot_plugin_alconna.typings import SegmentPattern
+from arclet.alconna import argv_config, set_default_argv_type
+from nonebot.adapters.minecraft.message import BaseMessage, Message, MessageSegment
 from nonebot_plugin_alconna.argv import MessageArgv
-from nonebot.adapters.minecraft.message import MessageSegment, Message, BaseMessage
-from arclet.alconna import set_default_argv_type, argv_config
+from nonebot_plugin_alconna.typings import SegmentPattern
 
 
 class MinecraftMessageArgv(MessageArgv):

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Generic, TypeVar, Optional, TypedDict
+from typing import Generic, Optional, TypedDict, TypeVar
 from typing_extensions import NotRequired
 
-from arclet.alconna import Arparma, Empty, Alconna
+from arclet.alconna import Alconna, Arparma, Empty
 from arclet.alconna.duplication import Duplication
 
 T = TypeVar("T")

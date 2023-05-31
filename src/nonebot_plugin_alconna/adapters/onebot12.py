@@ -1,13 +1,9 @@
-from nonebot_plugin_alconna.typings import SegmentPattern
-from nepattern import (
-    BasePattern,
-    PatternModel,
-    UnionPattern,
-)
+from arclet.alconna import argv_config, set_default_argv_type
+from nepattern import BasePattern, PatternModel, UnionPattern
 from nepattern.main import INTEGER, URL
-from nonebot.adapters.onebot.v12.message import MessageSegment, BaseMessage, Message
+from nonebot.adapters.onebot.v12.message import BaseMessage, Message, MessageSegment
 from nonebot_plugin_alconna.argv import MessageArgv
-from arclet.alconna import set_default_argv_type, argv_config
+from nonebot_plugin_alconna.typings import SegmentPattern
 
 
 class Ob12MessageArgv(MessageArgv):
