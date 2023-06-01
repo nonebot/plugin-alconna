@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from arclet.alconna import Alconna, command_manager
-from arclet.alconna.tools import AlconnaString
+from arclet.alconna.tools import AlconnaFormat
 from nonebot.matcher import Matcher
 from nonebot.plugin.on import on_message
 from nonebot.rule import Rule
@@ -43,7 +43,7 @@ def on_alconna(
         state: 默认 state
     """
     if isinstance(command, str):
-        command = AlconnaString(command)
+        command = AlconnaFormat(command)
     if aliases and command.command:
         command_manager.delete(command)
         aliases.add(str(command.command))

@@ -1,3 +1,4 @@
+from nonebot import __version__ as nonebot_version
 from nonebot.plugin import PluginMetadata
 
 from .argv import MessageArgv as MessageArgv
@@ -19,13 +20,29 @@ from .params import match_path as match_path
 from .params import match_value as match_value
 from .rule import alconna as alconna
 from .rule import set_output_converter as set_output_converter
+from .config import Config
 
-__plugin_meta__ = PluginMetadata(
-    name="Alconna 插件",
-    description="提供 [Alconna](https://github.com/ArcletProject/Alconna) 的 Nonebot2 适配版本与工具",
-    usage="matcher = on_alconna(...)",
-    extra={
+__version__ = "0.7.0"
+
+_meta_source = {
+    "name": "Alconna 插件",
+    "description": "提供 [Alconna](https://github.com/ArcletProject/Alconna) 的 Nonebot2 适配版本与工具",
+    "usage": "matcher = on_alconna(...)",
+    "homepage": "https://github.com/ArcletProject/Alconna",
+    "type": "library",
+    "config": Config,
+    "extra": {
         "author": "RF-Tar-Railt",
-        'priority': 16,
+        "priority": 1,
+        "version": __version__,
     }
-)
+}
+
+
+if not nonebot_version.split(".")[-1].isdigit():
+    _meta_source["extra"]["homepage"] = _meta_source.pop("homepage")
+    _meta_source["extra"]["type"] = _meta_source.pop("type")
+    _meta_source["extra"]["config"] = _meta_source.pop("config")
+
+
+__plugin_meta__ = PluginMetadata(**_meta_source)

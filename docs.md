@@ -57,7 +57,7 @@ def on_alconna(
 ):
 ```
 
-- `command`: Alconna 命令
+- `command`: Alconna 命令或字符串，字符串将通过 `AlconnaFormat` 转换为 Alconna 命令
 - `skip_for_unmatch`: 是否在命令不匹配时跳过该响应
 - `auto_send_output`: 是否自动发送输出信息并跳过响应
 - `output_converter`: 输出信息字符串转换为 Message 方法

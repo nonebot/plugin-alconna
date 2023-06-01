@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-alconna"
-version = "0.6.1"
+version = "0.7.0"
 description = "Alconna Adapter for Nonebot"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
@@ -8,7 +8,7 @@ authors = [
 dependencies = [
     "nonebot2>=2.0.0rc4",
     "arclet-alconna<2.0.0, >=1.7.7",
-    "arclet-alconna-tools<0.7.0, >=0.6.0",
+    "arclet-alconna-tools<0.7.0, >=0.6.1",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
@@ -30,6 +30,7 @@ build-backend = "pdm.pep517.api"
 [tool.pdm]
 [tool.pdm.dev-dependencies]
 dev = [
+    "nonebot2>=2.0.0",
     "fix-future-annotations>=0.5.0",
     "nonebot-adapter-onebot>=2.2.3",
     "nonebot-adapter-feishu>=2.0.0b8",

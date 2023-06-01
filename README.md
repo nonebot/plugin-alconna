@@ -38,6 +38,7 @@ QQ 交流群: [链接](https://jq.qq.com/?_wv=1027&k=PUPOnCSH)
 
 ## 使用方法
 
+Nonebot文档: [📖这里](https://nonebot.dev/docs/advanced/matcher#alconna)
 详细介绍: [📦这里](/docs.md)
 
 ### 消息解析
