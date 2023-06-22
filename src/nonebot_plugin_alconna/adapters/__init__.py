@@ -9,14 +9,18 @@ from typing import Optional
 Text = str
 
 @dataclass
-class At:
-    """At对象, 表示一类提醒某用户的元素"""
+class Segment:
+    """基类标注"""
     origin: MessageSegment
+
+
+@dataclass
+class At(Segment):
+    """At对象, 表示一类提醒某用户的元素"""
     target: str
 
 @dataclass
-class Media:
-    origin: MessageSegment
+class Media(Segment):
     url: Optional[str] = field(default=None)
     id: Optional[str] = field(default=None)
 
@@ -37,9 +41,8 @@ class Video(Media):
     """Video对象, 表示一类视频元素"""
 
 @dataclass
-class File:
+class File(Segment):
     """File对象, 表示一类文件元素"""
-    origin: MessageSegment
     id: str
     name: Optional[str] = field(default=None)
 
