@@ -49,7 +49,7 @@ nb plugin install nonebot-plugin-alconna
 ## 展示
 
 ```python
-from nonebot.adapters.onebot.v12 import Message, MessageSegment as Ob12MS
+from nonebot.adapters.onebot.v12 import Message
 from nonebot_plugin_alconna import on_alconna, AlconnaMatches
 from nonebot_plugin_alconna.adapters import At
 from nonebot_plugin_alconna.adapters.onebot12 import Image
@@ -73,8 +73,8 @@ async def _(result: Arparma = AlconnaMatches()):
     if result.find("add"):
         group = await create_role_group(result["add.name"])
         if result.find("add.member"):
-            ats: tuple[Ob12MS] = result["add.member.target"]
-            group.extend(member.data["user_id"] for member in ats)
+            ats: tuple[At] = result["add.member.target"]
+            group.extend(member.target for member in ats)
         await rg.finish("添加成功")
 ```
 

@@ -181,6 +181,24 @@ async def install(arp: CommandResult = AlconnaResult()):
 
 ### 通用标注
 
+通用标注会将符合条件的 `MessageSegment` 转为插件提供的内部类型
+
+```python
+class Segment:
+    origin: MessageSegment
+
+class At(Segment):
+    target: str
+
+class Media(Segment):  # Image, Audio, Voice, Video
+    url: Optional[str]
+    id: Optional[str]
+
+class File(Segment):
+    id: str
+    name: Optional[str]
+```
+
 - `Text`: str 的别名
 - `At`: 匹配 `At`/`Mention` 类型的 `MessageSegment`，例如 `Onebot 11` 中的 `At` 和 `Onebot 12` 中的 `Mention`
 - `Image`: 匹配 `Image` 类型的 `MessageSegment`

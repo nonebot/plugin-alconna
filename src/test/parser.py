@@ -89,6 +89,8 @@ def test_generic():
 
     assert alc.parse(msg11).matched
     assert alc.parse(msg12).matched
+    assert alc.parse(msg11).target.target == "123"
+    assert alc.parse(msg12).target.target == "123"
     assert not alc.parse(Onebot11Message(["Hello!", img11])).matched
     assert not alc.parse(Onebot12Message(["Hello!", img12])).matched
 
