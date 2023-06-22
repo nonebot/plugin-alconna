@@ -60,7 +60,7 @@ TextLink = SegmentPattern("text_link", Entity, Entity.text_link)
 TextMention = SegmentPattern("text_mention", Entity, Entity.text_mention)
 CustomEmoji = SegmentPattern("custom_emoji", Entity, Entity.custom_emoji)
 
-Photo = SegmentPattern("photo", File, File.photo)
+Image = Photo = SegmentPattern("photo", File, File.photo)
 Voice = SegmentPattern("voice", File, File.voice)
 Animation = SegmentPattern("animation", File, File.animation)
 Audio = SegmentPattern("audio", File, File.audio)

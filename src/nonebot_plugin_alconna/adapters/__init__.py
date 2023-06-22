@@ -70,7 +70,7 @@ kmarkdown: kook
 
 
 def _handle_image(seg: MessageSegment):
-    if "file_id" in seg.data:  # ob12, telegram
+    if "file_id" in seg.data:  # ob12
         return Image(seg, id=seg.data["file_id"])
     if "image_key" in seg.data:  # feishu
         return Image(seg, url=seg.data["image_key"])
@@ -91,6 +91,7 @@ _Image = gen_unit(
     Image,
     {
         "image": _handle_image,
+        "photo": lambda seg: Image(seg, id=seg.data["file_id"]),
         "Image": lambda seg: Image(seg, seg.data["url"], seg.data["imageId"]),
     }
 )
