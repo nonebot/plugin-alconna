@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-alconna"
-version = "0.7.0"
+version = "0.8.0"
 description = "Alconna Adapter for Nonebot"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
@@ -39,7 +39,7 @@ dev = [
     "nonebot-adapter-mirai2>=0.0.22",
     "nonebot-adapter-minecraft>=0.1.1",
     "nonebot-adapter-ntchat>=0.3.5",
-    "nonebot-adapter-qqguild>=0.2.2",
+    "nonebot-adapter-qqguild>=0.2.3",
     "nonebot-adapter-telegram>=0.1.0b10",
 ]
 [tool.pdm.build]

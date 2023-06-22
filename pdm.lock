@@ -234,7 +234,7 @@ dependencies = [
 
 [[package]]
 name = "nonebot-adapter-qqguild"
-version = "0.2.2"
+version = "0.2.3"
 requires_python = ">=3.8,<4.0"
 summary = "QQ Guild adapter for nonebot2"
 dependencies = [
@@ -410,8 +410,9 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.2"
+cross_platform = true
 groups = ["default", "dev"]
-content_hash = "sha256:b636a6eb673242071eaa6585ddd0a8f279a1eb2aad0da497fd09ad6c533c0c14"
+content_hash = "sha256:8671a704ac7e3328d8f9a12e77c26cde34a85a96e8bb0bf726369cbd2f2c3d0b"
 
 [metadata.files]
 "aio-mc-rcon 3.2.0" = [
@@ -644,9 +645,9 @@ content_hash = "sha256:b636a6eb673242071eaa6585ddd0a8f279a1eb2aad0da497fd09ad6c5
     {url = "https://files.pythonhosted.org/packages/60/12/253510c7c117cad35d3c5edc50b6e85898ee7dbf7b25850f9787229e59c0/nonebot_adapter_onebot-2.2.3.tar.gz", hash = "sha256:e0ac165536a24f7c5e620092ab596022e8f85d462c17ec8d7a17b191093b4859"},
     {url = "https://files.pythonhosted.org/packages/eb/37/68ce09f3f10db4487190de8e377bfffd1b8ee94c21e734c2ee0fd52e35c4/nonebot_adapter_onebot-2.2.3-py3-none-any.whl", hash = "sha256:e715e05578cb58cf42adddb0bac6c060a6ea7c9b2f18e6f011786bbc2bc8d0bd"},
 ]
-"nonebot-adapter-qqguild 0.2.2" = [
-    {url = "https://files.pythonhosted.org/packages/0c/23/81753fc0b663ba6c0916d2d30c95108de57b5293f986f6870a9d15ee658c/nonebot_adapter_qqguild-0.2.2.tar.gz", hash = "sha256:a428dda064f4501c285ea7fb51f81fc17e25dca2c2a82edaf1aa34454e28f1b8"},
-    {url = "https://files.pythonhosted.org/packages/e2/79/1c48262c040ff67a42e9b7671563f9e39e2e262ef79dc8c4e9e2cbcee413/nonebot_adapter_qqguild-0.2.2-py3-none-any.whl", hash = "sha256:b47cf5793d2aeed53e3d0bd9f0fbd371ce4155e4fb3be48e15e0abe64228ee24"},
+"nonebot-adapter-qqguild 0.2.3" = [
+    {url = "https://files.pythonhosted.org/packages/65/7b/fe317d0f59be7d149b4d96e3fbe4c69b9c1c35a9ff313a46027140c3c1b5/nonebot_adapter_qqguild-0.2.3-py3-none-any.whl", hash = "sha256:63c97b5d96f4a75d1dcf1d62b5374a6ce6163ef52550f2c8a26dd213087b8828"},
+    {url = "https://files.pythonhosted.org/packages/6a/34/8dc5351a724e57530bf22264bdee877a50f3fb7f3a90b51fdd9b46d9138b/nonebot_adapter_qqguild-0.2.3.tar.gz", hash = "sha256:fe0e70abd3e94fc7d59a782f0641571780a759a3a289f5448a1d298a342be34a"},
 ]
 "nonebot-adapter-telegram 0.1.0b13" = [
     {url = "https://files.pythonhosted.org/packages/1f/67/e678aed9ecdb95bc0de4b4b65f75fcb8fb9f0c08cdf9954071ed909ad0e3/nonebot-adapter-telegram-0.1.0b13.tar.gz", hash = "sha256:45d679a0d08a71e1b2f9758c02b545b1e28e711331a963a83574c5297d20ce2a"},

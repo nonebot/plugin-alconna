@@ -79,24 +79,27 @@ assert res.query("target").data['user_id'] == '123'
 通用标注:
 
 ```python
-from nonebot.adapters.onebot.v12 import Message as Ob12M, MessageSegment as Ob12MS
-from nonebot.adapters.onebot.v11 import Message as Ob11M, MessageSegment as Ob11MS
+from nonebot.adapters.onebot.v12 import Message as Ob12Msg, MessageSegment as Ob12MS
+from nonebot.adapters.onebot.v11 import Message as Ob11Msg, MessageSegment as Ob11MS
 from nonebot_plugin_alconna.adapters import At
 from arclet.alconna import Alconna, Args
 
-msg1 = Ob12M(["Hello!", Ob12MS.mention("123")])
-print(msg1)  # Hello![mention:user_id=123]
-msg2 = Ob11M(["Hello!", Ob11MS.at(123)])
-print(msg2)  # Hello![CQ:at,qq=123]
+msg1 = Ob12Msg(["Hello!", Ob12MS.mention("123")]) # Hello![mention:user_id=123]
+msg2 = Ob11Msg(["Hello!", Ob11MS.at(123)]) # Hello![CQ:at,qq=123]
+
 
 alc = Alconna("Hello!", Args["target", At])
 res1 = alc.parse(msg1)
 assert res1.matched
-assert res1.query("target").data['user_id'] == '123'
+target = res1.query("target")
+assert isinstance(target, At)
+assert target.target == '123'
 
 res2 = alc.parse(msg2)
 assert res2.matched
-assert res2.query("target").data['qq'] == 123
+target = res2.query("target")
+assert isinstance(target, At)
+assert target.target == '123'
 ```
 
 ### Matcher 与 依赖注入

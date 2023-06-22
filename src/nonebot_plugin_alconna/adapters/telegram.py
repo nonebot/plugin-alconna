@@ -72,3 +72,6 @@ VideoNote = SegmentPattern("video_note", UnCombinFile, UnCombinFile.video_note)
 
 Mentions = UnionPattern([Mention, TextMention, TextLink])
 """联合接收 Mention, TextMention, TextLink, 不能用于发送"""
+
+Videos = UnionPattern([Video, Animation])
+"""联合接收 Video, Animation, 不能用于发送"""

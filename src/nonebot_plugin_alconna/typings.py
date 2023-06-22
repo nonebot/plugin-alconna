@@ -7,6 +7,7 @@ from nepattern import BasePattern, MatchFailed, PatternModel
 from nonebot.internal.adapter.message import Message, MessageSegment
 from tarina import lang
 
+T = TypeVar("T")
 TMS = TypeVar("TMS", bound=MessageSegment)
 P = ParamSpec("P")
 
@@ -48,18 +49,23 @@ OutputType = Literal["help", "shortcut", "completion"]
 TConvert: TypeAlias = Callable[[OutputType, str], Union[Message, Awaitable[Message]]]
 
 
-def _isinstance(seg: MessageSegment, accepts: set[str]):
-    return seg if seg.type.lower() in accepts else None
-
+def _isinstance(seg: MessageSegment, mapping: dict[str, Callable[[MessageSegment], Any]]):
+    if (key := seg.type) not in mapping:
+        return
+    if res := mapping[key](seg):
+        return res
+    else:
+        return
 
 def gen_unit(
-    name: str, accepts: set[str], additional: Callable[..., bool] | None = None
-) -> BasePattern[MessageSegment]:
+    model: type[T], mapping: dict[str, Callable[[MessageSegment], Any]], additional: Callable[..., bool] | None = None
+) -> BasePattern[T]:
     return BasePattern(
-        name,
+        model.__name__,
         PatternModel.TYPE_CONVERT,
-        Any,
-        lambda self, x: _isinstance(x, accepts),
+        model,
+        lambda self, x: _isinstance(x, mapping),
         accepts=[MessageSegment],
+        alias=model.__name__,
         validators=[additional] if additional else [],
     )
