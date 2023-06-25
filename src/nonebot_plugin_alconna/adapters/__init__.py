@@ -1,10 +1,11 @@
 """通用标注, 无法用于创建 MS对象"""
-from nonebot_plugin_alconna.typings import gen_unit
-from nonebot.internal.adapter.message import MessageSegment
-from nepattern import create_local_patterns
 from dataclasses import dataclass, field
+import re
 from typing import Optional
 
+from nepattern import create_local_patterns
+from nonebot.internal.adapter.message import MessageSegment
+from nonebot_plugin_alconna.typings import gen_unit
 
 Text = str
 
@@ -18,6 +19,13 @@ class Segment:
 class At(Segment):
     """At对象, 表示一类提醒某用户的元素"""
     target: str
+
+@dataclass
+class Emoji(Segment):
+    """Emoji对象, 表示一类表情元素"""
+    id: str
+    name: Optional[str] = field(default=None)
+
 
 @dataclass
 class Media(Segment):
@@ -47,6 +55,14 @@ class File(Segment):
     name: Optional[str] = field(default=None)
 
 
+def _handle_kmarkdown_met(seg: MessageSegment):
+    content = seg.data["content"]
+    if not content.startswith("(met)"):
+        return None
+    if (end := content.find("(met)", 5)) == -1:
+        return None
+    return content[5: end] not in ("here", "all") and At(seg, content[5: end])
+
 _At = gen_unit(
     At,
     {
@@ -54,10 +70,7 @@ _At = gen_unit(
         "mention": lambda seg: At(seg, seg.data.get("user_id", seg.data.get("text"))),
         "mention_user": lambda seg: At(seg, str(seg.data["user_id"])),
         "At": lambda seg: At(seg, str(seg, seg.data["target"])),
-        "kmarkdown": lambda seg: (
-            seg.startswith("(met)") and
-            ((end := seg.find("(met)", 5)) != -1 and seg[5: end] not in ("here", "all") and At(seg, seg[5: end]))
-        ),
+        "kmarkdown": _handle_kmarkdown_met
     }
 )
 """
@@ -67,6 +80,27 @@ mention_user: qqguild
 At: mirai
 kmarkdown: kook
 """
+
+def _handle_kmarkdown_emj(seg: MessageSegment):
+    content = seg.data["content"]
+    if content.startswith("(emj)"):
+        mat = re.search(r"\(emj\)(?P<name>[^()\[\]]+)\(emj\)\[(?P<id>[^\[\]]+)\]", content)
+        return mat and Emoji(seg, mat["id"], mat["name"])
+    if content.startswith(":"):
+        mat = re.search(r":(?P<name>[^:]+):", content)
+        return mat and Emoji(seg, mat["name"], mat["name"])
+
+_Emoji = gen_unit(
+    Emoji,
+    {
+        "emoji": lambda seg: Emoji(seg, str(seg.data.get("id", seg.data.get("name")))),
+        "Face": lambda seg: Emoji(seg, str(seg.data["faceId"]), seg.data["name"]),
+        "face": lambda seg: str(Emoji(seg, seg.data["id"])),
+        "custom_emoji": lambda seg: Emoji(seg, seg.data["custom_emoji_id"], seg.data["text"]),
+        "kmarkdown": _handle_kmarkdown_emj
+    }
+)
+
 
 
 def _handle_image(seg: MessageSegment):

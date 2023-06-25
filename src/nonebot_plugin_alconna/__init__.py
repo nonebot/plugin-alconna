@@ -22,7 +22,7 @@ from .rule import alconna as alconna
 from .rule import set_output_converter as set_output_converter
 from .config import Config
 
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 
 _meta_source = {
     "name": "Alconna 插件",
@@ -30,6 +30,7 @@ _meta_source = {
     "usage": "matcher = on_alconna(...)",
     "homepage": "https://github.com/ArcletProject/Alconna",
     "type": "library",
+    "supported_adapters": None,
     "config": Config,
     "extra": {
         "author": "RF-Tar-Railt",
@@ -43,6 +44,7 @@ if not nonebot_version.split(".")[-1].isdigit():
     _meta_source["extra"]["homepage"] = _meta_source.pop("homepage")
     _meta_source["extra"]["type"] = _meta_source.pop("type")
     _meta_source["extra"]["config"] = _meta_source.pop("config")
+    _meta_source["extra"]["supported_adapters"] = _meta_source.pop("supported_adapters")
 
 
 __plugin_meta__ = PluginMetadata(**_meta_source)

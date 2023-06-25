@@ -190,6 +190,10 @@ class Segment:
 class At(Segment):
     target: str
 
+class Emoji(Segment):
+    id: str
+    name: Optional[str]
+    
 class Media(Segment):  # Image, Audio, Voice, Video
     url: Optional[str]
     id: Optional[str]
