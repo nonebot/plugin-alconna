@@ -22,7 +22,7 @@ from .rule import alconna as alconna
 from .rule import set_output_converter as set_output_converter
 from .config import Config
 
-__version__ = "0.8.2"
+__version__ = "0.8.3"
 
 _meta_source = {
     "name": "Alconna 插件",

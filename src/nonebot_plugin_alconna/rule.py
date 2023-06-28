@@ -93,10 +93,11 @@ class AlconnaRule:
         interface = CompSession(self.command)
         if self.comp_config is None:
             return self.command.parse(msg)
-
+        res = None
         with interface:
             res = self.command.parse(msg)
-
+        if res:
+            return res
         meta = CommandMeta(compact=True, hide=True)
         _tab = Alconna(self.comp_config.get("tab", ".tab"), Args["offset", int, 1], [], meta=meta)
         _enter = Alconna(self.comp_config.get("enter", ".enter"), Args["content", AllParam, []], [], meta=meta)
