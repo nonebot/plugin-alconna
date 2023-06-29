@@ -9,6 +9,7 @@ from nonebot_plugin_alconna.typings import gen_unit
 
 Text = str
 
+
 @dataclass
 class Segment:
     """基类标注"""
@@ -54,6 +55,12 @@ class File(Segment):
     id: str
     name: Optional[str] = field(default=None)
 
+_Segment = gen_unit(
+    Segment,
+    {
+        "*": lambda seg: Segment(seg),
+    }
+)
 
 def _handle_kmarkdown_met(seg: MessageSegment):
     content = seg.data["content"]
@@ -204,4 +211,4 @@ _File = gen_unit(
 )
 
 env = create_local_patterns("nonebot")
-env.sets([_At, _Image, _Video, _Voice, _Audio, _File])
+env.sets([_At, _Image, _Video, _Voice, _Audio, _File, _Segment])

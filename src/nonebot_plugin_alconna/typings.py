@@ -50,15 +50,15 @@ TConvert: TypeAlias = Callable[[OutputType, str], Union[Message, Awaitable[Messa
 
 
 def _isinstance(seg: MessageSegment, mapping: dict[str, Callable[[MessageSegment], Any]]):
-    if (key := seg.type) not in mapping:
-        return
-    if res := mapping[key](seg):
+    if (key := seg.type) in mapping and (res := mapping[key](seg)):
         return res
-    else:
-        return
+    if "*" in mapping and (res := mapping["*"](seg)):
+        return res
 
 def gen_unit(
-    model: type[T], mapping: dict[str, Callable[[MessageSegment], Any]], additional: Callable[..., bool] | None = None
+    model: type[T],
+    mapping: dict[str, Callable[[MessageSegment], Union[T, Literal[False], None]]],
+    additional: Callable[..., bool] | None = None
 ) -> BasePattern[T]:
     return BasePattern(
         model.__name__,
