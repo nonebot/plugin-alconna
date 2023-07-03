@@ -8,7 +8,9 @@ from nonebot_plugin_alconna import (
     AlconnaMatches, on_alconna, set_output_converter, AlconnaDuplication,
     Check, assign, funcommand
 )
+
 from tarina import lang
+from typing import Literal
 
 set_output_converter(lambda t, x: Message([MessageSegment.text(x)]))
 
@@ -88,7 +90,38 @@ async def yiyan(res: Arparma = AlconnaMatches()):
     # else:
     #     await ali.send(f"[hitokoto] Unmatched: {res}")
 
+table = {
+    "add": float.__add__,
+    "sub": float.__sub__,
+    "mul": float.__mul__,
+    "div": float.__truediv__,
+}
+
 @funcommand()
-def add(a: float, b: float):
+async def calc(
+    op: Literal["add", "sub", "mul", "div"],
+    a: float, b: float
+):
     """加法测试"""
-    return f"{a} + {b} = {a + b}"
+    return f"{a} {op} {b} = {table[op](a, b)}"
+
+@funcommand()
+async def test(
+    a: int,
+    b: bool,
+    *args: str,
+    c: float = 1.0,
+    d: int = 1,
+    e: bool = False,
+    **kwargs: str,
+):
+    """测试"""
+    return (
+        f"a: {a}\n"
+        f"b: {b}\n"
+        f"c: {c}\n"
+        f"d: {d}\n"
+        f"e: {e}\n"
+        f"args: {args}\n"
+        f"kwargs: {kwargs}\n"
+    )

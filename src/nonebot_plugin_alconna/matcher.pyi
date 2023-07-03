@@ -35,5 +35,14 @@ def funcommand(
     name: str | None = None,
     prefixes: list[str] | None = None,
     description: str | None = None,
+    rule: Rule | T_RuleChecker | None = None,
+    permission: Permission | T_PermissionChecker | None = ...,
+    *,
+    handlers: list[T_Handler | Dependent] | None = ...,
+    temp: bool = ...,
+    expire_time: datetime | timedelta | None = ...,
+    priority: int = ...,
+    block: bool = ...,
+    state: T_State | None = ...,
 ) -> Callable[[Callable[..., MReturn]], type[Matcher]]:
     ...

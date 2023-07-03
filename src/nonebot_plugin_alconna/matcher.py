@@ -73,10 +73,14 @@ def funcommand(
     name: str | None = None,
     prefixes: list[str] | None = None,
     description: str | None = None,
+    rule: Rule | T_RuleChecker | None = None,
+    *args,
+    _depth: int = 0,
+    **kwargs,
 ):
     _config = {"raise_exception": False}
     if name:
-        _config["name"] = name
+        _config["command"] = name
     if prefixes:
         _config["prefixes"] = prefixes
     if description:
@@ -99,7 +103,7 @@ def funcommand(
                 if isinstance(res, (str, Message, MessageSegment)):
                     await bot.send(event, res)
 
-        matcher = on_alconna(alc)
+        matcher = on_message(rule, *args, **kwargs, _depth=_depth + 1)
         matcher.handle()(handle)
 
         return matcher
