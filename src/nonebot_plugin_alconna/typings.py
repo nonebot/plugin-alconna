@@ -9,6 +9,7 @@ from tarina import lang
 
 T = TypeVar("T")
 TMS = TypeVar("TMS", bound=MessageSegment)
+TCallable = TypeVar("TCallable", bound=Callable[..., Any])
 P = ParamSpec("P")
 
 
@@ -47,7 +48,7 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
 
 OutputType = Literal["help", "shortcut", "completion"]
 TConvert: TypeAlias = Callable[[OutputType, str], Union[Message, Awaitable[Message]]]
-
+MReturn: TypeAlias = Union[Union[str, Message, MessageSegment], Awaitable[Union[str, Message, MessageSegment]]]
 
 def _isinstance(seg: MessageSegment, mapping: dict[str, Callable[[MessageSegment], Any]]):
     if (key := seg.type) in mapping and (res := mapping[key](seg)):

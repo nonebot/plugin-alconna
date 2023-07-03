@@ -173,6 +173,19 @@ async def install(arp: CommandResult = AlconnaResult()):
     ...
 ```
 
+### 便捷装饰器
+
+本插件提供了一个 `funcommand` 装饰器, 其用于将一个接受任意参数，
+返回 `str` 或 `Message` 或 `MessageSegment` 的函数转换为命令响应器。
+
+```python
+from nonebot_plugin_alconna import funcommand
+
+@funcommand()
+async def echo(msg: str):
+    return msg
+```
+
 ## MessageSegment 标注
 
 本插件提供了一系列便捷的 `MessageSegment` 标注，可用于匹配消息中除 text 外的其他 `MessageSegment`，也可用于快速创建 `MessageSegment`。

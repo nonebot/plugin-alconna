@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from typing import Callable
+
 from arclet.alconna import Alconna, command_manager
 from arclet.alconna.tools import AlconnaFormat
+from arclet.alconna.tools.construct import FuncMounter
+from tarina import is_awaitable
 from nonebot.matcher import Matcher
 from nonebot.plugin.on import on_message
 from nonebot.rule import Rule
 from nonebot.typing import T_RuleChecker
+from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
 
 from .model import CompConfig
 from .rule import alconna
@@ -62,3 +67,41 @@ def on_alconna(
         **kwargs,
         _depth=_depth + 1  # type: ignore
     )
+
+
+def funcommand(
+    name: str | None = None,
+    prefixes: list[str] | None = None,
+    description: str | None = None,
+):
+    _config = {"raise_exception": False}
+    if name:
+        _config["name"] = name
+    if prefixes:
+        _config["prefixes"] = prefixes
+    if description:
+        _config["description"] = description
+    def wrapper(func: Callable) -> type[Matcher]:
+        alc = FuncMounter(func, _config)  # type: ignore
+
+        async def handle(bot: Bot, event: Event):
+            msg = getattr(event, "original_message", event.get_message())
+            try:
+                arp, res = alc.exec(msg)
+            except Exception as e:
+                if _config["raise_exception"]:
+                    raise e
+                await bot.send(event, str(e))
+                return
+            if arp.matched:
+                if is_awaitable(res):
+                    res = await res
+                if isinstance(res, (str, Message, MessageSegment)):
+                    await bot.send(event, res)
+
+        matcher = on_alconna(alc)
+        matcher.handle()(handle)
+
+        return matcher
+
+    return wrapper

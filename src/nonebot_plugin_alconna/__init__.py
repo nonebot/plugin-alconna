@@ -4,6 +4,7 @@ from nonebot.plugin import PluginMetadata
 from .argv import MessageArgv as MessageArgv
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
 from .matcher import on_alconna as on_alconna
+from .matcher import funcommand as funcommand
 from .model import CommandResult as CommandResult
 from .model import Match as Match
 from .model import Query as Query
@@ -22,7 +23,7 @@ from .rule import alconna as alconna
 from .rule import set_output_converter as set_output_converter
 from .config import Config
 
-__version__ = "0.8.4"
+__version__ = "0.9.0"
 
 _meta_source = {
     "name": "Alconna 插件",

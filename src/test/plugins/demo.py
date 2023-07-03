@@ -1,21 +1,19 @@
 # 应与使用的 adapter 对应
 # 不加也可以，做了兼容
-import nonebot_plugin_alconna.adapters.console  # noqa
-from arclet.alconna import Alconna, Args, Arparma, Option, Subcommand, command_manager, namespace, Duplication, SubcommandStub, Empty
-from arclet.alconna.tools import MarkdownTextFormatter
+import nonebot_plugin_alconna.adapters.onebot12  # noqa: F401
+from arclet.alconna import Alconna, Args, Arparma, Option, Subcommand, command_manager, namespace, Duplication, SubcommandStub
 from importlib_metadata import distributions
-from nonebot.adapters.console.message import Message, MessageSegment
+from nonebot.adapters.onebot.v12.message import Message, MessageSegment
 from nonebot_plugin_alconna import (
     AlconnaMatches, on_alconna, set_output_converter, AlconnaDuplication,
-    Check, assign
+    Check, assign, funcommand
 )
 from tarina import lang
 
-set_output_converter(lambda t, x: Message([MessageSegment.markdown(x)]))
+set_output_converter(lambda t, x: Message([MessageSegment.text(x)]))
 
 with namespace("nbtest") as ns:
     ns.headers = ["/"]
-    ns.formatter_type = MarkdownTextFormatter
     ns.builtin_option_name["help"] = {"-h", "帮助", "--help"}
 
     help_cmd = on_alconna(Alconna("help"))
@@ -33,7 +31,7 @@ with namespace("nbtest") as ns:
 
     # auto_send already set in .env
     pipcmd = on_alconna(pip, comp_config={'timeout': 10}, block=True)  # , auto_send_output=True)
-    ali = on_alconna(Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=False)
+    ali = on_alconna(Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=True)
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
 
     class PipResult(Duplication):
@@ -55,7 +53,7 @@ def get_dist_map() -> dict:
 
 @help_cmd.handle()
 async def _help(arp: Arparma = AlconnaMatches()):
-    await help_cmd.send(MessageSegment.markdown(command_manager.all_command_help()))
+    await help_cmd.send(MessageSegment.text(command_manager.all_command_help()))
 
 
 @i18n.handle()
@@ -70,7 +68,7 @@ async def _i18n(arp: Arparma = AlconnaMatches()):
 @pipcmd.handle([Check(assign("list"))])
 async def ll():
     md = "\n".join([f"- {k} {v}" for k, v in get_dist_map().items()])
-    await pipcmd.send(MessageSegment.markdown(md))
+    await pipcmd.send(MessageSegment.text(md))
 
 
 @pipcmd.handle([Check(assign("install.pak"))])
@@ -89,3 +87,8 @@ async def yiyan(res: Arparma = AlconnaMatches()):
         await ali.send("WIP...")
     # else:
     #     await ali.send(f"[hitokoto] Unmatched: {res}")
+
+@funcommand()
+def add(a: float, b: float):
+    """加法测试"""
+    return f"{a} + {b} = {a + b}"

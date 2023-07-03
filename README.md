@@ -274,7 +274,17 @@ def on_alconna(
 | [BiliBili Live](https://github.com/wwweww/adapter-bilibili)         | adapters.bilibili                    |
 
 
+### 便捷装饰器
 
+`funcommand` 装饰器用于将一个接受任意参数，返回 `str` 或 `Message` 或 `MessageSegment` 的函数转换为命令响应器。
+
+```python
+from nonebot_plugin_alconna import funcommand
+
+@funcommand()
+async def echo(msg: str):
+    return msg
+```
 
 ## 体验
 
