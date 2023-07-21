@@ -11,8 +11,8 @@ _✨ Alconna Usage For NoneBot2 ✨_
 </div>
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/ArcletProject/nonebot-plugin-alconna/master/LICENSE">
-    <img src="https://img.shields.io/github/license/ArcletProject/nonebot-plugin-alconna.svg" alt="license">
+  <a href="https://raw.githubusercontent.com/nonebot/plugin-alconna/master/LICENSE">
+    <img src="https://img.shields.io/github/license/nonebot/plugin-alconna.svg" alt="license">
   </a>
   <a href="https://pypi.python.org/pypi/nonebot-plugin-alconna">
     <img src="https://img.shields.io/pypi/v/nonebot-plugin-alconna.svg" alt="pypi">

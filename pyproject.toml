@@ -1,6 +1,5 @@
 [project]
 name = "nonebot-plugin-alconna"
-version = "0.9.1"
 description = "Alconna Adapter for Nonebot"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
@@ -11,6 +10,7 @@ dependencies = [
     "arclet-alconna-tools<0.7.0, >=0.6.3",
     "nepattern<0.6.0, >=0.5.10",
 ]
+dynamic = ["version"]
 requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "MIT"}
@@ -22,11 +22,12 @@ keywords = [
     "nonebot",
 ]
 [project.urls]
-repository = "https://github.com/ArcletProject/nonebot-plugin-alconna"
+homepage = "https://github.com/nonebot/plugin-alconna"
+repository = "https://github.com/nonebot/plugin-alconna"
 
 [build-system]
-requires = ["pdm-pep517>=1.0"]
-build-backend = "pdm.pep517.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
 [tool.pdm]
 [tool.pdm.dev-dependencies]
@@ -42,9 +43,19 @@ dev = [
     "nonebot-adapter-ntchat>=0.3.5",
     "nonebot-adapter-qqguild>=0.2.3",
     "nonebot-adapter-telegram>=0.1.0b10",
+    "isort ~=5.10",
+    "black ~=23.1",
+    "loguru>=0.7.0",
+    "ruff ~=0.0.275",
+    "nonemoji ~=0.1",
+    "pre-commit ~=3.1"
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]
+
+[tool.pdm.version]
+source = "file"
+path = "nonechat/__init__.py"
 
 [tool.black]
 line-length = 88
@@ -56,8 +67,14 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 88
-length_sort = false
+length_sort = true
 skip_gitignore = true
 force_sort_within_sections = true
-src_paths = ["nonebot", "tests"]
 extra_standard_library = ["typing_extensions"]
+
+[tool.ruff]
+select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
+ignore = ["C901", "T201"]
+
+line-length = 88
+target-version = "py38"

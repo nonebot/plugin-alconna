@@ -29,7 +29,7 @@ _meta_source = {
     "name": "Alconna 插件",
     "description": "提供 [Alconna](https://github.com/ArcletProject/Alconna) 的 Nonebot2 适配版本与工具",
     "usage": "matcher = on_alconna(...)",
-    "homepage": "https://github.com/ArcletProject/Alconna",
+    "homepage": "https://github.com/nonebot/plugin-alconna",
     "type": "library",
     "supported_adapters": None,
     "config": Config,
