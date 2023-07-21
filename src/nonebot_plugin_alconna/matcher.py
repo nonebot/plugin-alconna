@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from typing import Callable
 
-from arclet.alconna import Alconna, command_manager
-from arclet.alconna.tools import AlconnaFormat
-from arclet.alconna.tools.construct import FuncMounter
+from nonebot.rule import Rule
 from tarina import is_awaitable
 from nonebot.matcher import Matcher
 from nonebot.plugin.on import on_message
-from nonebot.rule import Rule
 from nonebot.typing import T_RuleChecker
+from arclet.alconna.tools import AlconnaFormat
+from arclet.alconna import Alconna, command_manager
+from arclet.alconna.tools.construct import FuncMounter
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
 
-from .model import CompConfig
 from .rule import alconna
+from .model import CompConfig
 from .typings import TConvert
 
 
@@ -57,15 +57,12 @@ def on_alconna(
         command_manager.register(command)
     return on_message(
         alconna(
-            command,
-            skip_for_unmatch,
-            auto_send_output,
-            output_converter,
-            comp_config
-        ) & rule,
+            command, skip_for_unmatch, auto_send_output, output_converter, comp_config
+        )
+        & rule,
         *args,
         **kwargs,
-        _depth=_depth + 1  # type: ignore
+        _depth=_depth + 1,  # type: ignore
     )
 
 
@@ -85,6 +82,7 @@ def funcommand(
         _config["prefixes"] = prefixes
     if description:
         _config["description"] = description
+
     def wrapper(func: Callable) -> type[Matcher]:
         alc = FuncMounter(func, _config)  # type: ignore
 

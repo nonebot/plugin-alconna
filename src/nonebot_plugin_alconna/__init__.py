@@ -1,33 +1,33 @@
-from nonebot import __version__ as nonebot_version
 from nonebot.plugin import PluginMetadata
+from nonebot import __version__ as nonebot_version
 
-from .argv import MessageArgv as MessageArgv
-from .consts import ALCONNA_RESULT as ALCONNA_RESULT
-from .matcher import on_alconna as on_alconna
-from .matcher import funcommand as funcommand
-from .model import CommandResult as CommandResult
+from .config import Config
 from .model import Match as Match
 from .model import Query as Query
-from .params import AlcMatches as AlcMatches
-from .params import AlcResult as AlcResult
-from .params import AlconnaDuplication as AlconnaDuplication
-from .params import AlconnaMatch as AlconnaMatch
-from .params import AlconnaMatches as AlconnaMatches
-from .params import AlconnaQuery as AlconnaQuery
-from .params import AlconnaResult as AlconnaResult
 from .params import Check as Check
 from .params import assign as assign
-from .params import match_path as match_path
-from .params import match_value as match_value
 from .rule import alconna as alconna
+from .params import AlcResult as AlcResult
+from .argv import MessageArgv as MessageArgv
+from .params import AlcMatches as AlcMatches
+from .params import match_path as match_path
+from .matcher import funcommand as funcommand
+from .matcher import on_alconna as on_alconna
+from .params import match_value as match_value
+from .params import AlconnaMatch as AlconnaMatch
+from .params import AlconnaQuery as AlconnaQuery
+from .model import CommandResult as CommandResult
+from .params import AlconnaResult as AlconnaResult
+from .consts import ALCONNA_RESULT as ALCONNA_RESULT
+from .params import AlconnaMatches as AlconnaMatches
+from .params import AlconnaDuplication as AlconnaDuplication
 from .rule import set_output_converter as set_output_converter
-from .config import Config
 
-__version__ = "0.9.1"
+__version__ = "0.9.2"
 
 _meta_source = {
     "name": "Alconna 插件",
-    "description": "提供 [Alconna](https://github.com/ArcletProject/Alconna) 的 Nonebot2 适配版本与工具",
+    "description": "提供 ArcletProject/Alconna 的 Nonebot2 适配版本与工具",
     "usage": "matcher = on_alconna(...)",
     "homepage": "https://github.com/nonebot/plugin-alconna",
     "type": "library",
@@ -37,7 +37,7 @@ _meta_source = {
         "author": "RF-Tar-Railt",
         "priority": 1,
         "version": __version__,
-    }
+    },
 }
 
 

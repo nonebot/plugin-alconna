@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, Generic, Literal, TypeVar, Union
 from typing_extensions import ParamSpec, TypeAlias
+from typing import Any, Union, Generic, Literal, TypeVar, Callable, Awaitable
 
+from tarina import lang
 from nepattern import BasePattern, MatchFailed, PatternModel
 from nonebot.internal.adapter.message import Message, MessageSegment
-from tarina import lang
 
 T = TypeVar("T")
 TMS = TypeVar("TMS", bound=MessageSegment)
@@ -48,18 +48,24 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
 
 OutputType = Literal["help", "shortcut", "completion"]
 TConvert: TypeAlias = Callable[[OutputType, str], Union[Message, Awaitable[Message]]]
-MReturn: TypeAlias = Union[Union[str, Message, MessageSegment], Awaitable[Union[str, Message, MessageSegment]]]
+MReturn: TypeAlias = Union[
+    Union[str, Message, MessageSegment], Awaitable[Union[str, Message, MessageSegment]]
+]
 
-def _isinstance(seg: MessageSegment, mapping: dict[str, Callable[[MessageSegment], Any]]):
+
+def _isinstance(
+    seg: MessageSegment, mapping: dict[str, Callable[[MessageSegment], Any]]
+):
     if (key := seg.type) in mapping and (res := mapping[key](seg)):
         return res
     if "*" in mapping and (res := mapping["*"](seg)):
         return res
 
+
 def gen_unit(
     model: type[T],
-    mapping: dict[str, Callable[[MessageSegment], Union[T, Literal[False], None]]],
-    additional: Callable[..., bool] | None = None
+    mapping: dict[str, Callable[[MessageSegment], T | Literal[False] | None]],
+    additional: Callable[..., bool] | None = None,
 ) -> BasePattern[T]:
     return BasePattern(
         model.__name__,

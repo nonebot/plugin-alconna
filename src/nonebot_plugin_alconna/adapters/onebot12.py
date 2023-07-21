@@ -1,7 +1,8 @@
+from nepattern.main import URL, INTEGER
 from arclet.alconna import argv_config, set_default_argv_type
 from nepattern import BasePattern, PatternModel, UnionPattern
-from nepattern.main import INTEGER, URL
-from nonebot.adapters.onebot.v12.message import BaseMessage, Message, MessageSegment
+from nonebot.adapters.onebot.v12.message import Message, BaseMessage, MessageSegment
+
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
 
@@ -16,7 +17,7 @@ argv_config(
     filter_out=[],
     checker=lambda x: isinstance(x, BaseMessage),
     to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
-    converter=lambda x: Message(x)
+    converter=lambda x: Message(x),
 )
 Text = str
 Mention = SegmentPattern("mention", MessageSegment, MessageSegment.mention)
@@ -35,7 +36,7 @@ ImgOrUrl = (
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,
                 origin=str,
-                converter=lambda _, x: x.data['url'],
+                converter=lambda _, x: x.data["url"],
                 alias="img",
                 accepts=[Image],
             ),

@@ -1,17 +1,19 @@
-from arclet.alconna import argv_config, set_default_argv_type
-from nepattern import BasePattern, PatternModel, UnionPattern
-from nepattern.main import INTEGER, URL
+from nepattern.main import URL, INTEGER
+from nonebot.adapters.qqguild.message import Message
 from nonebot.adapters.qqguild.message import Ark as _Ark
-from nonebot.adapters.qqguild.message import Attachment as _Attachment
 from nonebot.adapters.qqguild.message import BaseMessage
+from nonebot.adapters.qqguild.message import MessageSegment
 from nonebot.adapters.qqguild.message import Embed as _Embed
 from nonebot.adapters.qqguild.message import Emoji as _Emoji
+from arclet.alconna import argv_config, set_default_argv_type
+from nepattern import BasePattern, PatternModel, UnionPattern
+from nonebot.adapters.qqguild.message import Reference as _Reference
+from nonebot.adapters.qqguild.message import Attachment as _Attachment
 from nonebot.adapters.qqguild.message import LocalImage as _LocalImage
+from nonebot.adapters.qqguild.message import MentionUser as _MentionUser
 from nonebot.adapters.qqguild.message import MentionChannel as _MentionChannel
 from nonebot.adapters.qqguild.message import MentionEveryone as _MentionEveryone
-from nonebot.adapters.qqguild.message import MentionUser as _MentionUser
-from nonebot.adapters.qqguild.message import Message, MessageSegment
-from nonebot.adapters.qqguild.message import Reference as _Reference
+
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
 
@@ -26,7 +28,7 @@ argv_config(
     filter_out=[],
     checker=lambda x: isinstance(x, BaseMessage),
     to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
-    converter=lambda x: Message(x)
+    converter=lambda x: Message(x),
 )
 
 
@@ -52,7 +54,7 @@ ImgOrUrl = (
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,
                 origin=str,
-                converter=lambda _, x: x.data['url'],
+                converter=lambda _, x: x.data["url"],
                 alias="img",
                 accepts=[Image],
             ),

@@ -1,16 +1,15 @@
-from __future__ import annotations
-
-from datetime import datetime, timedelta
 from typing import Callable
+from datetime import datetime, timedelta
 
+from nonebot.rule import Rule
 from arclet.alconna import Alconna
-from nonebot.dependencies import Dependent
 from nonebot.matcher import Matcher
 from nonebot.permission import Permission
-from nonebot.rule import Rule
-from nonebot.typing import T_Handler, T_PermissionChecker, T_RuleChecker, T_State
+from nonebot.dependencies import Dependent
+from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
+
 from nonebot_plugin_alconna.model import CompConfig
-from nonebot_plugin_alconna.typings import TConvert, MReturn
+from nonebot_plugin_alconna.typings import MReturn, TConvert
 
 def on_alconna(
     command: Alconna | str,
@@ -29,8 +28,6 @@ def on_alconna(
     block: bool = ...,
     state: T_State | None = ...,
 ) -> type[Matcher]: ...
-
-
 def funcommand(
     name: str | None = None,
     prefixes: list[str] | None = None,
@@ -44,5 +41,4 @@ def funcommand(
     priority: int = ...,
     block: bool = ...,
     state: T_State | None = ...,
-) -> Callable[[Callable[..., MReturn]], type[Matcher]]:
-    ...
+) -> Callable[[Callable[..., MReturn]], type[Matcher]]: ...

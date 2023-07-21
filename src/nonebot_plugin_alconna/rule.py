@@ -1,32 +1,32 @@
 import asyncio
 import traceback
-from typing import ClassVar, Dict, Optional, Union
+from typing import Dict, Union, ClassVar, Optional
 
-from arclet.alconna import (
-    Alconna,
-    AllParam,
-    Args,
-    Arparma,
-    CommandMeta,
-    CompSession,
-    command_manager,
-    output_manager,
-)
-from arclet.alconna.exceptions import SpecialOptionTriggered
+from tarina import lang
 from nonebot import get_driver
-from nonebot.adapters import Bot, Event, Message
-from nonebot.internal.matcher import matchers
-from nonebot.internal.rule import Rule as Rule
+from nonebot.typing import T_State
 from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
-from nonebot.typing import T_State
-from nonebot.utils import is_coroutine_callable, run_sync
-from tarina import lang
+from nonebot.internal.matcher import matchers
+from nonebot.internal.rule import Rule as Rule
+from nonebot.adapters import Bot, Event, Message
+from nonebot.utils import run_sync, is_coroutine_callable
+from arclet.alconna.exceptions import SpecialOptionTriggered
+from arclet.alconna import (
+    Args,
+    Alconna,
+    Arparma,
+    AllParam,
+    CommandMeta,
+    CompSession,
+    output_manager,
+    command_manager,
+)
 
 from .config import Config
-from .consts import ALCONNA_RESULT
-from .model import CommandResult, CompConfig
 from .typings import TConvert
+from .consts import ALCONNA_RESULT
+from .model import CompConfig, CommandResult
 
 
 class AlconnaRule:
@@ -99,13 +99,25 @@ class AlconnaRule:
         if res:
             return res
         meta = CommandMeta(compact=True, hide=True)
-        _tab = Alconna(self.comp_config.get("tab", ".tab"), Args["offset", int, 1], [], meta=meta)
-        _enter = Alconna(self.comp_config.get("enter", ".enter"), Args["content", AllParam, []], [], meta=meta)
+        _tab = Alconna(
+            self.comp_config.get("tab", ".tab"), Args["offset", int, 1], [], meta=meta
+        )
+        _enter = Alconna(
+            self.comp_config.get("enter", ".enter"),
+            Args["content", AllParam, []],
+            [],
+            meta=meta,
+        )
         _exit = Alconna(self.comp_config.get("exit", ".exit"), [], meta=meta)
 
-        _waiter = on_message(priority=self.comp_config.get('priority', -1), block=True)
+        _waiter = on_message(priority=self.comp_config.get("priority", -1), block=True)
         _futures: Dict[str, asyncio.Future] = {}
-        res = Arparma(self.command.path, msg, False, error_info=SpecialOptionTriggered("completion"))
+        res = Arparma(
+            self.command.path,
+            msg,
+            False,
+            error_info=SpecialOptionTriggered("completion"),
+        )
 
         @_waiter.handle()
         async def _waiter_handle(_event: Event, content: Message = EventMessage()):
@@ -114,7 +126,9 @@ class AlconnaRule:
                 await _waiter.finish()
             if (mat := _tab.parse(content)).matched:
                 interface.tab(mat.offset)
-                await _waiter.send(await self._convert("\n".join(interface.lines()), _event, res))
+                await _waiter.send(
+                    await self._convert("\n".join(interface.lines()), _event, res)
+                )
                 await _waiter.skip()
             if (mat := _enter.parse(content)).matched:
                 _futures["_"].set_result(mat.content)
@@ -131,28 +145,40 @@ class AlconnaRule:
             command_manager.delete(_enter)
             command_manager.delete(_exit)
 
+        help_text = (
+            f"{lang.require('comp/nonebot', 'tab').format(cmd=_tab.command)}\n"
+            f"{lang.require('comp/nonebot', 'enter').format(cmd=_enter.command)}\n"
+            f"{lang.require('comp/nonebot', 'exit').format(cmd=_exit.command)}"
+        )
+
         while interface.available:
             await bot.send(event, await self._convert(str(interface), event, res))
-            await bot.send(
-                event,
-                await self._convert(
-                    f"{lang.require('comp/nonebot', 'tab').format(cmd=_tab.command)}\n"
-                    f"{lang.require('comp/nonebot', 'enter').format(cmd=_enter.command)}\n"
-                    f"{lang.require('comp/nonebot', 'exit').format(cmd=_exit.command)}",
-                    event, res
-                )
+            await bot.send(event, await self._convert(help_text, event,res))
+            _future = _futures.setdefault(
+                "_", asyncio.get_running_loop().create_future()
             )
-            _future = _futures.setdefault("_", asyncio.get_running_loop().create_future())
             _future.add_done_callback(lambda x: _futures.pop("_"))
             try:
-                await asyncio.wait_for(_future, timeout=self.comp_config.get('timeout', 60))
+                await asyncio.wait_for(
+                    _future, timeout=self.comp_config.get("timeout", 60)
+                )
             except asyncio.TimeoutError:
-                await bot.send(event, await self._convert(lang.require('comp/nonebot', 'timeout'), event, res))
+                await bot.send(
+                    event,
+                    await self._convert(
+                        lang.require("comp/nonebot", "timeout"), event, res
+                    ),
+                )
                 clear()
                 return res
             ans: Union[Message, bool] = _future.result()
             if ans is False:
-                await bot.send(event, await self._convert(lang.require('comp/nonebot', 'exited'), event, res))
+                await bot.send(
+                    event,
+                    await self._convert(
+                        lang.require("comp/nonebot", "exited"), event, res
+                    ),
+                )
                 clear()
                 return res
             param = list(ans)

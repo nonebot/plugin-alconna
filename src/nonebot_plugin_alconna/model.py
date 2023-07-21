@@ -1,8 +1,8 @@
-from dataclasses import dataclass, field
-from typing import Generic, Optional, TypedDict, TypeVar
+from dataclasses import field, dataclass
 from typing_extensions import NotRequired
+from typing import Generic, TypeVar, Optional, TypedDict
 
-from arclet.alconna import Alconna, Arparma, Empty
+from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
 
 T = TypeVar("T")
@@ -31,6 +31,7 @@ class Query(Generic[T]):
 
     path (str): 查询路径
     """
+
     result: T
     available: bool
     path: str

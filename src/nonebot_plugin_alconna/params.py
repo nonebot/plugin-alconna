@@ -1,14 +1,14 @@
-from typing import Any, Callable, Optional, Type, TypeVar, overload
 from typing_extensions import Annotated
+from typing import Any, Type, TypeVar, Callable, Optional, overload
 
-from arclet.alconna import Arparma, Duplication, Empty
+from nonebot.typing import T_State
+from arclet.alconna import Empty, Arparma, Duplication
+from nonebot.internal.params import Depends as Depends
 from arclet.alconna.builtin import generate_duplication
 from nonebot.internal.matcher import Matcher as Matcher
-from nonebot.internal.params import Depends as Depends
-from nonebot.typing import T_State
 
 from .consts import ALCONNA_RESULT
-from .model import CommandResult, Match, Query, T
+from .model import T, Match, Query, CommandResult
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 

@@ -1,5 +1,6 @@
 from arclet.alconna import argv_config, set_default_argv_type
-from nonebot.adapters.ding.message import BaseMessage, Message, MessageSegment
+from nonebot.adapters.ding.message import Message, BaseMessage, MessageSegment
+
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
 
@@ -14,7 +15,7 @@ argv_config(
     filter_out=[],
     checker=lambda x: isinstance(x, BaseMessage),
     to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
-    converter=lambda x: Message(x)
+    converter=lambda x: Message(x),
 )
 
 Text = str

@@ -1,7 +1,8 @@
+from nepattern.main import INTEGER
 from arclet.alconna import argv_config, set_default_argv_type
 from nepattern import URL, BasePattern, PatternModel, UnionPattern
-from nepattern.main import INTEGER
 from nonebot.adapters.mirai2.message import BaseMessage, MessageChain, MessageSegment
+
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
 
@@ -16,7 +17,7 @@ argv_config(
     filter_out=[],
     checker=lambda x: isinstance(x, BaseMessage),
     to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
-    converter=lambda x: MessageChain(x)
+    converter=lambda x: MessageChain(x),
 )
 
 Source = SegmentPattern("Source", MessageSegment, MessageSegment.source)
@@ -46,7 +47,7 @@ ImgOrUrl = (
             BasePattern(
                 model=PatternModel.TYPE_CONVERT,
                 origin=str,
-                converter=lambda _, x: x.data['url'],
+                converter=lambda _, x: x.data["url"],
                 alias="img",
                 accepts=[Image],
             ),
@@ -67,7 +68,7 @@ AtID = (
                 origin=int,
                 alias="At",
                 accepts=[At],
-                converter=lambda _, x: int(x.data['target']),
+                converter=lambda _, x: int(x.data["target"]),
             ),
             BasePattern(
                 r"@(\d+)",

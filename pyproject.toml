@@ -55,7 +55,7 @@ includes = ["src/nonebot_plugin_alconna"]
 
 [tool.pdm.version]
 source = "file"
-path = "nonechat/__init__.py"
+path = "src/nonebot_plugin_alconna/__init__.py"
 
 [tool.black]
 line-length = 88
@@ -74,7 +74,7 @@ extra_standard_library = ["typing_extensions"]
 
 [tool.ruff]
 select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
-ignore = ["C901", "T201"]
+ignore = ["C901", "T201", "E731"]
 
 line-length = 88
 target-version = "py38"
