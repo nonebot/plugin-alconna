@@ -1,8 +1,10 @@
-from nonebot_plugin_alconna.rule import AlconnaRule
-from nonebot.adapters.onebot.v11 import Message, MessageSegment
-from inspect import iscoroutinefunction
-from arclet.alconna import Alconna
 import asyncio
+from inspect import iscoroutinefunction
+
+from arclet.alconna import Alconna
+from nonebot.adapters.onebot.v11 import Message, MessageSegment
+
+from nonebot_plugin_alconna.rule import AlconnaRule
 
 
 def t2i(text: str, *args) -> bytes:

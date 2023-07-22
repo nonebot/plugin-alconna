@@ -1,16 +1,32 @@
 # 应与使用的 adapter 对应
 # 不加也可以，做了兼容
-import nonebot_plugin_alconna.adapters.onebot12  # noqa: F401
-from arclet.alconna import Alconna, Args, Arparma, Option, Subcommand, command_manager, namespace, Duplication, SubcommandStub
-from importlib_metadata import distributions
-from nonebot.adapters.onebot.v12.message import Message, MessageSegment
-from nonebot_plugin_alconna import (
-    AlconnaMatches, on_alconna, set_output_converter, AlconnaDuplication,
-    Check, assign, funcommand
-)
+from typing import Literal
 
 from tarina import lang
-from typing import Literal
+from importlib_metadata import distributions
+from nonebot.adapters.onebot.v12.message import Message, MessageSegment
+from arclet.alconna import (
+    Args,
+    Option,
+    Alconna,
+    Arparma,
+    Subcommand,
+    Duplication,
+    SubcommandStub,
+    namespace,
+    command_manager,
+)
+
+import nonebot_plugin_alconna.adapters.onebot12  # noqa: F401
+from nonebot_plugin_alconna import (
+    Check,
+    AlconnaMatches,
+    AlconnaDuplication,
+    assign,
+    funcommand,
+    on_alconna,
+    set_output_converter,
+)
 
 set_output_converter(lambda t, x: Message([MessageSegment.text(x)]))
 
@@ -32,8 +48,12 @@ with namespace("nbtest") as ns:
     )
 
     # auto_send already set in .env
-    pipcmd = on_alconna(pip, comp_config={'timeout': 10}, block=True)  # , auto_send_output=True)
-    ali = on_alconna(Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=True)
+    pipcmd = on_alconna(
+        pip, comp_config={"timeout": 10}, block=True
+    )  # , auto_send_output=True)
+    ali = on_alconna(
+        Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=True
+    )
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
 
     class PipResult(Duplication):
@@ -68,18 +88,18 @@ async def _i18n(arp: Arparma = AlconnaMatches()):
 
 
 @pipcmd.handle([Check(assign("list"))])
-async def ll():
+async def pip_l():
     md = "\n".join([f"- {k} {v}" for k, v in get_dist_map().items()])
     await pipcmd.send(MessageSegment.text(md))
 
 
 @pipcmd.handle([Check(assign("install.pak"))])
-async def ll(res: PipResult = AlconnaDuplication(PipResult)):
+async def pip_i(res: PipResult = AlconnaDuplication(PipResult)):
     await pipcmd.send(f"pip installing {res.pak}...")
 
 
 @pipcmd.handle()
-async def ll():
+async def pip_m():
     await pipcmd.send("WIP...")
 
 
@@ -90,6 +110,7 @@ async def yiyan(res: Arparma = AlconnaMatches()):
     # else:
     #     await ali.send(f"[hitokoto] Unmatched: {res}")
 
+
 table = {
     "add": float.__add__,
     "sub": float.__sub__,
@@ -97,13 +118,12 @@ table = {
     "div": float.__truediv__,
 }
 
+
 @funcommand()
-async def calc(
-    op: Literal["add", "sub", "mul", "div"],
-    a: float, b: float
-):
+async def calc(op: Literal["add", "sub", "mul", "div"], a: float, b: float):
     """加法测试"""
     return f"{a} {op} {b} = {table[op](a, b)}"
+
 
 @funcommand()
 async def test(

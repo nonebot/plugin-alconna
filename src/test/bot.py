@@ -1,5 +1,6 @@
 import nonebot
 from nonebot.adapters.onebot.v12 import Adapter as ONEBOT_V12Adapter
+
 nonebot.init()
 
 driver = nonebot.get_driver()
