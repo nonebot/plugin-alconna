@@ -17,13 +17,16 @@ from .params import match_value as match_value
 from .params import AlconnaMatch as AlconnaMatch
 from .params import AlconnaQuery as AlconnaQuery
 from .model import CommandResult as CommandResult
+from .params import AlcExecResult as AlcExecResult
 from .params import AlconnaResult as AlconnaResult
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
 from .params import AlconnaMatches as AlconnaMatches
+from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
+from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .rule import set_output_converter as set_output_converter
 
-__version__ = "0.9.2"
+__version__ = "0.9.3"
 
 _meta_source = {
     "name": "Alconna 插件",

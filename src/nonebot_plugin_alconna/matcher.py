@@ -15,6 +15,7 @@ from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
 from .rule import alconna
 from .model import CompConfig
 from .typings import TConvert
+from .params import AlcExecResult
 
 
 def on_alconna(
@@ -86,22 +87,14 @@ def funcommand(
     def wrapper(func: Callable) -> type[Matcher]:
         alc = FuncMounter(func, _config)  # type: ignore
 
-        async def handle(bot: Bot, event: Event):
-            msg = getattr(event, "original_message", event.get_message())
-            try:
-                arp, res = alc.exec(msg)
-            except Exception as e:
-                if _config["raise_exception"]:
-                    raise e
-                await bot.send(event, str(e))
-                return
-            if arp.matched:
+        async def handle(bot: Bot, event: Event, results: AlcExecResult):
+            if res := results.get(func.__name__):
                 if is_awaitable(res):
                     res = await res
                 if isinstance(res, (str, Message, MessageSegment)):
                     await bot.send(event, res)
 
-        matcher = on_message(rule, *args, **kwargs, _depth=_depth + 1)
+        matcher = on_alconna(alc, rule, *args, **kwargs, _depth=_depth + 1)
         matcher.handle()(handle)
 
         return matcher

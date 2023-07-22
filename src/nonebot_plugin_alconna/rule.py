@@ -25,8 +25,8 @@ from arclet.alconna import (
 
 from .config import Config
 from .typings import TConvert
-from .consts import ALCONNA_RESULT
 from .model import CompConfig, CommandResult
+from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT
 
 
 class AlconnaRule:
@@ -153,7 +153,7 @@ class AlconnaRule:
 
         while interface.available:
             await bot.send(event, await self._convert(str(interface), event, res))
-            await bot.send(event, await self._convert(help_text, event,res))
+            await bot.send(event, await self._convert(help_text, event, res))
             _future = _futures.setdefault(
                 "_", asyncio.get_running_loop().create_future()
             )
@@ -215,6 +215,7 @@ class AlconnaRule:
             await bot.send(event, await self._convert(may_help_text, event, arp))
             return False
         state[ALCONNA_RESULT] = CommandResult(self.command, arp, may_help_text)
+        state[ALCONNA_EXEC_RESULT] = self.command.exec_result
         return True
 
     async def _convert(self, text: str, event: Event, arp: Arparma) -> Message:

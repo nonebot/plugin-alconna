@@ -1,5 +1,5 @@
 from typing_extensions import Annotated
-from typing import Any, Type, TypeVar, Callable, Optional, overload
+from typing import Any, Dict, Type, TypeVar, Callable, Optional, overload
 
 from nonebot.typing import T_State
 from arclet.alconna import Empty, Arparma, Duplication
@@ -7,8 +7,8 @@ from nonebot.internal.params import Depends as Depends
 from arclet.alconna.builtin import generate_duplication
 from nonebot.internal.matcher import Matcher as Matcher
 
-from .consts import ALCONNA_RESULT
 from .model import T, Match, Query, CommandResult
+from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 
@@ -19,6 +19,14 @@ def _alconna_result(state: T_State) -> CommandResult:
 
 def AlconnaResult() -> CommandResult:
     return Depends(_alconna_result, use_cache=False)
+
+
+def _alconna_exec_result(state: T_State) -> Dict[str, Any]:
+    return state[ALCONNA_EXEC_RESULT]
+
+
+def AlconnaExecResult() -> Dict[str, Any]:
+    return Depends(_alconna_exec_result, use_cache=False)
 
 
 def _alconna_matches(state: T_State) -> Arparma:
@@ -74,6 +82,7 @@ def AlconnaDuplication(__t: Optional[Type[T_Duplication]] = None) -> Duplication
 
 
 AlcResult = Annotated[CommandResult, AlconnaResult()]
+AlcExecResult = Annotated[Dict[str, Any], AlconnaExecResult()]
 AlcMatches = Annotated[Arparma, AlconnaMatches()]
 
 
