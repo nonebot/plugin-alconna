@@ -1,21 +1,52 @@
 from __future__ import annotations
 
-from typing import Callable
+from datetime import datetime, timedelta
+from typing import Any, Callable, Iterable
 
 from nonebot.rule import Rule
 from tarina import is_awaitable
 from nonebot.matcher import Matcher
-from nonebot.plugin.on import on_message
-from nonebot.typing import T_RuleChecker
+from nonebot.permission import Permission
+from nonebot.dependencies import Dependent
 from arclet.alconna.tools import AlconnaFormat
 from arclet.alconna import Alconna, command_manager
 from arclet.alconna.tools.construct import FuncMounter
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
+from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
+from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
 
 from .rule import alconna
 from .model import CompConfig
-from .typings import TConvert
-from .params import AlcExecResult
+from .typings import MReturn, TConvert
+from .params import Check, AlcExecResult, assign, _seminal
+
+
+class AlconnaMatcher(Matcher):
+    @classmethod
+    def assign(
+        cls,
+        path: str,
+        value: Any = _seminal,
+        or_not: bool = False,
+        parameterless: Iterable[Any] | None = None,
+    ) -> Callable[[T_Handler], T_Handler]:
+        """装饰一个函数来向事件响应器直接添加一个处理函数
+
+        此装饰是 @handle([Check(assign(...))]) 的快捷写法
+
+        参数:
+            path: 指定的查询路径, "$main" 表示没有任何选项/子命令匹配的时候
+            value: 可能的指定查询值
+            or_not: 是否同时处理没有查询成功的情况
+            parameterless: 非参数类型依赖列表
+        """
+        parameterless = [Check(assign(path, value, or_not)), *(parameterless or [])]
+
+        def _decorator(func: T_Handler) -> T_Handler:
+            cls.append_handler(func, parameterless=parameterless)
+            return func
+
+        return _decorator
 
 
 def on_alconna(
@@ -26,10 +57,16 @@ def on_alconna(
     output_converter: TConvert | None = None,
     aliases: set[str | tuple[str, ...]] | None = None,
     comp_config: CompConfig | None = None,
-    *args,
+    permission: Permission | T_PermissionChecker | None = None,
+    *,
+    handlers: list[T_Handler | Dependent] | None = None,
+    temp: bool = False,
+    expire_time: datetime | timedelta | None = None,
+    priority: int = 1,
+    block: bool = False,
+    state: T_State | None = None,
     _depth: int = 0,
-    **kwargs,
-) -> type[Matcher]:
+) -> type[AlconnaMatcher]:
     """注册一个消息事件响应器，并且当消息由指定 Alconna 解析并传出有效结果时响应。
 
     参数:
@@ -56,15 +93,24 @@ def on_alconna(
         command.command = "re:(" + "|".join(aliases) + ")"
         command._hash = command._calc_hash()
         command_manager.register(command)
-    return on_message(
+    matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
+        "message",
         alconna(
             command, skip_for_unmatch, auto_send_output, output_converter, comp_config
         )
         & rule,
-        *args,
-        **kwargs,
-        _depth=_depth + 1,  # type: ignore
+        Permission() | permission,
+        temp=temp,
+        expire_time=expire_time,
+        priority=priority,
+        block=block,
+        handlers=handlers,
+        plugin=get_matcher_plugin(_depth + 1),
+        module=get_matcher_module(_depth + 1),
+        default_state=state,
     )
+    store_matcher(matcher)
+    return matcher
 
 
 def funcommand(
@@ -72,10 +118,16 @@ def funcommand(
     prefixes: list[str] | None = None,
     description: str | None = None,
     rule: Rule | T_RuleChecker | None = None,
-    *args,
+    permission: Permission | T_PermissionChecker | None = None,
+    *,
+    handlers: list[T_Handler | Dependent] | None = None,
+    temp: bool = False,
+    expire_time: datetime | timedelta | None = None,
+    priority: int = 1,
+    block: bool = False,
+    state: T_State | None = None,
     _depth: int = 0,
-    **kwargs,
-):
+) -> Callable[[Callable[..., MReturn]], type[AlconnaMatcher]]:
     _config = {"raise_exception": False}
     if name:
         _config["command"] = name
@@ -84,7 +136,7 @@ def funcommand(
     if description:
         _config["description"] = description
 
-    def wrapper(func: Callable) -> type[Matcher]:
+    def wrapper(func: Callable[..., MReturn]) -> type[AlconnaMatcher]:
         alc = FuncMounter(func, _config)  # type: ignore
 
         async def handle(bot: Bot, event: Event, results: AlcExecResult):
@@ -94,7 +146,18 @@ def funcommand(
                 if isinstance(res, (str, Message, MessageSegment)):
                     await bot.send(event, res)
 
-        matcher = on_alconna(alc, rule, *args, **kwargs, _depth=_depth + 1)
+        matcher = on_alconna(
+            alc,
+            rule,
+            permission=permission,
+            handlers=handlers,
+            temp=temp,
+            expire_time=expire_time,
+            priority=priority,
+            block=block,
+            state=state,
+            _depth=_depth + 1,
+        )
         matcher.handle()(handle)
 
         return matcher

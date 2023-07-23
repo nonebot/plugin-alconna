@@ -189,6 +189,10 @@ async def list_(arp: CommandResult = AlconnaResult()):
 @pip_cmd.handle([Check(assign("install"))])
 async def install(arp: CommandResult = AlconnaResult()):
     ...
+
+@pip_cmd.assign("install", "nonebot")
+async def nonebot(arp: CommandResult = AlconnaResult()):
+    ...
 ```
 
 

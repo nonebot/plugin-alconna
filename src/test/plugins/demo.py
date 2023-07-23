@@ -93,7 +93,7 @@ async def pip_l():
     await pipcmd.send(MessageSegment.text(md))
 
 
-@pipcmd.handle([Check(assign("install.pak"))])
+@pipcmd.assign("install.pak")
 async def pip_i(res: PipResult = AlconnaDuplication(PipResult)):
     await pipcmd.send(f"pip installing {res.pak}...")
 
