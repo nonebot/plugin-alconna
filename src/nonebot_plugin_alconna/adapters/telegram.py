@@ -1,5 +1,10 @@
+from contextlib import suppress
+from contextvars import ContextVar
+from typing_extensions import Self
+
+from tarina import lang
 from nepattern import UnionPattern
-from arclet.alconna import argv_config, set_default_argv_type
+from arclet.alconna import Namespace, NullMessage, set_default_argv_type
 from nonebot.adapters.telegram.message import (
     File,
     Entity,
@@ -10,11 +15,7 @@ from nonebot.adapters.telegram.message import (
 )
 
 from nonebot_plugin_alconna.argv import MessageArgv
-from nonebot_plugin_alconna.typings import SegmentPattern
-
-
-class TelegramMessageArgv(MessageArgv):
-    ...
+from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
 
 def is_text(x: MessageSegment):
@@ -29,14 +30,107 @@ def is_text(x: MessageSegment):
     }
 
 
-set_default_argv_type(TelegramMessageArgv)
-argv_config(
-    TelegramMessageArgv,
-    filter_out=[],
-    checker=lambda x: isinstance(x, BaseMessage),
-    to_text=lambda x: x if x.__class__ is str else str(x) if is_text(x) else None,
-    converter=lambda x: Message(x),
+TMA: ContextVar["TelegramMessageArgv"] = ContextVar("TMA")
+
+
+class TelegramMessageArgv(MessageArgv):
+    style_record: dict
+    style_index: int
+
+    def __post_init__(self, namespace: Namespace):
+        super().__post_init__(namespace)
+        self.converter = lambda x: Message(x)
+        self.style_record = {}
+        self.style_index = 0
+
+    def reset(self):
+        super().reset()
+        self.style_record = {}
+        self.style_index = 0
+        if token := self.__class__._cache.get(self.__class__, {}).get("token"):
+            with suppress(KeyError, RuntimeError):
+                TMA.reset(token)
+
+    def build(self, data: BaseMessage) -> Self:
+        """命令分析功能, 传入字符串或消息链
+
+        Args:
+            data (TDC): 命令
+
+        Returns:
+            Self: 自身
+        """
+        self.reset()
+        if not isinstance(data, BaseMessage):
+            raise TypeError(data)
+        self.origin = data
+        msg = str(data)
+        self.__class__._cache.setdefault(self.__class__, {})["token"] = TMA.set(self)
+        i = 0
+        raw_data = self.raw_data
+        for index, unit in enumerate(data):
+            if is_text(unit):
+                if not (text := unit.data["text"].strip()):
+                    if not index or index == len(data) - 1:
+                        continue
+                    if not is_text(data[index - 1]) or not is_text(data[index + 1]):
+                        continue
+                    text = unit.data["text"]
+                if unit.type == "text":
+                    if index != len(data) - 1 and is_text(data[index + 1]):
+                        raw_data.append(unit.data["text"])
+                    else:
+                        raw_data.append(text)
+                else:
+                    if raw_data and raw_data[-1].__class__ is str:
+                        raw_data[-1] = f"{raw_data[-1]}{text}"
+                        i -= 1
+                    else:
+                        raw_data.append(text)
+                    start = msg.find(unit.data["text"], self.style_index)
+                    self.style_index = start + len(unit.data["text"])
+                    self.style_record[(start, self.style_index)] = unit.type
+            else:
+                raw_data.append(unit)
+            i += 1
+        if i < 1:
+            raise NullMessage(lang.require("argv", "null_message").format(target=data))
+        self.ndata = i
+        self.bak_data = raw_data.copy()
+        if self.message_cache:
+            self.token = self.generate_token(raw_data)
+        self.style_index = 0
+        return self
+
+
+def locator(x: str, t: str):
+    argv = TMA.get()
+    msg = str(argv.origin)
+    start = msg.find(x, argv.style_index)
+    if start == -1:
+        return False
+    end = argv.style_index = start + len(x)
+    if (maybe := argv.style_record.get((start, end))) and maybe == t:
+        return True
+    return any(
+        scale[0] <= start <= scale[1]
+        and scale[0] <= end <= scale[1]
+        and argv.style_record[scale] == t
+        for scale in argv.style_record
+    )
+
+
+Bold = TextSegmentPattern("bold", Entity, Entity.bold, locator)
+Italic = TextSegmentPattern("italic", Entity, Entity.italic, locator)
+Underline = TextSegmentPattern("underline", Entity, Entity.underline, locator)
+Strikethrough = TextSegmentPattern(
+    "strikethrough", Entity, Entity.strikethrough, locator
 )
+Spoiler = TextSegmentPattern("spoiler", Entity, Entity.spoiler, locator)
+Code = TextSegmentPattern("code", Entity, Entity.code, locator)
+
+
+set_default_argv_type(TelegramMessageArgv)
 
 Text = str
 Location = SegmentPattern("location", MessageSegment, MessageSegment.location)
@@ -52,18 +146,7 @@ BotCommand = SegmentPattern("bot_command", Entity, Entity.bot_command)
 Url = SegmentPattern("url", Entity, Entity.url)
 Email = SegmentPattern("email", Entity, Entity.email)
 PhoneNumber = SegmentPattern("phone_number", Entity, Entity.phone_number)
-Bold = SegmentPattern("bold", Entity, Entity.bold)
-"""该 Pattern 只用于发送"""
-Italic = SegmentPattern("italic", Entity, Entity.italic)
-"""该 Pattern 只用于发送"""
-Underline = SegmentPattern("underline", Entity, Entity.underline)
-"""该 Pattern 只用于发送"""
-Strikethrough = SegmentPattern("strikethrough", Entity, Entity.strikethrough)
-"""该 Pattern 只用于发送"""
-Spoiler = SegmentPattern("spoiler", Entity, Entity.spoiler)
-"""该 Pattern 只用于发送"""
-Code = SegmentPattern("code", Entity, Entity.code)
-"""该 Pattern 只用于发送"""
+
 Pre = SegmentPattern("pre", Entity, Entity.pre)
 TextLink = SegmentPattern("text_link", Entity, Entity.text_link)
 TextMention = SegmentPattern("text_mention", Entity, Entity.text_mention)
