@@ -98,7 +98,12 @@ def on_alconna(
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "message",
         alconna(
-            command, skip_for_unmatch, auto_send_output, output_converter, comp_config, use_origin
+            command,
+            skip_for_unmatch,
+            auto_send_output,
+            output_converter,
+            comp_config,
+            use_origin,
         )
         & rule,
         Permission() | permission,

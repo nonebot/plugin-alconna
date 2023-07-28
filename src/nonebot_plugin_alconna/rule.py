@@ -49,7 +49,7 @@ class AlconnaRule:
         "auto_send",
         "output_converter",
         "comp_config",
-        "use_origin"
+        "use_origin",
     )
 
     def __init__(
@@ -255,7 +255,7 @@ def alconna(
             auto_send_output,
             output_converter,
             comp_config,
-            use_origin
+            use_origin,
         )
     )
 

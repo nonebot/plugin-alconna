@@ -1,5 +1,4 @@
-from typing import Iterable, Any
-
+from typing import Any, Iterable
 from typing_extensions import Self
 
 from tarina import lang
@@ -181,25 +180,23 @@ Mentions = UnionPattern([Mention, TextMention, TextLink])
 Videos = UnionPattern([Video, Animation])
 """联合接收 Video, Animation, 不能用于发送"""
 
-ImgOrUrl = (
-    UnionPattern(
-        [
-            BasePattern(
-                model=PatternModel.TYPE_CONVERT,
-                origin=str,
-                converter=lambda _, x: x.data["file_id"],
-                alias="img",
-                accepts=[Image],
-            ),
-            BasePattern(
-                model=PatternModel.TYPE_CONVERT,
-                origin=str,
-                converter=lambda _, x: x.data["text"],
-                alias="url",
-                accepts=[Url],
-            ),
-        ]
-    )
+ImgOrUrl = UnionPattern(
+    [
+        BasePattern(
+            model=PatternModel.TYPE_CONVERT,
+            origin=str,
+            converter=lambda _, x: x.data["file_id"],
+            alias="img",
+            accepts=[Image],
+        ),
+        BasePattern(
+            model=PatternModel.TYPE_CONVERT,
+            origin=str,
+            converter=lambda _, x: x.data["text"],
+            alias="url",
+            accepts=[Url],
+        ),
+    ]
 )
 """
 内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接
