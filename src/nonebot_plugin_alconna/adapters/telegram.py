@@ -21,6 +21,7 @@ from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 def is_text(x: MessageSegment):
     return x.type in {
         "text",
+        "bot_command",
         "bold",
         "italic",
         "underline",
@@ -134,15 +135,6 @@ def locator(x: str, t: str):
     )
 
 
-Bold = TextSegmentPattern("bold", Entity, Entity.bold, locator)
-Italic = TextSegmentPattern("italic", Entity, Entity.italic, locator)
-Underline = TextSegmentPattern("underline", Entity, Entity.underline, locator)
-Strikethrough = TextSegmentPattern(
-    "strikethrough", Entity, Entity.strikethrough, locator
-)
-Spoiler = TextSegmentPattern("spoiler", Entity, Entity.spoiler, locator)
-Code = TextSegmentPattern("code", Entity, Entity.code, locator)
-
 set_default_argv_type(TelegramMessageArgv)
 argv_config(TelegramMessageArgv, converter=lambda x: Message(x))
 
@@ -156,11 +148,18 @@ ChatAction = SegmentPattern("chat_action", MessageSegment, MessageSegment.chat_a
 Mention = SegmentPattern("mention", Entity, Entity.mention)
 Hashtag = SegmentPattern("hashtag", Entity, Entity.hashtag)
 Cashtag = SegmentPattern("cashtag", Entity, Entity.cashtag)
-BotCommand = SegmentPattern("bot_command", Entity, Entity.bot_command)
+BotCommand = TextSegmentPattern("bot_command", Entity, Entity.bot_command, locator)
 Url = SegmentPattern("url", Entity, Entity.url)
 Email = SegmentPattern("email", Entity, Entity.email)
 PhoneNumber = SegmentPattern("phone_number", Entity, Entity.phone_number)
-
+Bold = TextSegmentPattern("bold", Entity, Entity.bold, locator)
+Italic = TextSegmentPattern("italic", Entity, Entity.italic, locator)
+Underline = TextSegmentPattern("underline", Entity, Entity.underline, locator)
+Strikethrough = TextSegmentPattern(
+    "strikethrough", Entity, Entity.strikethrough, locator
+)
+Spoiler = TextSegmentPattern("spoiler", Entity, Entity.spoiler, locator)
+Code = TextSegmentPattern("code", Entity, Entity.code, locator)
 Pre = SegmentPattern("pre", Entity, Entity.pre)
 TextLink = SegmentPattern("text_link", Entity, Entity.text_link)
 TextMention = SegmentPattern("text_mention", Entity, Entity.text_mention)

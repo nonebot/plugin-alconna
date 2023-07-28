@@ -126,9 +126,11 @@ class AlconnaRule:
                 await _waiter.finish()
             if (mat := _tab.parse(content)).matched:
                 interface.tab(mat.offset)
-                await _waiter.send(
-                    await self._convert("\n".join(interface.lines()), _event, res)
-                )
+                if self.comp_config.get("lite", False):
+                    out = interface.current()
+                else:
+                    out = "\n".join(interface.lines())
+                await _waiter.send(await self._convert(out, _event, res))
                 await _waiter.skip()
             if (mat := _enter.parse(content)).matched:
                 _futures["_"].set_result(mat.content)
