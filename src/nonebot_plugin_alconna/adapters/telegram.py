@@ -3,7 +3,7 @@ from typing import Iterable, Any
 from typing_extensions import Self
 
 from tarina import lang
-from nepattern import UnionPattern
+from nepattern import BasePattern, PatternModel, UnionPattern
 from arclet.alconna import NullMessage, argv_config, set_default_argv_type
 from nonebot.adapters.telegram.message import (
     File,
@@ -185,7 +185,7 @@ ImgOrUrl = (
     UnionPattern(
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT, 
+                model=PatternModel.TYPE_CONVERT,
                 origin=str,
                 converter=lambda _, x: x.data["file_id"],
                 alias="img",
@@ -201,6 +201,6 @@ ImgOrUrl = (
         ]
     )
 )
-""" 
-内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接 
+"""
+内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接
 """
