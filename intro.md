@@ -101,6 +101,7 @@ async def _(result: Arparma = AlconnaMatches()):
 - `output_converter: TConvert | None = None`: 输出信息字符串转换为 Message 方法
 - `aliases: set[str | tuple[str, ...]] | None = None`: 命令别名， 作用类似于 `on_command` 中的 aliases
 - `comp_config: CompConfig | None = None`: 补全会话配置， 不传入则不启用补全会话
+- `use_origin: bool = False`: 是否使用未经 to_me 等处理过的消息
 
 `AlconnaMatches` 是一个依赖注入函数，可注入 `Alconna` 命令解析结果。
 

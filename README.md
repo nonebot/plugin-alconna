@@ -238,6 +238,7 @@ async def handle_test1(result: MyResult = AlconnaDuplication(MyResult)):
 - ALCONNA_AUTO_SEND_OUTPUT : 是否全局启用输出信息自动发送
 - ALCONNA_USE_COMMAND_START : 是否将 COMMAND_START 作为全局命令前缀
 - ALCONNA_AUTO_COMPLETION: 是否全局启用补全会话功能
+- ALCONNA_USE_ORIGIN: 是否全局使用原始消息 (即未经过 to_me 等处理的)
 
 ## 参数解释
 
@@ -249,6 +250,7 @@ def on_alconna(
     output_converter: Callable[[OutputType, str], Message | Awaitable[Message]] | None = None,
     aliases: set[str | tuple[str, ...]] | None = None,
     comp_config: CompConfig | None = None,
+    use_origin: bool = False,
     **kwargs,
 ) -> type[Matcher]:
 ```
@@ -259,6 +261,7 @@ def on_alconna(
 - `output_converter`: 输出信息字符串转换为 Message 方法
 - `aliases`: 命令别名, 作用类似于 `on_command`
 - `comp_config`: 补全会话配置, 不传入则不启用补全会话
+- `use_origin`: 是否使用未经 to_me 等处理过的消息
 
 ## 提供了 MessageSegment标注 的协议:
 
