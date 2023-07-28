@@ -192,15 +192,15 @@ ImgOrUrl = (
                  accepts=[Image],
              ),
              BasePattern(
-                model=PatternModel.TYPE_CONVERT,
-                origin=str,
-                converter=lambda _, x: x.data["text"],
-                alias="url",
-                accepts=[Url],
+                 model=PatternModel.TYPE_CONVERT,
+                 origin=str,
+                 converter=lambda _, x: x.data["text"],
+                 alias="url",
+                 accepts=[Url],
              ),
          ]
      )
-     @ "img_url" 
+     @ "img_url"
  )
  """ 
  内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接 
