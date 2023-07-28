@@ -136,7 +136,7 @@ def _handle_image(seg: MessageSegment):
         return Image(seg, url=seg.data["image_key"])
     if "file_key" in seg.data:  # kook
         return Image(seg, url=seg.data["file_key"])
-    if "url" in seg.data:  # ob11, qqguild
+    if "url" in seg.data:  # ob11
         return Image(seg, url=seg.data["url"])
     if "msgData" in seg.data:  # minecraft
         return Image(seg, url=seg.data["msgData"])
@@ -151,6 +151,7 @@ _Image = gen_unit(
     {
         "image": _handle_image,
         "photo": lambda seg: Image(seg, id=seg.data["file_id"]),
+        "attachment": lambda seg: Image(seg, seg.data["url"]),
         "Image": lambda seg: Image(seg, seg.data["url"], seg.data["imageId"]),
     },
 )
