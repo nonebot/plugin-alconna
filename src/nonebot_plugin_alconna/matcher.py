@@ -57,6 +57,7 @@ def on_alconna(
     output_converter: TConvert | None = None,
     aliases: set[str | tuple[str, ...]] | None = None,
     comp_config: CompConfig | None = None,
+    use_origin: bool = False,
     permission: Permission | T_PermissionChecker | None = None,
     *,
     handlers: list[T_Handler | Dependent] | None = None,
@@ -77,6 +78,7 @@ def on_alconna(
         output_converter: 输出信息字符串转换为 Message 方法
         aliases: 命令别名
         comp_config: 补全会话配置, 不传入则不启用补全会话
+        use_origin: 是否使用未经 to_me 等处理过的消息
         permission: 事件响应权限
         handlers: 事件处理函数列表
         temp: 是否为临时事件响应器（仅执行一次）
@@ -96,7 +98,7 @@ def on_alconna(
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "message",
         alconna(
-            command, skip_for_unmatch, auto_send_output, output_converter, comp_config
+            command, skip_for_unmatch, auto_send_output, output_converter, comp_config, use_origin
         )
         & rule,
         Permission() | permission,

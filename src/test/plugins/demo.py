@@ -52,7 +52,10 @@ with namespace("nbtest") as ns:
         pip, comp_config={"timeout": 10}, block=True
     )  # , auto_send_output=True)
     ali = on_alconna(
-        Alconna(["/"], "一言"), aliases={"hitokoto"}, skip_for_unmatch=True
+        Alconna(["/"], "一言"),
+        aliases={"hitokoto"},
+        skip_for_unmatch=True,
+        use_origin=True,
     )
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
 

@@ -38,6 +38,7 @@ class AlconnaRule:
         auto_send_output: 是否自动发送输出信息并跳过响应
         output_converter: 输出信息字符串转换为 Message 方法
         comp_config: 自动补全配置
+        use_origin: 是否使用未经 to_me 等处理过的消息
     """
 
     default_converter: ClassVar[TConvert] = lambda _, x: Message(x)
@@ -48,6 +49,7 @@ class AlconnaRule:
         "auto_send",
         "output_converter",
         "comp_config",
+        "use_origin"
     )
 
     def __init__(
@@ -57,8 +59,10 @@ class AlconnaRule:
         auto_send_output: bool = False,
         output_converter: Optional[TConvert] = None,
         comp_config: Optional[CompConfig] = None,
+        use_origin: bool = False,
     ):
         self.comp_config = comp_config
+        self.use_origin = use_origin
         try:
             global_config = get_driver().config
             config = Config.parse_obj(global_config)
@@ -70,6 +74,7 @@ class AlconnaRule:
                 command_manager.register(command)
             if config.alconna_auto_completion and not self.comp_config:
                 self.comp_config = {}
+            self.use_origin = use_origin or config.alconna_use_origin
         except ValueError:
             self.auto_send = auto_send_output
         self.command = command
@@ -198,10 +203,13 @@ class AlconnaRule:
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
         if event.get_type() != "message":
             return False
-        try:
-            msg = getattr(event, "original_message", event.get_message())
-        except (NotImplementedError, ValueError):
-            return False
+        if self.use_origin:
+            try:
+                msg = getattr(event, "original_message", event.get_message())
+            except (NotImplementedError, ValueError):
+                return False
+        else:
+            msg = event.get_message()
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
             try:
@@ -238,6 +246,7 @@ def alconna(
     auto_send_output: bool = False,
     output_converter: Optional[TConvert] = None,
     comp_config: Optional[CompConfig] = None,
+    use_origin: bool = False,
 ) -> Rule:
     return Rule(
         AlconnaRule(
@@ -246,6 +255,7 @@ def alconna(
             auto_send_output,
             output_converter,
             comp_config,
+            use_origin
         )
     )
 

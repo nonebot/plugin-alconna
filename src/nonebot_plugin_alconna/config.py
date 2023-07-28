@@ -12,3 +12,6 @@ class Config(BaseModel, extra=Extra.ignore):
 
     alconna_auto_completion: bool = False
     """是否全局启用命令自动补全"""
+
+    alconna_use_origin: bool = False
+    """是否全局使用原始消息 (即未经过 to_me 等处理的)"""
