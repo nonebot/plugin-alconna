@@ -182,26 +182,25 @@ Videos = UnionPattern([Video, Animation])
 """联合接收 Video, Animation, 不能用于发送"""
 
 ImgOrUrl = (
-     UnionPattern(
-         [
-             BasePattern(
-                 model=PatternModel.TYPE_CONVERT, 
-                 origin=str,
-                 converter=lambda _, x: x.data["file_id"],
-                 alias="img",
-                 accepts=[Image],
-             ),
-             BasePattern(
-                 model=PatternModel.TYPE_CONVERT,
-                 origin=str,
-                 converter=lambda _, x: x.data["text"],
-                 alias="url",
-                 accepts=[Url],
-             ),
-         ]
-     )
-     @ "img_url"
- )
- """ 
- 内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接 
- """
+    UnionPattern(
+        [
+            BasePattern(
+                model=PatternModel.TYPE_CONVERT, 
+                origin=str,
+                converter=lambda _, x: x.data["file_id"],
+                alias="img",
+                accepts=[Image],
+            ),
+            BasePattern(
+                model=PatternModel.TYPE_CONVERT,
+                origin=str,
+                converter=lambda _, x: x.data["text"],
+                alias="url",
+                accepts=[Url],
+            ),
+        ]
+    )
+)
+""" 
+内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接 
+"""
