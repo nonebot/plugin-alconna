@@ -2,7 +2,7 @@ from arclet.alconna import Args, Alconna
 
 from nonebot_plugin_alconna.adapters.telegram import Bold, Underline
 
-msg = "/com" + Bold("mand some_arg") + " " + Underline("some_arg") + " some_arg"
+msg = "/com" + Bold("mand some_arg") + " " + Underline("some_arg ") + "some_arg"
 
 alc = Alconna(
     "/command", Args["some_arg", Bold]["some_arg1", Underline]["some_arg2", str]

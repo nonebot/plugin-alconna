@@ -8,7 +8,7 @@ from arclet.alconna.argv import argv_config, set_default_argv_type
 class MessageArgv(Argv[Message]):
     @staticmethod
     def generate_token(data: list) -> int:
-        return hash("".join(i.__repr__() for i in data))
+        return hash("".join(i.__class__.__name__ + i.__repr__() for i in data))
 
 
 set_default_argv_type(MessageArgv)
