@@ -1,27 +1,64 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Protocol
 
 from nonebot.rule import Rule
 from tarina import is_awaitable
+from nonebot.params import Depends
 from nonebot.matcher import Matcher
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from arclet.alconna.tools import AlconnaFormat
-from arclet.alconna import Alconna, command_manager
 from arclet.alconna.tools.construct import FuncMounter
-from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
+from arclet.alconna import Arg, Alconna, command_manager, Args
+from nepattern import AnyOne, AnyString
+import nepattern.main
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
+from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 
 from .rule import alconna
 from .model import CompConfig
+from .consts import ALCONNA_ARG_KEY
 from .typings import MReturn, TConvert
 from .params import Check, AlcExecResult, assign, _seminal
 
 
+class ArgsMounter(Protocol):
+    args: Args
+
+def extract_arg(path: str, target: ArgsMounter) -> Arg | None:
+    """从 Alconna 中提取参数"""
+    parts = path.split('.')
+    if len(parts) == 1:
+        return next((arg for arg in target.args.argument if arg.name == path), None)
+    _parts, end = parts[:-1], parts[-1]
+    if not (options := getattr(target, 'options', None)):
+        return
+    for opt in options:
+        if opt.dest == _parts[0]:
+            return extract_arg('.'.join(_parts[1:] + [end]), opt)
+    return
+
+def _validate(target: Arg[Any], arg: MessageSegment):
+    value = target.value
+    if value == AnyOne:
+        return arg
+    if value == AnyString or (value == nepattern.main._String and arg.is_text()):
+        return str(arg)
+    default_val = target.field.default
+    res = value.invalidate(arg, default_val) if value.anti else value.validate(arg, default_val)
+    if target.optional and res.flag != 'valid':
+        return
+    if res.flag == 'error':
+        return
+    return res._value  # noqa
+
+
 class AlconnaMatcher(Matcher):
+    command: Alconna
+
     @classmethod
     def assign(
         cls,
@@ -44,6 +81,69 @@ class AlconnaMatcher(Matcher):
 
         def _decorator(func: T_Handler) -> T_Handler:
             cls.append_handler(func, parameterless=parameterless)
+            return func
+
+        return _decorator
+
+    def set_path_arg(self, path: str, content: Any) -> None:
+        """设置一个 `got_path` 内容"""
+        self.state[ALCONNA_ARG_KEY.format(key=path)] = content
+
+    def get_path_arg(self, path: str, default: Any) -> Any:
+        """获取一个 `got_path` 内容"""
+        return self.state.get(ALCONNA_ARG_KEY.format(key=path), default)
+
+    @classmethod
+    def got_path(
+        cls,
+        path: str,
+        prompt: str | Message | MessageSegment | MessageTemplate | None = None,
+        parameterless: Iterable[Any] | None = None,
+    ) -> Callable[[T_Handler], T_Handler]:
+        """装饰一个函数来指示 NoneBot 获取一个路径下的参数 `key`
+
+        当要获取的 `path` 不存在时接收用户新的一条消息再运行该函数，如果 `path` 已存在则直接继续运行
+
+        本插件会自动将传入的 message 转为 path 对应的类型
+
+        参数:
+            path: 参数路径名
+            prompt: 在参数不存在时向用户发送的消息
+            parameterless: 非参数类型依赖列表
+        """
+        if not (arg := extract_arg(path, cls.command)):
+            raise ValueError(f"Path {path} not found in Alconna")
+
+        async def _key_getter(event: Event, matcher: "AlconnaMatcher"):
+            matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
+            if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
+                ms = event.get_message()[0]
+                if (res := _validate(arg, ms)) is None:
+                    await matcher.reject(prompt)
+                    return
+                matcher.set_path_arg(path, res)
+                return
+            if matcher.state.get(ALCONNA_ARG_KEY.format(key=path), ...) is not ...:
+                return
+            await matcher.reject(prompt)
+
+        _parameterless = (Depends(_key_getter), *(parameterless or ()))
+
+        def _decorator(func: T_Handler) -> T_Handler:
+            if cls.handlers and cls.handlers[-1].call is func:
+                func_handler = cls.handlers[-1]
+                new_handler = Dependent(
+                    call=func_handler.call,
+                    params=func_handler.params,
+                    parameterless=Dependent.parse_parameterless(
+                        tuple(_parameterless), cls.HANDLER_PARAM_TYPES
+                    )
+                    + func_handler.parameterless,
+                )
+                cls.handlers[-1] = new_handler
+            else:
+                cls.append_handler(func, parameterless=_parameterless)
+
             return func
 
         return _decorator
@@ -117,6 +217,7 @@ def on_alconna(
         default_state=state,
     )
     store_matcher(matcher)
+    matcher.command = command
     return matcher
 
 

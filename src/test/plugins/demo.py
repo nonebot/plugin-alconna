@@ -4,6 +4,7 @@ from typing import Literal
 
 from tarina import lang
 from importlib_metadata import distributions
+from nonebot.typing import T_State
 from nonebot.adapters.onebot.v12.message import Message, MessageSegment
 from arclet.alconna import (
     Args,
@@ -17,9 +18,13 @@ from arclet.alconna import (
     command_manager,
 )
 
-import nonebot_plugin_alconna.adapters.onebot12  # noqa: F401
+from nonebot_plugin_alconna.adapters.onebot12 import Mention, ImgOrUrl
 from nonebot_plugin_alconna import (
     Check,
+    Match,
+    AlconnaArg,
+    AlconnaMatch,
+    AlconnaMatcher,
     AlconnaMatches,
     AlconnaDuplication,
     assign,
@@ -35,6 +40,7 @@ with namespace("nbtest") as ns:
     ns.builtin_option_name["help"] = {"-h", "帮助", "--help"}
 
     help_cmd = on_alconna(Alconna("help"))
+    test_cmd = on_alconna(Alconna("test", Args["target?", ImgOrUrl]))
 
     pip = Alconna(
         "pip",
@@ -148,3 +154,13 @@ async def test(
         f"args: {args}\n"
         f"kwargs: {kwargs}\n"
     )
+
+
+@test_cmd.handle()
+async def tt_h(matcher: AlconnaMatcher, target: Match[str] = AlconnaMatch("target")):
+    if target.available:
+        matcher.set_path_arg("target", target.result)
+
+@test_cmd.got_path("target", prompt="请输入目标")
+async def tt(target: str = AlconnaArg("target")):
+    await test_cmd.send(f"target: {target}")
