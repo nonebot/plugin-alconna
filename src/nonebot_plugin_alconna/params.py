@@ -8,7 +8,7 @@ from arclet.alconna.builtin import generate_duplication
 from nonebot.internal.matcher import Matcher as Matcher
 
 from .model import T, Match, Query, CommandResult
-from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT, ALCONNA_ARG_KEY
+from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 
@@ -80,9 +80,11 @@ def AlconnaDuplication(__t: Optional[Type[T_Duplication]] = None) -> Duplication
 
     return Depends(_alconna_match, use_cache=False)
 
+
 def AlconnaArg(path: str) -> Any:
     def _alconna_arg(state: T_State) -> Any:
         return state[ALCONNA_ARG_KEY.format(key=path)]
+
     return Depends(_alconna_arg, use_cache=False)
 
 

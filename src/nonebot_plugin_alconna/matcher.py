@@ -3,20 +3,26 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any, Callable, Iterable, Protocol
 
+import nepattern.main
 from nonebot.rule import Rule
 from tarina import is_awaitable
 from nonebot.params import Depends
 from nonebot.matcher import Matcher
+from nepattern import AnyOne, AnyString
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from arclet.alconna.tools import AlconnaFormat
 from arclet.alconna.tools.construct import FuncMounter
-from arclet.alconna import Arg, Alconna, command_manager, Args
-from nepattern import AnyOne, AnyString
-import nepattern.main
+from arclet.alconna import Arg, Args, Alconna, command_manager
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
-from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
+from nonebot.internal.adapter import (
+    Bot,
+    Event,
+    Message,
+    MessageSegment,
+    MessageTemplate,
+)
 
 from .rule import alconna
 from .model import CompConfig
@@ -28,18 +34,20 @@ from .params import Check, AlcExecResult, assign, _seminal
 class ArgsMounter(Protocol):
     args: Args
 
+
 def extract_arg(path: str, target: ArgsMounter) -> Arg | None:
     """从 Alconna 中提取参数"""
-    parts = path.split('.')
+    parts = path.split(".")
     if len(parts) == 1:
         return next((arg for arg in target.args.argument if arg.name == path), None)
     _parts, end = parts[:-1], parts[-1]
-    if not (options := getattr(target, 'options', None)):
+    if not (options := getattr(target, "options", None)):
         return
     for opt in options:
         if opt.dest == _parts[0]:
-            return extract_arg('.'.join(_parts[1:] + [end]), opt)
+            return extract_arg(".".join(_parts[1:] + [end]), opt)
     return
+
 
 def _validate(target: Arg[Any], arg: MessageSegment):
     value = target.value
@@ -48,10 +56,14 @@ def _validate(target: Arg[Any], arg: MessageSegment):
     if value == AnyString or (value == nepattern.main._String and arg.is_text()):
         return str(arg)
     default_val = target.field.default
-    res = value.invalidate(arg, default_val) if value.anti else value.validate(arg, default_val)
-    if target.optional and res.flag != 'valid':
+    res = (
+        value.invalidate(arg, default_val)
+        if value.anti
+        else value.validate(arg, default_val)
+    )
+    if target.optional and res.flag != "valid":
         return
-    if res.flag == 'error':
+    if res.flag == "error":
         return
     return res._value  # noqa
 
@@ -102,9 +114,11 @@ class AlconnaMatcher(Matcher):
     ) -> Callable[[T_Handler], T_Handler]:
         """装饰一个函数来指示 NoneBot 获取一个路径下的参数 `key`
 
-        当要获取的 `path` 不存在时接收用户新的一条消息再运行该函数，如果 `path` 已存在则直接继续运行
+        当要获取的 `path` 不存在时接收用户新的一条消息再运行该函数
 
-        本插件会自动将传入的 message 转为 path 对应的类型
+        如果 `path` 已存在则直接继续运行
+
+        本插件会获取消息的最后一个消息段并转为 path 对应的类型
 
         参数:
             path: 参数路径名
@@ -114,10 +128,10 @@ class AlconnaMatcher(Matcher):
         if not (arg := extract_arg(path, cls.command)):
             raise ValueError(f"Path {path} not found in Alconna")
 
-        async def _key_getter(event: Event, matcher: "AlconnaMatcher"):
+        async def _key_getter(event: Event, matcher: AlconnaMatcher):
             matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
             if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
-                ms = event.get_message()[0]
+                ms = event.get_message()[-1]
                 if (res := _validate(arg, ms)) is None:
                     await matcher.reject(prompt)
                     return
