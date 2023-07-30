@@ -141,7 +141,7 @@ class AlconnaMatcher(Matcher):
                 return
             await matcher.reject(prompt)
 
-        _parameterless = (Depends(_key_getter), *(parameterless or ()))
+        _parameterless = (*(parameterless or ()), Depends(_key_getter))
 
         def _decorator(func: T_Handler) -> T_Handler:
             if cls.handlers and cls.handlers[-1].call is func:

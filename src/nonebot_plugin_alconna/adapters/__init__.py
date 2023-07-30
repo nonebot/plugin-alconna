@@ -150,7 +150,7 @@ _Image = gen_unit(
     Image,
     {
         "image": _handle_image,
-        "photo": lambda seg: Image(seg, id=seg.data["file_id"]),
+        "photo": lambda seg: Image(seg, id=seg.data["file"]),
         "attachment": lambda seg: Image(seg, seg.data["url"]),
         "Image": lambda seg: Image(seg, seg.data["url"], seg.data["imageId"]),
     },
