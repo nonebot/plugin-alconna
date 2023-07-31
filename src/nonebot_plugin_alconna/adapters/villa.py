@@ -21,29 +21,38 @@ argv_config(
 )
 
 Text = str
-MentionUser = SegmentPattern("mention_user", MessageSegment, MessageSegment.mention_user)
-MentionRobot = SegmentPattern("mention_robot", MessageSegment, MessageSegment.mention_robot)
+MentionUser = SegmentPattern(
+    "mention_user", MessageSegment, MessageSegment.mention_user
+)
+MentionRobot = SegmentPattern(
+    "mention_robot", MessageSegment, MessageSegment.mention_robot
+)
 MentionAll = SegmentPattern("mention_all", MessageSegment, MessageSegment.mention_all)
 RoomLink = SegmentPattern("room_link", MessageSegment, MessageSegment.room_link)
 Link = SegmentPattern("link", MessageSegment, MessageSegment.link)
 Quote = SegmentPattern("quote", MessageSegment, MessageSegment.quote)
 Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
 Post = SegmentPattern("post", MessageSegment, MessageSegment.post)
-PreviewLink = SegmentPattern("preview_link", MessageSegment, MessageSegment.preview_link)
+PreviewLink = SegmentPattern(
+    "preview_link", MessageSegment, MessageSegment.preview_link
+)
 Badge = SegmentPattern("badge", MessageSegment, MessageSegment.badge)
 
-ImgOrUrl = UnionPattern(
-    [
-        BasePattern(
-            model=PatternModel.TYPE_CONVERT,
-            origin=str,
-            converter=lambda _, x: x.data["file_id"],
-            alias="img",
-            accepts=[Image],
-        ),
-        URL,
-    ]
-) @ "img_url"
+ImgOrUrl = (
+    UnionPattern(
+        [
+            BasePattern(
+                model=PatternModel.TYPE_CONVERT,
+                origin=str,
+                converter=lambda _, x: x.data["file_id"],
+                alias="img",
+                accepts=[Image],
+            ),
+            URL,
+        ]
+    )
+    @ "img_url"
+)
 """
 内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接
 """

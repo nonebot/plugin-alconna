@@ -89,7 +89,9 @@ _At = gen_unit(
     {
         "at": lambda seg: At(seg, str(seg.data.get("qq", seg.data.get("user_id")))),
         "mention": lambda seg: At(seg, seg.data.get("user_id", seg.data.get("text"))),
-        "mention_user": lambda seg: At(seg, str(seg.data.get("user_id", seg.data["mention_user"].user_id))),
+        "mention_user": lambda seg: At(
+            seg, str(seg.data.get("user_id", seg.data["mention_user"].user_id))
+        ),
         "mention_robot": lambda seg: At(seg, str(seg.data["mention_robot"].bot_id)),
         "At": lambda seg: At(seg, str(seg, seg.data["target"])),
         "kmarkdown": _handle_kmarkdown_met,

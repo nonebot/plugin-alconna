@@ -103,6 +103,7 @@ def _isinstance(
     except (KeyError, AttributeError):
         return None
 
+
 def gen_unit(
     model: type[T],
     mapping: dict[str, Callable[[MessageSegment], T | Literal[False] | None]],
