@@ -89,7 +89,8 @@ _At = gen_unit(
     {
         "at": lambda seg: At(seg, str(seg.data.get("qq", seg.data.get("user_id")))),
         "mention": lambda seg: At(seg, seg.data.get("user_id", seg.data.get("text"))),
-        "mention_user": lambda seg: At(seg, str(seg.data["user_id"])),
+        "mention_user": lambda seg: At(seg, str(seg.data.get("user_id", seg.data["mention_user"].user_id))),
+        "mention_robot": lambda seg: At(seg, str(seg.data["mention_robot"].bot_id)),
         "At": lambda seg: At(seg, str(seg, seg.data["target"])),
         "kmarkdown": _handle_kmarkdown_met,
     },
@@ -97,7 +98,8 @@ _At = gen_unit(
 """
 at: ob11, feishu
 mention: ob12, tg
-mention_user: qqguild
+mention_user: qqguild, villa
+mention_robot: villa
 At: mirai
 kmarkdown: kook
 """
@@ -132,6 +134,8 @@ _Emoji = gen_unit(
 def _handle_image(seg: MessageSegment):
     if "file_id" in seg.data:  # ob12
         return Image(seg, id=seg.data["file_id"])
+    if "image" in seg.data:  # villa
+        return Image(seg, url=seg.data["image"].url)
     if "image_key" in seg.data:  # feishu
         return Image(seg, url=seg.data["image_key"])
     if "file_key" in seg.data:  # kook

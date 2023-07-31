@@ -95,11 +95,13 @@ MReturn: TypeAlias = Union[
 def _isinstance(
     seg: MessageSegment, mapping: dict[str, Callable[[MessageSegment], Any]]
 ):
-    if (key := seg.type) in mapping and (res := mapping[key](seg)):
-        return res
-    if "*" in mapping and (res := mapping["*"](seg)):
-        return res
-
+    try:
+        if (key := seg.type) in mapping and (res := mapping[key](seg)):
+            return res
+        if "*" in mapping and (res := mapping["*"](seg)):
+            return res
+    except (KeyError, AttributeError):
+        return None
 
 def gen_unit(
     model: type[T],
