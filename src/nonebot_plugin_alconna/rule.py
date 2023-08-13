@@ -1,6 +1,6 @@
 import asyncio
 import traceback
-from typing import Dict, Union, ClassVar, Optional
+from typing import Dict, Union, ClassVar, Optional, Type
 
 from tarina import lang
 from nonebot import get_driver
@@ -26,7 +26,50 @@ from arclet.alconna import (
 from .config import Config
 from .typings import TConvert
 from .model import CompConfig, CommandResult
-from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT
+from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT, SEGMATCH_RESULT, SEGMATCH_MSG
+from .adapters import Segment, env
+
+class SegMatch:
+    """检查消息是否匹配指定的 Segment类型"""
+
+    def __init__(
+        self,
+        *types: Type[Segment],
+        remove: bool = False,
+        rmatch: bool = False,
+    ):
+        self.types = types
+        self.remove = remove
+        self.rmatch = rmatch
+
+    async def __call__(self, event: Event, state: T_State) -> bool:
+        try:
+            msg = event.get_message()
+        except Exception:
+            return False
+        msg_copy = msg.copy()
+        result = []
+        for _type, seg in zip(self.types, reversed(msg) if self.rmatch else msg):
+            res = env[_type].validate(seg)
+            if not res.success:
+                return False
+            if self.remove:
+                msg_copy.remove(seg)
+            result.append(res.value)
+        state[SEGMATCH_RESULT] = result
+        state[SEGMATCH_MSG] = msg_copy
+        return True
+
+
+def seg_match(*types: Type[Segment], remove: bool = False, rmatch: bool = False) -> Rule:
+    """检查消息是否匹配指定的 Segment类型
+
+    参数:
+        types: Segment类型
+        remove: 是否从消息中移除匹配的Segment
+        rmatch: 是否从消息末尾开始匹配
+    """
+    return Rule(SegMatch(*types, remove=remove, rmatch=rmatch))
 
 
 class AlconnaRule:

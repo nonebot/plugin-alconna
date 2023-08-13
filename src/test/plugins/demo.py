@@ -63,6 +63,8 @@ with namespace("nbtest") as ns:
         use_origin=True,
     )
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
+    login = on_alconna(Alconna("login", Args["password?", str], Option("-r|--recall")))
+
 
     class PipResult(Duplication):
         list: SubcommandStub
@@ -164,3 +166,12 @@ async def tt_h(matcher: AlconnaMatcher, target: Match[str] = AlconnaMatch("targe
 @test_cmd.got_path("target", prompt="请输入目标")
 async def tt(target: str = AlconnaArg("target")):
     await test_cmd.send(f"target: {target}")
+
+
+@login.assign("recall")
+async def login_exit():
+    await login.finish("已退出")
+
+@login.handle()
+async def login_handle(arp: Arparma = AlconnaMatches()):
+    await login.send(str(arp))

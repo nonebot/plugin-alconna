@@ -67,6 +67,14 @@ class File(Segment):
     name: Optional[str] = field(default=None)
 
 
+@dataclass
+class Reply(Segment):
+    """Reply对象，表示一类回复消息"""
+
+    id: str
+    msg: Optional[str] = field(default=None)
+
+
 _Segment = gen_unit(
     Segment,
     {
@@ -243,5 +251,12 @@ _File = gen_unit(
     },
 )
 
+_Reply = gen_unit(
+    Reply,
+    {
+        "reply": lambda seg: Reply(seg, seg.data["id"]),
+    },
+)
+
 env = create_local_patterns("nonebot")
-env.sets([_At, _Image, _Video, _Voice, _Audio, _File, _Segment])
+env.sets([_At, _Image, _Video, _Voice, _Audio, _File, _Reply, _Segment])
