@@ -246,13 +246,12 @@ class AlconnaRule:
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
         if event.get_type() != "message":
             return False
+        msg = state.get(SEGMATCH_MSG, event.get_message())
         if self.use_origin:
             try:
-                msg = getattr(event, "original_message", event.get_message())
+                msg = getattr(event, "original_message", msg)
             except (NotImplementedError, ValueError):
                 return False
-        else:
-            msg = event.get_message()
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
             try:

@@ -22,8 +22,14 @@ from .params import AlcExecResult as AlcExecResult
 from .params import AlconnaResult as AlconnaResult
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
 from .params import AlconnaMatches as AlconnaMatches
+from .params import SegMatchResult as SegMatchResult
+from .params import SegMatchMessage as SegMatchMessage
+from .params import SegMsg as SegMsg
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
+from .consts import SEGMATCH_RESULT as SEGMATCH_RESULT
+from .consts import SEGMATCH_MSG as SEGMATCH_MSG
+from .rule import seg_match as seg_match
 from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
