@@ -251,10 +251,19 @@ _File = gen_unit(
     },
 )
 
+def _handle_quote(seg: MessageSegment):
+    if "msg_id" in seg.data:  # kook:
+        return Reply(seg, seg.data["msg_id"], seg.data.get("content"))
+    if "quoted_message_id" in seg.data:  # villa
+        return Reply(seg, seg.data["quoted_message_id"])
+
 _Reply = gen_unit(
     Reply,
     {
-        "reply": lambda seg: Reply(seg, seg.data["id"]),
+        "reference": lambda seg: Reply(seg, seg.data["message_id"]),
+        "reply": lambda seg: Reply(seg, seg.data.get("id", seg.data["message_id"])),
+        "quote": _handle_quote,
+        "Quote": lambda seg: Reply(seg, str(seg.data["id"]), str(seg.data["origin"])),
     },
 )
 
