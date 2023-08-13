@@ -35,7 +35,7 @@ class SegMatch:
 
     def __init__(
         self,
-        *types: Type[Segment],
+        *types: Union[Type[Segment], Type[str]],
         remove: bool = False,
         rmatch: bool = False,
     ):
@@ -45,25 +45,33 @@ class SegMatch:
 
     async def __call__(self, event: Event, state: T_State) -> bool:
         try:
-            msg = event.get_message()
+            msg = getattr(event, "original_message", event.get_message())
         except Exception:
             return False
         msg_copy = msg.copy()
+
         result = []
         for _type, seg in zip(self.types, reversed(msg) if self.rmatch else msg):
-            res = env[_type].validate(seg)
-            if not res.success:
-                return False
-            if self.remove:
-                msg_copy.remove(seg)
-            result.append(res.value)
+            if _type is str:
+                if not seg.is_text():
+                    return False
+                if self.remove:
+                    msg_copy.remove(seg)
+                result.append(seg.data["text"])
+            else:
+                res = env[_type].validate(seg)
+                if not res.success:
+                    return False
+                if self.remove:
+                    msg_copy.remove(seg)
+                result.append(res.value)
         state[SEGMATCH_RESULT] = result
         state[SEGMATCH_MSG] = msg_copy
         return True
 
 
 def seg_match(
-    *types: Type[Segment], remove: bool = False, rmatch: bool = False
+    *types: Union[Type[Segment], Type[str]], remove: bool = False, rmatch: bool = False
 ) -> Rule:
     """检查消息是否匹配指定的 Segment类型
 

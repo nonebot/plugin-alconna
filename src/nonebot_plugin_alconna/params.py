@@ -19,7 +19,7 @@ from .consts import (
 )
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
-TS = TypeVar("TS", bound=Segment)
+TS = TypeVar("TS", bound=Union[Segment, str])
 
 
 def _alconna_result(state: T_State) -> CommandResult:
