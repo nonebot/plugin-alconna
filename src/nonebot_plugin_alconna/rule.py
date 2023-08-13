@@ -55,16 +55,14 @@ class SegMatch:
             if _type is str:
                 if not seg.is_text():
                     return False
-                if self.remove:
-                    msg_copy.remove(seg)
                 result.append(seg.data["text"])
             else:
                 res = env[_type].validate(seg)
                 if not res.success:
                     return False
-                if self.remove:
-                    msg_copy.remove(seg)
                 result.append(res.value)
+            if self.remove:
+                msg_copy.remove(seg)
         state[SEGMATCH_RESULT] = result
         state[SEGMATCH_MSG] = msg_copy
         return True
