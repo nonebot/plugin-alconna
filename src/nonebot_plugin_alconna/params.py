@@ -1,16 +1,22 @@
 from typing_extensions import Annotated
-from typing import Any, Dict, List, Type, TypeVar, Callable, Optional, overload, Union
+from typing import Any, Dict, List, Type, Union, TypeVar, Callable, Optional, overload
 
 from nonebot.typing import T_State
+from nonebot.internal.adapter import Message
 from arclet.alconna import Empty, Arparma, Duplication
 from nonebot.internal.params import Depends as Depends
 from arclet.alconna.builtin import generate_duplication
 from nonebot.internal.matcher import Matcher as Matcher
-from nonebot.internal.adapter import Message
 
-from .model import T, Match, Query, CommandResult
-from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXEC_RESULT, SEGMATCH_RESULT, SEGMATCH_MSG
 from .adapters import Segment
+from .model import T, Match, Query, CommandResult
+from .consts import (
+    SEGMATCH_MSG,
+    ALCONNA_RESULT,
+    ALCONNA_ARG_KEY,
+    SEGMATCH_RESULT,
+    ALCONNA_EXEC_RESULT,
+)
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 TS = TypeVar("TS", bound=Segment)
@@ -90,21 +96,28 @@ def AlconnaArg(path: str) -> Any:
 
     return Depends(_alconna_arg, use_cache=False)
 
+
 def _seg_match_msg(state: T_State) -> Message:
     return state[SEGMATCH_MSG]
 
+
 def SegMatchMessage() -> Message:
     return Depends(_seg_match_msg, use_cache=False)
+
 
 @overload
 def SegMatchResult() -> List[Segment]:
     ...
 
+
 @overload
 def SegMatchResult(target: Type[TS], index: int = 0) -> TS:
     ...
 
-def SegMatchResult(target: Optional[Type[TS]] = None, index: int = 0) -> Union[List[Segment], TS]:
+
+def SegMatchResult(
+    target: Optional[Type[TS]] = None, index: int = 0
+) -> Union[List[Segment], TS]:
     def _seg_match_result(state: T_State):
         result = state[SEGMATCH_RESULT]
         return result[index] if target else result

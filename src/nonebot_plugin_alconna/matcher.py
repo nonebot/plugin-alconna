@@ -211,15 +211,14 @@ def on_alconna(
         command_manager.register(command)
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "message",
-        alconna(
+        rule & alconna(
             command,
             skip_for_unmatch,
             auto_send_output,
             output_converter,
             comp_config,
             use_origin,
-        )
-        & rule,
+        ),
         Permission() | permission,
         temp=temp,
         expire_time=expire_time,

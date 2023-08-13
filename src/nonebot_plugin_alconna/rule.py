@@ -1,6 +1,6 @@
 import asyncio
 import traceback
-from typing import Dict, Union, ClassVar, Optional, Type
+from typing import Dict, Type, Union, ClassVar, Optional
 
 from tarina import lang
 from nonebot import get_driver
@@ -25,9 +25,10 @@ from arclet.alconna import (
 
 from .config import Config
 from .typings import TConvert
-from .model import CompConfig, CommandResult
-from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT, SEGMATCH_RESULT, SEGMATCH_MSG
 from .adapters import Segment, env
+from .model import CompConfig, CommandResult
+from .consts import SEGMATCH_MSG, ALCONNA_RESULT, SEGMATCH_RESULT, ALCONNA_EXEC_RESULT
+
 
 class SegMatch:
     """检查消息是否匹配指定的 Segment类型"""
@@ -61,7 +62,9 @@ class SegMatch:
         return True
 
 
-def seg_match(*types: Type[Segment], remove: bool = False, rmatch: bool = False) -> Rule:
+def seg_match(
+    *types: Type[Segment], remove: bool = False, rmatch: bool = False
+) -> Rule:
     """检查消息是否匹配指定的 Segment类型
 
     参数:

@@ -21,12 +21,15 @@ from nonebot_plugin_alconna.adapters.onebot12 import ImgOrUrl
 from nonebot_plugin_alconna import (
     Check,
     Match,
+    Reply,
     AlconnaArg,
     AlconnaMatch,
     AlconnaMatcher,
     AlconnaMatches,
+    SegMatchResult,
     AlconnaDuplication,
     assign,
+    seg_match,
     funcommand,
     on_alconna,
     set_output_converter,
@@ -64,7 +67,7 @@ with namespace("nbtest") as ns:
     )
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
     login = on_alconna(Alconna("login", Args["password?", str], Option("-r|--recall")))
-
+    bind = on_alconna(Alconna("bind"), seg_match(Reply, remove=True))
 
     class PipResult(Duplication):
         list: SubcommandStub
@@ -172,6 +175,12 @@ async def tt(target: str = AlconnaArg("target")):
 async def login_exit():
     await login.finish("已退出")
 
+
 @login.handle()
 async def login_handle(arp: Arparma = AlconnaMatches()):
     await login.send(str(arp))
+
+
+@bind.handle()
+async def bind_handle(reply: Reply = SegMatchResult(Reply)):
+    await bind.send(str(reply))
