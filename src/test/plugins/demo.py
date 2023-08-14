@@ -188,9 +188,17 @@ async def bind_handle(reply: Reply = SegMatchResult(Reply)):
     await bind.send(str(reply))
 
 
-wc = on_alconna(Alconna("wc", Args["img", Image]))
+wc = on_alconna(Alconna("wc", Args["img?", Image]))
 
 
 @wc.handle()
-async def _(img: Match[bytes] = AlconnaMatch("img", image_fetch)):
-    print(img.result[:100])
+async def wc_h(
+    matcher: AlconnaMatcher, img: Match[list] = AlconnaMatch("img", image_fetch)
+):
+    if img.available:
+        matcher.set_path_arg("img", img.result)
+
+
+@wc.got_path("img", prompt="请输入图片", middleware=image_fetch)
+async def wc_g(img: list = AlconnaArg("img")):
+    await wc.send(f"img: {img[:10]}")

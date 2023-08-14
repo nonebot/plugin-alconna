@@ -21,8 +21,7 @@ from .consts import (
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 TS = TypeVar("TS", bound=Union[Segment, str])
-MATCH_MIDDLEWARE: TypeAlias = Callable[[Bot, T_State, Match], Any]
-QUERY_MIDDLEWARE: TypeAlias = Callable[[Bot, T_State, Query], Any]
+MIDDLEWARE: TypeAlias = Callable[[Bot, T_State, Any], Any]
 
 
 def _alconna_result(state: T_State) -> CommandResult:
@@ -49,12 +48,12 @@ def AlconnaMatches() -> Arparma:
     return Depends(_alconna_matches, use_cache=False)
 
 
-def AlconnaMatch(name: str, middleware: Optional[MATCH_MIDDLEWARE] = None) -> Match:
+def AlconnaMatch(name: str, middleware: Optional[MIDDLEWARE] = None) -> Match:
     async def _alconna_match(state: T_State, bot: Bot) -> Match:
         arp = _alconna_result(state).result
         mat = Match(arp.all_matched_args.get(name, Empty), name in arp.all_matched_args)
         if middleware and mat.available:
-            mat.result = await run_always_await(middleware, bot, state, mat)
+            mat.result = await run_always_await(middleware, bot, state, mat.result)
         return mat
 
     return Depends(_alconna_match, use_cache=False)
@@ -63,7 +62,7 @@ def AlconnaMatch(name: str, middleware: Optional[MATCH_MIDDLEWARE] = None) -> Ma
 def AlconnaQuery(
     path: str,
     default: Union[T, Empty] = Empty,
-    middleware: Optional[QUERY_MIDDLEWARE] = None,
+    middleware: Optional[MIDDLEWARE] = None,
 ) -> Query[T]:
     async def _alconna_query(state: T_State, bot: Bot) -> Query:
         arp = _alconna_result(state).result
@@ -75,7 +74,7 @@ def AlconnaQuery(
         elif default != Empty:
             q.available = True
         if middleware and q.available:
-            q.result = await run_always_await(middleware, bot, state, q)
+            q.result = await run_always_await(middleware, bot, state, q.result)
         return q
 
     return Depends(_alconna_query, use_cache=False)
@@ -105,6 +104,16 @@ def AlconnaArg(path: str) -> Any:
         return state[ALCONNA_ARG_KEY.format(key=path)]
 
     return Depends(_alconna_arg, use_cache=False)
+
+
+# def AlconnaArg(path: str, middleware: Optional[MIDDLEWARE] = None) -> Any:
+#     async def _alconna_arg(state: T_State, bot: Bot) -> Any:
+#         arg = state[ALCONNA_ARG_KEY.format(key=path)]
+#         if middleware:
+#             return await run_always_await(middleware, bot, state, arg)
+#         return arg
+#
+#     return Depends(_alconna_arg, use_cache=False)
 
 
 def _seg_match_msg(state: T_State) -> Message:
