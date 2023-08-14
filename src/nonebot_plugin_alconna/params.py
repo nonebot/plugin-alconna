@@ -1,9 +1,10 @@
-from typing_extensions import Annotated
+from typing_extensions import Annotated, TypeAlias
 from typing import Any, Dict, List, Type, Union, TypeVar, Callable, Optional, overload
 
 from nonebot.typing import T_State
-from nonebot.internal.adapter import Message
+from nonebot.internal.adapter import Bot, Message
 from arclet.alconna import Empty, Arparma, Duplication
+from tarina import run_always_await
 from nonebot.internal.params import Depends as Depends
 from arclet.alconna.builtin import generate_duplication
 from nonebot.internal.matcher import Matcher as Matcher
@@ -20,6 +21,8 @@ from .consts import (
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 TS = TypeVar("TS", bound=Union[Segment, str])
+MATCH_MIDDLEWARE: TypeAlias = Callable[[Bot, T_State, Match], Any]
+QUERY_MIDDLEWARE: TypeAlias = Callable[[Bot, T_State, Query], Any]
 
 
 def _alconna_result(state: T_State) -> CommandResult:
@@ -46,18 +49,21 @@ def AlconnaMatches() -> Arparma:
     return Depends(_alconna_matches, use_cache=False)
 
 
-def AlconnaMatch(name: str) -> Match:
-    def _alconna_match(state: T_State) -> Match:
+def AlconnaMatch(name: str, middleware: Optional[MATCH_MIDDLEWARE] = None) -> Match:
+    async def _alconna_match(state: T_State, bot: Bot) -> Match:
         arp = _alconna_result(state).result
-        return Match(
+        mat = Match(
             arp.all_matched_args.get(name, Empty), name in arp.all_matched_args
         )
+        if middleware and mat.available:
+            mat.result = await run_always_await(middleware, bot, state, mat)
+        return mat
 
     return Depends(_alconna_match, use_cache=False)
 
 
-def AlconnaQuery(path: str, default: T = Empty) -> Query[T]:
-    def _alconna_query(state: T_State) -> Query:
+def AlconnaQuery(path: str, default: Union[T, Empty] = Empty, middleware: Optional[QUERY_MIDDLEWARE] = None) -> Query[T]:
+    async def _alconna_query(state: T_State, bot: Bot) -> Query:
         arp = _alconna_result(state).result
         q = Query(path, default)
         result = arp.query(path, Empty)
@@ -66,6 +72,8 @@ def AlconnaQuery(path: str, default: T = Empty) -> Query[T]:
             q.result = result
         elif default != Empty:
             q.available = True
+        if middleware and q.available:
+            q.result = await run_always_await(middleware, bot, state, q)
         return q
 
     return Depends(_alconna_query, use_cache=False)

@@ -25,8 +25,9 @@ from arclet.alconna import (
 
 from .config import Config
 from .typings import TConvert
+from .tools import reply_handle
+from .adapters import Reply, Segment, env
 from .model import CompConfig, CommandResult
-from .adapters import Reply, Segment, env, reply_handle
 from .consts import SEGMATCH_MSG, ALCONNA_RESULT, SEGMATCH_RESULT, ALCONNA_EXEC_RESULT
 
 

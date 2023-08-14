@@ -20,6 +20,7 @@ from arclet.alconna import (
 from nonebot_plugin_alconna.adapters.onebot12 import ImgOrUrl
 from nonebot_plugin_alconna import (
     Check,
+    Image,
     Match,
     Reply,
     AlconnaArg,
@@ -32,6 +33,7 @@ from nonebot_plugin_alconna import (
     seg_match,
     funcommand,
     on_alconna,
+    image_fetch,
     set_output_converter,
 )
 
@@ -184,3 +186,10 @@ async def login_handle(arp: Arparma = AlconnaMatches()):
 @bind.handle()
 async def bind_handle(reply: Reply = SegMatchResult(Reply)):
     await bind.send(str(reply))
+
+
+wc = on_alconna(Alconna("wc", Args["img", Image]))
+
+@wc.handle()
+async def _(img: Match[bytes] = AlconnaMatch("img", image_fetch)):
+    print(img.result[:100])
