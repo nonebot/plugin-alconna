@@ -13,7 +13,7 @@ from nonebot.dependencies import Dependent
 from arclet.alconna.tools import AlconnaFormat
 from tarina import is_awaitable, run_always_await
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
-from arclet.alconna import Arg, Args, Alconna, command_manager
+from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
 from nonebot.internal.adapter import (
@@ -70,6 +70,10 @@ def _validate(target: Arg[Any], arg: MessageSegment):
 
 class AlconnaMatcher(Matcher):
     command: Alconna
+
+    @classmethod
+    def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):
+        return cls.command.shortcut(key, args, delete)
 
     @classmethod
     def assign(
