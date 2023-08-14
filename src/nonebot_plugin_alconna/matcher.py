@@ -5,13 +5,13 @@ from typing import Any, Callable, Iterable, Protocol
 
 import nepattern.main
 from nonebot.rule import Rule
-from tarina import is_awaitable
 from nonebot.params import Depends
 from nonebot.matcher import Matcher
 from nepattern import AnyOne, AnyString
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from arclet.alconna.tools import AlconnaFormat
+from tarina import is_awaitable, run_always_await
 from arclet.alconna.tools.construct import FuncMounter
 from arclet.alconna import Arg, Args, Alconna, command_manager
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
@@ -28,7 +28,7 @@ from .rule import alconna
 from .model import CompConfig
 from .consts import ALCONNA_ARG_KEY
 from .typings import MReturn, TConvert
-from .params import Check, AlcExecResult, assign, _seminal
+from .params import MIDDLEWARE, Check, AlcExecResult, assign, _seminal
 
 
 class ArgsMounter(Protocol):
@@ -110,6 +110,7 @@ class AlconnaMatcher(Matcher):
         cls,
         path: str,
         prompt: str | Message | MessageSegment | MessageTemplate | None = None,
+        middleware: MIDDLEWARE | None = None,
         parameterless: Iterable[Any] | None = None,
     ) -> Callable[[T_Handler], T_Handler]:
         """装饰一个函数来指示 NoneBot 获取一个路径下的参数 `key`
@@ -128,13 +129,15 @@ class AlconnaMatcher(Matcher):
         if not (arg := extract_arg(path, cls.command)):
             raise ValueError(f"Path {path} not found in Alconna")
 
-        async def _key_getter(event: Event, matcher: AlconnaMatcher):
+        async def _key_getter(event: Event, bot: Bot, matcher: AlconnaMatcher):
             matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
             if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
                 ms = event.get_message()[-1]
                 if (res := _validate(arg, ms)) is None:
                     await matcher.reject(prompt)
                     return
+                if middleware:
+                    res = await run_always_await(middleware, bot, matcher.state, res)
                 matcher.set_path_arg(path, res)
                 return
             if matcher.state.get(ALCONNA_ARG_KEY.format(key=path), ...) is not ...:
