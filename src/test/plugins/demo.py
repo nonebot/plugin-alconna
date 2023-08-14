@@ -188,17 +188,27 @@ async def bind_handle(reply: Reply = SegMatchResult(Reply)):
     await bind.send(str(reply))
 
 
-wc = on_alconna(Alconna("wc", Args["img?", Image]))
+from arclet.alconna import store_true
+from nonebot_plugin_alconna import Query, AlconnaQuery
 
+mask_cmd = Alconna(
+    "设置词云形状",
+    Args["img?", Image],
+    Option("--default", action=store_true)
+)
 
-@wc.handle()
-async def wc_h(
-    matcher: AlconnaMatcher, img: Match[list] = AlconnaMatch("img", image_fetch)
-):
+mask_cmd.shortcut("设置默认词云形状", {"command": "设置词云形状", "args": ["--default"]})
+
+mask = on_alconna(mask_cmd)
+
+@mask.handle()
+async def mask_h(matcher: AlconnaMatcher, img: Match[list] = AlconnaMatch("img", image_fetch)):
     if img.available:
         matcher.set_path_arg("img", img.result)
 
-
-@wc.got_path("img", prompt="请输入图片", middleware=image_fetch)
-async def wc_g(img: list = AlconnaArg("img")):
-    await wc.send(f"img: {img[:10]}")
+@mask.got_path("img", prompt="请输入图片", middleware=image_fetch)
+async def mask_g(img: bytes = AlconnaArg("img"), default: Query[bool] = AlconnaQuery("default.value")):
+    if default.result:
+        await mask.send(f"img: {img[:10]}")
+    else:
+        await mask.send("ok")

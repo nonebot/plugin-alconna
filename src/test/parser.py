@@ -1,5 +1,8 @@
 from arclet.alconna import Args, Option, Alconna
 
+import nonebot_plugin_alconna
+assert Alconna("test_fallback").parse("test_fallback").matched
+
 
 def test_v11():
     from nonebot.adapters.onebot.v11 import Message

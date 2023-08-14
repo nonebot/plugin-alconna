@@ -195,10 +195,10 @@ def assign(
 
 
 def Check(fn: Callable[[Arparma], bool]) -> bool:
-    async def _arparma_check(state: T_State, matcher: Matcher) -> bool:
+    def _arparma_check(state: T_State, matcher: Matcher) -> bool:
         arp = _alconna_result(state).result
         if not (ans := fn(arp)):
-            await matcher.skip()
+            matcher.skip()
         return ans
 
     return Depends(_arparma_check, use_cache=False)

@@ -6,9 +6,9 @@ authors = [
 ]
 dependencies = [
     "nonebot2>=2.0.0rc4",
-    "arclet-alconna<2.0.0, >=1.7.13",
-    "arclet-alconna-tools<0.7.0, >=0.6.3",
-    "nepattern<0.6.0, >=0.5.10",
+    "arclet-alconna<2.0.0, >=1.7.16",
+    "arclet-alconna-tools<0.7.0, >=0.6.5",
+    "nepattern<0.6.0, >=0.5.13",
 ]
 dynamic = ["version"]
 requires-python = ">=3.8"

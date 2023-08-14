@@ -1,6 +1,6 @@
 import asyncio
 import traceback
-from typing import Dict, Type, Union, ClassVar, Optional
+from typing import Dict, Type, Union, Literal, ClassVar, Optional
 
 from tarina import lang
 from nonebot import get_driver
@@ -111,7 +111,7 @@ class AlconnaRule:
         use_origin: 是否使用未经 to_me 等处理过的消息
     """
 
-    default_converter: ClassVar[TConvert] = lambda _, x: Message(x)
+    default_converter: ClassVar[TConvert] = lambda _, x: Message(x)  # type: ignore
 
     __slots__ = (
         "command",
@@ -200,18 +200,18 @@ class AlconnaRule:
                 _futures["_"].set_result(False)
                 await _waiter.finish()
             if (mat := _tab.parse(content)).matched:
-                interface.tab(mat.offset)
+                interface.tab(mat.query_with(int, "offset", 1))
                 if self.comp_config.get("lite", False):
                     out = interface.current()
                 else:
                     out = "\n".join(interface.lines())
                 await _waiter.send(await self._convert(out, _event, res))
-                await _waiter.skip()
+                _waiter.skip()
             if (mat := _enter.parse(content)).matched:
                 _futures["_"].set_result(mat.content)
                 await _waiter.finish()
             await _waiter.send(await self._convert(interface.current(), _event, res))
-            await _waiter.skip()
+            _waiter.skip()
 
         def clear():
             interface.clear()
@@ -248,7 +248,7 @@ class AlconnaRule:
                 )
                 clear()
                 return res
-            ans: Union[Message, bool] = _future.result()
+            ans: Union[Message, Literal[False]] = _future.result()
             if ans is False:
                 await bot.send(
                     event,
@@ -273,10 +273,10 @@ class AlconnaRule:
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
         if event.get_type() != "message":
             return False
-        msg = state.get(SEGMATCH_MSG, event.get_message())
+        msg: Message = state.get(SEGMATCH_MSG, event.get_message())
         if self.use_origin:
             try:
-                msg = getattr(event, "original_message", msg)
+                msg: Message = getattr(event, "original_message", msg)  # type: ignore
             except (NotImplementedError, ValueError):
                 return False
         with output_manager.capture(self.command.name) as cap:

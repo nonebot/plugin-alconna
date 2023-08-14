@@ -4,7 +4,7 @@ from typing_extensions import ParamSpec, TypeAlias
 from typing import Any, Union, Generic, Literal, TypeVar, Callable, Awaitable
 
 from tarina import lang
-from nepattern import BasePattern, MatchFailed, PatternModel
+from nepattern import BasePattern, MatchFailed, MatchMode
 from nonebot.internal.adapter.message import Message, MessageSegment
 
 T = TypeVar("T")
@@ -23,7 +23,7 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
     ):
         super().__init__(
             name,
-            PatternModel.TYPE_CONVERT,
+            MatchMode.TYPE_CONVERT,
             origin,
             alias=name,
             accepts=[MessageSegment],
@@ -56,7 +56,7 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
     ):
         super().__init__(
             name,
-            PatternModel.TYPE_CONVERT,
+            MatchMode.TYPE_CONVERT,
             origin,
             alias=name,
             accepts=[MessageSegment, str],
@@ -74,7 +74,7 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
                 raise MatchFailed(
                     lang.require("nepattern", "content_error").format(target=input_)
                 )
-            return self.call(input_)
+            return self.call(input_)  # type: ignore
         if input_.type != self.pattern:
             raise MatchFailed(
                 lang.require("nepattern", "content_error").format(target=input_)
@@ -93,8 +93,8 @@ MReturn: TypeAlias = Union[
 
 
 def _isinstance(
-    seg: MessageSegment, mapping: dict[str, Callable[[MessageSegment], Any]]
-):
+    seg: MessageSegment, mapping: dict[str, Callable[[MessageSegment], T | Literal[False] | None]]
+) -> T | None:
     try:
         if (key := seg.type) in mapping and (res := mapping[key](seg)):
             return res
@@ -111,9 +111,9 @@ def gen_unit(
 ) -> BasePattern[T]:
     return BasePattern(
         model.__name__,
-        PatternModel.TYPE_CONVERT,
-        model,
-        lambda self, x: _isinstance(x, mapping),
+        MatchMode.TYPE_CONVERT,
+        origin=model,
+        converter=lambda self, x: _isinstance(x, mapping),  # type: ignore
         accepts=[MessageSegment],
         alias=model.__name__,
         validators=[additional] if additional else [],

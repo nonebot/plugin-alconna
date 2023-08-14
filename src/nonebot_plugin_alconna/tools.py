@@ -41,7 +41,7 @@ def reply_handle(event: Event, bot: Bot):
             from nonebot.adapters.qqguild.event import MessageEvent
 
             assert isinstance(event, MessageEvent)
-        if event.reply:
+        if event.reply and event.reply.message:
             return Reply(
                 event.reply.message,
                 str(event.reply.message.id),
@@ -68,12 +68,21 @@ async def image_fetch(bot: Bot, state: T_State, img: Image):
         return None
     adapter_name = bot.adapter.get_name()
     if adapter_name == "OneBot V11":
+        if TYPE_CHECKING:
+            from nonebot.adapters.onebot.v11.bot import Bot
+
+            assert isinstance(bot, Bot)
         url = (await bot.get_image(file=img.id))["data"]["url"]
         req = Request("GET", url)
         resp = await bot.adapter.request(req)
         return resp.content
     if adapter_name == "OneBot V12":
-        return (await bot.get_file(type="data", file_id=img.id))["data"]
+        if TYPE_CHECKING:
+            from nonebot.adapters.onebot.v12.bot import Bot
+
+            assert isinstance(bot, Bot)
+        resp = (await bot.get_file(type="data", file_id=img.id))["data"]
+        return resp.encode() if isinstance(resp, str) else bytes(resp)
     if adapter_name == "mirai2":
         url = (
             f"https://gchat.qpic.cn/gchatpic_new/0/0-0-"
@@ -83,6 +92,10 @@ async def image_fetch(bot: Bot, state: T_State, img: Image):
         resp = await bot.adapter.request(req)
         return resp.content
     if adapter_name == "Telegram":
+        if TYPE_CHECKING:
+            from nonebot.adapters.telegram.bot import Bot
+
+            assert isinstance(bot, Bot)
         url = (
             URL(bot.bot_config.api_server)
             / "file"

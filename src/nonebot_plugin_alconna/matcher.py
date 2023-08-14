@@ -12,7 +12,7 @@ from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from arclet.alconna.tools import AlconnaFormat
 from tarina import is_awaitable, run_always_await
-from arclet.alconna.tools.construct import FuncMounter
+from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from arclet.alconna import Arg, Args, Alconna, command_manager
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
@@ -172,7 +172,7 @@ def on_alconna(
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     output_converter: TConvert | None = None,
-    aliases: set[str | tuple[str, ...]] | None = None,
+    aliases: set[str] | tuple[str, ...] | None = None,
     comp_config: CompConfig | None = None,
     use_origin: bool = False,
     permission: Permission | T_PermissionChecker | None = None,
@@ -207,6 +207,7 @@ def on_alconna(
     if isinstance(command, str):
         command = AlconnaFormat(command)
     if aliases and command.command:
+        aliases = set(aliases)
         command_manager.delete(command)
         aliases.add(str(command.command))
         command.command = "re:(" + "|".join(aliases) + ")"
@@ -253,7 +254,7 @@ def funcommand(
     state: T_State | None = None,
     _depth: int = 0,
 ) -> Callable[[Callable[..., MReturn]], type[AlconnaMatcher]]:
-    _config = {"raise_exception": False}
+    _config: MountConfig = {"raise_exception": False}
     if name:
         _config["command"] = name
     if prefixes:
