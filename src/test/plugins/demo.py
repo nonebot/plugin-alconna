@@ -19,9 +19,9 @@ from arclet.alconna import (
 
 from nonebot_plugin_alconna.adapters.onebot12 import ImgOrUrl
 from nonebot_plugin_alconna import (
-    At,
     Check,
     Match,
+    Reply,
     AlconnaArg,
     AlconnaMatch,
     AlconnaMatcher,
@@ -67,7 +67,7 @@ with namespace("nbtest") as ns:
     )
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
     login = on_alconna(Alconna("login", Args["password?", str], Option("-r|--recall")))
-    bind = on_alconna(Alconna("bind"), seg_match(At, remove=True))
+    bind = on_alconna(Alconna("bind"), seg_match(Reply, remove=True))
 
     class PipResult(Duplication):
         list: SubcommandStub
@@ -182,5 +182,5 @@ async def login_handle(arp: Arparma = AlconnaMatches()):
 
 
 @bind.handle()
-async def bind_handle(at: At = SegMatchResult(At)):
-    await bind.send(str(at))
+async def bind_handle(reply: Reply = SegMatchResult(Reply)):
+    await bind.send(str(reply))
