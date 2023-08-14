@@ -83,7 +83,12 @@ class TelegramMessageArgv(MessageArgv):
         """
         self.reset()
         if not isinstance(data, BaseMessage):
-            raise TypeError(data)
+            if not self.converter:
+                raise TypeError(data)
+            try:
+                data = self.converter(data)
+            except Exception as e:
+                raise TypeError(data) from e
         self.origin = data
         styles["msg"] = str(data)
         _index = 0

@@ -197,7 +197,7 @@ mask_cmd = Alconna(
     Option("--default", action=store_true)
 )
 
-mask_cmd.shortcut("设置默认词云形状", {"command": "设置词云形状", "args": ["--default"]})
+mask_cmd.shortcut("设置默认词云形状", {"command": "设置词云形状 {%0}", "args": ["--default"]})
 
 mask = on_alconna(mask_cmd)
 
