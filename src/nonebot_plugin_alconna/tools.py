@@ -1,15 +1,15 @@
 from typing import TYPE_CHECKING
 
-from yarl import URL
-from nonebot.typing import T_State
 from nonebot.internal.adapter import Bot, Event
 from nonebot.internal.driver.model import Request
+from nonebot.typing import T_State
+from yarl import URL
 
-from .model import Match
 from .adapters import Image, Reply
+from .model import Match
 
 
-def reply_handle(event: Event, bot: Bot):
+async def reply_handle(event: Event, bot: Bot):
     adapter = bot.adapter
     adapter_name = adapter.get_name()
     if adapter_name == "Telegram":
@@ -55,6 +55,36 @@ def reply_handle(event: Event, bot: Bot):
             assert isinstance(event, MessageEvent)
         if event.quote:
             return Reply(event.quote, str(event.quote.id), event.quote.origin)
+    elif adapter_name == "Kaiheila":
+        if TYPE_CHECKING:
+            from nonebot.adapters.kaiheila.event import MessageEvent, ChannelMessageEvent, PrivateMessageEvent
+
+            assert isinstance(event, (MessageEvent, ChannelMessageEvent, PrivateMessageEvent))
+        from nonebot.adapters.kaiheila.event import ChannelMessageEvent, PrivateMessageEvent
+        message = await bot.call_api(
+            api="message_view"
+            if isinstance(event, ChannelMessageEvent)
+            else "directMessage_view",
+            msg_id=event.msg_id,
+            **(
+                {"chat_code": event.event.code}
+                if isinstance(event, PrivateMessageEvent)
+                else {}
+            ),
+        )
+        if message.quote:
+            return Reply(message.quote, message.quote.id_, None)
+    elif adapter_name == "Discord":
+        try:
+            if TYPE_CHECKING:
+                from nonebot.adapters.discord import MessageEvent, MessageCreateEvent
+
+                assert isinstance(event, (MessageEvent, MessageCreateEvent))
+            from nonebot.adapters.discord import MessageEvent, MessageCreateEvent
+            return Reply(event.message_reference, event.message_reference.message_id, None)
+        except Exception:
+            pass
+
     elif reply := getattr(event, "reply", None):
         return Reply(reply, str(reply.message_id), getattr(reply, "message", None))
     return None
@@ -87,10 +117,10 @@ async def image_fetch(bot: Bot, state: T_State, img: Match[Image]):
         return resp.content
     if adapter_name == "Telegram":
         url = (
-            URL(bot.bot_config.api_server)
-            / "file"
-            / f"bot{bot.bot_config.token}"
-            / img.result.id
+                URL(bot.bot_config.api_server)
+                / "file"
+                / f"bot{bot.bot_config.token}"
+                / img.result.id
         )
         req = Request("GET", url)
         resp = await bot.adapter.request(req)
