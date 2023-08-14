@@ -1,10 +1,10 @@
 """通用标注, 无法用于创建 MS对象"""
 import re
+from typing import Any, Union, Optional
 from dataclasses import field, dataclass
-from typing import TYPE_CHECKING, Any, Union, Optional
 
 from nepattern import create_local_patterns
-from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
+from nonebot.internal.adapter import Message, MessageSegment
 
 from nonebot_plugin_alconna.typings import gen_unit
 

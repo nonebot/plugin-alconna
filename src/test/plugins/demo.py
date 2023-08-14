@@ -190,6 +190,7 @@ async def bind_handle(reply: Reply = SegMatchResult(Reply)):
 
 wc = on_alconna(Alconna("wc", Args["img", Image]))
 
+
 @wc.handle()
 async def _(img: Match[bytes] = AlconnaMatch("img", image_fetch)):
     print(img.result[:100])

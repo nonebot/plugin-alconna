@@ -2,9 +2,9 @@ from typing_extensions import Annotated, TypeAlias
 from typing import Any, Dict, List, Type, Union, TypeVar, Callable, Optional, overload
 
 from nonebot.typing import T_State
+from tarina import run_always_await
 from nonebot.internal.adapter import Bot, Message
 from arclet.alconna import Empty, Arparma, Duplication
-from tarina import run_always_await
 from nonebot.internal.params import Depends as Depends
 from arclet.alconna.builtin import generate_duplication
 from nonebot.internal.matcher import Matcher as Matcher
@@ -52,9 +52,7 @@ def AlconnaMatches() -> Arparma:
 def AlconnaMatch(name: str, middleware: Optional[MATCH_MIDDLEWARE] = None) -> Match:
     async def _alconna_match(state: T_State, bot: Bot) -> Match:
         arp = _alconna_result(state).result
-        mat = Match(
-            arp.all_matched_args.get(name, Empty), name in arp.all_matched_args
-        )
+        mat = Match(arp.all_matched_args.get(name, Empty), name in arp.all_matched_args)
         if middleware and mat.available:
             mat.result = await run_always_await(middleware, bot, state, mat)
         return mat
@@ -62,7 +60,11 @@ def AlconnaMatch(name: str, middleware: Optional[MATCH_MIDDLEWARE] = None) -> Ma
     return Depends(_alconna_match, use_cache=False)
 
 
-def AlconnaQuery(path: str, default: Union[T, Empty] = Empty, middleware: Optional[QUERY_MIDDLEWARE] = None) -> Query[T]:
+def AlconnaQuery(
+    path: str,
+    default: Union[T, Empty] = Empty,
+    middleware: Optional[QUERY_MIDDLEWARE] = None,
+) -> Query[T]:
     async def _alconna_query(state: T_State, bot: Bot) -> Query:
         arp = _alconna_result(state).result
         q = Query(path, default)
