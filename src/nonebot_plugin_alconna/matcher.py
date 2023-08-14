@@ -211,7 +211,8 @@ def on_alconna(
         command_manager.register(command)
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "message",
-        rule & alconna(
+        rule
+        & alconna(
             command,
             skip_for_unmatch,
             auto_send_output,

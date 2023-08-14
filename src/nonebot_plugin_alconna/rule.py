@@ -25,8 +25,8 @@ from arclet.alconna import (
 
 from .config import Config
 from .typings import TConvert
-from .adapters import Reply, Segment, env, reply_handle
 from .model import CompConfig, CommandResult
+from .adapters import Reply, Segment, env, reply_handle
 from .consts import SEGMATCH_MSG, ALCONNA_RESULT, SEGMATCH_RESULT, ALCONNA_EXEC_RESULT
 
 
@@ -47,7 +47,6 @@ class SegMatch:
         self.remove = remove
         self.rmatch = rmatch
 
-
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
         try:
             msg = event.get_message()
@@ -65,7 +64,9 @@ class SegMatch:
                 _reply = msg_copy.pop(0)
             else:
                 return False
-        for _type, seg in zip(self.types, reversed(msg_copy) if self.rmatch else msg_copy):
+        for _type, seg in zip(
+            self.types, reversed(msg_copy) if self.rmatch else msg_copy
+        ):
             if _type is str:
                 if not seg.is_text():
                     return False

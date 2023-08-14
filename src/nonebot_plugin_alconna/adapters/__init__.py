@@ -1,7 +1,7 @@
 """通用标注, 无法用于创建 MS对象"""
 import re
-from typing import TYPE_CHECKING, Optional, Any, Union
 from dataclasses import field, dataclass
+from typing import TYPE_CHECKING, Any, Union, Optional
 
 from nepattern import create_local_patterns
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
@@ -70,6 +70,7 @@ class File(Segment):
 @dataclass
 class Reply(Segment):
     """Reply对象，表示一类回复消息"""
+
     origin: Any
     id: str
     msg: Optional[Union[Message, str]] = field(default=None)
@@ -276,6 +277,7 @@ def reply_handle(event: Event, bot: Bot):
     if adapter_name == "Telegram":
         if TYPE_CHECKING:
             from nonebot.adapters.telegram.event import MessageEvent
+
             assert isinstance(event, MessageEvent)
         if event.reply_to_message:
             return Reply(
@@ -286,30 +288,39 @@ def reply_handle(event: Event, bot: Bot):
     elif adapter_name == "Feishu":
         if TYPE_CHECKING:
             from nonebot.adapters.feishu.event import MessageEvent
+
             assert isinstance(event, MessageEvent)
         if event.reply:
             return Reply(event.reply, event.reply.message_id, event.reply.body.content)
     elif adapter_name == "ntchat":
         if TYPE_CHECKING:
             from nonebot.adapters.ntchat.event import QuoteMessageEvent
+
             assert isinstance(event, QuoteMessageEvent)
         if event.type == 11061:
             return Reply(event, event.quote_message_id)
     elif adapter_name == "QQ Guild":
         if TYPE_CHECKING:
             from nonebot.adapters.qqguild.event import MessageEvent
+
             assert isinstance(event, MessageEvent)
         if event.reply:
-            return Reply(event.reply.message, str(event.reply.message.id), event.reply.message.content)
+            return Reply(
+                event.reply.message,
+                str(event.reply.message.id),
+                event.reply.message.content,
+            )
     elif adapter_name == "mirai2":
         if TYPE_CHECKING:
             from nonebot.adapters.mirai2.event import MessageEvent
+
             assert isinstance(event, MessageEvent)
         if event.quote:
             return Reply(event.quote, str(event.quote.id), event.quote.origin)
     elif reply := getattr(event, "reply", None):
         return Reply(reply, str(reply.message_id), getattr(reply, "message", None))
     return None
+
 
 env = create_local_patterns("nonebot")
 env.sets([_At, _Image, _Video, _Voice, _Audio, _File, _Reply, _Segment])
