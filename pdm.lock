@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:12d55793fbfa8996e894b7589250cb9933650f5f0268e0c659b450af8e4a8e2f"
+content_hash = "sha256:c5e1cc16f9d8a9cf34aa271e963ce948b3ec545334d2642debe468537f25e3fd"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -887,6 +887,17 @@ dependencies = [
 files = [
     {file = "nonebot-adapter-ding-2.0.0a16.tar.gz", hash = "sha256:3bfc46b1377341a94bca018b8fb814bda7159a0157f72b47490566efbce22c85"},
     {file = "nonebot_adapter_ding-2.0.0a16-py3-none-any.whl", hash = "sha256:9098d92be0d767b6ed5c88984d1fe566deb5327be41e21a70e5bb372508066e0"},
+]
+
+[[package]]
+name = "nonebot-adapter-discord"
+version = "0.1.0"
+requires_python = ">=3.8,<4.0"
+git = "ssh://git@github.com/nonebot/adapter-discord.git"
+revision = "aaee950d065cf13ab191cc8bc9a8f56f87a0bafc"
+summary = "Discord adapter for nonebot2"
+dependencies = [
+    "nonebot2<3.0.0.0,>=2.0.0-beta.3",
 ]
 
 [[package]]

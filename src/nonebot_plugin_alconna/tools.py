@@ -80,9 +80,9 @@ async def reply_handle(event: Event, bot: Bot):
             return Reply(message.quote, message.quote.id_, None)
     elif adapter_name == "Discord":
         if TYPE_CHECKING:
-            from nonebot.adapters.discord import MessageEvent, MessageCreateEvent
+            from nonebot.adapters.discord import MessageEvent
 
-            assert isinstance(event, (MessageEvent, MessageCreateEvent))
+            assert isinstance(event, MessageEvent)
 
         if hasattr(event, "message_reference") and hasattr(
             event.message_reference, "message_id"

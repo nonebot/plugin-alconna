@@ -1,6 +1,6 @@
 """通用标注, 无法用于创建 MS对象"""
 import re
-from typing import Any, Union, Optional
+from typing import Any, Union, Optional, Literal
 from dataclasses import field, dataclass
 
 from nepattern import create_local_patterns
@@ -21,8 +21,12 @@ class Segment:
 @dataclass
 class At(Segment):
     """At对象, 表示一类提醒某用户的元素"""
-
+    type: Literal["user", "role", "channel"]
     target: str
+
+@dataclass
+class AtAll(Segment):
+    """AtAll对象, 表示一类提醒所有人的元素"""
 
 
 @dataclass
@@ -90,28 +94,75 @@ def _handle_kmarkdown_met(seg: MessageSegment):
         return None
     if (end := content.find("(met)", 5)) == -1:
         return None
-    return content[5:end] not in ("here", "all") and At(seg, content[5:end])
+    return content[5:end] not in ("here", "all") and At(seg, "user", content[5:end])
+
+
+def _handle_at(seg: MessageSegment):
+    if "qq" in seg.data and seg.data["qq"] != "all":
+        return At(seg, "user", str(seg.data["qq"]))
+    if "user_id" in seg.data:
+        return At(seg, "user", str(seg.data["user_id"]))
 
 
 _At = gen_unit(
     At,
     {
-        "at": lambda seg: At(seg, str(seg.data.get("qq", seg.data.get("user_id")))),
-        "mention": lambda seg: At(seg, seg.data.get("user_id", seg.data.get("text"))),
+        "at": _handle_at,
+        "mention": lambda seg: At(seg, "user", seg.data.get("user_id", seg.data.get("text"))),
         "mention_user": lambda seg: At(
-            seg, str(seg.data.get("user_id", seg.data["mention_user"].user_id))
+            seg, "user", str(seg.data.get("user_id", seg.data["mention_user"].user_id))
         ),
-        "mention_robot": lambda seg: At(seg, str(seg.data["mention_robot"].bot_id)),
-        "At": lambda seg: At(seg, str(seg, seg.data["target"])),
+        "mention_channel": lambda seg: At(
+            seg, "channel", str(seg.data["channel_id"])
+        ),
+        "mention_role": lambda seg: At(seg, "role", str(seg.data["role_id"])),
+        "mention_robot": lambda seg: At(seg, "user", str(seg.data["mention_robot"].bot_id)),
+        "At": lambda seg: At(seg, "user", str(seg, seg.data["target"])),
         "kmarkdown": _handle_kmarkdown_met,
+        "room_link": lambda seg: At(
+            seg,
+            "channel",
+            f'{seg.data["room_link"].villa_id}:{seg.data["room_link"].room_id}'
+        ),
     },
 )
 """
 at: ob11, feishu
 mention: ob12, tg
-mention_user: qqguild, villa
+mention_user: qqguild, discord, villa
+mention_channel: discord, qqguild
+mention_role: discord
 mention_robot: villa
 At: mirai
+kmarkdown: kook
+room_link: villa
+"""
+
+
+def _handle_kmarkdown_atall(seg: MessageSegment):
+    content = seg.data["content"]
+    if not content.startswith("(met)"):
+        return None
+    if (end := content.find("(met)", 5)) == -1:
+        return None
+    return content[5:end] in ("here", "all") and AtAll(seg)
+
+
+_AtAll = gen_unit(
+    AtAll,
+    {
+        "at": lambda seg: AtAll(seg) if seg.data["qq"] == "all" else None,
+        "AtAll": lambda seg: AtAll(seg),
+        "mention_everyone": lambda seg: AtAll(seg),
+        "mention_all": lambda seg: AtAll(seg),
+        "kmarkdown": _handle_kmarkdown_atall,
+    },
+)
+"""
+at: ob11
+AtAll: mirai
+mention_everyone: discord, qqguild
+mention_all: villa, ob12
 kmarkdown: kook
 """
 
@@ -128,16 +179,22 @@ def _handle_kmarkdown_emj(seg: MessageSegment):
         return mat and Emoji(seg, mat["name"], mat["name"])
 
 
+def _handle_custom_emoji(seg: MessageSegment):
+    if "custom_emoji_id" in seg.data:  # telegram
+        return Emoji(seg, seg.data["custom_emoji_id"], seg.data["text"])
+    if "id" in seg.data:  # discord
+        return Emoji(seg, seg.data["id"], seg.data["name"])
+
+
 _Emoji = gen_unit(
     Emoji,
     {
         "emoji": lambda seg: Emoji(seg, str(seg.data.get("id", seg.data.get("name")))),
         "Face": lambda seg: Emoji(seg, str(seg.data["faceId"]), seg.data["name"]),
         "face": lambda seg: str(Emoji(seg, seg.data["id"])),
-        "custom_emoji": lambda seg: Emoji(
-            seg, seg.data["custom_emoji_id"], seg.data["text"]
-        ),
+        "custom_emoji": _handle_custom_emoji,
         "kmarkdown": _handle_kmarkdown_emj,
+        "sticker": lambda seg: Emoji(seg, seg.data["id"]) if "id" in seg.data else None,
     },
 )
 
@@ -160,13 +217,19 @@ def _handle_image(seg: MessageSegment):
     if "picURL" in seg.data:  # ding
         return Image(seg, url=seg.data["picURL"])
 
+def _handle_attachment(seg: MessageSegment):
+    if "url" in seg.data:  # qqguild:
+        return Image(seg, url=seg.data["url"])
+    if "attachment" in seg.data:  # discord
+        return Image(seg, id=seg.data["attachment"].filename)
+
 
 _Image = gen_unit(
     Image,
     {
         "image": _handle_image,
         "photo": lambda seg: Image(seg, id=seg.data["file"]),
-        "attachment": lambda seg: Image(seg, seg.data["url"]),
+        "attachment": _handle_attachment,
         "Image": lambda seg: Image(seg, seg.data["url"], seg.data["imageId"]),
     },
 )
@@ -263,7 +326,7 @@ def _handle_quote(seg: MessageSegment):
 _Reply = gen_unit(
     Reply,
     {
-        "reference": lambda seg: Reply(seg, seg.data["message_id"]),
+        "reference": lambda seg: Reply(seg, seg.data.get("message_id", seg.data["reference"].message_id)),
         "reply": lambda seg: Reply(seg, seg.data.get("id", seg.data["message_id"])),
         "quote": _handle_quote,
         "Quote": lambda seg: Reply(seg, str(seg.data["id"]), str(seg.data["origin"])),
@@ -271,4 +334,4 @@ _Reply = gen_unit(
 )
 
 env = create_local_patterns("nonebot")
-env.sets([_At, _Image, _Video, _Voice, _Audio, _File, _Reply, _Segment])
+env.sets([_At, _AtAll, _Image, _Video, _Voice, _Audio, _File, _Reply, _Segment])
