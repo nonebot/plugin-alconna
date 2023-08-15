@@ -19,7 +19,7 @@ async def reply_handle(event: Event, bot: Bot):
         if event.reply_to_message:
             return Reply(
                 event.reply_to_message,
-                str(event.reply_to_message.message_id),
+                f"{event.reply_to_message.message_id}.{event.chat.id}",
                 event.reply_to_message.original_message,
             )
     elif adapter_name == "Feishu":
