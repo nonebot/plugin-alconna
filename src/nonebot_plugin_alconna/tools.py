@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
+from yarl import URL
+from nonebot.typing import T_State
 from nonebot.internal.adapter import Bot, Event
 from nonebot.internal.driver.model import Request
-from nonebot.typing import T_State
-from yarl import URL
 
 from .adapters import Image, Reply
 
@@ -56,21 +56,23 @@ async def reply_handle(event: Event, bot: Bot):
             return Reply(event.quote, str(event.quote.id), event.quote.origin)
     elif adapter_name == "Kaiheila":
         if TYPE_CHECKING:
-            from nonebot.adapters.kaiheila.event import MessageEvent, \
-                ChannelMessageEvent, PrivateMessageEvent
             from nonebot.adapters.kaiheila import Bot as KaiheilaBot
+            from nonebot.adapters.kaiheila.event import MessageEvent
 
-            assert isinstance(event, (MessageEvent, ChannelMessageEvent, PrivateMessageEvent))  # noqa: E501
+            assert isinstance(event, MessageEvent)
             assert isinstance(bot, KaiheilaBot)
 
+        api = (
+            "directMessage_view"
+            if event.__event__ == "message.private"
+            else "message_view"
+        )
         message = await bot.call_api(
-            api="directMessage_view"
-            if event.get_event_name().startswith("message.private")
-            else "message_view",
+            api,
             msg_id=event.msg_id,
             **(
                 {"chat_code": event.event.code}
-                if event.get_event_name().startswith("message.private")
+                if event.__event__ == "message.private"
                 else {}
             ),
         )
@@ -82,8 +84,12 @@ async def reply_handle(event: Event, bot: Bot):
 
             assert isinstance(event, (MessageEvent, MessageCreateEvent))
 
-        if hasattr(event, "message_reference") and hasattr(event.message_reference, "message_id"):  # noqa: E501
-            return Reply(event.message_reference, event.message_reference.message_id, None)  # noqa: E501
+        if hasattr(event, "message_reference") and hasattr(
+            event.message_reference, "message_id"
+        ):
+            return Reply(
+                event.message_reference, event.message_reference.message_id, None
+            )
 
     elif reply := getattr(event, "reply", None):
         return Reply(reply, str(reply.message_id), getattr(reply, "message", None))
@@ -128,10 +134,10 @@ async def image_fetch(bot: Bot, state: T_State, img: Image):
 
             assert isinstance(bot, Bot)
         url = (
-                URL(bot.bot_config.api_server)
-                / "file"
-                / f"bot{bot.bot_config.token}"
-                / img.id
+            URL(bot.bot_config.api_server)
+            / "file"
+            / f"bot{bot.bot_config.token}"
+            / img.id
         )
         req = Request("GET", url)
         resp = await bot.adapter.request(req)

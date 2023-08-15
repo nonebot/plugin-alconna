@@ -4,7 +4,7 @@ from typing_extensions import ParamSpec, TypeAlias
 from typing import Any, Union, Generic, Literal, TypeVar, Callable, Awaitable
 
 from tarina import lang
-from nepattern import BasePattern, MatchFailed, MatchMode
+from nepattern import MatchMode, BasePattern, MatchFailed
 from nonebot.internal.adapter.message import Message, MessageSegment
 
 T = TypeVar("T")
@@ -93,7 +93,8 @@ MReturn: TypeAlias = Union[
 
 
 def _isinstance(
-    seg: MessageSegment, mapping: dict[str, Callable[[MessageSegment], T | Literal[False] | None]]
+    seg: MessageSegment,
+    mapping: dict[str, Callable[[MessageSegment], T | Literal[False] | None]],
 ) -> T | None:
     try:
         if (key := seg.type) in mapping and (res := mapping[key](seg)):

@@ -1,6 +1,7 @@
 from arclet.alconna import Args, Option, Alconna
 
-import nonebot_plugin_alconna
+import nonebot_plugin_alconna  # noqa: F401
+
 assert Alconna("test_fallback").parse("test_fallback").matched
 
 

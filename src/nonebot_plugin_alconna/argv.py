@@ -5,7 +5,6 @@ from arclet.alconna.argv import Argv, argv_config, set_default_argv_type
 
 
 class FallbackSegment(MessageSegment["FallbackMessage"]):
-
     @classmethod
     def get_message_class(cls):
         return FallbackMessage
@@ -24,7 +23,6 @@ class FallbackSegment(MessageSegment["FallbackMessage"]):
 
 
 class FallbackMessage(Message[FallbackSegment]):
-
     @classmethod
     def get_segment_class(cls):
         return FallbackSegment
