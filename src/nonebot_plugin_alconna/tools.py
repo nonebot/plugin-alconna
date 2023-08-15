@@ -56,8 +56,8 @@ async def reply_handle(event: Event, bot: Bot):
             return Reply(event.quote, str(event.quote.id), event.quote.origin)
     elif adapter_name == "Kaiheila":
         if TYPE_CHECKING:
-            from nonebot.adapters.kaiheila.event import MessageEvent, ChannelMessageEvent, \
-                PrivateMessageEvent
+            from nonebot.adapters.kaiheila.event import MessageEvent, \
+                ChannelMessageEvent, PrivateMessageEvent
             from nonebot.adapters.kaiheila import Bot as KaiheilaBot
 
             assert isinstance(event, (MessageEvent, ChannelMessageEvent, PrivateMessageEvent))  # noqa: E501
