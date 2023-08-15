@@ -25,6 +25,7 @@ from nonebot_plugin_alconna import (
     Match,
     Query,
     Reply,
+    Command,
     AlconnaArg,
     AlconnaMatch,
     AlconnaQuery,
@@ -192,7 +193,11 @@ async def bind_handle(reply: Reply = SegMatchResult(Reply)):
 
 
 mask_cmd = on_alconna(
-    Alconna("设置词云形状", Args["img?", Image], Option("--default", action=store_true))
+    Alconna(
+        "设置词云形状",
+        Args["img?", Image],
+        Option("--default", action=store_true, default=False),
+    ),
 )
 
 mask_cmd.shortcut(
@@ -217,3 +222,17 @@ async def mask_g(
         await mask_cmd.send(f"img: {img[:10]}")
     else:
         await mask_cmd.send("ok")
+
+
+book = (
+    Command("book", "测试")
+    .option("writer", "-w <id:int>")
+    .option("writer", "--anonymous", {"id": 0})
+    .usage("book [-w <id:int> | --anonymous]")
+    .build()
+)
+
+
+@book.handle()
+async def test1_h(arp: Arparma = AlconnaMatches()):
+    await book.send(str(arp.options))

@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:12d55793fbfa8996e894b7589250cb9933650f5f0268e0c659b450af8e4a8e2f"
+content_hash = "sha256:414fb4df54e66692b81dd3c46881596ea8a4991752bff7d5d5a324ab673dba56"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -125,7 +125,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.7.17"
+version = "1.7.18"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -134,22 +134,22 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.7.17-py3-none-any.whl", hash = "sha256:3a7a9e86532104d393f5c5c74543ddc4b0115c88b5f5af70162ac7ede489776f"},
-    {file = "arclet_alconna-1.7.17.tar.gz", hash = "sha256:5ec53583ac8796444b75916e9ee0950e1135f02e9518251905b573be131fc863"},
+    {file = "arclet_alconna-1.7.18-py3-none-any.whl", hash = "sha256:5de131122a4b80b6aceebbd4a2f7d990bb9de1d6d28baef99eb83ea2aa07e5e9"},
+    {file = "arclet_alconna-1.7.18.tar.gz", hash = "sha256:6f9f51bbaa1418c0323a29dac88c43df09d3766f611032a0ea4831ec06fbc41c"},
 ]
 
 [[package]]
 name = "arclet-alconna-tools"
-version = "0.6.5"
+version = "0.6.6"
 requires_python = ">=3.8"
 summary = "Builtin Tools for Alconna"
 dependencies = [
-    "arclet-alconna<2.0,>=1.7.15",
+    "arclet-alconna<2.0,>=1.7.18",
     "nepattern<0.6.0,>=0.5.13",
 ]
 files = [
-    {file = "arclet-alconna-tools-0.6.5.tar.gz", hash = "sha256:11e22e533a27a7b458a26afe30e1345da09492b53e034218966901ac9aded141"},
-    {file = "arclet_alconna_tools-0.6.5-py3-none-any.whl", hash = "sha256:dcfa3529ca13d4f7496f588de1a98015ba5703e0ea586918e2d538477a8bec2b"},
+    {file = "arclet-alconna-tools-0.6.6.tar.gz", hash = "sha256:fd9918f40c4ead8ce189f7151b6fe1ad1501e73dc51b291cb2a063c18dbe38db"},
+    {file = "arclet_alconna_tools-0.6.6-py3-none-any.whl", hash = "sha256:c955553a1a1e171efa5cd2563757c1e9fed0b5af9600a5c1c4ad3d149d7abba6"},
 ]
 
 [[package]]

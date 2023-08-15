@@ -43,6 +43,7 @@ from .adapters import Voice as Voice
 from .params import SegMsg as SegMsg
 from .params import assign as assign
 from .rule import alconna as alconna
+from .matcher import Command as Command
 from .adapters import Segment as Segment
 from .rule import seg_match as seg_match
 from .params import AlcResult as AlcResult
@@ -73,7 +74,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .rule import set_output_converter as set_output_converter
 
-__version__ = "0.15.0"
+__version__ = "0.16.0"
 
 _meta_source = {
     "name": "Alconna 插件",

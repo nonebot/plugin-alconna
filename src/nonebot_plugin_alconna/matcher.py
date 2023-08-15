@@ -10,8 +10,8 @@ from nonebot.matcher import Matcher
 from nepattern import AnyOne, AnyString
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
-from arclet.alconna.tools import AlconnaFormat
 from tarina import is_awaitable, run_always_await
+from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
@@ -293,3 +293,30 @@ def funcommand(
         return matcher
 
     return wrapper
+
+
+class Command(AlconnaString):
+    def build(
+        self,
+        rule: Rule | T_RuleChecker | None = None,
+        skip_for_unmatch: bool = True,
+        auto_send_output: bool = False,
+        output_converter: TConvert | None = None,
+        aliases: set[str] | tuple[str, ...] | None = None,
+        comp_config: CompConfig | None = None,
+        use_origin: bool = False,
+        permission: Permission | T_PermissionChecker | None = None,
+        *,
+        handlers: list[T_Handler | Dependent] | None = None,
+        temp: bool = False,
+        expire_time: datetime | timedelta | None = None,
+        priority: int = 1,
+        block: bool = False,
+        state: T_State | None = None,
+        _depth: int = 0,
+    ):
+        params = locals()
+        params.pop("self")
+        params.pop("__class__")
+        alc = super().build()
+        return on_alconna(alc, **params)
