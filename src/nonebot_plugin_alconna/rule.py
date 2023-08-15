@@ -58,7 +58,7 @@ class SegMatch:
         _reply = None
         result = []
         if self.match_reply:
-            if reply := reply_handle(event, bot):
+            if reply := await reply_handle(event, bot):
                 result.append(reply)
             elif (res := env[Reply].validate(msg_copy[0])).success:
                 result.append(res.value)
