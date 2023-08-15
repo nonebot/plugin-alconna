@@ -1,7 +1,7 @@
 """通用标注, 无法用于创建 MS对象"""
 import re
-from typing import Any, Union, Optional, Literal
 from dataclasses import field, dataclass
+from typing import Any, Union, Literal, Optional
 
 from nepattern import create_local_patterns
 from nonebot.internal.adapter import Message, MessageSegment
@@ -21,8 +21,10 @@ class Segment:
 @dataclass
 class At(Segment):
     """At对象, 表示一类提醒某用户的元素"""
+
     type: Literal["user", "role", "channel"]
     target: str
+
 
 @dataclass
 class AtAll(Segment):
@@ -108,21 +110,23 @@ _At = gen_unit(
     At,
     {
         "at": _handle_at,
-        "mention": lambda seg: At(seg, "user", seg.data.get("user_id", seg.data.get("text"))),
+        "mention": lambda seg: At(
+            seg, "user", seg.data.get("user_id", seg.data.get("text"))
+        ),
         "mention_user": lambda seg: At(
             seg, "user", str(seg.data.get("user_id", seg.data["mention_user"].user_id))
         ),
-        "mention_channel": lambda seg: At(
-            seg, "channel", str(seg.data["channel_id"])
-        ),
+        "mention_channel": lambda seg: At(seg, "channel", str(seg.data["channel_id"])),
         "mention_role": lambda seg: At(seg, "role", str(seg.data["role_id"])),
-        "mention_robot": lambda seg: At(seg, "user", str(seg.data["mention_robot"].bot_id)),
+        "mention_robot": lambda seg: At(
+            seg, "user", str(seg.data["mention_robot"].bot_id)
+        ),
         "At": lambda seg: At(seg, "user", str(seg, seg.data["target"])),
         "kmarkdown": _handle_kmarkdown_met,
         "room_link": lambda seg: At(
             seg,
             "channel",
-            f'{seg.data["room_link"].villa_id}:{seg.data["room_link"].room_id}'
+            f'{seg.data["room_link"].villa_id}:{seg.data["room_link"].room_id}',
         ),
     },
 )
@@ -216,6 +220,7 @@ def _handle_image(seg: MessageSegment):
         return Image(seg, id=seg.data["file_path"])
     if "picURL" in seg.data:  # ding
         return Image(seg, url=seg.data["picURL"])
+
 
 def _handle_attachment(seg: MessageSegment):
     if "url" in seg.data:  # qqguild:
@@ -326,7 +331,9 @@ def _handle_quote(seg: MessageSegment):
 _Reply = gen_unit(
     Reply,
     {
-        "reference": lambda seg: Reply(seg, seg.data.get("message_id", seg.data["reference"].message_id)),
+        "reference": lambda seg: Reply(
+            seg, seg.data.get("message_id", seg.data["reference"].message_id)
+        ),
         "reply": lambda seg: Reply(seg, seg.data.get("id", seg.data["message_id"])),
         "quote": _handle_quote,
         "Quote": lambda seg: Reply(seg, str(seg.data["id"]), str(seg.data["origin"])),

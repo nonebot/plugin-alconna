@@ -14,8 +14,8 @@ from arclet.alconna import (
     Duplication,
     SubcommandStub,
     namespace,
-    command_manager,
     store_true,
+    command_manager,
 )
 
 from nonebot_plugin_alconna.adapters.onebot12 import ImgOrUrl

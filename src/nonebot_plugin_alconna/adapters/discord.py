@@ -1,4 +1,4 @@
-from nepattern.main import URL, INTEGER
+from nepattern.main import INTEGER
 from arclet.alconna import argv_config, set_default_argv_type
 from nepattern import BasePattern, PatternModel, UnionPattern
 from nonebot.adapters.discord.message import (
@@ -43,11 +43,15 @@ Component = SegmentPattern("component", ComponentSegment, MessageSegment.compone
 Timestamp = SegmentPattern("timestamp", TimestampSegment, MessageSegment.timestamp)
 Emoji = SegmentPattern("emoji", CustomEmojiSegment, MessageSegment.custom_emoji)
 Image = SegmentPattern("attachment", AttachmentSegment, MessageSegment.attachment)
-MentionUser = SegmentPattern("mention_user", MentionUserSegment, MessageSegment.mention_user)
+MentionUser = SegmentPattern(
+    "mention_user", MentionUserSegment, MessageSegment.mention_user
+)
 MentionChannel = SegmentPattern(
     "mention_channel", MentionChannelSegment, MessageSegment.mention_channel
 )
-MentionRole = SegmentPattern("mention_role", MentionRoleSegment, MessageSegment.mention_role)
+MentionRole = SegmentPattern(
+    "mention_role", MentionRoleSegment, MessageSegment.mention_role
+)
 MentionEveryone = SegmentPattern(
     "mention_everyone", MentionEveryoneSegment, MessageSegment.mention_everyone
 )
