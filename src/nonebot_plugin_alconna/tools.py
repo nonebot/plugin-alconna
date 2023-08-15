@@ -76,16 +76,13 @@ async def reply_handle(event: Event, bot: Bot):
         if message.quote:
             return Reply(message.quote, message.quote.id_, None)
     elif adapter_name == "Discord":
-        try:
-            if TYPE_CHECKING:
-                from nonebot.adapters.discord import MessageEvent, MessageCreateEvent
+        if TYPE_CHECKING:
+            from nonebot.adapters.discord import MessageEvent, MessageCreateEvent
 
-                assert isinstance(event, (MessageEvent, MessageCreateEvent))
+            assert isinstance(event, (MessageEvent, MessageCreateEvent))
 
-            if hasattr(event, "message_reference") and hasattr(event.message_reference, "message_id"):  # noqa: E501
-                return Reply(event.message_reference, event.message_reference.message_id, None)  # noqa: E501
-        except Exception:
-            pass
+        if hasattr(event, "message_reference") and hasattr(event.message_reference, "message_id"):  # noqa: E501
+            return Reply(event.message_reference, event.message_reference.message_id, None)  # noqa: E501
 
     elif reply := getattr(event, "reply", None):
         return Reply(reply, str(reply.message_id), getattr(reply, "message", None))
