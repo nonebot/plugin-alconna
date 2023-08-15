@@ -203,8 +203,12 @@ class Segment:
     origin: MessageSegment
 
 class At(Segment):
+    type: Literal["user", "role", "channel"]
     target: str
 
+class AtAll(Segment):
+    ...
+    
 class Emoji(Segment):
     id: str
     name: Optional[str]
@@ -216,10 +220,16 @@ class Media(Segment):  # Image, Audio, Voice, Video
 class File(Segment):
     id: str
     name: Optional[str]
+
+class Reply(Segment):
+    origin: Any
+    id: str
+    msg: Optional[Union[Message, str]]
 ```
 
 - `Text`: str 的别名
 - `At`: 匹配 `At`/`Mention` 类型的 `MessageSegment`，例如 `Onebot 11` 中的 `At` 和 `Onebot 12` 中的 `Mention`
+- `AtAll`: 匹配 `AtAll`/`MentionAll` 类型的 `MessageSegment`，例如 `mirai2` 中的 `AtAll` 和 `Onebot 12` 中的 `MentionAll`
 - `Image`: 匹配 `Image` 类型的 `MessageSegment`
 - `Audio`: 匹配 `Audio` 类型的 `MessageSegment`
 - `Voice`: 匹配 `Voice` 类型的 `MessageSegment`
@@ -249,6 +259,7 @@ class File(Segment):
 | [BiliBili Live](https://github.com/wwweww/adapter-bilibili)         | adapters.bilibili                    |
 | [Walle-Q](https://github.com/onebot-walle/nonebot_adapter_walleq)   | adapters.onebot12                    |
 | [Villa](https://github.com/CMHopeSunshine/nonebot-adapter-villa)    | adapters.villa                       |
+| [Discord](https://github.com/nonebot/adapter-discord)               | adapters.discord                     |
 
 ### 示例
 

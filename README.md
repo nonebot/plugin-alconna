@@ -186,7 +186,7 @@ async def update(arp: CommandResult = AlconnaResult()):
 async def list_(arp: CommandResult = AlconnaResult()):
     ...
 
-@pip_cmd.handle([Check(assign("install"))])
+@pip_cmd.assign("install")
 async def install(arp: CommandResult = AlconnaResult()):
     ...
 
@@ -281,6 +281,7 @@ def on_alconna(
 | [BiliBili Live](https://github.com/wwweww/adapter-bilibili)         | adapters.bilibili                    |
 | [Walle-Q](https://github.com/onebot-walle/nonebot_adapter_walleq)   | adapters.onebot12                    |
 | [Villa](https://github.com/CMHopeSunshine/nonebot-adapter-villa)    | adapters.villa                       |
+| [Discord](https://github.com/nonebot/adapter-discord)               | adapters.discord                     |
 
 ### 便捷装饰器
 
