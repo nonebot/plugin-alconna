@@ -6,7 +6,6 @@ from nonebot.typing import T_State
 from yarl import URL
 
 from .adapters import Image, Reply
-from .model import Match
 
 
 async def reply_handle(event: Event, bot: Bot):
@@ -58,17 +57,19 @@ async def reply_handle(event: Event, bot: Bot):
     elif adapter_name == "Kaiheila":
         if TYPE_CHECKING:
             from nonebot.adapters.kaiheila.event import MessageEvent, ChannelMessageEvent, PrivateMessageEvent
+            from nonebot.adapters.kaiheila import Bot as KaiheilaBot
 
             assert isinstance(event, (MessageEvent, ChannelMessageEvent, PrivateMessageEvent))
-        from nonebot.adapters.kaiheila.event import ChannelMessageEvent, PrivateMessageEvent
+            assert isinstance(bot, KaiheilaBot)
+
         message = await bot.call_api(
-            api="message_view"
-            if isinstance(event, ChannelMessageEvent)
-            else "directMessage_view",
+            api="directMessage_view"
+            if event.get_event_name().startswith("message.private")
+            else "message_view",
             msg_id=event.msg_id,
             **(
                 {"chat_code": event.event.code}
-                if isinstance(event, PrivateMessageEvent)
+                if event.get_event_name().startswith("message.private")
                 else {}
             ),
         )
@@ -80,8 +81,9 @@ async def reply_handle(event: Event, bot: Bot):
                 from nonebot.adapters.discord import MessageEvent, MessageCreateEvent
 
                 assert isinstance(event, (MessageEvent, MessageCreateEvent))
-            from nonebot.adapters.discord import MessageEvent, MessageCreateEvent
-            return Reply(event.message_reference, event.message_reference.message_id, None)
+
+            if hasattr(event, "message_reference") and hasattr(event.message_reference, "message_id"):  # noqa: E501
+                return Reply(event.message_reference, event.message_reference.message_id, None)  # noqa: E501
         except Exception:
             pass
 
@@ -115,10 +117,10 @@ async def image_fetch(bot: Bot, state: T_State, img: Image):
         return resp.content
     if adapter_name == "Telegram":
         url = (
-            URL(bot.bot_config.api_server)
-            / "file"
-            / f"bot{bot.bot_config.token}"
-            / img.id
+                URL(bot.bot_config.api_server)
+                / "file"
+                / f"bot{bot.bot_config.token}"
+                / img.id
         )
         req = Request("GET", url)
         resp = await bot.adapter.request(req)
