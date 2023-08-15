@@ -17,5 +17,5 @@ runs:
         architecture: "x64"
         cache: true
 
-    - run: pdm sync -G:all
+    - run: pdm sync -G default
       shell: bash

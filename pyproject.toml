@@ -51,7 +51,6 @@ dev = [
     "pre-commit ~=3.1",
     "nonebot-adapter-villa>=0.6.5",
     "nonebot-adapter-kaiheila>=0.0.6",
-    "nonebot-adapter-discord @ git+ssh://git@github.com/nonebot/adapter-discord.git",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]
