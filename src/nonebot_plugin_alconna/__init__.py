@@ -1,6 +1,9 @@
+import contextlib
+
 from arclet.alconna import Args as Args
 from arclet.alconna import Field as Field
 from arclet.alconna import count as count
+from nonebot import get_driver
 from nonebot.plugin import PluginMetadata
 from arclet.alconna import Option as Option
 from arclet.alconna import append as append
@@ -56,6 +59,7 @@ from .matcher import on_alconna as on_alconna
 from .tools import image_fetch as image_fetch
 from .params import match_value as match_value
 from .tools import reply_handle as reply_handle
+from .params import AlconnaParam as AlconnaParam
 from .consts import SEGMATCH_MSG as SEGMATCH_MSG
 from .params import AlconnaMatch as AlconnaMatch
 from .params import AlconnaQuery as AlconnaQuery
@@ -100,3 +104,9 @@ if not nonebot_version.split(".")[-1].isdigit():
 
 
 __plugin_meta__ = PluginMetadata(**_meta_source)
+
+with contextlib.suppress(ValueError, LookupError):
+    global_config = get_driver().config
+    config = Config.parse_obj(global_config)
+    if config.alconna_use_param:
+        AlconnaMatcher.HANDLER_PARAM_TYPES = (*AlconnaMatcher.HANDLER_PARAM_TYPES, AlconnaParam)

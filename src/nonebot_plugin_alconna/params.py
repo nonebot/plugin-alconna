@@ -1,13 +1,17 @@
-from typing_extensions import Annotated, TypeAlias
-from typing import Any, Dict, List, Type, Union, TypeVar, Callable, Optional, overload
+import inspect
+
+from typing_extensions import Annotated, TypeAlias, get_args
+from typing import Any, Dict, List, Type, Union, TypeVar, Callable, Optional, overload, Tuple
 
 from nonebot.typing import T_State
-from tarina import run_always_await
+from tarina import run_always_await, generic_isinstance, generic_issubclass
+from tarina.generic import get_origin
 from nonebot.internal.adapter import Bot, Message
-from arclet.alconna import Empty, Arparma, Duplication
+from arclet.alconna import Empty, Arparma, Duplication, Alconna
 from nonebot.internal.params import Depends as Depends
 from arclet.alconna.builtin import generate_duplication
 from nonebot.internal.matcher import Matcher as Matcher
+from nonebot.internal.params import Param
 
 from .adapters import Segment
 from .model import T, Match, Query, CommandResult
@@ -106,16 +110,6 @@ def AlconnaArg(path: str) -> Any:
     return Depends(_alconna_arg, use_cache=False)
 
 
-# def AlconnaArg(path: str, middleware: Optional[MIDDLEWARE] = None) -> Any:
-#     async def _alconna_arg(state: T_State, bot: Bot) -> Any:
-#         arg = state[ALCONNA_ARG_KEY.format(key=path)]
-#         if middleware:
-#             return await run_always_await(middleware, bot, state, arg)
-#         return arg
-#
-#     return Depends(_alconna_arg, use_cache=False)
-
-
 def _seg_match_msg(state: T_State) -> Message:
     return state[SEGMATCH_MSG]
 
@@ -202,3 +196,69 @@ def Check(fn: Callable[[Arparma], bool]) -> bool:
         return ans
 
     return Depends(_arparma_check, use_cache=False)
+
+
+class AlconnaParam(Param):
+    """Alconna 相关注入参数
+
+    本注入解析事件响应器操作 `AlconnaMatcher` 的响应函数内所需参数。
+    """
+
+    def __repr__(self) -> str:
+        return f"AlconnaParam(type={self.extra['type']!r})"
+
+    @classmethod
+    def _check_param(
+        cls, param: inspect.Parameter, allow_types: Tuple[Type[Param], ...]
+    ) -> Optional["AlconnaParam"]:
+        if param.annotation is CommandResult:
+            return cls(..., type=CommandResult)
+        if generic_issubclass(get_origin(param.annotation), Arparma):
+            return cls(..., type=Arparma)
+        if generic_issubclass(param.annotation, Alconna):
+            return cls(..., type=Alconna)
+        if param.annotation is Duplication:
+            return cls(..., type=Duplication)
+        if generic_issubclass(Duplication, param.annotation):
+            return cls(..., anno=param.annotation, type=Duplication)
+        if get_origin(param.annotation) is Match:
+            return cls(..., name=param.name, type=Match)
+        if isinstance(param.default, Query):
+            return cls(param.default, type=Query)
+        return cls(param.default, name=param.name, type=Any)
+
+    async def _solve(self, state: T_State, **kwargs: Any) -> Any:
+        t = self.extra["type"]
+        res = _alconna_result(state)
+        if t is CommandResult:
+            return res
+        if t is Arparma:
+            return res.result
+        if t is Alconna:
+            return res.source
+        if t is Duplication:
+            if anno := self.extra.get("anno"):
+                return anno(res.result)
+            return generate_duplication(res.source)(res.result)
+        if t is Match:
+            target = res.result.all_matched_args.get(self.extra["name"], Empty)
+            return Match(target, target != Empty)
+        if t is Query:
+            q = Query(self.default.path, self.default.result)
+            result = res.result.query(q.path, Empty)
+            q.available = result != Empty
+            if q.available:
+                q.result = result
+            elif self.default.result != Empty:
+                q.available = True
+            return q
+        if self.extra["name"] in res.result.all_matched_args:
+            return res.result.all_matched_args[self.extra["name"]]
+        return state[ALCONNA_ARG_KEY.format(self.extra["name"])]
+
+    async def _check(self, state: T_State, **kwargs: Any) -> Any:
+        if self.extra["type"] == Any:
+            return (
+                self.extra["name"] in _alconna_result(state).result.all_matched_args
+                or ALCONNA_ARG_KEY.format(self.extra["name"]) in state
+            )

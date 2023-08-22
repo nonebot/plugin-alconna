@@ -15,3 +15,6 @@ class Config(BaseModel, extra=Extra.ignore):
 
     alconna_use_origin: bool = False
     """是否全局使用原始消息 (即未经过 to_me 等处理的)"""
+
+    alconna_use_param: bool = True
+    """是否使用特制的 Param 提供更好的依赖注入"""

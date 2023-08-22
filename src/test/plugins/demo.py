@@ -229,6 +229,7 @@ book = (
     .option("writer", "-w <id:int>")
     .option("writer", "--anonymous", {"id": 0})
     .usage("book [-w <id:int> | --anonymous]")
+    .shortcut("测试", {"args": ["--anonymous"]})
     .build()
 )
 
