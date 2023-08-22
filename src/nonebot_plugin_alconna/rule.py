@@ -2,12 +2,12 @@ import asyncio
 import traceback
 from typing import Dict, Type, Union, Literal, ClassVar, Optional
 
-from tarina import lang, is_awaitable
 from nonebot import get_driver
 from nonebot.typing import T_State
+from tarina import lang, is_awaitable
 from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
-from nonebot.internal.matcher import matchers, current_matcher
+from nonebot.internal.matcher import matchers
 from nonebot.internal.rule import Rule as Rule
 from nonebot.adapters import Bot, Event, Message
 from nonebot.utils import run_sync, is_coroutine_callable
@@ -281,8 +281,8 @@ class AlconnaRule:
                 return False
         Arparma._additional.update(
             bot=lambda: bot,
-            event=lambda : event,
-            state=lambda : state,
+            event=lambda: event,
+            state=lambda: state,
         )
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)

@@ -1,17 +1,26 @@
 import inspect
-
 from typing_extensions import Annotated, TypeAlias
-from typing import Any, Dict, List, Type, Union, TypeVar, Callable, Optional, overload, Tuple
+from typing import (
+    Any,
+    Dict,
+    List,
+    Type,
+    Tuple,
+    Union,
+    TypeVar,
+    Callable,
+    Optional,
+    overload,
+)
 
 from nonebot.typing import T_State
-from tarina import run_always_await, generic_issubclass
 from tarina.generic import get_origin
-from nonebot.internal.adapter import Bot, Message
-from arclet.alconna import Empty, Arparma, Duplication, Alconna
-from nonebot.internal.params import Depends
-from arclet.alconna.builtin import generate_duplication
 from nonebot.internal.matcher import Matcher
-from nonebot.internal.params import Param
+from nonebot.internal.adapter import Bot, Message
+from nonebot.internal.params import Param, Depends
+from arclet.alconna.builtin import generate_duplication
+from tarina import run_always_await, generic_issubclass
+from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
 from .adapters import Segment
 from .model import T, Match, Query, CommandResult

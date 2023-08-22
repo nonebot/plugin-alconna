@@ -18,7 +18,6 @@ from arclet.alconna import (
     command_manager,
 )
 
-from nonebot_plugin_alconna.adapters.onebot12 import ImgOrUrl
 from nonebot_plugin_alconna import (
     Check,
     Image,
@@ -201,6 +200,7 @@ mask_cmd.shortcut(
     {"command": "设置词云形状", "args": ["--default"]},
 )
 
+
 @mask_cmd.handle()
 async def mask_h(
     matcher: AlconnaMatcher, img: Match[list] = AlconnaMatch("img", image_fetch)
@@ -210,10 +210,7 @@ async def mask_h(
 
 
 @mask_cmd.got_path("img", prompt="请输入图片", middleware=image_fetch)
-async def mask_g(
-    img: bytes,
-    default: Query[bool] = Query("default.value")
-):
+async def mask_g(img: bytes, default: Query[bool] = Query("default.value")):
     print(default)
     if default.result:
         await mask_cmd.send(f"img: {img[:10]}")
@@ -221,11 +218,10 @@ async def mask_g(
         await mask_cmd.send("ok")
 
 
-
-Command("book", "测试")\
-    .option("writer", "-w <id:int>")\
-    .option("writer", "--anonymous", {"id": 0})\
-    .usage("book [-w <id:int> | --anonymous]")\
-    .shortcut("测试", {"args": ["--anonymous"]})\
-    .action(lambda bot, event, options: bot.send(event, str(options)))\
-    .build()
+Command("book", "测试").option("writer", "-w <id:int>").option(
+    "writer", "--anonymous", {"id": 0}
+).usage("book [-w <id:int> | --anonymous]").shortcut(
+    "测试", {"args": ["--anonymous"]}
+).action(
+    lambda bot, event, options: bot.send(event, str(options))
+).build()

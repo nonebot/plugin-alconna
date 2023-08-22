@@ -1,11 +1,10 @@
 import contextlib
 
+from nonebot import get_driver
 from arclet.alconna import Args as Args
 from arclet.alconna import Field as Field
 from arclet.alconna import count as count
-from nonebot import get_driver
 from nonebot.plugin import PluginMetadata
-from nonebot.internal.params import DefaultParam
 from arclet.alconna import Option as Option
 from arclet.alconna import append as append
 from arclet.alconna import config as config
@@ -13,6 +12,7 @@ from arclet.alconna import Alconna as Alconna
 from arclet.alconna import Arparma as Arparma
 from arclet.alconna import ArgsStub as ArgsStub
 from arclet.alconna import MultiVar as MultiVar
+from nonebot.internal.params import DefaultParam
 from arclet.alconna import Namespace as Namespace
 from arclet.alconna import namespace as namespace
 from nonebot import __version__ as nonebot_version
@@ -60,9 +60,9 @@ from .matcher import on_alconna as on_alconna
 from .tools import image_fetch as image_fetch
 from .params import match_value as match_value
 from .tools import reply_handle as reply_handle
-from .params import AlconnaParam as AlconnaParam
 from .consts import SEGMATCH_MSG as SEGMATCH_MSG
 from .params import AlconnaMatch as AlconnaMatch
+from .params import AlconnaParam as AlconnaParam
 from .params import AlconnaQuery as AlconnaQuery
 from .model import CommandResult as CommandResult
 from .params import AlcExecResult as AlcExecResult
@@ -108,6 +108,10 @@ __plugin_meta__ = PluginMetadata(**_meta_source)
 
 with contextlib.suppress(ValueError, LookupError):
     global_config = get_driver().config
-    config = Config.parse_obj(global_config)
-    if config.alconna_use_param:
-        AlconnaMatcher.HANDLER_PARAM_TYPES = (*AlconnaMatcher.HANDLER_PARAM_TYPES[:-1], AlconnaParam, DefaultParam)
+    _config = Config.parse_obj(global_config)
+    if _config.alconna_use_param:
+        AlconnaMatcher.HANDLER_PARAM_TYPES = (
+            *AlconnaMatcher.HANDLER_PARAM_TYPES[:-1],
+            AlconnaParam,
+            DefaultParam,
+        )
