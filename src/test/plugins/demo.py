@@ -218,10 +218,12 @@ async def mask_g(img: bytes, default: Query[bool] = Query("default.value")):
         await mask_cmd.send("ok")
 
 
-Command("book", "测试").option("writer", "-w <id:int>").option(
-    "writer", "--anonymous", {"id": 0}
-).usage("book [-w <id:int> | --anonymous]").shortcut(
-    "测试", {"args": ["--anonymous"]}
-).action(
-    lambda bot, event, options: bot.send(event, str(options))
-).build()
+book = (
+    Command("book", "测试")
+    .option("writer", "-w <id:int>")
+    .option("writer", "--anonymous", {"id": 0})
+    .usage("book [-w <id:int> | --anonymous]")
+    .shortcut("测试", {"args": ["--anonymous"]})
+    .action(lambda options: str(options))
+    .build()
+)

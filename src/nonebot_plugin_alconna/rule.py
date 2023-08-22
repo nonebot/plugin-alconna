@@ -303,6 +303,8 @@ class AlconnaRule:
         for key, value in exec_result.items():
             if is_awaitable(value):
                 exec_result[key] = await value
+            elif isinstance(value, (str, Message)):
+                exec_result[key] = await bot.send(event, value)
         state[ALCONNA_EXEC_RESULT] = exec_result
         return True
 

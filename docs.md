@@ -89,6 +89,23 @@ def on_alconna(
 - `AlcMatches`：同 `AlconnaMatches`
 - `AlcResult`：同 `AlconnaResult`
 
+若设置配置项 **ALCONNA_USE_PARAM** (默认为 True) 为 True，则上述依赖注入的目标参数皆不需要使用依赖注入函数：
+
+```python
+async def handle(
+    result: CommandResult,
+    arp: Arparma,
+    dup: Duplication,
+    source: Alconna,
+    abc: str,  # 类似 Match, 但是若匹配结果不存在对应字段则跳过该 handler
+    foo: Match[str],
+    bar: Query[int] = Query("ttt.bar", 0)  # Query 仍然需要一个默认值来传递 path 参数
+):
+    ...
+```
+
+该效果对于 `got_path` 下的 Arg 同样有效
+
 实例:
 ```python
 ...
@@ -100,9 +117,7 @@ from nonebot_plugin_alconna import (
     on_alconna, 
     Match,
     Query,
-    AlconnaMatch, 
-    AlconnaQuery,
-    AlconnaMatches,
+    AlconnaMatch,
     AlcResult
 )
 from arclet.alconna import Alconna, Args, Option, Arparma
@@ -123,7 +138,7 @@ async def handle_test1(result: AlcResult):
     await test.send(f"maybe output: {result.output}")
 
 @test.handle()
-async def handle_test2(result: Arparma = AlconnaMatches()):
+async def handle_test2(result: Arparma):
     await test.send(f"head result: {result.header_result}")
     await test.send(f"args: {result.all_matched_args}")
 
@@ -133,7 +148,7 @@ async def handle_test3(bar: Match[int] = AlconnaMatch("bar")):
         await test.send(f"foo={bar.result}")
 
 @test.handle()
-async def handle_test4(qux: Query[bool] = AlconnaQuery("baz.qux", False)):
+async def handle_test4(qux: Query[bool] = Query("baz.qux", False)):
     if qux.available:
         await test.send(f"baz.qux={qux.result}")
 ```
@@ -171,6 +186,24 @@ async def list_(arp: CommandResult = AlconnaResult()):
 
 # 仅在命令为 `pip install` 时响应
 @pip_cmd.handle([Check(assign("install"))])
+async def install(arp: CommandResult = AlconnaResult()):
+    ...
+```
+
+或者使用 `AlconnaMatcher.assign`：
+
+```python
+@pip_cmd.assign("install.pak", "pip")
+async def update(arp: CommandResult = AlconnaResult()):
+    ...
+
+# 仅在命令为 `pip list` 时响应
+@pip_cmd.assign("list")
+async def list_(arp: CommandResult = AlconnaResult()):
+    ...
+
+# 仅在命令为 `pip install` 时响应
+@pip_cmd.assign("install")
 async def install(arp: CommandResult = AlconnaResult()):
     ...
 ```
