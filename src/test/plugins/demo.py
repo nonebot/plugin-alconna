@@ -26,13 +26,9 @@ from nonebot_plugin_alconna import (
     Query,
     Reply,
     Command,
-    AlconnaArg,
     AlconnaMatch,
-    AlconnaQuery,
     AlconnaMatcher,
-    AlconnaMatches,
     SegMatchResult,
-    AlconnaDuplication,
     assign,
     seg_match,
     funcommand,
@@ -48,7 +44,7 @@ with namespace("nbtest") as ns:
     ns.builtin_option_name["help"] = {"-h", "帮助", "--help"}
 
     help_cmd = on_alconna(Alconna("help"))
-    test_cmd = on_alconna(Alconna("test", Args["target?", ImgOrUrl]))
+    test_cmd = on_alconna(Alconna("test", Args["target?", str]))
 
     pip = Alconna(
         "pip",
@@ -93,12 +89,12 @@ def get_dist_map() -> dict:
 
 
 @help_cmd.handle()
-async def _help(arp: Arparma = AlconnaMatches()):
+async def _help():
     await help_cmd.send(MessageSegment.text(command_manager.all_command_help()))
 
 
 @i18n.handle()
-async def _i18n(arp: Arparma = AlconnaMatches()):
+async def _i18n(arp: Arparma):
     try:
         lang.select(arp["lang"])
     except ValueError as e:
@@ -113,7 +109,7 @@ async def pip_l():
 
 
 @pipcmd.assign("install.pak")
-async def pip_i(res: PipResult = AlconnaDuplication(PipResult)):
+async def pip_i(res: PipResult):
     await pipcmd.send(f"pip installing {res.pak}...")
 
 
@@ -123,7 +119,7 @@ async def pip_m():
 
 
 @ali.handle()
-async def yiyan(res: Arparma = AlconnaMatches()):
+async def yiyan(res: Arparma):
     if res.matched:
         await ali.send("WIP...")
     # else:
@@ -167,13 +163,13 @@ async def test(
 
 
 @test_cmd.handle()
-async def tt_h(matcher: AlconnaMatcher, target: Match[str] = AlconnaMatch("target")):
+async def tt_h(matcher: AlconnaMatcher, target: Match[str]):
     if target.available:
         matcher.set_path_arg("target", target.result)
 
 
 @test_cmd.got_path("target", prompt="请输入目标")
-async def tt(target: str = AlconnaArg("target")):
+async def tt(target: str):
     await test_cmd.send(f"target: {target}")
 
 
@@ -183,7 +179,7 @@ async def login_exit():
 
 
 @login.handle()
-async def login_handle(arp: Arparma = AlconnaMatches()):
+async def login_handle(arp: Arparma):
     await login.send(str(arp))
 
 
@@ -202,9 +198,8 @@ mask_cmd = on_alconna(
 
 mask_cmd.shortcut(
     "设置默认词云形状",
-    {"command": "设置词云形状 {%0}", "args": ["--default"]},
+    {"command": "设置词云形状", "args": ["--default"]},
 )
-
 
 @mask_cmd.handle()
 async def mask_h(
@@ -216,24 +211,21 @@ async def mask_h(
 
 @mask_cmd.got_path("img", prompt="请输入图片", middleware=image_fetch)
 async def mask_g(
-    img: bytes = AlconnaArg("img"), default: Query[bool] = AlconnaQuery("default.value")
+    img: bytes,
+    default: Query[bool] = Query("default.value")
 ):
+    print(default)
     if default.result:
         await mask_cmd.send(f"img: {img[:10]}")
     else:
         await mask_cmd.send("ok")
 
 
-book = (
-    Command("book", "测试")
-    .option("writer", "-w <id:int>")
-    .option("writer", "--anonymous", {"id": 0})
-    .usage("book [-w <id:int> | --anonymous]")
-    .shortcut("测试", {"args": ["--anonymous"]})
+
+Command("book", "测试")\
+    .option("writer", "-w <id:int>")\
+    .option("writer", "--anonymous", {"id": 0})\
+    .usage("book [-w <id:int> | --anonymous]")\
+    .shortcut("测试", {"args": ["--anonymous"]})\
+    .action(lambda bot, event, options: bot.send(event, str(options)))\
     .build()
-)
-
-
-@book.handle()
-async def test1_h(arp: Arparma = AlconnaMatches()):
-    await book.send(str(arp.options))

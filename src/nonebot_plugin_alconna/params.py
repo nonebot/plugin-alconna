@@ -1,16 +1,16 @@
 import inspect
 
-from typing_extensions import Annotated, TypeAlias, get_args
+from typing_extensions import Annotated, TypeAlias
 from typing import Any, Dict, List, Type, Union, TypeVar, Callable, Optional, overload, Tuple
 
 from nonebot.typing import T_State
-from tarina import run_always_await, generic_isinstance, generic_issubclass
+from tarina import run_always_await, generic_issubclass
 from tarina.generic import get_origin
 from nonebot.internal.adapter import Bot, Message
 from arclet.alconna import Empty, Arparma, Duplication, Alconna
-from nonebot.internal.params import Depends as Depends
+from nonebot.internal.params import Depends
 from arclet.alconna.builtin import generate_duplication
-from nonebot.internal.matcher import Matcher as Matcher
+from nonebot.internal.matcher import Matcher
 from nonebot.internal.params import Param
 
 from .adapters import Segment
@@ -219,10 +219,10 @@ class AlconnaParam(Param):
             return cls(..., type=Alconna)
         if param.annotation is Duplication:
             return cls(..., type=Duplication)
-        if generic_issubclass(Duplication, param.annotation):
+        if issubclass(get_origin(param.annotation), Duplication):
             return cls(..., anno=param.annotation, type=Duplication)
         if get_origin(param.annotation) is Match:
-            return cls(..., name=param.name, type=Match)
+            return cls(param.default, name=param.name, type=Match)
         if isinstance(param.default, Query):
             return cls(param.default, type=Query)
         return cls(param.default, name=param.name, type=Any)
@@ -254,11 +254,11 @@ class AlconnaParam(Param):
             return q
         if self.extra["name"] in res.result.all_matched_args:
             return res.result.all_matched_args[self.extra["name"]]
-        return state[ALCONNA_ARG_KEY.format(self.extra["name"])]
+        return state[ALCONNA_ARG_KEY.format(key=self.extra["name"])]
 
     async def _check(self, state: T_State, **kwargs: Any) -> Any:
         if self.extra["type"] == Any:
             return (
                 self.extra["name"] in _alconna_result(state).result.all_matched_args
-                or ALCONNA_ARG_KEY.format(self.extra["name"]) in state
+                or ALCONNA_ARG_KEY.format(key=self.extra["name"]) in state
             )

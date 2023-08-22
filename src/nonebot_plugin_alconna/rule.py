@@ -2,12 +2,12 @@ import asyncio
 import traceback
 from typing import Dict, Type, Union, Literal, ClassVar, Optional
 
-from tarina import lang
+from tarina import lang, is_awaitable
 from nonebot import get_driver
 from nonebot.typing import T_State
 from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
-from nonebot.internal.matcher import matchers
+from nonebot.internal.matcher import matchers, current_matcher
 from nonebot.internal.rule import Rule as Rule
 from nonebot.adapters import Bot, Event, Message
 from nonebot.utils import run_sync, is_coroutine_callable
@@ -279,6 +279,11 @@ class AlconnaRule:
                 msg: Message = getattr(event, "original_message", msg)  # type: ignore
             except (NotImplementedError, ValueError):
                 return False
+        Arparma._additional.update(
+            bot=lambda: bot,
+            event=lambda : event,
+            state=lambda : state,
+        )
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
             try:
@@ -294,7 +299,11 @@ class AlconnaRule:
             await bot.send(event, await self._convert(may_help_text, event, arp))
             return False
         state[ALCONNA_RESULT] = CommandResult(self.command, arp, may_help_text)
-        state[ALCONNA_EXEC_RESULT] = self.command.exec_result
+        exec_result = self.command.exec_result
+        for key, value in exec_result.items():
+            if is_awaitable(value):
+                exec_result[key] = await value
+        state[ALCONNA_EXEC_RESULT] = exec_result
         return True
 
     async def _convert(self, text: str, event: Event, arp: Arparma) -> Message:

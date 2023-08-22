@@ -5,6 +5,7 @@ from arclet.alconna import Field as Field
 from arclet.alconna import count as count
 from nonebot import get_driver
 from nonebot.plugin import PluginMetadata
+from nonebot.internal.params import DefaultParam
 from arclet.alconna import Option as Option
 from arclet.alconna import append as append
 from arclet.alconna import config as config
@@ -109,4 +110,4 @@ with contextlib.suppress(ValueError, LookupError):
     global_config = get_driver().config
     config = Config.parse_obj(global_config)
     if config.alconna_use_param:
-        AlconnaMatcher.HANDLER_PARAM_TYPES = (*AlconnaMatcher.HANDLER_PARAM_TYPES, AlconnaParam)
+        AlconnaMatcher.HANDLER_PARAM_TYPES = (*AlconnaMatcher.HANDLER_PARAM_TYPES[:-1], AlconnaParam, DefaultParam)

@@ -296,6 +296,7 @@ def funcommand(
 
 
 class Command(AlconnaString):
+
     def build(
         self,
         rule: Rule | T_RuleChecker | None = None,
