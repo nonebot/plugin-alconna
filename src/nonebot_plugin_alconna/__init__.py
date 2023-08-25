@@ -32,35 +32,33 @@ from arclet.alconna import command_manager as command_manager
 from arclet.alconna import SubcommandResult as SubcommandResult
 
 from .config import Config
-from .adapters import At as At
+from .uniseg import At as At
+from .uniseg import File as File
 from .model import Match as Match
 from .model import Query as Query
-from .adapters import File as File
 from .params import Check as Check
-from .adapters import AtAll as AtAll
-from .adapters import Audio as Audio
-from .adapters import Emoji as Emoji
-from .adapters import Image as Image
-from .adapters import Reply as Reply
-from .adapters import Video as Video
-from .adapters import Voice as Voice
-from .params import SegMsg as SegMsg
+from .uniseg import AtAll as AtAll
+from .uniseg import Audio as Audio
+from .uniseg import Emoji as Emoji
+from .uniseg import Image as Image
+from .uniseg import Reply as Reply
+from .uniseg import Video as Video
+from .uniseg import Voice as Voice
+from .params import UniMsg as UniMsg
 from .params import assign as assign
 from .rule import alconna as alconna
+from .uniseg import Segment as Segment
 from .matcher import Command as Command
-from .adapters import Segment as Segment
-from .rule import seg_match as seg_match
 from .params import AlcResult as AlcResult
 from .argv import MessageArgv as MessageArgv
 from .params import AlcMatches as AlcMatches
 from .params import AlconnaArg as AlconnaArg
 from .params import match_path as match_path
+from .uniseg import UniMessage as UniMessage
 from .matcher import funcommand as funcommand
 from .matcher import on_alconna as on_alconna
 from .tools import image_fetch as image_fetch
 from .params import match_value as match_value
-from .tools import reply_handle as reply_handle
-from .consts import SEGMATCH_MSG as SEGMATCH_MSG
 from .params import AlconnaMatch as AlconnaMatch
 from .params import AlconnaParam as AlconnaParam
 from .params import AlconnaQuery as AlconnaQuery
@@ -69,11 +67,9 @@ from .params import AlcExecResult as AlcExecResult
 from .params import AlconnaResult as AlconnaResult
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
 from .params import AlconnaMatches as AlconnaMatches
-from .params import SegMatchResult as SegMatchResult
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
-from .consts import SEGMATCH_RESULT as SEGMATCH_RESULT
-from .params import SegMatchMessage as SegMatchMessage
+from .params import UniversalMessage as UniversalMessage
 from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
@@ -87,7 +83,7 @@ _meta_source = {
     "usage": "matcher = on_alconna(...)",
     "homepage": "https://github.com/nonebot/plugin-alconna",
     "type": "library",
-    "supported_adapters": None,
+    "supported_uniseg": None,
     "config": Config,
     "extra": {
         "author": "RF-Tar-Railt",
@@ -101,7 +97,7 @@ if not nonebot_version.split(".")[-1].isdigit():
     _meta_source["extra"]["homepage"] = _meta_source.pop("homepage")
     _meta_source["extra"]["type"] = _meta_source.pop("type")
     _meta_source["extra"]["config"] = _meta_source.pop("config")
-    _meta_source["extra"]["supported_adapters"] = _meta_source.pop("supported_adapters")
+    _meta_source["extra"]["supported_uniseg"] = _meta_source.pop("supported_uniseg")
 
 
 __plugin_meta__ = PluginMetadata(**_meta_source)

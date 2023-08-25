@@ -1,6 +1,6 @@
 import asyncio
 import traceback
-from typing import Dict, Type, Union, Literal, ClassVar, Optional
+from typing import Dict, Union, Literal, ClassVar, Optional
 
 from nonebot import get_driver
 from nonebot.typing import T_State
@@ -25,78 +25,8 @@ from arclet.alconna import (
 
 from .config import Config
 from .typings import TConvert
-from .tools import reply_handle
-from .adapters import Reply, Segment, env
 from .model import CompConfig, CommandResult
-from .consts import SEGMATCH_MSG, ALCONNA_RESULT, SEGMATCH_RESULT, ALCONNA_EXEC_RESULT
-
-
-class SegMatch:
-    """检查消息是否匹配指定的 Segment类型"""
-
-    def __init__(
-        self,
-        *types: Union[Type[Segment], Type[str]],
-        remove: bool = False,
-        rmatch: bool = False,
-    ):
-        self.match_reply = False
-        self.types = list(types)
-        if Reply in self.types:
-            self.match_reply = True
-            self.types.remove(Reply)
-        self.remove = remove
-        self.rmatch = rmatch
-
-    async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
-        try:
-            msg = event.get_message()
-        except Exception:
-            return False
-        msg_copy = msg.copy()
-        msg_copy1 = msg.copy()
-        _reply = None
-        result = []
-        if self.match_reply:
-            if reply := await reply_handle(event, bot):
-                result.append(reply)
-            elif (res := env[Reply].validate(msg_copy[0])).success:
-                result.append(res.value)
-                _reply = msg_copy.pop(0)
-            else:
-                return False
-        for _type, seg in zip(
-            self.types, reversed(msg_copy) if self.rmatch else msg_copy
-        ):
-            if _type is str:
-                if not seg.is_text():
-                    return False
-                result.append(seg.data["text"])
-            else:
-                res = env[_type].validate(seg)
-                if not res.success:
-                    return False
-                result.append(res.value)
-            if self.remove:
-                msg_copy1.remove(seg)
-        if _reply and not self.remove:
-            msg_copy1.insert(0, _reply)
-        state[SEGMATCH_RESULT] = result
-        state[SEGMATCH_MSG] = msg_copy1
-        return True
-
-
-def seg_match(
-    *types: Union[Type[Segment], Type[str]], remove: bool = False, rmatch: bool = False
-) -> Rule:
-    """检查消息是否匹配指定的 Segment类型
-
-    参数:
-        types: Segment类型
-        remove: 是否从消息中移除匹配的Segment
-        rmatch: 是否从消息末尾开始匹配
-    """
-    return Rule(SegMatch(*types, remove=remove, rmatch=rmatch))
+from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT
 
 
 class AlconnaRule:
@@ -273,7 +203,7 @@ class AlconnaRule:
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
         if event.get_type() != "message":
             return False
-        msg: Message = state.get(SEGMATCH_MSG, event.get_message())
+        msg: Message = event.get_message()
         if self.use_origin:
             try:
                 msg: Message = getattr(event, "original_message", msg)  # type: ignore

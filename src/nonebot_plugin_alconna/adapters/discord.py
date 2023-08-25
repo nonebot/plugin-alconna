@@ -58,10 +58,10 @@ from nonebot.adapters.discord.message import (
     MentionEveryoneSegment,
 )
 
-from nonebot_plugin_alconna.adapters import At
+from nonebot_plugin_alconna.uniseg import At
 from nonebot_plugin_alconna.argv import MessageArgv
+from nonebot_plugin_alconna.uniseg import Image as UniImg
 from nonebot_plugin_alconna.typings import SegmentPattern
-from nonebot_plugin_alconna.adapters import Image as UniImg
 
 
 class DiscordMessageArgv(MessageArgv):

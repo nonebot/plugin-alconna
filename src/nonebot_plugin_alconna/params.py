@@ -3,7 +3,6 @@ from typing_extensions import Annotated, TypeAlias
 from typing import (
     Any,
     Dict,
-    List,
     Type,
     Tuple,
     Union,
@@ -16,24 +15,21 @@ from typing import (
 from nonebot.typing import T_State
 from tarina.generic import get_origin
 from nonebot.internal.matcher import Matcher
-from nonebot.internal.adapter import Bot, Message
+from nonebot.internal.adapter import Bot, Event
 from nonebot.internal.params import Param, Depends
 from arclet.alconna.builtin import generate_duplication
 from tarina import run_always_await, generic_issubclass
 from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
-from .adapters import Segment
 from .model import T, Match, Query, CommandResult
 from .consts import (
-    SEGMATCH_MSG,
     ALCONNA_RESULT,
     ALCONNA_ARG_KEY,
-    SEGMATCH_RESULT,
     ALCONNA_EXEC_RESULT,
 )
+from .uniseg import UniMessage
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
-TS = TypeVar("TS", bound=Union[Segment, str])
 MIDDLEWARE: TypeAlias = Callable[[Bot, T_State, Any], Any]
 
 
@@ -119,38 +115,17 @@ def AlconnaArg(path: str) -> Any:
     return Depends(_alconna_arg, use_cache=False)
 
 
-def _seg_match_msg(state: T_State) -> Message:
-    return state[SEGMATCH_MSG]
+async def _uni_msg(bot: Bot, event: Event) -> UniMessage:
+    return await UniMessage.generate(event, bot)
 
-
-def SegMatchMessage() -> Message:
-    return Depends(_seg_match_msg, use_cache=False)
-
-
-@overload
-def SegMatchResult() -> List[Segment]:
-    ...
-
-
-@overload
-def SegMatchResult(target: Type[TS], index: int = 0) -> TS:
-    ...
-
-
-def SegMatchResult(
-    target: Optional[Type[TS]] = None, index: int = 0
-) -> Union[List[Segment], TS]:
-    def _seg_match_result(state: T_State):
-        result = state[SEGMATCH_RESULT]
-        return result[index] if target else result
-
-    return Depends(_seg_match_result, use_cache=False)
+def UniversalMessage() -> UniMessage:
+    return Depends(_uni_msg, use_cache=True)
 
 
 AlcResult = Annotated[CommandResult, AlconnaResult()]
 AlcExecResult = Annotated[Dict[str, Any], AlconnaExecResult()]
 AlcMatches = Annotated[Arparma, AlconnaMatches()]
-SegMsg = Annotated[Message, SegMatchMessage()]
+UniMsg = Annotated[UniMessage, UniversalMessage()]
 
 
 def match_path(path: str):
