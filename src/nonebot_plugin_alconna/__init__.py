@@ -75,7 +75,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .rule import set_output_converter as set_output_converter
 
-__version__ = "0.18.1"
+__version__ = "0.19.0"
 
 _meta_source = {
     "name": "Alconna 插件",
