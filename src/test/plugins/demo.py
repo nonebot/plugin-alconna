@@ -24,12 +24,11 @@ from nonebot_plugin_alconna import (
     Match,
     Query,
     Reply,
+    UniMsg,
     Command,
     AlconnaMatch,
     AlconnaMatcher,
-    SegMatchResult,
     assign,
-    seg_match,
     funcommand,
     on_alconna,
     image_fetch,
@@ -68,7 +67,7 @@ with namespace("nbtest") as ns:
     )
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
     login = on_alconna(Alconna("login", Args["password?", str], Option("-r|--recall")))
-    bind = on_alconna(Alconna("bind"), seg_match(Reply, remove=True))
+    bind = on_alconna(Alconna("bind"))
 
     class PipResult(Duplication):
         list: SubcommandStub
@@ -183,8 +182,11 @@ async def login_handle(arp: Arparma):
 
 
 @bind.handle()
-async def bind_handle(reply: Reply = SegMatchResult(Reply)):
-    await bind.send(str(reply))
+async def bind_handle(unimsg: UniMsg):
+    if unimsg.has(Reply):
+        reply = unimsg[Reply, 0]
+        await bind.send(repr(unimsg))
+        await bind.send(repr(reply))
 
 
 mask_cmd = on_alconna(

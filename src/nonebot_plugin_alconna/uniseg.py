@@ -30,6 +30,9 @@ class Segment:
 
     origin: MessageSegment
 
+    def __str__(self):
+        return f"[{self.__class__.__name__.lower()}]"
+
 
 @dataclass
 class At(Segment):
@@ -98,6 +101,9 @@ class Reply(Segment):
 @dataclass
 class Other(Segment):
     """其他 Segment"""
+
+    def __str__(self):
+        return f"[{self.origin.type}]"
 
 
 _Other = gen_unit(
@@ -463,6 +469,9 @@ class UniMessage(List[US]):
 
     def __str__(self) -> str:
         return "".join(str(seg) for seg in self)
+
+    def __repr__(self) -> str:
+        return "".join(repr(seg) for seg in self)
 
     @overload
     def __getitem__(self, args: Type[TS]) -> "UniMessage[TS]":

@@ -1,7 +1,7 @@
 from nepattern import type_parser
 from arclet.alconna import Args, Alconna
 
-from nonebot_plugin_alconna.adapters import Image
+from nonebot_plugin_alconna import Image
 from nonebot_plugin_alconna.adapters.telegram import Bold, Photo, Underline
 
 msg = "/com" + Bold("mand some_arg") + " " + Underline("some_arg ") + "some_arg"

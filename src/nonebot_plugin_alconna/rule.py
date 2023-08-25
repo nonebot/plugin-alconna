@@ -25,6 +25,7 @@ from arclet.alconna import (
 
 from .config import Config
 from .typings import TConvert
+from .argv import FallbackMessage
 from .model import CompConfig, CommandResult
 from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT
 
@@ -42,7 +43,7 @@ class AlconnaRule:
         use_cmd_start: 是否使用 nb 全局配置里的命令前缀
     """
 
-    default_converter: ClassVar[TConvert] = lambda _, x: Message(x)  # type: ignore
+    default_converter: ClassVar[TConvert]
 
     __slots__ = (
         "command",
@@ -264,6 +265,7 @@ def alconna(
     output_converter: Optional[TConvert] = None,
     comp_config: Optional[CompConfig] = None,
     use_origin: bool = False,
+    use_cmd_start: bool = False,
 ) -> Rule:
     return Rule(
         AlconnaRule(
@@ -273,8 +275,12 @@ def alconna(
             output_converter,
             comp_config,
             use_origin,
+            use_cmd_start,
         )
     )
+
+
+AlconnaRule.default_converter = lambda _, x: FallbackMessage(x)
 
 
 def set_output_converter(fn: TConvert):

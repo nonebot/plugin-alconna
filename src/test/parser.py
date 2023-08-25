@@ -76,7 +76,7 @@ def test_generic():
     from nonebot.adapters.onebot.v11 import Message as Onebot11Message
     from nonebot.adapters.onebot.v12 import Message as Onebot12Message
 
-    from nonebot_plugin_alconna.adapters import At as GenericAt
+    from nonebot_plugin_alconna.uniseg import At as GenericAt
     from nonebot_plugin_alconna.adapters.onebot11 import At as Onebot11At
     from nonebot_plugin_alconna.adapters.onebot11 import Image as Onebot11Image
     from nonebot_plugin_alconna.adapters.onebot12 import Image as Onebot12Image
