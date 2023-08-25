@@ -1,16 +1,6 @@
 import inspect
 from typing_extensions import Annotated, TypeAlias
-from typing import (
-    Any,
-    Dict,
-    Type,
-    Tuple,
-    Union,
-    TypeVar,
-    Callable,
-    Optional,
-    overload,
-)
+from typing import Any, Dict, Type, Tuple, Union, TypeVar, Callable, Optional, overload
 
 from nonebot.typing import T_State
 from tarina.generic import get_origin
@@ -21,13 +11,9 @@ from arclet.alconna.builtin import generate_duplication
 from tarina import run_always_await, generic_issubclass
 from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
-from .model import T, Match, Query, CommandResult
-from .consts import (
-    ALCONNA_RESULT,
-    ALCONNA_ARG_KEY,
-    ALCONNA_EXEC_RESULT,
-)
 from .uniseg import UniMessage
+from .model import T, Match, Query, CommandResult
+from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 MIDDLEWARE: TypeAlias = Callable[[Bot, T_State, Any], Any]
@@ -117,6 +103,7 @@ def AlconnaArg(path: str) -> Any:
 
 async def _uni_msg(bot: Bot, event: Event) -> UniMessage:
     return await UniMessage.generate(event, bot)
+
 
 def UniversalMessage() -> UniMessage:
     return Depends(_uni_msg, use_cache=True)

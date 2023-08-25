@@ -8,6 +8,7 @@ from nonebot.internal.driver.model import Request
 
 from .uniseg import Image
 
+
 async def image_fetch(bot: Bot, state: T_State, img: Image):
     if img.url:  # mirai2, qqguild, kook, villa, feishu, minecraft, ding
         req = Request("GET", img.url)

@@ -60,8 +60,8 @@ from nonebot.adapters.discord.message import (
 
 from nonebot_plugin_alconna.uniseg import At
 from nonebot_plugin_alconna.argv import MessageArgv
-from nonebot_plugin_alconna.uniseg import Image as UniImg
 from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot_plugin_alconna.uniseg import Image as UniImg
 
 
 class DiscordMessageArgv(MessageArgv):

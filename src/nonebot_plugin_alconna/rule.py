@@ -51,7 +51,7 @@ class AlconnaRule:
         "output_converter",
         "comp_config",
         "use_origin",
-        "use_cmd_start"
+        "use_cmd_start",
     )
 
     def __init__(
@@ -71,9 +71,9 @@ class AlconnaRule:
             config = Config.parse_obj(global_config)
             self.auto_send = auto_send_output or config.alconna_auto_send_output
             if (
-                not command.prefixes and
-                (use_cmd_start or config.alconna_use_command_start) and
-                global_config.command_start
+                not command.prefixes
+                and (use_cmd_start or config.alconna_use_command_start)
+                and global_config.command_start
             ):
                 command_manager.delete(command)
                 command.prefixes = list(global_config.command_start)
