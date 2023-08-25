@@ -179,6 +179,7 @@ def on_alconna(
     aliases: set[str] | tuple[str, ...] | None = None,
     comp_config: CompConfig | None = None,
     use_origin: bool = False,
+    use_cmd_start: bool = False,
     permission: Permission | T_PermissionChecker | None = None,
     *,
     handlers: list[T_Handler | Dependent] | None = None,
@@ -200,6 +201,7 @@ def on_alconna(
         aliases: 命令别名
         comp_config: 补全会话配置, 不传入则不启用补全会话
         use_origin: 是否使用未经 to_me 等处理过的消息
+        use_cmd_start: 是否使用 nb 全局配置里的命令起始符
         permission: 事件响应权限
         handlers: 事件处理函数列表
         temp: 是否为临时事件响应器（仅执行一次）
@@ -227,6 +229,7 @@ def on_alconna(
             output_converter,
             comp_config,
             use_origin,
+            use_cmd_start,
         ),
         Permission() | permission,
         temp=temp,
@@ -247,6 +250,11 @@ def funcommand(
     name: str | None = None,
     prefixes: list[str] | None = None,
     description: str | None = None,
+    skip_for_unmatch: bool = True,
+    auto_send_output: bool = False,
+    output_converter: TConvert | None = None,
+    use_origin: bool = False,
+    use_cmd_start: bool = False,
     rule: Rule | T_RuleChecker | None = None,
     permission: Permission | T_PermissionChecker | None = None,
     *,
@@ -279,6 +287,11 @@ def funcommand(
         matcher = on_alconna(
             alc,
             rule,
+            skip_for_unmatch,
+            auto_send_output,
+            output_converter,
+            use_origin=use_origin,
+            use_cmd_start=use_cmd_start,
             permission=permission,
             handlers=handlers,
             temp=temp,
@@ -305,6 +318,7 @@ class Command(AlconnaString):
         aliases: set[str] | tuple[str, ...] | None = None,
         comp_config: CompConfig | None = None,
         use_origin: bool = False,
+        use_cmd_start: bool = False,
         permission: Permission | T_PermissionChecker | None = None,
         *,
         handlers: list[T_Handler | Dependent] | None = None,

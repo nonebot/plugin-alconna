@@ -465,7 +465,7 @@ class UniMessage(List[US]):
         return "".join(str(seg) for seg in self)
 
     @overload
-    def __getitem__(self, args: Type[US]) -> Self:
+    def __getitem__(self, args: Type[TS]) -> "UniMessage[TS]":
         """获取仅包含指定消息段类型的消息
 
         参数:
@@ -476,7 +476,7 @@ class UniMessage(List[US]):
         """
 
     @overload
-    def __getitem__(self, args: Tuple[Type[TS], int]) -> Union[TS, str]:
+    def __getitem__(self, args: Tuple[Type[TS], int]) -> TS:
         """索引指定类型的消息段
 
         参数:
@@ -487,7 +487,7 @@ class UniMessage(List[US]):
         """
 
     @overload
-    def __getitem__(self, args: Tuple[Type[US], slice]) -> Self:
+    def __getitem__(self, args: Tuple[Type[TS], slice]) -> "UniMessage[TS]":
         """切片指定类型的消息段
 
         参数:
@@ -498,7 +498,7 @@ class UniMessage(List[US]):
         """
 
     @overload
-    def __getitem__(self, args: int) -> Segment:
+    def __getitem__(self, args: int) -> US:
         """索引消息段
 
         参数:
@@ -583,7 +583,7 @@ class UniMessage(List[US]):
             return super().index(first_segment, *args)
         return super().index(value, *args)
 
-    def get(self, type_: Type[US], count: Optional[int] = None) -> Self:
+    def get(self, type_: Type[TS], count: Optional[int] = None) -> "UniMessage[TS]":
         """获取指定类型的消息段
 
         参数:

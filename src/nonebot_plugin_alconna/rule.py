@@ -39,6 +39,7 @@ class AlconnaRule:
         output_converter: 输出信息字符串转换为 Message 方法
         comp_config: 自动补全配置
         use_origin: 是否使用未经 to_me 等处理过的消息
+        use_cmd_start: 是否使用 nb 全局配置里的命令前缀
     """
 
     default_converter: ClassVar[TConvert] = lambda _, x: Message(x)  # type: ignore
@@ -50,6 +51,7 @@ class AlconnaRule:
         "output_converter",
         "comp_config",
         "use_origin",
+        "use_cmd_start"
     )
 
     def __init__(
@@ -60,6 +62,7 @@ class AlconnaRule:
         output_converter: Optional[TConvert] = None,
         comp_config: Optional[CompConfig] = None,
         use_origin: bool = False,
+        use_cmd_start: bool = False,
     ):
         self.comp_config = comp_config
         self.use_origin = use_origin
@@ -67,7 +70,11 @@ class AlconnaRule:
             global_config = get_driver().config
             config = Config.parse_obj(global_config)
             self.auto_send = auto_send_output or config.alconna_auto_send_output
-            if config.alconna_use_command_start and global_config.command_start:
+            if (
+                not command.prefixes and
+                (use_cmd_start or config.alconna_use_command_start) and
+                global_config.command_start
+            ):
                 command_manager.delete(command)
                 command.prefixes = list(global_config.command_start)
                 command._hash = command._calc_hash()
