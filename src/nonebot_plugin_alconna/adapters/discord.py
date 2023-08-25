@@ -288,6 +288,7 @@ def translate(
         "options": [_translate_options(opt) for opt in alc.options],
         **locals(),
     }
+    buffer["_depth"] += 1
     buffer.pop("alc")
     buffer.pop("__class__")
     buffer["options"].extend(_translate_args(alc.args))
