@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, Callable, Iterable, Protocol
+from typing import Any, Callable, ClassVar, Iterable, Protocol
 
 import nepattern.main
 from nonebot.rule import Rule
@@ -69,7 +69,7 @@ def _validate(target: Arg[Any], arg: MessageSegment):
 
 
 class AlconnaMatcher(Matcher):
-    command: Alconna
+    command: ClassVar[Alconna]
 
     @classmethod
     def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):

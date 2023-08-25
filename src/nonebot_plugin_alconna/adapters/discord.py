@@ -64,13 +64,13 @@ from nonebot_plugin_alconna.typings import SegmentPattern
 from nonebot_plugin_alconna.adapters import Image as UniImg
 
 
-class QQGuildMessageArgv(MessageArgv):
+class DiscordMessageArgv(MessageArgv):
     ...
 
 
-set_default_argv_type(QQGuildMessageArgv)
+set_default_argv_type(DiscordMessageArgv)
 argv_config(
-    QQGuildMessageArgv,
+    DiscordMessageArgv,
     filter_out=[],
     checker=lambda x: isinstance(x, BaseMessage),
     to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,

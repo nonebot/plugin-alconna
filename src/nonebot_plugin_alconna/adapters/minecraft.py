@@ -14,7 +14,7 @@ argv_config(
     MinecraftMessageArgv,
     filter_out=[],
     checker=lambda x: isinstance(x, BaseMessage),
-    to_text=lambda x: x if x.__class__ is str else str(x) if x.type == "text" else None,
+    to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
     converter=lambda x: Message(x),
 )
 

@@ -11,23 +11,29 @@ from nonebot.adapters.telegram.message import (
     BaseMessage,
     UnCombinFile,
     MessageSegment,
+    BaseMessageSegment,
 )
 
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
 
-def is_text(x: MessageSegment):
-    return x.type in {
-        "text",
-        "bot_command",
-        "bold",
-        "italic",
-        "underline",
-        "strikethrough",
-        "spoiler",
-        "code",
-    }
+def is_text(x: BaseMessageSegment):
+    return (
+        x.type
+        in {
+            "text",
+            "bot_command",
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "spoiler",
+            "code",
+        }
+        if isinstance(x, MessageSegment)
+        else x.is_text()
+    )
 
 
 styles = {
