@@ -50,8 +50,7 @@ nb plugin install nonebot-plugin-alconna
 
 ```python
 from nonebot.adapters.onebot.v12 import Message
-from nonebot_plugin_alconna import on_alconna, AlconnaMatches
-from nonebot_plugin_alconna.adapters import At
+from nonebot_plugin_alconna import on_alconna, AlconnaMatches, At
 from nonebot_plugin_alconna.adapters.onebot12 import Image
 from arclet.alconna import Alconna, Args, Option, Arparma, Subcommand, MultiVar
 
@@ -102,6 +101,7 @@ async def _(result: Arparma = AlconnaMatches()):
 - `aliases: set[str | tuple[str, ...]] | None = None`: 命令别名， 作用类似于 `on_command` 中的 aliases
 - `comp_config: CompConfig | None = None`: 补全会话配置， 不传入则不启用补全会话
 - `use_origin: bool = False`: 是否使用未经 to_me 等处理过的消息
+- `use_cmd_start`: 是否使用 COMMAND_START 作为命令前缀
 
 `AlconnaMatches` 是一个依赖注入函数，可注入 `Alconna` 命令解析结果。
 

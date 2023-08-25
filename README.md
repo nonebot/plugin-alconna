@@ -81,7 +81,7 @@ assert res.query("target").data['user_id'] == '123'
 ```python
 from nonebot.adapters.onebot.v12 import Message as Ob12Msg, MessageSegment as Ob12MS
 from nonebot.adapters.onebot.v11 import Message as Ob11Msg, MessageSegment as Ob11MS
-from nonebot_plugin_alconna.adapters import At
+from nonebot_plugin_alconna import At
 from arclet.alconna import Alconna, Args
 
 msg1 = Ob12Msg(["Hello!", Ob12MS.mention("123")]) # Hello![mention:user_id=123]
@@ -252,8 +252,9 @@ def on_alconna(
     aliases: set[str | tuple[str, ...]] | None = None,
     comp_config: CompConfig | None = None,
     use_origin: bool = False,
+    use_cmd_start: bool = False,
     **kwargs,
-) -> type[Matcher]:
+) -> type[AlconnaMatcher]:
 ```
 
 - `command`: Alconna 命令
@@ -263,6 +264,7 @@ def on_alconna(
 - `aliases`: 命令别名, 作用类似于 `on_command`
 - `comp_config`: 补全会话配置, 不传入则不启用补全会话
 - `use_origin`: 是否使用未经 to_me 等处理过的消息
+- `use_cmd_start`: 是否使用 COMMAND_START 作为命令前缀
 
 ## 提供了 MessageSegment标注 的协议:
 

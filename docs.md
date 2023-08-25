@@ -22,9 +22,8 @@ nb plugin install nonebot-plugin-alconna
 ### 展示
 
 ```python
-from nonebot.adapters.onebot.v12 import Message, MessageSegment as Ob12MS
-from nonebot_plugin_alconna import on_alconna, AlconnaMatches
-from nonebot_plugin_alconna.adapters import At
+from nonebot.adapters.onebot.v12 import Message
+from nonebot_plugin_alconna import on_alconna, AlconnaMatches, At
 from nonebot_plugin_alconna.adapters.onebot12 import Image
 from arclet.alconna import Alconna, Args, Option, Arparma
 
@@ -34,8 +33,8 @@ hello = on_alconna(alc, auto_send_output=True)
 @hello.handle()
 async def _(result: Arparma = AlconnaMatches()):
     if result.find("spec"):
-        target: Ob12MS = result.query("spec.target")
-        seed = target.data['user_id']
+        target = result.query[At]("spec.target")
+        seed = target.target
         await hello.finish(Message(Image(await gen_image(seed))))
     else:
         await hello.finish("Hello!")
@@ -54,6 +53,7 @@ def on_alconna(
     aliases: set[str | tuple[str, ...]] | None = None,
     comp_config: CompConfig | None = None,
     use_origin: bool = False,
+    use_cmd_start: bool = False,
     ...,
 ):
 ```
@@ -65,6 +65,7 @@ def on_alconna(
 - `aliases`: 命令别名， 作用类似于 `on_command` 中的 aliases
 - `comp_config`: 补全会话配置， 不传入则不启用补全会话
 - `use_origin`: 是否使用未经 to_me 等处理过的消息
+- `use_cmd_start`: 是否使用 COMMAND_START 作为命令前缀
 
 ### 依赖注入
 
@@ -225,8 +226,6 @@ async def echo(msg: str):
 
 本插件提供了一系列便捷的 `MessageSegment` 标注，可用于匹配消息中除 text 外的其他 `MessageSegment`，也可用于快速创建 `MessageSegment`。
 
-所有标注位于 `nonebot_plugin_alconna.adapters` 中。
-
 ### 通用标注
 
 通用标注会将符合条件的 `MessageSegment` 转为插件提供的内部类型
@@ -258,6 +257,9 @@ class Reply(Segment):
     origin: Any
     id: str
     msg: Optional[Union[Message, str]]
+
+class Other(Segment):
+    ...
 ```
 
 - `Text`: str 的别名
@@ -268,8 +270,32 @@ class Reply(Segment):
 - `Voice`: 匹配 `Voice` 类型的 `MessageSegment`
 - `File`: 匹配 `File` 类型的 `MessageSegment`
 - `Video`: 匹配 `Video` 类型的 `MessageSegment`
+- `Emoji`: 匹配 `Emoji` 类型的 `MessageSegment`
+- `Other`: 匹配除以上类型外的 `MessageSegment`
 
 此类标注无法用于创建 `MessageSegment`。
+
+### 通用消息
+
+除了以上通用标注外，本插件还提供了一个类似于 `Message` 的 `UniMessage` 类型，其元素为经过通用标注转换后的 `Segment`。
+
+你可以通过提供的 `UniversalMessage` 或 `UniMsg` 依赖注入器来获取 `UniMessage`。
+
+```python
+from nonebot_plugin_alconna import UniMsg, At, Reply
+
+matcher = on_xxx(...)
+
+@matcher.handle()
+async def _(msg: UniMsg):
+    reply = msg[Reply, 0]
+    print(reply.origin)
+    if msg.has(At):
+        ats = msg.get(At)
+        print(ats)
+    ...
+```
+
 
 ### 适配器标注
 
@@ -315,17 +341,25 @@ assert alc.parse(msg).query("target").data['user_id'] == '123'
 ```python
 from nonebot.adapters.onebot.v12 import Message as Ob12M, MessageSegment as Ob12MS
 from nonebot.adapters.onebot.v11 import Message as Ob11M, MessageSegment as Ob11MS
-from nonebot_plugin_alconna.adapters import At
+from nonebot_plugin_alconna import At
 from arclet.alconna import Alconna, Args
 
-msg1 = Ob12M(["Hello!", Ob12MS.mention("123")])
-print(msg1)  # Hello![mention:user_id=123]
-msg2 = Ob11M(["Hello!", Ob11MS.at(123)])
-print(msg2)  # Hello![CQ:at,qq=123]
+msg1 = Ob12M(["Hello!", Ob12MS.mention("123")]) # Hello![mention:user_id=123]
+msg2 = Ob11M(["Hello!", Ob11MS.at(123)]) # Hello![CQ:at,qq=123]
+
 
 alc = Alconna("Hello!", Args["target", At])
-assert alc.parse(msg1).query("target").data['user_id'] == '123'
-assert alc.parse(msg2).query("target").data['qq'] == 123
+res1 = alc.parse(msg1)
+assert res1.matched
+target = res1.query("target")
+assert isinstance(target, At)
+assert target.target == '123'
+
+res2 = alc.parse(msg2)
+assert res2.matched
+target = res2.query("target")
+assert isinstance(target, At)
+assert target.target == '123'
 ```
 
 ## Alconna
@@ -346,7 +380,8 @@ alc = Alconna(
         Option("-r|--requirement", Args["file", str]),
         Option("-i|--index-url", Args["url", str]),
     ),
-    Option("-v|--version", action=count),
+    Option("-v|--version"),
+    Option("-v|--verbose", action=count),
 )
 
 print(alc.parse("pip install nonebot2 -i https://mirrors.aliyun.com/pypi/simple/").all_matched_args)
@@ -376,6 +411,26 @@ print(alc.parse("pip install nonebot2 -i https://mirrors.aliyun.com/pypi/simple/
 
 `Subcommand` 则可以传入自己的 **Option** 与 **Subcommand**：
 
+```python
+from arclet.alconna import Alconna, Option, Subcommand
+
+alc = Alconna(
+    "command_name",
+    Option("opt1"),
+    Option("--opt2"),
+    Subcommand(
+        "sub1",
+        Option("sub1_opt1"),
+        Option("-SO2"),
+        Subcommand(
+            "sub1_sub1"
+        )
+    ),
+    Subcommand(
+        "sub2"
+    )
+)
+```
 
 他们拥有如下共同参数：
 
@@ -436,17 +491,17 @@ assert alc.parse("test123 BARabc").matched
 
 ```python
 >>> from arclet.alconna import Alconna, Option, Args, append
->>> alc = Alconna("gcc", Option("--flag|-F", Args["content", str], action=append))
->>> alc.parse("gcc -Fabc -Fdef -Fxyz").query("flag.content")
+>>> alc = Alconna("gcc", Option("--flag|-F", Args["content", str], action=append, compact=True))
+>>> alc.parse("gcc -Fabc -Fdef -Fxyz").query[list]("flag.content")
 ['abc', 'def', 'xyz']
 ```
 
 当 `Option` 的 `action` 为 `count` 时，其自动支持 `compact` 特性：
 
 ```python
->>> from arclet.alconna import Alconna, Option, Args, count
+>>> from arclet.alconna import Alconna, Option, count
 >>> alc = Alconna("pp", Option("--verbose|-v", action=count, default=0))
->>> alc.parse("pp -vvv").query("verbose.value")
+>>> alc.parse("pp -vvv").query[int]("verbose.value")
 3
 ```
 
@@ -520,7 +575,7 @@ output
 >>> from arclet.alconna import Alconna, Args
 >>> alc = Alconna("setu", Args["count", int])
 >>> alc.shortcut("涩图(\d+)张", {"args": ["{0}"]})
-'Alconna::setu 的快截指令: "涩图(\\d+)张" 添加成功'
+'Alconna::setu 的快捷指令: "涩图(\\d+)张" 添加成功'
 >>> alc.parse("涩图3张").query("count")
 3
 ```
@@ -528,30 +583,37 @@ output
 `shortcut` 的第一个参数为快捷指令名称，第二个参数为 `ShortcutArgs`，作为快捷指令的配置
 
 ```python
-class ShortcutArgs(TypedDict, Generic[TDC]):
+class ShortcutArgs(TypedDict):
     """快捷指令参数"""
 
-    command: NotRequired[TDC]
+    command: NotRequired[DataCollection[Any]]
     """快捷指令的命令"""
     args: NotRequired[list[Any]]
     """快捷指令的附带参数"""
     fuzzy: NotRequired[bool]
     """是否允许命令后随参数"""
+    prefix: NotRequired[bool]
+    """是否调用时保留指令前缀"""
 ```
 
 当 `fuzzy` 为 False 时，传入 `"涩图1张 abc"` 之类的快捷指令将视为解析失败
 
 快捷指令允许三类特殊的 placeholder:
 
-- `{%X}`: 只用于 `command`, 如 `setu {%0}`，表示此处填入快截指令后随的第 X 个参数。
+- `{%X}`: 如 `setu {%0}`，表示此处填入快捷指令后随的第 X 个参数。
 
   例如，若快捷指令为 `涩图`, 配置为 `{"command": "setu {%0}"}`, 则指令 `涩图 1` 相当于 `setu 1`
-- `{*}`: 只用于 `command`, 表示此处填入所有后随参数，并且可以通过 `{*X}` 的方式指定组合参数之间的分隔符。
-- `{X}`: 用于 `command` 与 `args`， 表示此处填入可能的正则匹配的组：
+- `{*}`: 表示此处填入所有后随参数，并且可以通过 `{*X}` 的方式指定组合参数之间的分隔符。
+- `{X}`: 表示此处填入可能的正则匹配的组：
   - 若 `command` 中存在匹配组 `(xxx)`，则 `{X}` 表示第 X 个匹配组的内容
   - 若 `command` 中存储匹配组 `(?P<xxx>...)`, 则 `{X}` 表示名字为 X 的匹配结果
 
 除此之外, 通过内置选项 `--shortcut` 可以动态操作快捷指令。
+
+例如： 
+- `cmd --shortcut <key> <cmd>` 来增加一个快捷指令
+- `cmd --shortcut list` 来列出当前指令的所有快捷指令
+- `cmd --shortcut delete key` 来删除一个快捷指令
 
 ### 使用模糊匹配
 
@@ -642,7 +704,7 @@ var 可以是以下几类：
   - other_args: 除主参数外的其他解析结果
   - all_matched_args: 所有 Args 的解析结果
 
-`Arparma` 同时提供了便捷的查询方法 `query()`，会根据传入的 `path` 查找参数并返回
+`Arparma` 同时提供了便捷的查询方法 `query[type]()`，会根据传入的 `path` 查找参数并返回
 
 `path` 支持如下：
 - `main_args`, `options`, ...: 返回对应的属性
