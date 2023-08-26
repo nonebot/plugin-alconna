@@ -1,14 +1,27 @@
 import inspect
-from typing_extensions import Annotated, TypeAlias
-from typing import Any, Dict, Type, Tuple, Union, TypeVar, Callable, Optional, overload
+from typing_extensions import Annotated, TypeAlias, get_args
+from typing import (
+    Any,
+    Dict,
+    Type,
+    Tuple,
+    Union,
+    Literal,
+    TypeVar,
+    Callable,
+    Optional,
+    overload,
+)
 
 from nonebot.typing import T_State
+from tarina import run_always_await
+from nepattern.util import CUnionType
+from pydantic.fields import Undefined
 from tarina.generic import get_origin
 from nonebot.internal.matcher import Matcher
 from nonebot.internal.adapter import Bot, Event
 from nonebot.internal.params import Param, Depends
 from arclet.alconna.builtin import generate_duplication
-from tarina import run_always_await, generic_issubclass
 from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
 from .uniseg import UniMessage
@@ -17,6 +30,7 @@ from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 MIDDLEWARE: TypeAlias = Callable[[Bot, T_State, Any], Any]
+_Contents = (Union, CUnionType, Literal)
 
 
 def _alconna_result(state: T_State) -> CommandResult:
@@ -182,17 +196,20 @@ class AlconnaParam(Param):
     def _check_param(
         cls, param: inspect.Parameter, allow_types: Tuple[Type[Param], ...]
     ) -> Optional["AlconnaParam"]:
-        if param.annotation is CommandResult:
+        annotation = get_origin(param.annotation)
+        if annotation in _Contents:
+            annotation = get_args(param.annotation)[0]
+        if annotation is CommandResult:
             return cls(..., type=CommandResult)
-        if generic_issubclass(get_origin(param.annotation), Arparma):
+        if annotation is Arparma:
             return cls(..., type=Arparma)
-        if generic_issubclass(param.annotation, Alconna):
+        if annotation is Alconna:
             return cls(..., type=Alconna)
-        if param.annotation is Duplication:
+        if annotation is Duplication:
             return cls(..., type=Duplication)
-        if issubclass(get_origin(param.annotation), Duplication):
+        if inspect.isclass(annotation) and issubclass(annotation, Duplication):
             return cls(..., anno=param.annotation, type=Duplication)
-        if get_origin(param.annotation) is Match:
+        if annotation is Match:
             return cls(param.default, name=param.name, type=Match)
         if isinstance(param.default, Query):
             return cls(param.default, type=Query)
@@ -210,7 +227,8 @@ class AlconnaParam(Param):
         if t is Duplication:
             if anno := self.extra.get("anno"):
                 return anno(res.result)
-            return generate_duplication(res.source)(res.result)
+            else:
+                return generate_duplication(res.source)(res.result)
         if t is Match:
             target = res.result.all_matched_args.get(self.extra["name"], Empty)
             return Match(target, target != Empty)
@@ -223,13 +241,18 @@ class AlconnaParam(Param):
             elif self.default.result != Empty:
                 q.available = True
             return q
+        if (key := ALCONNA_ARG_KEY.format(key=self.extra["name"])) in state:
+            return state[key]
         if self.extra["name"] in res.result.all_matched_args:
             return res.result.all_matched_args[self.extra["name"]]
-        return state[ALCONNA_ARG_KEY.format(key=self.extra["name"])]
+        return self.default if self.default not in (..., Empty) else Undefined
 
     async def _check(self, state: T_State, **kwargs: Any) -> Any:
         if self.extra["type"] == Any:
-            return (
+            if (
                 self.extra["name"] in _alconna_result(state).result.all_matched_args
                 or ALCONNA_ARG_KEY.format(key=self.extra["name"]) in state
-            )
+            ):
+                return True
+            if self.default not in (..., Empty):
+                return True
