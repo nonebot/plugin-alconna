@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, Callable, ClassVar, Iterable, Protocol
+from typing import Any, Callable, ClassVar, Iterable, NoReturn, Protocol
 
 import nepattern.main
 from nonebot.rule import Rule
 from nonebot.params import Depends
-from nonebot.matcher import Matcher
 from nepattern import AnyOne, AnyString
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
+from nonebot.exception import RejectedException
 from tarina import is_awaitable, run_always_await
+from nonebot.matcher import Matcher, current_matcher
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
@@ -117,7 +118,7 @@ class AlconnaMatcher(Matcher):
         middleware: MIDDLEWARE | None = None,
         parameterless: Iterable[Any] | None = None,
     ) -> Callable[[T_Handler], T_Handler]:
-        """装饰一个函数来指示 NoneBot 获取一个路径下的参数 `key`
+        """装饰一个函数来指示 NoneBot 获取一个路径下的参数 `path`
 
         当要获取的 `path` 不存在时接收用户新的一条消息再运行该函数
 
@@ -168,6 +169,28 @@ class AlconnaMatcher(Matcher):
             return func
 
         return _decorator
+
+    @classmethod
+    async def reject_path(
+        cls,
+        path: str,
+        prompt: str | Message | MessageSegment | MessageTemplate | None = None,
+        **kwargs,
+    ) -> NoReturn:
+        """最近使用 `got_path` 接收的消息不符合预期，
+        发送一条消息给当前交互用户并将当前事件处理流程中断在当前位置，在接收用户新的一条消息后从头开始执行当前处理函数
+
+        参数:
+            path: 参数路径名
+            prompt: 消息内容
+            kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
+                请参考对应 adapter 的 bot 对象 api
+        """
+        matcher = current_matcher.get()
+        matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
+        if prompt is not None:
+            await cls.send(prompt, **kwargs)
+        raise RejectedException
 
 
 def on_alconna(
