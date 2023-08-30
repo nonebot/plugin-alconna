@@ -258,6 +258,10 @@ class Reply(Segment):
     id: str
     msg: Optional[Union[Message, str]]
 
+class Card(Segment):
+    raw: str
+    content: Optional[dict]
+
 class Other(Segment):
     ...
 ```
@@ -271,6 +275,7 @@ class Other(Segment):
 - `File`: 匹配 `File` 类型的 `MessageSegment`
 - `Video`: 匹配 `Video` 类型的 `MessageSegment`
 - `Emoji`: 匹配 `Emoji` 类型的 `MessageSegment`
+- `Card`: 匹配 `Card` 类型的 `MessageSegment`，对应如 `qq` 中的小程序卡片
 - `Other`: 匹配除以上类型外的 `MessageSegment`
 
 此类标注无法用于创建 `MessageSegment`。
@@ -319,6 +324,8 @@ async def _(msg: UniMsg):
 | [Walle-Q](https://github.com/onebot-walle/nonebot_adapter_walleq)   | adapters.onebot12                    |
 | [Villa](https://github.com/CMHopeSunshine/nonebot-adapter-villa)    | adapters.villa                       |
 | [Discord](https://github.com/nonebot/adapter-discord)               | adapters.discord                     |
+| [Red 协议](https://github.com/nonebot/adapter-red)                    | adapters.red                         |
+
 
 ### 示例
 
