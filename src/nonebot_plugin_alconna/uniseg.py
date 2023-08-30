@@ -1,5 +1,7 @@
 """通用标注, 无法用于创建 MS对象"""
 import re
+import json
+import contextlib
 from copy import deepcopy
 from dataclasses import field, dataclass
 from typing_extensions import Self, SupportsIndex
@@ -19,7 +21,7 @@ from typing import (
 from nepattern import BasePattern, create_local_patterns
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
 
-from .typings import gen_unit
+from .typings import UniPattern
 
 Text = str
 
@@ -59,6 +61,7 @@ class Emoji(Segment):
 class Media(Segment):
     url: Optional[str] = field(default=None)
     id: Optional[str] = field(default=None)
+    path: Optional[str] = field(default=None)
 
 
 @dataclass
@@ -99,6 +102,18 @@ class Reply(Segment):
 
 
 @dataclass
+class Card(Segment):
+    """Card对象，表示一类卡片消息"""
+
+    raw: str
+    content: Optional[dict] = field(default=None)
+
+    def __post_init__(self):
+        with contextlib.suppress(json.JSONDecodeError):
+            self.content = json.loads(self.raw)
+
+
+@dataclass
 class Other(Segment):
     """其他 Segment"""
 
@@ -106,266 +121,299 @@ class Other(Segment):
         return f"[{self.origin.type}]"
 
 
-_Other = gen_unit(
-    Other,
-    {
-        "*": lambda seg: Other(seg),
-    },
-)
+class _Other(UniPattern[Other]):
+    def solve(self, seg: MessageSegment):
+        return Other(seg)
 
 
-def _handle_kmarkdown_met(seg: MessageSegment):
-    content = seg.data["content"]
-    if not content.startswith("(met)"):
-        return None
-    if (end := content.find("(met)", 5)) == -1:
-        return None
-    return content[5:end] not in ("here", "all") and At(seg, "user", content[5:end])
+other = _Other()
 
 
-def _handle_at(seg: MessageSegment):
-    if "qq" in seg.data and seg.data["qq"] != "all":
-        return At(seg, "user", str(seg.data["qq"]))
-    if "user_id" in seg.data:
-        return At(seg, "user", str(seg.data["user_id"]))
+class _At(UniPattern[At]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "at":  # ob11, feishu, red
+            if "qq" in seg.data and seg.data["qq"] != "all":
+                return At(seg, "user", str(seg.data["qq"]))
+            if "user_id" in seg.data:
+                return At(seg, "user", str(seg.data["user_id"]))
+        if seg.type == "mention":  # ob12, tg
+            if "user_id" in seg.data:
+                return At(seg, "user", str(seg.data["user_id"]))
+            if "text" in seg.data:
+                return At(seg, "user", seg.data["text"])
+        if seg.type == "mention_user":  # qqguild, discord, villa
+            if "user_id" in seg.data:
+                return At(seg, "user", str(seg.data["user_id"]))
+            if "mention_user" in seg.data:
+                return At(seg, "user", str(seg.data["mention_user"].user_id))
+        if seg.type == "mention_channel":  # discord, qqguild
+            return At(seg, "channel", str(seg.data["channel_id"]))
+        if seg.type == "mention_role":  # discord
+            return At(seg, "role", str(seg.data["role_id"]))
+        if seg.type == "mention_robot":  # villa
+            return At(seg, "user", str(seg.data["mention_robot"].bot_id))
+        if seg.type == "At":  # mirai
+            return At(seg, "user", str(seg.data["target"]))
+        if seg.type == "kmarkdown":  # kook
+            content = seg.data["content"]
+            if not content.startswith("(met)"):
+                return None
+            if (end := content.find("(met)", 5)) == -1:
+                return None
+            return content[5:end] not in ("here", "all") and At(
+                seg, "user", content[5:end]
+            )
+        if seg.type == "room_link":  # villa
+            return At(
+                seg,
+                "channel",
+                f'{seg.data["room_link"].villa_id}:{seg.data["room_link"].room_id}',
+            )
 
 
-_At = gen_unit(
-    At,
-    {
-        "at": _handle_at,
-        "mention": lambda seg: At(
-            seg, "user", seg.data.get("user_id", seg.data.get("text"))
-        ),
-        "mention_user": lambda seg: At(
-            seg, "user", str(seg.data.get("user_id", seg.data["mention_user"].user_id))
-        ),
-        "mention_channel": lambda seg: At(seg, "channel", str(seg.data["channel_id"])),
-        "mention_role": lambda seg: At(seg, "role", str(seg.data["role_id"])),
-        "mention_robot": lambda seg: At(
-            seg, "user", str(seg.data["mention_robot"].bot_id)
-        ),
-        "At": lambda seg: At(seg, "user", str(seg, seg.data["target"])),
-        "kmarkdown": _handle_kmarkdown_met,
-        "room_link": lambda seg: At(
-            seg,
-            "channel",
-            f'{seg.data["room_link"].villa_id}:{seg.data["room_link"].room_id}',
-        ),
-    },
-)
-"""
-at: ob11, feishu
-mention: ob12, tg
-mention_user: qqguild, discord, villa
-mention_channel: discord, qqguild
-mention_role: discord
-mention_robot: villa
-At: mirai
-kmarkdown: kook
-room_link: villa
-"""
+at = _At()
 
 
-def _handle_kmarkdown_atall(seg: MessageSegment):
-    content = seg.data["content"]
-    if not content.startswith("(met)"):
-        return None
-    if (end := content.find("(met)", 5)) == -1:
-        return None
-    return content[5:end] in ("here", "all") and AtAll(seg)
+class _AtAll(UniPattern[AtAll]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "at" and ("qq" in seg.data and seg.data["qq"] == "all"):
+            return AtAll(seg)
+        if seg.type in {"at_all", "AtAll", "mention_everyone", "mention_all"}:
+            return AtAll(seg)
+        if seg.type == "kmarkdown":
+            content = seg.data["content"]
+            if not content.startswith("(met)"):
+                return None
+            if (end := content.find("(met)", 5)) == -1:
+                return None
+            return content[5:end] in ("here", "all") and AtAll(seg)
 
 
-_AtAll = gen_unit(
-    AtAll,
-    {
-        "at": lambda seg: AtAll(seg) if seg.data["qq"] == "all" else None,
-        "AtAll": lambda seg: AtAll(seg),
-        "mention_everyone": lambda seg: AtAll(seg),
-        "mention_all": lambda seg: AtAll(seg),
-        "kmarkdown": _handle_kmarkdown_atall,
-    },
-)
-"""
-at: ob11
-AtAll: mirai
-mention_everyone: discord, qqguild
-mention_all: villa, ob12
-kmarkdown: kook
-"""
+at_all = _AtAll()
 
 
-def _handle_kmarkdown_emj(seg: MessageSegment):
-    content = seg.data["content"]
-    if content.startswith("(emj)"):
-        mat = re.search(
-            r"\(emj\)(?P<name>[^()\[\]]+)\(emj\)\[(?P<id>[^\[\]]+)\]", content
-        )
-        return mat and Emoji(seg, mat["id"], mat["name"])
-    if content.startswith(":"):
-        mat = re.search(r":(?P<name>[^:]+):", content)
-        return mat and Emoji(seg, mat["name"], mat["name"])
+class _Emoji(UniPattern[Emoji]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "emoji":
+            if "id" in seg.data:
+                return Emoji(seg, seg.data["id"])
+            if "name" in seg.data:
+                return Emoji(seg, seg.data["name"])
+        if seg.type == "Face":
+            return Emoji(seg, str(seg.data["faceId"]), seg.data["name"])
+        if seg.type == "face":
+            if "id" in seg.data:
+                return Emoji(seg, str(seg.data["id"]))
+            if "face_id" in seg.data:
+                return Emoji(seg, str(seg.data["face_id"]))
+        if seg.type == "custom_emoji":
+            if "custom_emoji_id" in seg.data:  # telegram
+                return Emoji(seg, seg.data["custom_emoji_id"], seg.data["text"])
+            if "id" in seg.data:  # discord
+                return Emoji(seg, seg.data["id"], seg.data["name"])
+        if seg.type == "kmarkdown":
+            content = seg.data["content"]
+            if content.startswith("(emj)"):
+                mat = re.search(
+                    r"\(emj\)(?P<name>[^()\[\]]+)\(emj\)\[(?P<id>[^\[\]]+)\]", content
+                )
+                return mat and Emoji(seg, mat["id"], mat["name"])
+            if content.startswith(":"):
+                mat = re.search(r":(?P<name>[^:]+):", content)
+                return mat and Emoji(seg, mat["name"], mat["name"])
+        if seg.type == "sticker" and "id" in seg.data:
+            return Emoji(seg, seg.data["id"])
 
 
-def _handle_custom_emoji(seg: MessageSegment):
-    if "custom_emoji_id" in seg.data:  # telegram
-        return Emoji(seg, seg.data["custom_emoji_id"], seg.data["text"])
-    if "id" in seg.data:  # discord
-        return Emoji(seg, seg.data["id"], seg.data["name"])
+emoji = _Emoji()
 
 
-_Emoji = gen_unit(
-    Emoji,
-    {
-        "emoji": lambda seg: Emoji(seg, str(seg.data.get("id", seg.data.get("name")))),
-        "Face": lambda seg: Emoji(seg, str(seg.data["faceId"]), seg.data["name"]),
-        "face": lambda seg: str(Emoji(seg, seg.data["id"])),
-        "custom_emoji": _handle_custom_emoji,
-        "kmarkdown": _handle_kmarkdown_emj,
-        "sticker": lambda seg: Emoji(seg, seg.data["id"]) if "id" in seg.data else None,
-    },
-)
+class _Image(UniPattern[Image]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "image":
+            if "uuid" in seg.data:  # red
+                return Image(
+                    seg,
+                    id=seg.data["uuid"],
+                    url=f"https://gchat.qpic.cn/gchatpic_new/0/0-0-{seg.data['md5'].upper()}/0",
+                    path=seg.data["path"],
+                )
+            if "file_id" in seg.data:  # ob12
+                return Image(seg, id=seg.data["file_id"])
+            if "image" in seg.data:  # villa
+                return Image(seg, url=seg.data["image"].url)
+            if "image_key" in seg.data:  # feishu
+                return Image(seg, url=seg.data["image_key"])
+            if "file_key" in seg.data:  # kook
+                return Image(seg, url=seg.data["file_key"])
+            if "url" in seg.data:  # ob11
+                return Image(seg, url=seg.data["url"], id=seg.data["file"])
+            if "msgData" in seg.data:  # minecraft
+                return Image(seg, url=seg.data["msgData"])
+            if "file_path" in seg.data:  # ntchat
+                return Image(seg, id=seg.data["file_path"], path=seg.data["file_path"])
+            if "picURL" in seg.data:  # ding
+                return Image(seg, url=seg.data["picURL"])
+        if seg.type == "photo":
+            return Image(seg, id=seg.data["file"])
+        if seg.type == "attachment":
+            if "url" in seg.data:
+                return Image(seg, url=seg.data["url"])
+            if "attachment" in seg.data:  # discord
+                return Image(seg, id=seg.data["attachment"].filename)
+        if seg.type == "Image":
+            return Image(seg, seg.data["url"], seg.data["imageId"])
 
 
-def _handle_image(seg: MessageSegment):
-    if "file_id" in seg.data:  # ob12
-        return Image(seg, id=seg.data["file_id"])
-    if "image" in seg.data:  # villa
-        return Image(seg, url=seg.data["image"].url)
-    if "image_key" in seg.data:  # feishu
-        return Image(seg, url=seg.data["image_key"])
-    if "file_key" in seg.data:  # kook
-        return Image(seg, url=seg.data["file_key"])
-    if "url" in seg.data:  # ob11
-        return Image(seg, url=seg.data["url"], id=seg.data["file"])
-    if "msgData" in seg.data:  # minecraft
-        return Image(seg, url=seg.data["msgData"])
-    if "file_path" in seg.data:  # ntchat
-        return Image(seg, id=seg.data["file_path"])
-    if "picURL" in seg.data:  # ding
-        return Image(seg, url=seg.data["picURL"])
+image = _Image()
 
 
-def _handle_attachment(seg: MessageSegment):
-    if "url" in seg.data:  # qqguild:
-        return Image(seg, url=seg.data["url"])
-    if "attachment" in seg.data:  # discord
-        return Image(seg, id=seg.data["attachment"].filename)
+class _Video(UniPattern[Video]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "video":
+            if "videoMd5" in seg.data:  # red
+                return Video(
+                    seg,
+                    id=seg.data["videoMd5"],
+                    path=seg.data["filePath"],
+                )
+            if "file_id" in seg.data:  # ob12, telegram
+                return Video(seg, id=seg.data["file_id"])
+            if "file" in seg.data:  # ob11
+                return Video(seg, url=seg.data["file"])
+            if "file_key" in seg.data:  # kook
+                return Video(seg, url=seg.data["file_key"])
+            if "msgData" in seg.data:  # minecraft
+                return Video(seg, url=seg.data["msgData"])
+            if "file_path" in seg.data:  # ntchat
+                return Video(seg, id=seg.data["file_path"], path=seg.data["file_path"])
+        if seg.type == "video":
+            return Video(seg, seg.data["url"], seg.data["videoId"])
+        if seg.type == "animation":
+            return Video(seg, id=seg.data["file_id"])
 
 
-_Image = gen_unit(
-    Image,
-    {
-        "image": _handle_image,
-        "photo": lambda seg: Image(seg, id=seg.data["file"]),
-        "attachment": _handle_attachment,
-        "Image": lambda seg: Image(seg, seg.data["url"], seg.data["imageId"]),
-    },
-)
+video = _Video()
 
 
-def _handle_video(seg: MessageSegment):
-    if "file_id" in seg.data:  # ob12, telegram
-        return Video(seg, id=seg.data["file_id"])
-    if "file" in seg.data:  # ob11
-        return Video(seg, url=seg.data["file"])
-    if "file_key" in seg.data:  # kook
-        return Video(seg, url=seg.data["file_key"])
-    if "msgData" in seg.data:  # minecraft
-        return Video(seg, url=seg.data["msgData"])
-    if "file_path" in seg.data:  # ntchat
-        return Video(seg, id=seg.data["file_path"])
+class _Voice(UniPattern[Voice]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "voice":
+            if "md5" in seg.data:  # red
+                return Voice(
+                    seg,
+                    id=seg.data["md5"],
+                    path=seg.data["path"],
+                )
+            if "file_id" in seg.data:  # ob12, telegram
+                return Voice(seg, id=seg.data["file_id"])
+            if "file_key" in seg.data:  # kook
+                return Voice(seg, url=seg.data["file_key"])
+            if "file_path" in seg.data:  # ntchat
+                return Voice(seg, id=seg.data["file_path"], path=seg.data["file_path"])
+        if seg.type == "record":
+            return Voice(seg, seg.data["url"])
+        if seg.type == "Voice":
+            return Voice(seg, seg.data["url"], seg.data["voiceId"])
 
 
-_Video = gen_unit(
-    Video,
-    {
-        "video": lambda seg: Video(seg, seg.data["url"], seg.data["videoId"]),
-        "animation": lambda seg: Video(seg, id=seg.data["file_id"]),
-    },
-)
+voice = _Voice()
 
 
-def _handle_voice(seg: MessageSegment):
-    if "file_id" in seg.data:  # ob12, telegram
-        return Voice(seg, id=seg.data["file_id"])
-    if "file_key" in seg.data:  # kook
-        return Voice(seg, url=seg.data["file_key"])
-    if "file_path" in seg.data:  # ntchat
-        return Voice(seg, id=seg.data["file_path"])
+class _Audio(UniPattern[Audio]):
+    def solve(self, seg: MessageSegment):
+        if seg.type != "audio":
+            return
+        if "file_id" in seg.data:  # ob12, telegram
+            return Audio(seg, id=seg.data["file_id"])
+        if "file_key" in seg.data:  # kook, feishu
+            return Audio(seg, url=seg.data["file_key"])
+        if "file_path" in seg.data:  # ntchat
+            return Audio(seg, id=seg.data["file_path"], path=seg.data["file_path"])
 
 
-_Voice = gen_unit(
-    Voice,
-    {
-        "voice": _handle_voice,
-        "record": lambda seg: Voice(seg, seg.data["url"]),
-        "Voice": lambda seg: Voice(seg, seg.data["url"], seg.data["voiceId"]),
-    },
-)
+audio = _Audio()
 
 
-def _handle_audio(seg: MessageSegment):
-    if "file_id" in seg.data:  # ob12, telegram
-        return Audio(seg, id=seg.data["file_id"])
-    if "file_key" in seg.data:  # kook, feishu
-        return Audio(seg, url=seg.data["file_key"])
-    if "file_path" in seg.data:  # ntchat
-        return Audio(seg, id=seg.data["file_path"])
+class _File(UniPattern[File]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "file":
+            if "md5" in seg.data:  # red
+                return File(
+                    seg,
+                    id=seg.data["md5"],
+                    name=seg.data["name"],
+                )
+            if "file_id" in seg.data:  # ob12
+                return File(seg, id=seg.data["file_id"])
+            if "file_key" in seg.data:  # feishu, kook
+                return File(
+                    seg,
+                    id=seg.data["file_key"],
+                    name=seg.data.get("file_name", seg.data.get("title")),
+                )
+            if "file_path" in seg.data:  # ntchat
+                return File(seg, id=seg.data["file_path"])
+        if seg.type == "document":
+            return File(seg, seg.data["file_id"], seg.data["file_name"])
+        if seg.type == "File":
+            return File(seg, seg.data["id"], seg.data["name"])
 
 
-_Audio = gen_unit(
-    Audio,
-    {
-        "audio": _handle_audio,
-    },
-)
+file = _File()
 
 
-def _handle_file(seg: MessageSegment):
-    if "file_id" in seg.data:  # ob12
-        return File(seg, id=seg.data["file_id"])
-    if "file_key" in seg.data:  # feishu, kook
-        return File(
-            seg,
-            id=seg.data["file_key"],
-            name=seg.data.get("file_name", seg.data.get("title")),
-        )
-    if "file_path" in seg.data:  # ntchat
-        return File(seg, id=seg.data["file_path"])
+class _Reply(UniPattern[Reply]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "reference":
+            if "message_id" in seg.data:  # telegram
+                return Reply(seg, seg.data["message_id"])
+            if "reference" in seg.data:  # discord
+                return Reply(seg, seg.data["reference"].message_id)
+        if seg.type == "reply":
+            if "id" in seg.data:  # ob11
+                return Reply(seg, seg.data["id"])
+            if "message_id" in seg.data:  # ob12
+                return Reply(seg, seg.data["message_id"])
+            if "msg_id" in seg.data:  # red
+                return Reply(seg, seg.data["msg_id"])
+        if seg.type == "quote":
+            if "msg_id" in seg.data:  # kook:
+                return Reply(seg, seg.data["msg_id"])
+            if "quoted_message_id" in seg.data:  # villa
+                return Reply(seg, seg.data["quoted_message_id"])
+        if seg.type == "Quote":  # mirai
+            return Reply(seg, str(seg.data["id"]), str(seg.data["origin"]))
 
 
-_File = gen_unit(
-    File,
-    {
-        "file": _handle_file,
-        "document": lambda seg: File(seg, seg.data["file_id"], seg.data["file_name"]),
-        "File": lambda seg: File(seg, seg.data["id"], seg.data["name"]),
-    },
-)
+reply = _Reply()
 
 
-def _handle_quote(seg: MessageSegment):
-    if "msg_id" in seg.data:  # kook:
-        return Reply(seg, seg.data["msg_id"], seg.data.get("content"))
-    if "quoted_message_id" in seg.data:  # villa
-        return Reply(seg, seg.data["quoted_message_id"])
+class _Card(UniPattern[Card]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "card":
+            if "content" in seg.data:
+                return Card(seg, seg.data["content"])
+            if "card_wxid" in seg.data:
+                return Card(seg, seg.data["card_wxid"])
+        if seg.type == "Xml":
+            return Card(seg, seg.data["xml"])
+        if seg.type == "Json":
+            return Card(seg, seg.data["json"])
+        if seg.type == "App":
+            return Card(seg, seg.data["content"])
+        if seg.type == "xml":
+            return Card(seg, seg.data["data"])
+        if seg.type == "json":
+            return Card(seg, seg.data["data"])
+        if seg.type == "ark" and "data" in seg.data:
+            return Card(seg, seg.data["data"])
 
 
-_Reply = gen_unit(
-    Reply,
-    {
-        "reference": lambda seg: Reply(
-            seg, seg.data.get("message_id", seg.data["reference"].message_id)
-        ),
-        "reply": lambda seg: Reply(seg, seg.data.get("id", seg.data["message_id"])),
-        "quote": _handle_quote,
-        "Quote": lambda seg: Reply(seg, str(seg.data["id"]), str(seg.data["origin"])),
-    },
-)
+card = _Card()
 
 env = create_local_patterns("nonebot")
-env.sets([_At, _AtAll, _Image, _Video, _Voice, _Audio, _File, _Reply, _Other])
+env.sets([at, at_all, image, voice, video, audio, emoji, file, reply, card, other])
 env[Segment] = BasePattern.of(MessageSegment)
 
 US = Union[Segment, str]
@@ -455,8 +503,8 @@ async def reply_handle(event: Event, bot: Bot):
                 event.message_reference, event.message_reference.message_id, None
             )
 
-    elif reply := getattr(event, "reply", None):
-        return Reply(reply, str(reply.message_id), getattr(reply, "message", None))
+    elif _reply := getattr(event, "reply", None):
+        return Reply(_reply, str(_reply.message_id), getattr(_reply, "message", None))
     return None
 
 
@@ -682,13 +730,13 @@ class UniMessage(List[US]):
             return cls()
         result = cls()
         msg_copy = msg.copy()
-        if reply := await reply_handle(event, bot):
-            result.append(reply)
-        elif (res := _Reply.validate(msg[0])).success:
+        if _reply := await reply_handle(event, bot):
+            result.append(_reply)
+        elif (res := reply.validate(msg[0])).success:
             result.append(res.value)
             msg_copy.pop(0)
         for seg in msg_copy:
-            for pat in {_At, _AtAll, _Image, _Video, _Voice, _Audio, _File}:
+            for pat in {at, at_all, emoji, image, video, voice, audio, file, card}:
                 if (res := pat.validate(seg)).success:
                     result.append(res.value)
                     break

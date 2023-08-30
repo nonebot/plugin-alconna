@@ -34,7 +34,6 @@ MarketFace = SegmentPattern("market_face", MessageSegment, MessageSegment.market
 Forward = SegmentPattern("forward_msg", MessageSegment, MessageSegment.forward_msg)
 
 
-
 ImgOrUrl = (
     UnionPattern(
         [

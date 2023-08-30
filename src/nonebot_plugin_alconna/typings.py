@@ -92,30 +92,20 @@ MReturn: TypeAlias = Union[
 ]
 
 
-def _isinstance(
-    seg: MessageSegment,
-    mapping: dict[str, Callable[[MessageSegment], T | Literal[False] | None]],
-) -> T | None:
-    try:
-        if (key := seg.type) in mapping and (res := mapping[key](seg)):
-            return res
-        if "*" in mapping and (res := mapping["*"](seg)):
-            return res
-    except (KeyError, AttributeError):
-        return None
+class UniPattern(BasePattern[T], Generic[T]):
+    additional: Callable[..., bool] | None = None
 
+    def __init__(self):
+        origin: type[T] = self.__class__.__orig_bases__[0].__args__[0]  # type: ignore
+        super().__init__(
+            origin.__name__,
+            MatchMode.TYPE_CONVERT,
+            origin,
+            converter=lambda s, x: self.solve(x),
+            alias=origin.__name__,
+            accepts=[MessageSegment],
+            validators=[self.additional] if self.additional else [],
+        )
 
-def gen_unit(
-    model: type[T],
-    mapping: dict[str, Callable[[MessageSegment], T | Literal[False] | None]],
-    additional: Callable[..., bool] | None = None,
-) -> BasePattern[T]:
-    return BasePattern(
-        model.__name__,
-        MatchMode.TYPE_CONVERT,
-        origin=model,
-        converter=lambda self, x: _isinstance(x, mapping),  # type: ignore
-        accepts=[MessageSegment],
-        alias=model.__name__,
-        validators=[additional] if additional else [],
-    )
+    def solve(self, seg: MessageSegment) -> T | None:
+        raise NotImplementedError
