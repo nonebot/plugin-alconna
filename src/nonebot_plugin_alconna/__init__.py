@@ -28,6 +28,7 @@ from arclet.alconna import OptionResult as OptionResult
 from arclet.alconna import append_value as append_value
 from arclet.alconna import SubcommandStub as SubcommandStub
 from arclet.alconna import output_manager as output_manager
+from arclet.alconna import ArparmaBehavior as ArparmaBehavior
 from arclet.alconna import command_manager as command_manager
 from arclet.alconna import SubcommandResult as SubcommandResult
 
@@ -75,7 +76,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .rule import set_output_converter as set_output_converter
 
-__version__ = "0.19.2"
+__version__ = "0.20.0"
 
 _meta_source = {
     "name": "Alconna 插件",
