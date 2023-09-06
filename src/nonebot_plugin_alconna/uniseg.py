@@ -30,8 +30,6 @@ Text = str
 class Segment:
     """基类标注"""
 
-    origin: MessageSegment
-
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
 
@@ -62,6 +60,7 @@ class Media(Segment):
     url: Optional[str] = field(default=None)
     id: Optional[str] = field(default=None)
     path: Optional[str] = field(default=None)
+    raw: Optional[bytes] = field(default=None)
 
 
 @dataclass
@@ -117,6 +116,8 @@ class Card(Segment):
 class Other(Segment):
     """其他 Segment"""
 
+    origin: MessageSegment
+
     def __str__(self):
         return f"[{self.origin.type}]"
 
@@ -133,39 +134,36 @@ class _At(UniPattern[At]):
     def solve(self, seg: MessageSegment):
         if seg.type == "at":  # ob11, feishu, red
             if "qq" in seg.data and seg.data["qq"] != "all":
-                return At(seg, "user", str(seg.data["qq"]))
+                return At("user", str(seg.data["qq"]))
             if "user_id" in seg.data:
-                return At(seg, "user", str(seg.data["user_id"]))
+                return At("user", str(seg.data["user_id"]))
         if seg.type == "mention":  # ob12, tg
             if "user_id" in seg.data:
-                return At(seg, "user", str(seg.data["user_id"]))
+                return At("user", str(seg.data["user_id"]))
             if "text" in seg.data:
-                return At(seg, "user", seg.data["text"])
+                return At("user", seg.data["text"])
         if seg.type == "mention_user":  # qqguild, discord, villa
             if "user_id" in seg.data:
-                return At(seg, "user", str(seg.data["user_id"]))
+                return At("user", str(seg.data["user_id"]))
             if "mention_user" in seg.data:
-                return At(seg, "user", str(seg.data["mention_user"].user_id))
+                return At("user", str(seg.data["mention_user"].user_id))
         if seg.type == "mention_channel":  # discord, qqguild
-            return At(seg, "channel", str(seg.data["channel_id"]))
+            return At("channel", str(seg.data["channel_id"]))
         if seg.type == "mention_role":  # discord
-            return At(seg, "role", str(seg.data["role_id"]))
+            return At("role", str(seg.data["role_id"]))
         if seg.type == "mention_robot":  # villa
-            return At(seg, "user", str(seg.data["mention_robot"].bot_id))
+            return At("user", str(seg.data["mention_robot"].bot_id))
         if seg.type == "At":  # mirai
-            return At(seg, "user", str(seg.data["target"]))
+            return At("user", str(seg.data["target"]))
         if seg.type == "kmarkdown":  # kook
             content = seg.data["content"]
             if not content.startswith("(met)"):
                 return None
             if (end := content.find("(met)", 5)) == -1:
                 return None
-            return content[5:end] not in ("here", "all") and At(
-                seg, "user", content[5:end]
-            )
+            return content[5:end] not in ("here", "all") and At("user", content[5:end])
         if seg.type == "room_link":  # villa
             return At(
-                seg,
                 "channel",
                 f'{seg.data["room_link"].villa_id}:{seg.data["room_link"].room_id}',
             )
@@ -177,16 +175,16 @@ at = _At()
 class _AtAll(UniPattern[AtAll]):
     def solve(self, seg: MessageSegment):
         if seg.type == "at" and ("qq" in seg.data and seg.data["qq"] == "all"):
-            return AtAll(seg)
+            return AtAll()
         if seg.type in {"at_all", "AtAll", "mention_everyone", "mention_all"}:
-            return AtAll(seg)
+            return AtAll()
         if seg.type == "kmarkdown":
             content = seg.data["content"]
             if not content.startswith("(met)"):
                 return None
             if (end := content.find("(met)", 5)) == -1:
                 return None
-            return content[5:end] in ("here", "all") and AtAll(seg)
+            return content[5:end] in ("here", "all") and AtAll()
 
 
 at_all = _AtAll()
@@ -196,33 +194,33 @@ class _Emoji(UniPattern[Emoji]):
     def solve(self, seg: MessageSegment):
         if seg.type == "emoji":
             if "id" in seg.data:
-                return Emoji(seg, seg.data["id"])
+                return Emoji(seg.data["id"])
             if "name" in seg.data:
-                return Emoji(seg, seg.data["name"])
+                return Emoji(seg.data["name"])
         if seg.type == "Face":
-            return Emoji(seg, str(seg.data["faceId"]), seg.data["name"])
+            return Emoji(str(seg.data["faceId"]), seg.data["name"])
         if seg.type == "face":
             if "id" in seg.data:
-                return Emoji(seg, str(seg.data["id"]))
+                return Emoji(str(seg.data["id"]))
             if "face_id" in seg.data:
-                return Emoji(seg, str(seg.data["face_id"]))
+                return Emoji(str(seg.data["face_id"]))
         if seg.type == "custom_emoji":
             if "custom_emoji_id" in seg.data:  # telegram
-                return Emoji(seg, seg.data["custom_emoji_id"], seg.data["text"])
+                return Emoji(seg.data["custom_emoji_id"], seg.data["text"])
             if "id" in seg.data:  # discord
-                return Emoji(seg, seg.data["id"], seg.data["name"])
+                return Emoji(seg.data["id"], seg.data["name"])
         if seg.type == "kmarkdown":
             content = seg.data["content"]
             if content.startswith("(emj)"):
                 mat = re.search(
                     r"\(emj\)(?P<name>[^()\[\]]+)\(emj\)\[(?P<id>[^\[\]]+)\]", content
                 )
-                return mat and Emoji(seg, mat["id"], mat["name"])
+                return mat and Emoji(mat["id"], mat["name"])
             if content.startswith(":"):
                 mat = re.search(r":(?P<name>[^:]+):", content)
-                return mat and Emoji(seg, mat["name"], mat["name"])
+                return mat and Emoji(mat["name"], mat["name"])
         if seg.type == "sticker" and "id" in seg.data:
-            return Emoji(seg, seg.data["id"])
+            return Emoji(seg.data["id"])
 
 
 emoji = _Emoji()
@@ -233,36 +231,35 @@ class _Image(UniPattern[Image]):
         if seg.type == "image":
             if "uuid" in seg.data:  # red
                 return Image(
-                    seg,
                     id=seg.data["uuid"],
                     url=f"https://gchat.qpic.cn/gchatpic_new/0/0-0-{seg.data['md5'].upper()}/0",
                     path=seg.data["path"],
                 )
             if "file_id" in seg.data:  # ob12
-                return Image(seg, id=seg.data["file_id"])
+                return Image(id=seg.data["file_id"])
             if "image" in seg.data:  # villa
-                return Image(seg, url=seg.data["image"].url)
+                return Image(url=seg.data["image"].url)
             if "image_key" in seg.data:  # feishu
-                return Image(seg, url=seg.data["image_key"])
+                return Image(url=seg.data["image_key"])
             if "file_key" in seg.data:  # kook
-                return Image(seg, url=seg.data["file_key"])
+                return Image(url=seg.data["file_key"])
             if "url" in seg.data:  # ob11
-                return Image(seg, url=seg.data["url"], id=seg.data["file"])
+                return Image(url=seg.data["url"], id=seg.data["file"])
             if "msgData" in seg.data:  # minecraft
-                return Image(seg, url=seg.data["msgData"])
+                return Image(url=seg.data["msgData"])
             if "file_path" in seg.data:  # ntchat
-                return Image(seg, id=seg.data["file_path"], path=seg.data["file_path"])
+                return Image(id=seg.data["file_path"], path=seg.data["file_path"])
             if "picURL" in seg.data:  # ding
-                return Image(seg, url=seg.data["picURL"])
+                return Image(url=seg.data["picURL"])
         if seg.type == "photo":
-            return Image(seg, id=seg.data["file"])
+            return Image(id=seg.data["file"])
         if seg.type == "attachment":
             if "url" in seg.data:
-                return Image(seg, url=seg.data["url"])
+                return Image(url=seg.data["url"])
             if "attachment" in seg.data:  # discord
-                return Image(seg, id=seg.data["attachment"].filename)
+                return Image(id=seg.data["attachment"].filename)
         if seg.type == "Image":
-            return Image(seg, seg.data["url"], seg.data["imageId"])
+            return Image(seg.data["url"], seg.data["imageId"])
 
 
 image = _Image()
@@ -273,24 +270,23 @@ class _Video(UniPattern[Video]):
         if seg.type == "video":
             if "videoMd5" in seg.data:  # red
                 return Video(
-                    seg,
                     id=seg.data["videoMd5"],
                     path=seg.data["filePath"],
                 )
             if "file_id" in seg.data:  # ob12, telegram
-                return Video(seg, id=seg.data["file_id"])
+                return Video(id=seg.data["file_id"])
             if "file" in seg.data:  # ob11
-                return Video(seg, url=seg.data["file"])
+                return Video(url=seg.data["file"])
             if "file_key" in seg.data:  # kook
-                return Video(seg, url=seg.data["file_key"])
+                return Video(url=seg.data["file_key"])
             if "msgData" in seg.data:  # minecraft
-                return Video(seg, url=seg.data["msgData"])
+                return Video(url=seg.data["msgData"])
             if "file_path" in seg.data:  # ntchat
-                return Video(seg, id=seg.data["file_path"], path=seg.data["file_path"])
+                return Video(id=seg.data["file_path"], path=seg.data["file_path"])
         if seg.type == "video":
-            return Video(seg, seg.data["url"], seg.data["videoId"])
+            return Video(seg.data["url"], seg.data["videoId"])
         if seg.type == "animation":
-            return Video(seg, id=seg.data["file_id"])
+            return Video(id=seg.data["file_id"])
 
 
 video = _Video()
@@ -301,20 +297,19 @@ class _Voice(UniPattern[Voice]):
         if seg.type == "voice":
             if "md5" in seg.data:  # red
                 return Voice(
-                    seg,
                     id=seg.data["md5"],
                     path=seg.data["path"],
                 )
             if "file_id" in seg.data:  # ob12, telegram
-                return Voice(seg, id=seg.data["file_id"])
+                return Voice(id=seg.data["file_id"])
             if "file_key" in seg.data:  # kook
-                return Voice(seg, url=seg.data["file_key"])
+                return Voice(url=seg.data["file_key"])
             if "file_path" in seg.data:  # ntchat
-                return Voice(seg, id=seg.data["file_path"], path=seg.data["file_path"])
+                return Voice(id=seg.data["file_path"], path=seg.data["file_path"])
         if seg.type == "record":
-            return Voice(seg, seg.data["url"])
+            return Voice(seg.data["url"])
         if seg.type == "Voice":
-            return Voice(seg, seg.data["url"], seg.data["voiceId"])
+            return Voice(seg.data["url"], seg.data["voiceId"])
 
 
 voice = _Voice()
@@ -325,11 +320,11 @@ class _Audio(UniPattern[Audio]):
         if seg.type != "audio":
             return
         if "file_id" in seg.data:  # ob12, telegram
-            return Audio(seg, id=seg.data["file_id"])
+            return Audio(id=seg.data["file_id"])
         if "file_key" in seg.data:  # kook, feishu
-            return Audio(seg, url=seg.data["file_key"])
+            return Audio(url=seg.data["file_key"])
         if "file_path" in seg.data:  # ntchat
-            return Audio(seg, id=seg.data["file_path"], path=seg.data["file_path"])
+            return Audio(id=seg.data["file_path"], path=seg.data["file_path"])
 
 
 audio = _Audio()
@@ -340,24 +335,22 @@ class _File(UniPattern[File]):
         if seg.type == "file":
             if "md5" in seg.data:  # red
                 return File(
-                    seg,
                     id=seg.data["md5"],
                     name=seg.data["name"],
                 )
             if "file_id" in seg.data:  # ob12
-                return File(seg, id=seg.data["file_id"])
+                return File(id=seg.data["file_id"])
             if "file_key" in seg.data:  # feishu, kook
                 return File(
-                    seg,
                     id=seg.data["file_key"],
                     name=seg.data.get("file_name", seg.data.get("title")),
                 )
             if "file_path" in seg.data:  # ntchat
-                return File(seg, id=seg.data["file_path"])
+                return File(id=seg.data["file_path"])
         if seg.type == "document":
-            return File(seg, seg.data["file_id"], seg.data["file_name"])
+            return File(seg.data["file_id"], seg.data["file_name"])
         if seg.type == "File":
-            return File(seg, seg.data["id"], seg.data["name"])
+            return File(seg.data["id"], seg.data["name"])
 
 
 file = _File()
@@ -393,21 +386,21 @@ class _Card(UniPattern[Card]):
     def solve(self, seg: MessageSegment):
         if seg.type == "card":
             if "content" in seg.data:
-                return Card(seg, seg.data["content"])
+                return Card(seg.data["content"])
             if "card_wxid" in seg.data:
-                return Card(seg, seg.data["card_wxid"])
+                return Card(seg.data["card_wxid"])
         if seg.type == "Xml":
-            return Card(seg, seg.data["xml"])
+            return Card(seg.data["xml"])
         if seg.type == "Json":
-            return Card(seg, seg.data["json"])
+            return Card(seg.data["json"])
         if seg.type == "App":
-            return Card(seg, seg.data["content"])
+            return Card(seg.data["content"])
         if seg.type == "xml":
-            return Card(seg, seg.data["data"])
+            return Card(seg.data["data"])
         if seg.type == "json":
-            return Card(seg, seg.data["data"])
+            return Card(seg.data["data"])
         if seg.type == "ark" and "data" in seg.data:
-            return Card(seg, seg.data["data"])
+            return Card(seg.data["data"])
 
 
 card = _Card()
