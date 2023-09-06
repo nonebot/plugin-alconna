@@ -68,6 +68,7 @@ def _validate(target: Arg[Any], arg: MessageSegment):
         return
     return res._value  # noqa
 
+
 class AlconnaMatcher(Matcher):
     command: ClassVar[Alconna]
 
@@ -207,8 +208,9 @@ class AlconnaMatcher(Matcher):
         block: bool = False,
         state: T_State | None = None,
         _depth: int = 0,
-        ) -> type[AlconnaMatcher]:
-        """注册一个消息事件响应器，并且当消息由指定 Alconna 解析并且结果符合 assign 预期时执行
+    ) -> type[AlconnaMatcher]:
+        """注册一个消息事件响应器，
+        并且当消息由指定 Alconna 解析并且结果符合 assign 预期时执行
 
         参数:
             path: 指定的查询路径, "$main" 表示没有任何选项/子命令匹配的时候
@@ -243,6 +245,7 @@ class AlconnaMatcher(Matcher):
         store_matcher(matcher)
         matcher.command = cls.command
         return matcher
+
 
 def on_alconna(
     command: Alconna | str,

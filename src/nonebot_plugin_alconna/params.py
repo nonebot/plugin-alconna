@@ -276,5 +276,6 @@ class _Dispatch:
             return False
         if self.fn(self.result.result):
             _state[ALCONNA_RESULT] = self.result
+            self.result = None
             return True
         return False

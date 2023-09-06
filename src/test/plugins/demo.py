@@ -246,14 +246,15 @@ pipcmd1 = on_alconna(pip1)
 pip_list_cmd = pipcmd1.dispatch("list")
 pip_install_cmd = pipcmd1.dispatch("install.pak")
 
+
 @pip_list_cmd.handle()
-async def pip_l():
+async def pip1_l():
     md = "\n".join([f"- {k} {v}" for k, v in get_dist_map().items()])
     await pipcmd1.send(MessageSegment.text(md))
 
 
 @pip_install_cmd.handle()
-async def pip_i(res: PipResult):
+async def pip1_i(res: PipResult):
     await pipcmd1.send(f"pip installing {res.pak}...")
 
 
