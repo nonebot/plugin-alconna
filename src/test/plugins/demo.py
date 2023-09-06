@@ -28,6 +28,7 @@ from nonebot_plugin_alconna import (
     Command,
     AlconnaMatch,
     AlconnaMatcher,
+    UniversalSegment,
     assign,
     funcommand,
     on_alconna,
@@ -182,11 +183,11 @@ async def login_handle(arp: Arparma):
 
 
 @bind.handle()
-async def bind_handle(unimsg: UniMsg):
+async def bind_handle(unimsg: UniMsg, _reply: Reply = UniversalSegment(Reply)):
     if unimsg.has(Reply):
         reply = unimsg[Reply, 0]
         await bind.send(repr(unimsg))
-        await bind.send(repr(reply))
+        await bind.send(repr(reply) + "\n" + repr(_reply))
 
 
 mask_cmd = on_alconna(

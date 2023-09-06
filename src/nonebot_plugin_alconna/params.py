@@ -24,7 +24,7 @@ from nonebot.internal.params import Param, Depends
 from arclet.alconna.builtin import generate_duplication
 from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
-from .uniseg import UniMessage
+from .uniseg import TS, UniMessage
 from .model import T, Match, Query, CommandResult
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXEC_RESULT
 
@@ -121,6 +121,13 @@ async def _uni_msg(bot: Bot, event: Event) -> UniMessage:
 
 def UniversalMessage() -> UniMessage:
     return Depends(_uni_msg, use_cache=True)
+
+
+def UniversalSegment(t: Type[TS], index: int = 0) -> TS:
+    async def _uni_seg(bot: Bot, event: Event) -> TS:
+        return (await UniMessage.generate(event, bot))[t, index]
+
+    return Depends(_uni_seg, use_cache=True)
 
 
 AlcResult = Annotated[CommandResult, AlconnaResult()]
