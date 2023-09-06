@@ -42,6 +42,7 @@ from .uniseg import AtAll as AtAll
 from .uniseg import Audio as Audio
 from .uniseg import Emoji as Emoji
 from .uniseg import Image as Image
+from .uniseg import Other as Other
 from .uniseg import Reply as Reply
 from .uniseg import Video as Video
 from .uniseg import Voice as Voice
@@ -71,12 +72,13 @@ from .params import AlconnaMatches as AlconnaMatches
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
 from .params import UniversalMessage as UniversalMessage
+from .params import UniversalSegment as UniversalSegment
 from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .rule import set_output_converter as set_output_converter
 
-__version__ = "0.20.0"
+__version__ = "0.21.0"
 
 _meta_source = {
     "name": "Alconna 插件",
