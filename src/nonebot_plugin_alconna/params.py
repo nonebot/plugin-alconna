@@ -24,7 +24,7 @@ from nonebot.internal.params import Param, Depends
 from arclet.alconna.builtin import generate_duplication
 from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
-from .uniseg import TS, UniMessage
+from .uniseg.message import TS, UniMessage
 from .model import T, Match, Query, CommandResult
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXEC_RESULT
 
