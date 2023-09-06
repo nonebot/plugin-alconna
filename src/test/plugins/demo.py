@@ -229,3 +229,34 @@ book = (
     .action(lambda options: str(options))
     .build()
 )
+
+pip1 = Alconna(
+    "pip1",
+    Subcommand(
+        "install",
+        Args["pak", str],
+        Option("--upgrade"),
+        Option("--force-reinstall"),
+    ),
+    Subcommand("list", Option("--out-dated")),
+)
+
+pipcmd1 = on_alconna(pip1)
+
+pip_list_cmd = pipcmd1.dispatch("list")
+pip_install_cmd = pipcmd1.dispatch("install.pak")
+
+@pip_list_cmd.handle()
+async def pip_l():
+    md = "\n".join([f"- {k} {v}" for k, v in get_dist_map().items()])
+    await pipcmd1.send(MessageSegment.text(md))
+
+
+@pip_install_cmd.handle()
+async def pip_i(res: PipResult):
+    await pipcmd1.send(f"pip installing {res.pak}...")
+
+
+@pipcmd1.handle()
+async def pip1_m():
+    await pipcmd1.send("WIP...")

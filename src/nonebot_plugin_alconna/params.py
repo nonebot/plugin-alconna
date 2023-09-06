@@ -169,7 +169,7 @@ def assign(
     if value != _seminal:
         return match_value(path, value, or_not)
     if or_not:
-        return lambda x: match_path("$main") or match_path(path)  # type: ignore
+        return lambda x: match_path("$main")(x) or match_path(path)(x)  # type: ignore
     return match_path(path)
 
 
@@ -256,3 +256,25 @@ class AlconnaParam(Param):
                 return True
             if self.default not in (..., Empty):
                 return True
+
+
+class _Dispatch:
+    def __init__(
+        self,
+        path: str,
+        value: Any = _seminal,
+        or_not: bool = False,
+    ):
+        self.fn = assign(path, value, or_not)
+        self.result = None
+
+    def set(self, arp: AlcResult):
+        self.result = arp
+
+    def __call__(self, _state: T_State) -> bool:
+        if self.result is None:
+            return False
+        if self.fn(self.result.result):
+            _state[ALCONNA_RESULT] = self.result
+            return True
+        return False

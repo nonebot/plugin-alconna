@@ -29,7 +29,7 @@ from .rule import alconna
 from .model import CompConfig
 from .consts import ALCONNA_ARG_KEY
 from .typings import MReturn, TConvert
-from .params import MIDDLEWARE, Check, AlcExecResult, assign, _seminal
+from .params import MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch
 
 
 class ArgsMounter(Protocol):
@@ -67,7 +67,6 @@ def _validate(target: Arg[Any], arg: MessageSegment):
     if res.flag == "error":
         return
     return res._value  # noqa
-
 
 class AlconnaMatcher(Matcher):
     command: ClassVar[Alconna]
@@ -192,6 +191,58 @@ class AlconnaMatcher(Matcher):
             await cls.send(prompt, **kwargs)
         raise RejectedException
 
+    @classmethod
+    def dispatch(
+        cls,
+        path: str,
+        value: Any = _seminal,
+        or_not: bool = False,
+        rule: Rule | T_RuleChecker | None = None,
+        permission: Permission | T_PermissionChecker | None = None,
+        *,
+        handlers: list[T_Handler | Dependent] | None = None,
+        temp: bool = False,
+        expire_time: datetime | timedelta | None = None,
+        priority: int = 1,
+        block: bool = False,
+        state: T_State | None = None,
+        _depth: int = 0,
+        ) -> type[AlconnaMatcher]:
+        """注册一个消息事件响应器，并且当消息由指定 Alconna 解析并且结果符合 assign 预期时执行
+
+        参数:
+            path: 指定的查询路径, "$main" 表示没有任何选项/子命令匹配的时候
+            value: 可能的指定查询值
+            or_not: 是否同时处理没有查询成功的情况
+            rule: 事件响应规则
+            permission: 事件响应权限
+            handlers: 事件处理函数列表
+            temp: 是否为临时事件响应器（仅执行一次）
+            expire_time: 事件响应器最终有效时间点，过时即被删除
+            priority: 事件响应器优先级，其会基于父级事件响应器的优先级进行累加
+            block: 是否阻止事件向更低优先级传递
+            state: 默认 state
+        """
+
+        fn = _Dispatch(path, value, or_not)
+        cls.handle()(fn.set)
+
+        matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
+            "message",
+            rule & Rule(fn),
+            Permission() | permission,
+            temp=temp,
+            expire_time=expire_time,
+            priority=cls.priority + priority,
+            block=block,
+            handlers=handlers,
+            plugin=get_matcher_plugin(_depth + 1),
+            module=get_matcher_module(_depth + 1),
+            default_state=state,
+        )
+        store_matcher(matcher)
+        matcher.command = cls.command
+        return matcher
 
 def on_alconna(
     command: Alconna | str,
