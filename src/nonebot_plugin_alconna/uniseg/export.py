@@ -284,7 +284,7 @@ async def generate_kook_message(
                 message.append(ms.KMarkdown(f"(emj){seg.name}(emj)[{seg.id}]"))
             else:
                 message.append(ms.KMarkdown(f":{seg.id}:"))
-        elif isinstance(seg, (Image, Voice, Audio, Voice)):
+        elif isinstance(seg, (Image, Voice, Audio, Video)):
             name = seg.__class__.__name__.lower()
             method = {
                 "image": ms.image,
@@ -307,6 +307,39 @@ async def generate_kook_message(
             message.append(ms.text(str(seg)))
         else:
             raise SerializeFailed(f"Cannot serialize {seg!r} to kook message")
+
+    return message
+
+
+async def generate_minecraft_message(
+    source: "UniMessage", bot: Bot, fallback: bool
+) -> Message:
+    from nonebot.adapters.minecraft.message import MessageSegment
+    from nonebot.adapters.minecraft.message import Message as MinecraftMessage
+
+    message = MinecraftMessage()
+    ms = MessageSegment
+
+    for seg in source:
+        if isinstance(seg, Text):
+            message.append(ms.text(seg.text))
+        elif isinstance(seg, At):
+            message.append(ms.text(f"@{seg.target}"))
+        elif isinstance(seg, (Image, Video)):
+            name = seg.__class__.__name__.lower()
+            if not seg.id and not seg.url:
+                raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
+            method = {
+                "image": ms.image,
+                "video": ms.video,
+            }[name]
+            message.append(method(seg.id or seg.url))
+        elif isinstance(seg, Other):
+            message.append(seg.origin)  # type: ignore
+        elif fallback:
+            message.append(ms.text(str(seg)))
+        else:
+            raise SerializeFailed(f"Cannot serialize {seg!r} to minecraft message")
 
     return message
 
@@ -682,6 +715,7 @@ MAPPING = {
     "Feishu": generate_feishu_message,
     "Github": generate_github_message,
     "Kaiheila": generate_kook_message,
+    "Minecraft": generate_minecraft_message,
     "mirai2": generate_mirai_message,
     "OneBot V11": generate_onebot11_message,
     "OneBot V12": generate_onebot12_message,
