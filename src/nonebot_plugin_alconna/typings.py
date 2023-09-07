@@ -7,6 +7,8 @@ from tarina import lang
 from nepattern import MatchMode, BasePattern, MatchFailed
 from nonebot.internal.adapter.message import Message, MessageSegment
 
+from .uniseg import Segment, UniMessage
+
 T = TypeVar("T")
 TMS = TypeVar("TMS", bound=MessageSegment)
 TCallable = TypeVar("TCallable", bound=Callable[..., Any])
@@ -86,26 +88,10 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
 
 
 OutputType = Literal["help", "shortcut", "completion"]
-TConvert: TypeAlias = Callable[[OutputType, str], Union[Message, Awaitable[Message]]]
-MReturn: TypeAlias = Union[
-    Union[str, Message, MessageSegment], Awaitable[Union[str, Message, MessageSegment]]
+TConvert: TypeAlias = Callable[
+    [OutputType, str], Union[Message, UniMessage, Awaitable[Union[Message, UniMessage]]]
 ]
-
-
-class UniPattern(BasePattern[T], Generic[T]):
-    additional: Callable[..., bool] | None = None
-
-    def __init__(self):
-        origin: type[T] = self.__class__.__orig_bases__[0].__args__[0]  # type: ignore
-        super().__init__(
-            origin.__name__,
-            MatchMode.TYPE_CONVERT,
-            origin,
-            converter=lambda s, x: self.solve(x),
-            alias=origin.__name__,
-            accepts=[MessageSegment],
-            validators=[self.additional] if self.additional else [],
-        )
-
-    def solve(self, seg: MessageSegment) -> T | None:
-        raise NotImplementedError
+MReturn: TypeAlias = Union[
+    Union[str, Segment, UniMessage, Message, MessageSegment],
+    Awaitable[Union[str, Segment, UniMessage, Message, MessageSegment]],
+]

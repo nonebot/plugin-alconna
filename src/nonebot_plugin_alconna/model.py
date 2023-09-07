@@ -1,6 +1,6 @@
 from dataclasses import field, dataclass
 from typing_extensions import NotRequired
-from typing import Union, Generic, TypeVar, Optional, TypedDict
+from typing import Type, Union, Generic, TypeVar, Optional, TypedDict
 
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
@@ -36,9 +36,9 @@ class Query(Generic[T]):
     available: bool
     path: str
 
-    def __init__(self, path: str, default: Union[T, Empty] = Empty):
+    def __init__(self, path: str, default: Union[T, Type[Empty]] = Empty):
         self.path = path
-        self.result = default
+        self.result = default  # type: ignore
         self.available = False
 
     def __repr__(self):

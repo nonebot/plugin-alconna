@@ -1,10 +1,7 @@
-# 应与使用的 adapter 对应
-# 不加也可以，做了兼容
 from typing import Literal
 
 from tarina import lang
 from importlib_metadata import distributions
-from nonebot.adapters.onebot.v12.message import Message, MessageSegment
 from arclet.alconna import (
     Args,
     Option,
@@ -19,6 +16,7 @@ from arclet.alconna import (
 )
 
 from nonebot_plugin_alconna import (
+    At,
     Check,
     Image,
     Match,
@@ -26,6 +24,7 @@ from nonebot_plugin_alconna import (
     Reply,
     UniMsg,
     Command,
+    UniMessage,
     AlconnaMatch,
     AlconnaMatcher,
     UniversalSegment,
@@ -36,14 +35,14 @@ from nonebot_plugin_alconna import (
     set_output_converter,
 )
 
-set_output_converter(lambda t, x: Message([MessageSegment.text(x)]))
+set_output_converter(lambda t, x: UniMessage(x))
 
 with namespace("nbtest") as ns:
     ns.headers = ["/"]
     ns.builtin_option_name["help"] = {"-h", "帮助", "--help"}
 
     help_cmd = on_alconna(Alconna("help"))
-    test_cmd = on_alconna(Alconna("test", Args["target?", str]))
+    test_cmd = on_alconna(Alconna("test", Args["target?", At]))
 
     pip = Alconna(
         "pip",
@@ -89,7 +88,7 @@ def get_dist_map() -> dict:
 
 @help_cmd.handle()
 async def _help():
-    await help_cmd.send(MessageSegment.text(command_manager.all_command_help()))
+    await help_cmd.send(UniMessage(command_manager.all_command_help()))
 
 
 @i18n.handle()
@@ -104,7 +103,7 @@ async def _i18n(arp: Arparma):
 @pipcmd.handle([Check(assign("list"))])
 async def pip_l():
     md = "\n".join([f"- {k} {v}" for k, v in get_dist_map().items()])
-    await pipcmd.send(MessageSegment.text(md))
+    await pipcmd.send(UniMessage(md))
 
 
 @pipcmd.assign("install.pak")
@@ -162,14 +161,14 @@ async def test(
 
 
 @test_cmd.handle()
-async def tt_h(matcher: AlconnaMatcher, target: Match[str]):
+async def tt_h(matcher: AlconnaMatcher, target: Match[At]):
     if target.available:
         matcher.set_path_arg("target", target.result)
 
 
 @test_cmd.got_path("target", prompt="请输入目标")
-async def tt(target: str):
-    await test_cmd.send(f"target: {target}")
+async def tt(target: At):
+    await test_cmd.send(UniMessage(["ok\n", target]))
 
 
 @login.assign("recall")
@@ -216,7 +215,7 @@ async def mask_h(
 async def mask_g(img: bytes, default: Query[bool] = Query("default.value")):
     print(default)
     if default.result:
-        await mask_cmd.send(f"img: {img[:10]}")
+        await mask_cmd.send(Image(raw=img), fallback=True)
     else:
         await mask_cmd.send("ok")
 
@@ -251,7 +250,7 @@ pip_install_cmd = pipcmd1.dispatch("install.pak")
 @pip_list_cmd.handle()
 async def pip1_l():
     md = "\n".join([f"- {k} {v}" for k, v in get_dist_map().items()])
-    await pipcmd1.send(MessageSegment.text(md))
+    await pipcmd1.send(UniMessage(md))
 
 
 @pip_install_cmd.handle()

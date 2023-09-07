@@ -12,27 +12,14 @@ from typing import (
     overload,
 )
 
-from nonebot.internal.adapter import Bot, Event
+from nonebot.internal.adapter import Bot, Event, Message
 
-from .segment import (
-    Other,
-    Reply,
-    Segment,
-    at,
-    card,
-    file,
-    audio,
-    emoji,
-    image,
-    reply,
-    video,
-    voice,
-    at_all,
-)
+from ..argv import FallbackMessage
+from .export import MAPPING, SerializeFailed
+from .segment import Text, Other, Reply, Segment, reply, segments
 
-US = Union[Segment, str]
-TS = TypeVar("TS", bound=US)
-TS1 = TypeVar("TS1", bound=US)
+TS = TypeVar("TS", bound=Segment)
+TS1 = TypeVar("TS1", bound=Segment)
 
 
 async def reply_handle(event: Event, bot: Bot):
@@ -133,14 +120,17 @@ class UniMessage(List[TS]):
     """
 
     def __init__(
-        self,
-        message: Union[Iterable[TS], TS, None] = None,
+        self: "UniMessage[Segment]",
+        message: Union[Iterable[Union[str, TS]], str, TS, None] = None,
     ):
         super().__init__()
-        if isinstance(message, (str, Segment)):
-            self.append(message)
+        if isinstance(message, str):
+            self.append(Text(message))
         elif isinstance(message, Iterable):
-            self.extend(message)
+            for i in message:
+                self.append(Text(i) if isinstance(i, str) else i)
+        elif isinstance(message, Segment):
+            self.append(message)
 
     def __str__(self) -> str:
         return "".join(str(seg) for seg in self)
@@ -148,21 +138,40 @@ class UniMessage(List[TS]):
     def __repr__(self) -> str:
         return "".join(repr(seg) for seg in self)
 
+    @overload
+    def __add__(self, other: Union[str, TS, Iterable[TS]]) -> "UniMessage[TS]":
+        ...
+
+    @overload
     def __add__(
-        self: "UniMessage[TS]", other: Union[TS1, Iterable[TS1]]
+        self, other: Union[str, TS1, Iterable[TS1]]
+    ) -> "UniMessage[Union[TS, TS1]]":
+        ...
+
+    def __add__(
+        self, other: Union[str, TS, TS1, Iterable[Union[TS, TS1]]]
     ) -> "UniMessage[Union[TS, TS1]]":
         result = self.copy()
-        result += other
-        return result
+        if isinstance(other, str):
+            result.append(Text(other))  # type: ignore
+        elif isinstance(other, Segment):
+            result.append(other)  # type: ignore
+        elif isinstance(other, Iterable):
+            result.extend(other)  # type: ignore
+        else:
+            raise TypeError(f"Unsupported type {type(other)!r}")
+        return result  # type: ignore
 
     def __radd__(
-        self: "UniMessage[TS]", other: Union[TS1, Iterable[TS1]]
+        self, other: Union[str, TS1, Iterable[TS1]]
     ) -> "UniMessage[Union[TS, TS1]]":
         result = UniMessage(other)
         return result + self
 
-    def __iadd__(self, other: Union[TS, Iterable[TS]]) -> Self:
-        if isinstance(other, (str, Segment)):
+    def __iadd__(self, other: Union[str, TS, Iterable[TS]]) -> Self:
+        if isinstance(other, str):
+            self.append(Text(other))  # type: ignore
+        elif isinstance(other, Segment):
             self.append(other)
         elif isinstance(other, Iterable):
             self.extend(other)
@@ -171,7 +180,7 @@ class UniMessage(List[TS]):
         return self
 
     @overload
-    def __getitem__(self, args: Type[TS]) -> "UniMessage[TS]":
+    def __getitem__(self, args: Type[TS1]) -> "UniMessage[TS1]":
         """获取仅包含指定消息段类型的消息
 
         参数:
@@ -182,7 +191,7 @@ class UniMessage(List[TS]):
         """
 
     @overload
-    def __getitem__(self, args: Tuple[Type[TS], int]) -> TS:
+    def __getitem__(self, args: Tuple[Type[TS1], int]) -> TS1:
         """索引指定类型的消息段
 
         参数:
@@ -193,7 +202,7 @@ class UniMessage(List[TS]):
         """
 
     @overload
-    def __getitem__(self, args: Tuple[Type[TS], slice]) -> "UniMessage[TS]":
+    def __getitem__(self, args: Tuple[Type[TS1], slice]) -> "UniMessage[TS1]":
         """切片指定类型的消息段
 
         参数:
@@ -204,7 +213,7 @@ class UniMessage(List[TS]):
         """
 
     @overload
-    def __getitem__(self, args: int) -> US:
+    def __getitem__(self, args: int) -> TS:
         """索引消息段
 
         参数:
@@ -228,13 +237,13 @@ class UniMessage(List[TS]):
     def __getitem__(
         self,
         args: Union[
-            Type[US],
-            Tuple[Type[US], int],
-            Tuple[Type[US], slice],
+            Type[TS1],
+            Tuple[Type[TS1], int],
+            Tuple[Type[TS1], slice],
             int,
             slice,
         ],
-    ) -> Union[US, Self]:
+    ) -> Union[TS, TS1, "UniMessage[TS1]", Self]:
         arg1, arg2 = args if isinstance(args, tuple) else (args, None)
         if isinstance(arg1, int) and arg2 is None:
             return super().__getitem__(arg1)
@@ -242,15 +251,15 @@ class UniMessage(List[TS]):
             return UniMessage(super().__getitem__(arg1))
         if TYPE_CHECKING:
             assert not isinstance(arg1, (slice, int))
-        if (arg1 is str or issubclass(arg1, Segment)) and arg2 is None:
+        if issubclass(arg1, Segment) and arg2 is None:
             return UniMessage(seg for seg in self if isinstance(seg, arg1))
-        if (arg1 is str or issubclass(arg1, Segment)) and isinstance(arg2, int):
+        if issubclass(arg1, Segment) and isinstance(arg2, int):
             return [seg for seg in self if isinstance(seg, arg1)][arg2]
-        if (arg1 is str or issubclass(arg1, Segment)) and isinstance(arg2, slice):
+        if issubclass(arg1, Segment) and isinstance(arg2, slice):
             return UniMessage([seg for seg in self if isinstance(seg, arg1)][arg2])
         raise ValueError("Incorrect arguments to slice")  # pragma: no cover
 
-    def __contains__(self, value: Union[US, Type[US]]) -> bool:
+    def __contains__(self, value: Union[Segment, Type[Segment]]) -> bool:
         """检查消息段是否存在
 
         参数:
@@ -262,11 +271,11 @@ class UniMessage(List[TS]):
             return bool(next((seg for seg in self if isinstance(seg, value)), None))
         return super().__contains__(value)
 
-    def has(self, value: Union[US, Type[US]]) -> bool:
+    def has(self, value: Union[Segment, Type[Segment]]) -> bool:
         """与 {ref}``__contains__` <nonebot.adapters.Message.__contains__>` 相同"""
         return value in self
 
-    def index(self, value: Union[US, Type[US]], *args: SupportsIndex) -> int:
+    def index(self, value: Union[Segment, Type[Segment]], *args: SupportsIndex) -> int:
         """索引消息段
 
         参数:
@@ -309,7 +318,7 @@ class UniMessage(List[TS]):
             filtered.append(seg)
         return filtered
 
-    def count(self, value: Union[Type[US], US]) -> int:
+    def count(self, value: Union[Type[Segment], Segment]) -> int:
         """计算指定消息段的个数
 
         参数:
@@ -324,7 +333,7 @@ class UniMessage(List[TS]):
             else super().count(value)  # type: ignore
         )
 
-    def only(self, value: Union[Type[US], US]) -> bool:
+    def only(self, value: Union[Type[Segment], Segment]) -> bool:
         """检查消息中是否仅包含指定消息段
 
         参数:
@@ -358,11 +367,11 @@ class UniMessage(List[TS]):
                 ret.extend(msg.copy())
         return ret
 
-    def copy(self) -> Self:
+    def copy(self) -> "UniMessage[TS]":
         """深拷贝消息"""
         return deepcopy(self)
 
-    def include(self, *types: Type[US]) -> Self:
+    def include(self, *types: Type[Segment]) -> Self:
         """过滤消息
 
         参数:
@@ -373,7 +382,7 @@ class UniMessage(List[TS]):
         """
         return UniMessage(seg for seg in self if seg.__class__ in types)
 
-    def exclude(self, *types: Type[US]) -> Self:
+    def exclude(self, *types: Type[Segment]) -> Self:
         """过滤消息
 
         参数:
@@ -403,13 +412,19 @@ class UniMessage(List[TS]):
             result.append(res.value)
             msg_copy.pop(0)
         for seg in msg_copy:
-            for pat in {at, at_all, emoji, image, video, voice, audio, file, card}:
+            for pat in segments:
                 if (res := pat.validate(seg)).success:
                     result.append(res.value)
                     break
             else:
-                if seg.is_text():
-                    result.append(str(seg))
-                else:
-                    result.append(Other(seg))
+                result.append(Other(seg))
         return result
+
+    async def export(self, bot: Bot, fallback: bool = True) -> Message:
+        adapter = bot.adapter
+        adapter_name = adapter.get_name()
+        if fn := MAPPING.get(adapter_name):
+            return await fn(self, bot, fallback)
+        if fallback:
+            return FallbackMessage(str(self))
+        raise SerializeFailed(f"Can not export message to {adapter_name} message")

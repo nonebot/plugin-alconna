@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, Callable, ClassVar, Iterable, NoReturn, Protocol
+from typing import Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol
 
 import nepattern.main
 from nonebot.rule import Rule
@@ -11,10 +11,10 @@ from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from nonebot.exception import RejectedException
 from tarina import is_awaitable, run_always_await
-from nonebot.matcher import Matcher, current_matcher
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
+from nonebot.matcher import Matcher, current_bot, current_event, current_matcher
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
 from nonebot.internal.adapter import (
@@ -29,6 +29,7 @@ from .rule import alconna
 from .model import CompConfig
 from .consts import ALCONNA_ARG_KEY
 from .typings import MReturn, TConvert
+from .uniseg import Segment, UniMessage
 from .params import MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch
 
 
@@ -138,7 +139,7 @@ class AlconnaMatcher(Matcher):
             matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
             if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
                 ms = event.get_message()[-1]
-                if (res := _validate(arg, ms)) is None:
+                if (res := _validate(arg, ms)) is None:  # type: ignore
                     await matcher.reject(prompt)
                     return
                 if middleware:
@@ -245,6 +246,39 @@ class AlconnaMatcher(Matcher):
         store_matcher(matcher)
         matcher.command = cls.command
         return matcher
+
+    @classmethod
+    async def send(
+        cls,
+        message: Union[
+            str, Message, MessageSegment, MessageTemplate, Segment, UniMessage
+        ],
+        fallback: bool = False,
+        **kwargs: Any,
+    ) -> Any:
+        """发送一条消息给当前交互用户
+
+        `AlconnaMatcher` 下增加了对 UniMessage 的发送支持
+
+        参数:
+            message: 消息内容
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
+                是否转为字符串
+            kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
+                请参考对应 adapter 的 bot 对象 api
+        """
+        bot = current_bot.get()
+        event = current_event.get()
+        state = current_matcher.get().state
+        if isinstance(message, MessageTemplate):
+            _message = message.format(**state)
+        elif isinstance(message, Segment):
+            _message = UniMessage(message)
+        else:
+            _message = message
+        if isinstance(_message, UniMessage):
+            _message = await _message.export(bot, fallback)
+        return await bot.send(event=event, message=_message, **kwargs)
 
 
 def on_alconna(

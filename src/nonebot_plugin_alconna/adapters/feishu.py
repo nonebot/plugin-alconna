@@ -28,7 +28,7 @@ Interactive = SegmentPattern("interactive", MessageSegment, MessageSegment.inter
 ShareChat = SegmentPattern("share_chat", MessageSegment, MessageSegment.share_chat)
 ShareUser = SegmentPattern("share_user", MessageSegment, MessageSegment.share_user)
 Audio = SegmentPattern("audio", MessageSegment, MessageSegment.audio)
-Media = SegmentPattern("media", MessageSegment, MessageSegment.media)
+Video = Media = SegmentPattern("media", MessageSegment, MessageSegment.media)
 File = SegmentPattern("File", MessageSegment, MessageSegment.file)
 Sticker = SegmentPattern("sticker", MessageSegment, MessageSegment.sticker)
 

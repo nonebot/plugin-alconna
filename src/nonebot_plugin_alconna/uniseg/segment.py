@@ -2,21 +2,49 @@
 import re
 import json
 import contextlib
+from pathlib import Path
 from dataclasses import field, dataclass
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Iterable, Optional
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Type,
+    Union,
+    Generic,
+    Literal,
+    TypeVar,
+    Callable,
+    Iterable,
+    Optional,
+)
 
-from nepattern import BasePattern, create_local_patterns
 from nonebot.internal.adapter import Message, MessageSegment
-
-from ..typings import UniPattern
+from nepattern import MatchMode, BasePattern, create_local_patterns
 
 if TYPE_CHECKING:
     from .message import UniMessage
 
-Text = str
-US = Union["Segment", str]
+
 TS = TypeVar("TS", bound="Segment")
-TS1 = TypeVar("TS1", bound=US)
+TS1 = TypeVar("TS1", bound="Segment")
+
+
+class UniPattern(BasePattern[TS], Generic[TS]):
+    additional: Optional[Callable[..., bool]] = None
+
+    def __init__(self):
+        origin: Type[TS] = self.__class__.__orig_bases__[0].__args__[0]  # type: ignore
+        super().__init__(
+            origin.__name__,
+            MatchMode.TYPE_CONVERT,
+            origin,
+            converter=lambda s, x: self.solve(x),  # type: ignore
+            alias=origin.__name__,
+            accepts=[MessageSegment],
+            validators=[self.additional] if self.additional else [],
+        )
+
+    def solve(self, seg: MessageSegment) -> Optional[TS]:
+        raise NotImplementedError
 
 
 @dataclass
@@ -42,11 +70,20 @@ class Segment:
 
 
 @dataclass
+class Text(Segment):
+    """Text对象, 表示一类文本元素"""
+
+    text: str
+    style: Optional[str] = field(default=None)
+
+
+@dataclass
 class At(Segment):
     """At对象, 表示一类提醒某用户的元素"""
 
     type: Literal["user", "role", "channel"]
     target: str
+    display: Optional[str] = field(default=None)
 
 
 @dataclass
@@ -66,36 +103,50 @@ class Emoji(Segment):
 class Media(Segment):
     url: Optional[str] = field(default=None)
     id: Optional[str] = field(default=None)
-    path: Optional[str] = field(default=None)
+    path: Optional[Union[str, Path]] = field(default=None)
     raw: Optional[bytes] = field(default=None)
+    name: Optional[str] = field(default=None)
+
+    def __post_init__(self):
+        if self.path:
+            self.name = Path(self.path).name
 
 
 @dataclass
 class Image(Media):
     """Image对象, 表示一类图片元素"""
 
+    name: str = field(default="image.png")
+
 
 @dataclass
 class Audio(Media):
     """Audio对象, 表示一类音频元素"""
+
+    name: str = field(default="audio.mp3")
 
 
 @dataclass
 class Voice(Media):
     """Voice对象, 表示一类语音元素"""
 
+    name: str = field(default="voice.wav")
+
 
 @dataclass
 class Video(Media):
     """Video对象, 表示一类视频元素"""
+
+    name: str = field(default="video.mp4")
 
 
 @dataclass
 class File(Segment):
     """File对象, 表示一类文件元素"""
 
-    id: str
+    id: Optional[str] = field(default=None)
     name: Optional[str] = field(default=None)
+    raw: Optional[bytes] = field(default=None)
 
 
 @dataclass
@@ -111,8 +162,9 @@ class Reply(Segment):
 class Card(Segment):
     """Card对象，表示一类卡片消息"""
 
+    type: Literal["xml", "json"]
     raw: str
-    content: Optional[dict] = field(default=None)
+    content: Optional[Union[dict, list]] = field(default=None)
 
     def __post_init__(self):
         with contextlib.suppress(json.JSONDecodeError):
@@ -135,6 +187,15 @@ class _Other(UniPattern[Other]):
 
 
 other = _Other()
+
+
+class _Text(UniPattern[Text]):
+    def solve(self, seg: MessageSegment):
+        if seg.is_text():
+            return Text(seg.data["text"], seg.type if seg.type != "text" else None)
+
+
+text = _Text()
 
 
 class _At(UniPattern[At]):
@@ -224,8 +285,8 @@ class _Emoji(UniPattern[Emoji]):
                 )
                 return mat and Emoji(mat["id"], mat["name"])
             if content.startswith(":"):
-                mat = re.search(r":(?P<name>[^:]+):", content)
-                return mat and Emoji(mat["name"], mat["name"])
+                mat = re.search(r":(?P<id>[^:]+):", content)
+                return mat and Emoji(mat["id"])
         if seg.type == "sticker" and "id" in seg.data:
             return Emoji(seg.data["id"])
 
@@ -241,13 +302,14 @@ class _Image(UniPattern[Image]):
                     id=seg.data["uuid"],
                     url=f"https://gchat.qpic.cn/gchatpic_new/0/0-0-{seg.data['md5'].upper()}/0",
                     path=seg.data["path"],
+                    name=seg.data["md5"],
                 )
             if "file_id" in seg.data:  # ob12
                 return Image(id=seg.data["file_id"])
             if "image" in seg.data:  # villa
                 return Image(url=seg.data["image"].url)
             if "image_key" in seg.data:  # feishu
-                return Image(url=seg.data["image_key"])
+                return Image(id=seg.data["image_key"])
             if "file_key" in seg.data:  # kook
                 return Image(url=seg.data["file_key"])
             if "url" in seg.data:  # ob11
@@ -279,6 +341,7 @@ class _Video(UniPattern[Video]):
                 return Video(
                     id=seg.data["videoMd5"],
                     path=seg.data["filePath"],
+                    name=seg.data["fileName"],
                 )
             if "file_id" in seg.data:  # ob12, telegram
                 return Video(id=seg.data["file_id"])
@@ -294,6 +357,8 @@ class _Video(UniPattern[Video]):
             return Video(seg.data["url"], seg.data["videoId"])
         if seg.type == "animation":
             return Video(id=seg.data["file_id"])
+        if seg.type == "media":  # feishu
+            return Video(id=seg.data["file_key"], name=seg.data["file_name"])
 
 
 video = _Video()
@@ -306,6 +371,7 @@ class _Voice(UniPattern[Voice]):
                 return Voice(
                     id=seg.data["md5"],
                     path=seg.data["path"],
+                    name=seg.data["name"],
                 )
             if "file_id" in seg.data:  # ob12, telegram
                 return Voice(id=seg.data["file_id"])
@@ -393,25 +459,35 @@ class _Card(UniPattern[Card]):
     def solve(self, seg: MessageSegment):
         if seg.type == "card":
             if "content" in seg.data:
-                return Card(seg.data["content"])
+                return Card("json", seg.data["content"])
             if "card_wxid" in seg.data:
-                return Card(seg.data["card_wxid"])
+                return Card("json", seg.data["card_wxid"])
         if seg.type == "Xml":
-            return Card(seg.data["xml"])
+            return Card("xml", seg.data["xml"])
         if seg.type == "Json":
-            return Card(seg.data["json"])
+            return Card("json", seg.data["json"])
         if seg.type == "App":
-            return Card(seg.data["content"])
+            return Card("json", seg.data["content"])
         if seg.type == "xml":
-            return Card(seg.data["data"])
+            return Card("xml", seg.data["data"])
         if seg.type == "json":
-            return Card(seg.data["data"])
+            return Card("json", seg.data["data"])
         if seg.type == "ark" and "data" in seg.data:
-            return Card(seg.data["data"])
+            return Card("json", seg.data["data"])
 
 
 card = _Card()
-
+segments = [at, at_all, emoji, image, video, voice, audio, file, card, text, other]
 env = create_local_patterns("nonebot")
-env.sets([at, at_all, image, voice, video, audio, emoji, file, reply, card, other])
-env[Segment] = BasePattern.of(MessageSegment)
+env.sets(segments)
+
+
+class _Segment(UniPattern[Segment]):
+    def solve(self, seg: MessageSegment):
+        for pat in segments:
+            if (res := pat.validate(seg)).success:
+                return res.value
+        return Other(seg)  # type: ignore
+
+
+env[Segment] = _Segment()

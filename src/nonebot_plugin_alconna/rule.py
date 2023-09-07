@@ -25,6 +25,7 @@ from arclet.alconna import (
 
 from .config import Config
 from .typings import TConvert
+from .uniseg import UniMessage
 from .argv import FallbackMessage
 from .model import CompConfig, CommandResult
 from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT
@@ -133,7 +134,9 @@ class AlconnaRule:
         )
 
         @_waiter.handle()
-        async def _waiter_handle(_event: Event, content: Message = EventMessage()):
+        async def _waiter_handle(
+            _bot: Bot, _event: Event, content: Message = EventMessage()
+        ):
             if _exit.parse(content).matched:
                 _futures["_"].set_result(False)
                 await _waiter.finish()
@@ -143,12 +146,12 @@ class AlconnaRule:
                     out = interface.current()
                 else:
                     out = "\n".join(interface.lines())
-                await _waiter.send(await self._convert(out, _event, res))
+                await self._send(out, _bot, _event, res)
                 _waiter.skip()
             if (mat := _enter.parse(content)).matched:
                 _futures["_"].set_result(mat.content)
                 await _waiter.finish()
-            await _waiter.send(await self._convert(interface.current(), _event, res))
+            await self._send(interface.current(), _bot, _event, res)
             _waiter.skip()
 
         def clear():
@@ -167,8 +170,8 @@ class AlconnaRule:
         )
 
         while interface.available:
-            await bot.send(event, await self._convert(str(interface), event, res))
-            await bot.send(event, await self._convert(help_text, event, res))
+            await self._send(str(interface), bot, event, res)
+            await self._send(help_text, bot, event, res)
             _future = _futures.setdefault(
                 "_", asyncio.get_running_loop().create_future()
             )
@@ -178,21 +181,15 @@ class AlconnaRule:
                     _future, timeout=self.comp_config.get("timeout", 60)
                 )
             except asyncio.TimeoutError:
-                await bot.send(
-                    event,
-                    await self._convert(
-                        lang.require("comp/nonebot", "timeout"), event, res
-                    ),
+                await self._send(
+                    lang.require("comp/nonebot", "timeout"), bot, event, res
                 )
                 clear()
                 return res
             ans: Union[Message, Literal[False]] = _future.result()
             if ans is False:
-                await bot.send(
-                    event,
-                    await self._convert(
-                        lang.require("comp/nonebot", "exited"), event, res
-                    ),
+                await self._send(
+                    lang.require("comp/nonebot", "exited"), bot, event, res
                 )
                 clear()
                 return res
@@ -204,7 +201,7 @@ class AlconnaRule:
                     res = interface.enter(param)
             except Exception as e:
                 traceback.print_exc()
-                await bot.send(event, await self._convert(str(e), event, res))
+                await self._send(str(e), bot, event, res)
         clear()
         return res
 
@@ -218,9 +215,7 @@ class AlconnaRule:
             except (NotImplementedError, ValueError):
                 return False
         Arparma._additional.update(
-            bot=lambda: bot,
-            event=lambda: event,
-            state=lambda: state,
+            bot=lambda: bot, event=lambda: event, state=lambda: state
         )
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
@@ -234,7 +229,7 @@ class AlconnaRule:
         if not may_help_text and arp.error_info:
             may_help_text = repr(arp.error_info)
         if self.auto_send and may_help_text:
-            await bot.send(event, await self._convert(may_help_text, event, arp))
+            await self._send(may_help_text, bot, event, arp)
             return False
         state[ALCONNA_RESULT] = CommandResult(self.command, arp, may_help_text)
         exec_result = self.command.exec_result
@@ -246,16 +241,19 @@ class AlconnaRule:
         state[ALCONNA_EXEC_RESULT] = exec_result
         return True
 
-    async def _convert(self, text: str, event: Event, arp: Arparma) -> Message:
+    async def _send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Message:
         _t = (
             str(arp.error_info)
             if isinstance(arp.error_info, SpecialOptionTriggered)
             else "help"
         )
         try:
-            return await self.output_converter(_t, text)  # type: ignore
+            msg = await self.output_converter(_t, text)  # type: ignore
+            if isinstance(msg, UniMessage):
+                msg = await msg.export(bot, fallback=True)
+            return await bot.send(event, msg)
         except NotImplementedError:
-            return event.get_message().__class__(text)
+            return await bot.send(event, event.get_message().__class__(text))
 
 
 def alconna(

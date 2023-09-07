@@ -1,5 +1,6 @@
 from .segment import At as At
 from .segment import File as File
+from .segment import Text as Text
 from .segment import AtAll as AtAll
 from .segment import Audio as Audio
 from .segment import Emoji as Emoji
@@ -10,3 +11,4 @@ from .segment import Video as Video
 from .segment import Voice as Voice
 from .segment import Segment as Segment
 from .message import UniMessage as UniMessage
+from .export import SerializeFailed as SerializeFailed
