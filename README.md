@@ -30,6 +30,7 @@ _✨ Alconna Usage For NoneBot2 ✨_
 - 现有全部协议的 Segment 标注
 - match_value, match_path 等检查函数
 - 补全会话支持
+- 跨平台的接收与发送消息
 
 ## 讨论
 
@@ -160,7 +161,7 @@ require("nonebot_plugin_alconna")
 ...
 
 from arclet.alconna import Alconna, Subcommand, Option, Args
-from nonebot_plugin_alconna import assign, on_alconna, AlconnaResult, CommandResult, Check
+from nonebot_plugin_alconna import on_alconna, AlconnaResult, CommandResult
 
 pip = Alconna(
     "pip",
@@ -178,19 +179,21 @@ pip = Alconna(
 
 pip_cmd = on_alconna(pip)
 
-@pip_cmd.handle([Check(assign("install.pak", "pip"))])
+@pip_cmd.assign("install.pak", "pip")
 async def update(arp: CommandResult = AlconnaResult()):
     ...
 
-@pip_cmd.handle([Check(assign("list"))])
+@pip_cmd.assign("list")
 async def list_(arp: CommandResult = AlconnaResult()):
     ...
 
-@pip_cmd.assign("install")
+install_cmd = pip_cmd.dispatch("install")
+
+@install_cmd.handle()
 async def install(arp: CommandResult = AlconnaResult()):
     ...
 
-@pip_cmd.assign("install", "nonebot")
+@install_cmd.assign("install.pak", "nonebot")
 async def nonebot(arp: CommandResult = AlconnaResult()):
     ...
 ```
@@ -287,7 +290,7 @@ def on_alconna(
 | [Discord](https://github.com/nonebot/adapter-discord)               | adapters.discord                     |
 | [Red 协议](https://github.com/nonebot/adapter-red)                    | adapters.red                         |
 
-### 便捷装饰器
+## 便捷装饰器
 
 `funcommand` 装饰器用于将一个接受任意参数，返回 `str` 或 `Message` 或 `MessageSegment` 的函数转换为命令响应器。
 
@@ -297,6 +300,19 @@ from nonebot_plugin_alconna import funcommand
 @funcommand()
 async def echo(msg: str):
     return msg
+```
+
+## 跨平台消息
+
+```python
+from nonebot import on_command
+from nonebot_plugin_alconna import Image, UniMessage
+
+test = on_command("test")
+
+@test.handle()
+async def handle_test():
+    await test.send(await UniMessage(Image(path="path/to/img")).export())
 ```
 
 ## 体验

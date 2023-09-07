@@ -209,6 +209,16 @@ async def install(arp: CommandResult = AlconnaResult()):
     ...
 ```
 
+此外，还能像 `CommandGroup` 一样为每个分发设置独立的 matcher：
+
+```python
+update_cmd = pip_cmd.dispatch("install.pak", "pip")
+
+@update_cmd.handle()
+async def update(arp: CommandResult = AlconnaResult()):
+    ...
+```
+
 ### 便捷装饰器
 
 本插件提供了一个 `funcommand` 装饰器, 其用于将一个接受任意参数，
@@ -232,7 +242,11 @@ async def echo(msg: str):
 
 ```python
 class Segment:
-    origin: MessageSegment
+    ...
+
+class Text(Segment):
+    text: str
+    style: Optional[str]
 
 class At(Segment):
     type: Literal["user", "role", "channel"]
@@ -248,10 +262,14 @@ class Emoji(Segment):
 class Media(Segment):  # Image, Audio, Voice, Video
     url: Optional[str]
     id: Optional[str]
+    path: Optional[str]
+    raw: Optional[bytes]
+    name: Optional[str]
 
 class File(Segment):
     id: str
     name: Optional[str]
+    raw: Optional[bytes]
 
 class Reply(Segment):
     origin: Any
@@ -263,10 +281,10 @@ class Card(Segment):
     content: Optional[dict]
 
 class Other(Segment):
-    ...
+    origin: MessageSegment
 ```
 
-- `Text`: str 的别名
+- `Text`: 匹配 `Text` 类型的 `MessageSegment`.
 - `At`: 匹配 `At`/`Mention` 类型的 `MessageSegment`，例如 `Onebot 11` 中的 `At` 和 `Onebot 12` 中的 `Mention`
 - `AtAll`: 匹配 `AtAll`/`MentionAll` 类型的 `MessageSegment`，例如 `mirai2` 中的 `AtAll` 和 `Onebot 12` 中的 `MentionAll`
 - `Image`: 匹配 `Image` 类型的 `MessageSegment`
@@ -278,13 +296,15 @@ class Other(Segment):
 - `Card`: 匹配 `Card` 类型的 `MessageSegment`，对应如 `qq` 中的小程序卡片
 - `Other`: 匹配除以上类型外的 `MessageSegment`
 
-此类标注无法用于创建 `MessageSegment`。
+此类标注通过 `UniMessage.export` 可以转为特定的 `MessageSegment`。
 
 ### 通用消息
 
 除了以上通用标注外，本插件还提供了一个类似于 `Message` 的 `UniMessage` 类型，其元素为经过通用标注转换后的 `Segment`。
 
 你可以通过提供的 `UniversalMessage` 或 `UniMsg` 依赖注入器来获取 `UniMessage`。
+
+`UniMessage` 可以通过 `UniMessage.export` 转为 `Message`，以达到跨平台发送消息的目的。
 
 ```python
 from nonebot_plugin_alconna import UniMsg, At, Reply
@@ -297,10 +317,11 @@ async def _(msg: UniMsg):
     print(reply.origin)
     if msg.has(At):
         ats = msg.get(At)
-        print(ats)
+        await matcher.send(await ats.export())
     ...
 ```
 
+`AlconnaMatcher` 的 `send` 方法也支持 `UniMessage` 类型，你可以直接将 `UniMessage` 传入 `send` 方法，无需手动转换.
 
 ### 适配器标注
 

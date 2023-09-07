@@ -12,6 +12,7 @@ from typing import (
     overload,
 )
 
+from nonebot.internal.matcher import current_bot
 from nonebot.internal.adapter import Bot, Event, Message
 
 from ..argv import FallbackMessage
@@ -420,7 +421,14 @@ class UniMessage(List[TS]):
                 result.append(Other(seg))
         return result
 
-    async def export(self, bot: Bot, fallback: bool = True) -> Message:
+    async def export(self, bot: Optional[Bot] = None, fallback: bool = True) -> Message:
+        if not bot:
+            try:
+                bot = current_bot.get()
+            except LookupError as e:
+                raise SerializeFailed(
+                    "Can not export message without bot instance"
+                ) from e
         adapter = bot.adapter
         adapter_name = adapter.get_name()
         if fn := MAPPING.get(adapter_name):
