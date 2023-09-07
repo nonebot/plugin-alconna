@@ -141,6 +141,12 @@ class AlconnaMatcher(Matcher):
             matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
             if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
                 ms = event.get_message()[-1]
+                if (
+                    ms.is_text()
+                    and not ms.data["text"].strip()
+                    and len(event.get_message()) > 1
+                ):
+                    ms = event.get_message()[-2]
                 if (res := _validate(arg, ms)) is None:  # type: ignore
                     await matcher.reject(prompt)
                     return
