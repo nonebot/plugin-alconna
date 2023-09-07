@@ -32,6 +32,8 @@ from .typings import MReturn, TConvert
 from .uniseg import Segment, UniMessage
 from .params import MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch
 
+_M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage]
+
 
 class ArgsMounter(Protocol):
     args: Args
@@ -250,9 +252,7 @@ class AlconnaMatcher(Matcher):
     @classmethod
     async def send(
         cls,
-        message: Union[
-            str, Message, MessageSegment, MessageTemplate, Segment, UniMessage
-        ],
+        message: _M,
         fallback: bool = False,
         **kwargs: Any,
     ) -> Any:
