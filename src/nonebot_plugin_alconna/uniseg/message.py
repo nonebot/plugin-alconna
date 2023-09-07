@@ -431,8 +431,13 @@ class UniMessage(List[TS]):
                 ) from e
         adapter = bot.adapter
         adapter_name = adapter.get_name()
-        if fn := MAPPING.get(adapter_name):
-            return await fn(self, bot, fallback)
+        try:
+            if fn := MAPPING.get(adapter_name):
+                return await fn(self, bot, fallback)
+        except SerializeFailed:
+            if fallback:
+                return FallbackMessage(str(self))
+            raise
         if fallback:
             return FallbackMessage(str(self))
         raise SerializeFailed(f"Can not export message to {adapter_name} message")

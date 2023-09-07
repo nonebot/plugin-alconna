@@ -125,10 +125,10 @@ async def generate_discord_message(
                     )
                 )
             else:
-                raise ValueError(f"Invalid image segment: {seg!r}")
+                raise SerializeFailed(f"Invalid image segment: {seg!r}")
         elif isinstance(seg, File):
             if not seg.raw:
-                raise ValueError(f"Invalid file segment: {seg!r}")
+                raise SerializeFailed(f"Invalid file segment: {seg!r}")
             message.append(ms.attachment(seg.name, content=seg.raw))  # type: ignore
         elif isinstance(seg, At):
             if seg.type == "role":
@@ -176,7 +176,7 @@ async def generate_feishu_message(
                 elif seg.raw:
                     image = seg.raw
                 else:
-                    raise ValueError(f"Invalid image segment: {seg!r}")
+                    raise SerializeFailed(f"Invalid image segment: {seg!r}")
                 data = {"image_type": "message"}
                 files = {"image": ("file", image)}
                 params = {"method": "POST", "data": data, "files": files}
@@ -196,7 +196,7 @@ async def generate_feishu_message(
                 elif seg.raw:
                     audio = seg.raw
                 else:
-                    raise ValueError(f"Invalid {name} segment: {seg!r}")
+                    raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
                 data = {"file_type": "stream", "file_name": seg.name}
                 files = {"file": ("file", audio)}
                 params = {"method": "POST", "data": data, "files": files}
@@ -214,7 +214,7 @@ async def generate_feishu_message(
                 file_key = result["file_key"]
                 message.append(ms.file(file_key, seg.name))
             else:
-                raise ValueError(f"Invalid file segment: {seg!r}")
+                raise SerializeFailed(f"Invalid file segment: {seg!r}")
         elif isinstance(seg, Reply):
             message.append(ms("reply", {"message_id": seg.id}))
         elif isinstance(seg, Other):
@@ -243,7 +243,7 @@ async def generate_github_message(
             if seg.url:
                 message.append(ms.text(f"![]({seg.url})"))
             else:
-                raise ValueError(f"Invalid image segment: {seg!r}")
+                raise SerializeFailed(f"Invalid image segment: {seg!r}")
         elif isinstance(seg, Other):
             message.append(seg.origin)  # type: ignore
         elif fallback:
@@ -298,7 +298,7 @@ async def generate_kook_message(
                 file_key = await bot.upload_file(seg.path or seg.raw)  # type: ignore
                 message.append(method(file_key))
             else:
-                raise ValueError(f"Invalid {name} segment: {seg!r}")
+                raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
         elif isinstance(seg, Reply):
             message.append(ms.quote(seg.id))
         elif isinstance(seg, Other):
@@ -349,7 +349,7 @@ async def generate_mirai_message(
             elif seg.path:
                 message.append(method(path=str(seg.path)))
             else:
-                raise ValueError(f"Invalid {name} segment: {seg!r}")
+                raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
         elif isinstance(seg, File):
             message.append(ms.file(seg.id, seg.name, 0))  # type: ignore
         elif isinstance(seg, Reply):
@@ -404,7 +404,7 @@ async def generate_onebot11_message(
             elif seg.id:
                 message.append(method(seg.id))
             else:
-                raise ValueError(f"Invalid {name} segment: {seg!r}")
+                raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
         elif isinstance(seg, Card):
             if seg.type == "xml":
                 message.append(ms.xml(seg.raw))
@@ -464,7 +464,7 @@ async def generate_onebot12_message(
                 resp = await bot.upload_file(type="data", name=seg.name, data=seg.raw)
                 message.append(method(resp["file_id"]))
             else:
-                raise ValueError(f"Invalid {name} segment: {seg!r}")
+                raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
         elif isinstance(seg, File):
             if seg.id:
                 message.append(ms.file(seg.id))
@@ -474,7 +474,7 @@ async def generate_onebot12_message(
                 )
                 message.append(ms.file(resp["file_id"]))
             else:
-                raise ValueError(f"Invalid file segment: {seg!r}")
+                raise SerializeFailed(f"Invalid file segment: {seg!r}")
         elif isinstance(seg, Reply):
             message.append(ms.reply(seg.id))
         elif isinstance(seg, Other):
@@ -516,7 +516,7 @@ async def generate_qqguild_message(
             elif seg.raw or seg.path:
                 message.append(ms.file_image(seg.raw or Path(seg.path)))  # type: ignore
             else:
-                raise ValueError(f"Invalid image segment: {seg!r}")
+                raise SerializeFailed(f"Invalid image segment: {seg!r}")
         elif isinstance(seg, Reply):
             message.append(ms.reference(seg.id))
         elif isinstance(seg, Other):
@@ -561,7 +561,7 @@ async def generate_red_message(
                 resp = await bot.adapter.request(Request("GET", seg.url))
                 message.append(method(resp.content))  # type: ignore
             else:
-                raise ValueError(f"Invalid {name} segment: {seg!r}")
+                raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
         elif isinstance(seg, File):
             message.append(ms.file(seg.raw))  # type: ignore
         # elif isinstance(seg, Reply):
@@ -615,14 +615,14 @@ async def generate_telegram_message(
             elif seg.raw:
                 message.append(method(seg.raw))
             else:
-                raise ValueError(f"Invalid {name} segment: {seg!r}")
+                raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
         elif isinstance(seg, File):
             if seg.id:
                 message.append(TgFile.document(seg.id))
             elif seg.raw:
                 message.append(TgFile.document(seg.raw))
             else:
-                raise ValueError(f"Invalid file segment: {seg!r}")
+                raise SerializeFailed(f"Invalid file segment: {seg!r}")
         elif isinstance(seg, Reply):
             message.append(MessageSegment("reply", {"message_id": seg.id}))
         elif isinstance(seg, Other):
@@ -661,7 +661,7 @@ async def generate_villa_message(
             if seg.url:
                 message.append(ms.image(seg.url))
             else:
-                raise ValueError(f"Invalid image segment: {seg!r}")
+                raise SerializeFailed(f"Invalid image segment: {seg!r}")
         elif isinstance(seg, Reply):
             message.append(ms.quote(seg.id, int(datetime.now().timestamp())))
         elif isinstance(seg, Other):
