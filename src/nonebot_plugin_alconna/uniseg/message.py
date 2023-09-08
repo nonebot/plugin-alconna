@@ -260,7 +260,7 @@ class UniMessage(List[TS]):
             return UniMessage([seg for seg in self if isinstance(seg, arg1)][arg2])
         raise ValueError("Incorrect arguments to slice")  # pragma: no cover
 
-    def __contains__(self, value: Union[Segment, Type[Segment]]) -> bool:
+    def __contains__(self, value: Union[str, Segment, Type[Segment]]) -> bool:
         """检查消息段是否存在
 
         参数:
@@ -270,13 +270,17 @@ class UniMessage(List[TS]):
         """
         if isinstance(value, type):
             return bool(next((seg for seg in self if isinstance(seg, value)), None))
+        if isinstance(value, str):
+            value = Text(value)
         return super().__contains__(value)
 
-    def has(self, value: Union[Segment, Type[Segment]]) -> bool:
+    def has(self, value: Union[str, Segment, Type[Segment]]) -> bool:
         """与 {ref}``__contains__` <nonebot.adapters.Message.__contains__>` 相同"""
         return value in self
 
-    def index(self, value: Union[Segment, Type[Segment]], *args: SupportsIndex) -> int:
+    def index(
+        self, value: Union[str, Segment, Type[Segment]], *args: SupportsIndex
+    ) -> int:
         """索引消息段
 
         参数:
@@ -294,6 +298,8 @@ class UniMessage(List[TS]):
             if first_segment is None:
                 raise ValueError(f"Segment with type {value!r} is not in message")
             return super().index(first_segment, *args)
+        if isinstance(value, str):
+            value = Text(value)
         return super().index(value, *args)  # type: ignore
 
     def get(self, type_: Type[TS], count: Optional[int] = None) -> "UniMessage[TS]":
@@ -319,7 +325,7 @@ class UniMessage(List[TS]):
             filtered.append(seg)
         return filtered
 
-    def count(self, value: Union[Type[Segment], Segment]) -> int:
+    def count(self, value: Union[Type[Segment], str, Segment]) -> int:
         """计算指定消息段的个数
 
         参数:
@@ -328,13 +334,15 @@ class UniMessage(List[TS]):
         返回:
             个数
         """
+        if isinstance(value, str):
+            value = Text(value)
         return (
             len(self[value])  # type: ignore
             if isinstance(value, type)
             else super().count(value)  # type: ignore
         )
 
-    def only(self, value: Union[Type[Segment], Segment]) -> bool:
+    def only(self, value: Union[Type[Segment], str, Segment]) -> bool:
         """检查消息中是否仅包含指定消息段
 
         参数:
@@ -345,6 +353,8 @@ class UniMessage(List[TS]):
         """
         if isinstance(value, type):
             return all(isinstance(seg, value) for seg in self)
+        if isinstance(value, str):
+            value = Text(value)
         return all(seg == value for seg in self)
 
     def join(
@@ -362,7 +372,7 @@ class UniMessage(List[TS]):
         for index, msg in enumerate(iterable):
             if index != 0:
                 ret.extend(self)
-            if isinstance(msg, (str, Segment)):
+            if isinstance(msg, Segment):
                 ret.append(msg)
             else:
                 ret.extend(msg.copy())
@@ -397,7 +407,7 @@ class UniMessage(List[TS]):
     def extract_plain_text(self) -> str:
         """提取消息内纯文本消息"""
 
-        return "".join(seg for seg in self if isinstance(seg, str))
+        return "".join(seg.text for seg in self if isinstance(seg, Text))
 
     @staticmethod
     async def generate(event: Event, bot: Bot):
