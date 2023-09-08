@@ -9,13 +9,14 @@ from nonebot.params import Depends
 from nepattern import AnyOne, AnyString
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
-from nonebot.exception import RejectedException
+from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from tarina import is_awaitable, run_always_await
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
 from nonebot.matcher import Matcher, current_bot, current_event, current_matcher
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
+from nonebot.exception import PausedException, FinishedException, RejectedException
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
 from nonebot.internal.adapter import (
     Bot,
@@ -117,7 +118,7 @@ class AlconnaMatcher(Matcher):
     def got_path(
         cls,
         path: str,
-        prompt: str | Message | MessageSegment | MessageTemplate | None = None,
+        prompt: _M | None = None,
         middleware: MIDDLEWARE | None = None,
         parameterless: Iterable[Any] | None = None,
     ) -> Callable[[T_Handler], T_Handler]:
@@ -131,7 +132,7 @@ class AlconnaMatcher(Matcher):
 
         参数:
             path: 参数路径名
-            prompt: 在参数不存在时向用户发送的消息
+            prompt: 在参数不存在时向用户发送的消息，支持 `UniMessage`
             parameterless: 非参数类型依赖列表
         """
         if not (arg := extract_arg(path, cls.command)):
@@ -148,7 +149,7 @@ class AlconnaMatcher(Matcher):
                 ):
                     ms = event.get_message()[-2]
                 if (res := _validate(arg, ms)) is None:  # type: ignore
-                    await matcher.reject(prompt)
+                    await matcher.reject(prompt, fallback=True)
                     return
                 if middleware:
                     res = await run_always_await(middleware, bot, matcher.state, res)
@@ -156,7 +157,7 @@ class AlconnaMatcher(Matcher):
                 return
             if matcher.state.get(ALCONNA_ARG_KEY.format(key=path), ...) is not ...:
                 return
-            await matcher.reject(prompt)
+            await matcher.reject(prompt, fallback=True)
 
         _parameterless = (*(parameterless or ()), Depends(_key_getter))
 
@@ -183,7 +184,8 @@ class AlconnaMatcher(Matcher):
     async def reject_path(
         cls,
         path: str,
-        prompt: str | Message | MessageSegment | MessageTemplate | None = None,
+        prompt: _M | None = None,
+        fallback: bool = False,
         **kwargs,
     ) -> NoReturn:
         """最近使用 `got_path` 接收的消息不符合预期，
@@ -191,14 +193,16 @@ class AlconnaMatcher(Matcher):
 
         参数:
             path: 参数路径名
-            prompt: 消息内容
+            prompt: 消息内容, 支持 `UniMessage`
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
+                是否转为字符串
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
                 请参考对应 adapter 的 bot 对象 api
         """
         matcher = current_matcher.get()
         matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
         if prompt is not None:
-            await cls.send(prompt, **kwargs)
+            await cls.send(prompt, fallback=fallback, **kwargs)
         raise RejectedException
 
     @classmethod
@@ -256,6 +260,54 @@ class AlconnaMatcher(Matcher):
         return matcher
 
     @classmethod
+    def got(
+        cls,
+        key: str,
+        prompt: _M | None = None,
+        parameterless: Iterable[Any] | None = None,
+    ) -> Callable[[T_Handler], T_Handler]:
+        """装饰一个函数来指示 NoneBot 获取一个参数 `key`
+
+        当要获取的 `key` 不存在时接收用户新的一条消息再运行该函数，
+        如果 `key` 已存在则直接继续运行
+
+        参数:
+            key: 参数名
+            prompt: 在参数不存在时向用户发送的消息, 支持 `UniMessage`
+            parameterless: 非参数类型依赖列表
+        """
+
+        async def _key_getter(event: Event, matcher: AlconnaMatcher):
+            matcher.set_target(ARG_KEY.format(key=key))
+            if matcher.get_target() == ARG_KEY.format(key=key):
+                matcher.set_arg(key, event.get_message())
+                return
+            if matcher.get_arg(key, ...) is not ...:
+                return
+            await matcher.reject(prompt, fallback=True)
+
+        _parameterless = (Depends(_key_getter), *(parameterless or ()))
+
+        def _decorator(func: T_Handler) -> T_Handler:
+            if cls.handlers and cls.handlers[-1].call is func:
+                func_handler = cls.handlers[-1]
+                new_handler = Dependent(
+                    call=func_handler.call,
+                    params=func_handler.params,
+                    parameterless=Dependent.parse_parameterless(
+                        tuple(_parameterless), cls.HANDLER_PARAM_TYPES
+                    )
+                    + func_handler.parameterless,
+                )
+                cls.handlers[-1] = new_handler
+            else:
+                cls.append_handler(func, parameterless=_parameterless)
+
+            return func
+
+        return _decorator
+
+    @classmethod
     async def send(
         cls,
         message: _M,
@@ -267,7 +319,7 @@ class AlconnaMatcher(Matcher):
         `AlconnaMatcher` 下增加了对 UniMessage 的发送支持
 
         参数:
-            message: 消息内容
+            message: 消息内容, 支持 `UniMessage`
             fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
                 是否转为字符串
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
@@ -285,6 +337,117 @@ class AlconnaMatcher(Matcher):
         if isinstance(_message, UniMessage):
             _message = await _message.export(bot, fallback)
         return await bot.send(event=event, message=_message, **kwargs)
+
+    @classmethod
+    async def finish(
+        cls,
+        message: _M | None = None,
+        fallback: bool = False,
+        **kwargs,
+    ) -> NoReturn:
+        """发送一条消息给当前交互用户并结束当前事件响应器
+
+        参数:
+            message: 消息内容, 支持 `UniMessage`
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
+                是否转为字符串
+            kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
+                请参考对应 adapter 的 bot 对象 api
+        """
+        if message is not None:
+            await cls.send(message, fallback=fallback, **kwargs)
+        raise FinishedException
+
+    @classmethod
+    async def pause(
+        cls,
+        prompt: _M | None = None,
+        fallback: bool = False,
+        **kwargs,
+    ) -> NoReturn:
+        """发送一条消息给当前交互用户并暂停事件响应器，在接收用户新的一条消息后继续下一个处理函数
+
+        参数:
+            prompt: 消息内容, 支持 `UniMessage`
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
+                是否转为字符串
+            kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
+                请参考对应 adapter 的 bot 对象 api
+        """
+        if prompt is not None:
+            await cls.send(prompt, fallback=fallback, **kwargs)
+        raise PausedException
+
+    @classmethod
+    async def reject(
+        cls,
+        prompt: _M | None = None,
+        fallback: bool = False,
+        **kwargs,
+    ) -> NoReturn:
+        """最近使用 `got` / `receive` 接收的消息不符合预期，
+        发送一条消息给当前交互用户并将当前事件处理流程中断在当前位置，在接收用户新的一个事件后从头开始执行当前处理函数
+
+        参数:
+            prompt: 消息内容, 支持 `UniMessage`
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
+                是否转为字符串
+            kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
+                请参考对应 adapter 的 bot 对象 api
+        """
+        if prompt is not None:
+            await cls.send(prompt, fallback=fallback, **kwargs)
+        raise RejectedException
+
+    @classmethod
+    async def reject_arg(
+        cls,
+        key: str,
+        prompt: _M | None = None,
+        fallback: bool = False,
+        **kwargs,
+    ) -> NoReturn:
+        """最近使用 `got` 接收的消息不符合预期，
+        发送一条消息给当前交互用户并将当前事件处理流程中断在当前位置，在接收用户新的一条消息后从头开始执行当前处理函数
+
+        参数:
+            key: 参数名
+            prompt: 消息内容, 支持 `UniMessage`
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
+                是否转为字符串
+            kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
+                请参考对应 adapter 的 bot 对象 api
+        """
+        matcher = current_matcher.get()
+        matcher.set_target(ARG_KEY.format(key=key))
+        if prompt is not None:
+            await cls.send(prompt, fallback=fallback, **kwargs)
+        raise RejectedException
+
+    @classmethod
+    async def reject_receive(
+        cls,
+        id: str = "",
+        prompt: _M | None = None,
+        fallback: bool = False,
+        **kwargs,
+    ) -> NoReturn:
+        """最近使用 `receive` 接收的消息不符合预期，
+        发送一条消息给当前交互用户并将当前事件处理流程中断在当前位置，在接收用户新的一个事件后从头开始执行当前处理函数
+
+        参数:
+            id: 消息 id
+            prompt: 消息内容, 支持 `UniMessage`
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
+                是否转为字符串
+            kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
+                请参考对应 adapter 的 bot 对象 api
+        """
+        matcher = current_matcher.get()
+        matcher.set_target(RECEIVE_KEY.format(id=id))
+        if prompt is not None:
+            await cls.send(prompt, fallback=fallback, **kwargs)
+        raise RejectedException
 
 
 def on_alconna(
@@ -329,10 +492,11 @@ def on_alconna(
     """
     if isinstance(command, str):
         command = AlconnaFormat(command)
-    if aliases and command.command:
+    if aliases:
         aliases = set(aliases)
         command_manager.delete(command)
-        aliases.add(str(command.command))
+        if command.command:
+            aliases.add(str(command.command))
         command.command = "re:(" + "|".join(aliases) + ")"
         command._hash = command._calc_hash()
         command_manager.register(command)
@@ -392,17 +556,8 @@ def funcommand(
         _config["description"] = description
 
     def wrapper(func: Callable[..., MReturn]) -> type[AlconnaMatcher]:
-        alc = FuncMounter(func, _config)  # type: ignore
-
-        async def handle(bot: Bot, event: Event, results: AlcExecResult):
-            if res := results.get(func.__name__):
-                if is_awaitable(res):
-                    res = await res
-                if isinstance(res, (str, Message, MessageSegment)):
-                    await bot.send(event, res)
-
         matcher = on_alconna(
-            alc,
+            FuncMounter(func, _config),  # type: ignore
             rule,
             skip_for_unmatch,
             auto_send_output,
@@ -418,7 +573,14 @@ def funcommand(
             state=state,
             _depth=_depth + 1,
         )
-        matcher.handle()(handle)
+
+        @matcher.handle()
+        async def handle(results: AlcExecResult):
+            if res := results.get(func.__name__):
+                if is_awaitable(res):
+                    res = await res
+                if isinstance(res, (str, Message, MessageSegment, Segment, UniMessage)):
+                    await matcher.send(res, fallback=True)
 
         return matcher
 

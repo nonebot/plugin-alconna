@@ -299,6 +299,10 @@ async def generate_kook_message(
                 message.append(method(file_key))
             else:
                 raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
+        elif isinstance(seg, Card):
+            if seg.type == "xml":
+                raise SerializeFailed("Cannot serialize xml card to kook message")
+            message.append(ms.Card(seg.raw))  # type: ignore
         elif isinstance(seg, Reply):
             message.append(ms.quote(seg.id))
         elif isinstance(seg, Other):
@@ -333,7 +337,7 @@ async def generate_minecraft_message(
                 "image": ms.image,
                 "video": ms.video,
             }[name]
-            message.append(method(seg.id or seg.url))
+            message.append(method(seg.id or seg.url))  # type: ignore
         elif isinstance(seg, Other):
             message.append(seg.origin)  # type: ignore
         elif fallback:
@@ -385,6 +389,11 @@ async def generate_mirai_message(
                 raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
         elif isinstance(seg, File):
             message.append(ms.file(seg.id, seg.name, 0))  # type: ignore
+        elif isinstance(seg, Card):
+            if seg.type == "xml":
+                message.append(ms.xml(seg.raw))  # type: ignore
+            else:
+                message.append(ms.app(seg.raw))  # type: ignore
         elif isinstance(seg, Reply):
             message.append(ms(MessageType.QUOTE, id=seg.id))
         elif isinstance(seg, Other):
@@ -440,9 +449,9 @@ async def generate_onebot11_message(
                 raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
         elif isinstance(seg, Card):
             if seg.type == "xml":
-                message.append(ms.xml(seg.raw))
+                message.append(ms.xml(seg.raw))  # type: ignore
             else:
-                message.append(ms.json(seg.raw))
+                message.append(ms.json(seg.raw))  # type: ignore
         elif isinstance(seg, Reply):
             message.append(ms.reply(int(seg.id)))
         elif isinstance(seg, Other):
@@ -713,12 +722,13 @@ MAPPING = {
     "Ding": generate_ding_message,
     "Discord": generate_discord_message,
     "Feishu": generate_feishu_message,
-    "Github": generate_github_message,
+    "GitHub": generate_github_message,
     "Kaiheila": generate_kook_message,
     "Minecraft": generate_minecraft_message,
     "mirai2": generate_mirai_message,
     "OneBot V11": generate_onebot11_message,
     "OneBot V12": generate_onebot12_message,
+    "QQ Guild": generate_qqguild_message,
     "RedProtocol": generate_red_message,
     "Telegram": generate_telegram_message,
     "Villa": generate_villa_message,

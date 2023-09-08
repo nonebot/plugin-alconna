@@ -458,21 +458,21 @@ reply = _Reply()
 class _Card(UniPattern[Card]):
     def solve(self, seg: MessageSegment):
         if seg.type == "card":
-            if "content" in seg.data:
+            if "content" in seg.data:  # kook
                 return Card("json", seg.data["content"])
-            if "card_wxid" in seg.data:
+            if "card_wxid" in seg.data:  # ntchat
                 return Card("json", seg.data["card_wxid"])
-        if seg.type == "Xml":
+        if seg.type == "Xml":  # mirai
             return Card("xml", seg.data["xml"])
-        if seg.type == "Json":
+        if seg.type == "Json":  # mirai
             return Card("json", seg.data["json"])
-        if seg.type == "App":
+        if seg.type == "App":  # mirai
             return Card("json", seg.data["content"])
-        if seg.type == "xml":
+        if seg.type == "xml":  # ob12
             return Card("xml", seg.data["data"])
-        if seg.type == "json":
+        if seg.type == "json":  # ob11
             return Card("json", seg.data["data"])
-        if seg.type == "ark" and "data" in seg.data:
+        if seg.type == "ark" and "data" in seg.data:  # red
             return Card("json", seg.data["data"])
 
 
