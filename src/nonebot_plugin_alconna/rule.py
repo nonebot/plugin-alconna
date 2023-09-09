@@ -141,17 +141,17 @@ class AlconnaRule:
                 _futures["_"].set_result(False)
                 await _waiter.finish()
             if (mat := _tab.parse(content)).matched:
-                interface.tab(mat.query_with(int, "offset", 1))
-                if self.comp_config.get("lite", False):
+                interface.tab(mat.query[int]("offset", 1))
+                if self.comp_config.get("lite", False):  # type: ignore
                     out = interface.current()
                 else:
                     out = "\n".join(interface.lines())
-                await self._send(out, _bot, _event, res)
+                await self._send(out, _bot, _event, res)  # type: ignore
                 _waiter.skip()
             if (mat := _enter.parse(content)).matched:
                 _futures["_"].set_result(mat.content)
                 await _waiter.finish()
-            await self._send(interface.current(), _bot, _event, res)
+            await self._send(interface.current(), _bot, _event, res)  # type: ignore
             _waiter.skip()
 
         def clear():
@@ -251,7 +251,7 @@ class AlconnaRule:
             msg = await self.output_converter(_t, text)  # type: ignore
             if isinstance(msg, UniMessage):
                 msg = await msg.export(bot, fallback=True)
-            return await bot.send(event, msg)
+            return await bot.send(event, msg)  # type: ignore
         except NotImplementedError:
             return await bot.send(event, event.get_message().__class__(text))
 

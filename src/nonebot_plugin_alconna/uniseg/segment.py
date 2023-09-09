@@ -34,9 +34,8 @@ class UniPattern(BasePattern[TS], Generic[TS]):
     def __init__(self):
         origin: Type[TS] = self.__class__.__orig_bases__[0].__args__[0]  # type: ignore
         super().__init__(
-            origin.__name__,
-            MatchMode.TYPE_CONVERT,
-            origin,
+            model=MatchMode.TYPE_CONVERT,
+            origin=origin,
             converter=lambda s, x: self.solve(x),  # type: ignore
             alias=origin.__name__,
             accepts=[MessageSegment],

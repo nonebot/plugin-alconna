@@ -1,7 +1,8 @@
 from nepattern.main import INTEGER
+from nonebot.adapters import Message as BaseMessage
 from arclet.alconna import argv_config, set_default_argv_type
 from nepattern import BasePattern, PatternModel, UnionPattern
-from nonebot.adapters.feishu.message import Message, BaseMessage, MessageSegment
+from nonebot.adapters.feishu.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
@@ -49,6 +50,7 @@ AtID = (
                 origin=int,
                 alias="@xxx",
                 accepts=[str],
+                converter=lambda _, x: int(x[1]),
             ),
             INTEGER,
         ]

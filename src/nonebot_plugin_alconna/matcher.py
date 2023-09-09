@@ -3,12 +3,11 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol
 
-import nepattern.main
 from nonebot.rule import Rule
 from nonebot.params import Depends
-from nepattern import AnyOne, AnyString
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
+from nepattern import STRING, AnyOne, AnyString
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from tarina import is_awaitable, run_always_await
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
@@ -58,7 +57,7 @@ def _validate(target: Arg[Any], arg: MessageSegment):
     value = target.value
     if value == AnyOne:
         return arg
-    if value == AnyString or (value == nepattern.main._String and arg.is_text()):
+    if value == AnyString or (value == STRING and arg.is_text()):
         return str(arg)
     default_val = target.field.default
     res = (

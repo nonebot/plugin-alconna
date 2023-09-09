@@ -1,7 +1,7 @@
 from nepattern.main import URL, INTEGER
+from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters.qqguild.message import Message
 from nonebot.adapters.qqguild.message import Ark as _Ark
-from nonebot.adapters.qqguild.message import BaseMessage
 from nonebot.adapters.qqguild.message import MessageSegment
 from nonebot.adapters.qqguild.message import Embed as _Embed
 from nonebot.adapters.qqguild.message import Emoji as _Emoji
@@ -83,6 +83,7 @@ MentionID = (
                 origin=int,
                 alias="@xxx",
                 accepts=[str],
+                converter=lambda _, x: int(x[1]),
             ),
             INTEGER,
         ]

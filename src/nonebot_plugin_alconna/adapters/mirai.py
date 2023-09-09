@@ -1,7 +1,8 @@
 from nepattern.main import INTEGER
+from nonebot.adapters import Message as BaseMessage
 from arclet.alconna import argv_config, set_default_argv_type
 from nepattern import URL, BasePattern, PatternModel, UnionPattern
-from nonebot.adapters.mirai2.message import BaseMessage, MessageChain, MessageSegment
+from nonebot.adapters.mirai2.message import MessageChain, MessageSegment
 
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
@@ -76,6 +77,7 @@ AtID = (
                 origin=int,
                 alias="@xxx",
                 accepts=[str],
+                converter=lambda _, x: int(x[1]),
             ),
             INTEGER,
         ]

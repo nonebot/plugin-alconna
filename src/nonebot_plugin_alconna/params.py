@@ -18,9 +18,10 @@ from tarina import run_always_await
 from nepattern.util import CUnionType
 from pydantic.fields import Undefined
 from tarina.generic import get_origin
+from nonebot.dependencies import Param
+from nonebot.internal.params import Depends
 from nonebot.internal.matcher import Matcher
 from nonebot.internal.adapter import Bot, Event
-from nonebot.internal.params import Param, Depends
 from arclet.alconna.builtin import generate_duplication
 from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
@@ -79,7 +80,7 @@ def AlconnaQuery(
         result = arp.query(path, Empty)
         q.available = result != Empty
         if q.available:
-            q.result = result
+            q.result = result  # type: ignore
         elif default != Empty:
             q.available = True
         if middleware and q.available:

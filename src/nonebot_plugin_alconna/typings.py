@@ -24,16 +24,16 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         additional: Callable[..., bool] | None = None,
     ):
         super().__init__(
-            name,
-            MatchMode.TYPE_CONVERT,
-            origin,
+            model=MatchMode.TYPE_CONVERT,
+            origin=origin,
             alias=name,
             accepts=[MessageSegment],
             validators=[additional] if additional else [],
         )
+        self.pattern = name
         self.call = call
 
-    def match(self, input_: str | Any) -> TMS:
+    def match(self, input_: Any) -> TMS:
         if not isinstance(input_, self.origin):
             raise MatchFailed(
                 lang.require("nepattern", "type_error").format(target=type(input_))
@@ -57,16 +57,16 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         locator: Callable[[str, str], bool] | None = None,
     ):
         super().__init__(
-            name,
-            MatchMode.TYPE_CONVERT,
-            origin,
+            model=MatchMode.TYPE_CONVERT,
+            origin=origin,
             alias=name,
             accepts=[MessageSegment, str],
         )
+        self.pattern = name
         self.call = call
         self.locator = locator
 
-    def match(self, input_: str | Any) -> TMS:
+    def match(self, input_: Any) -> TMS:
         if not isinstance(input_, (str, self.origin)):  # type: ignore
             raise MatchFailed(
                 lang.require("nepattern", "type_error").format(target=type(input_))

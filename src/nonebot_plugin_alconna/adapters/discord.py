@@ -4,6 +4,7 @@ from typing import Dict, List, Type, Union, Optional
 from nonebot.rule import Rule
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
+from nonebot.adapters import Message as BaseMessage
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.adapters.discord.commands.matcher import (
     SlashCommandMatcher,
@@ -43,7 +44,6 @@ from nonebot.adapters.discord.api import (
 )
 from nonebot.adapters.discord.message import (
     Message,
-    BaseMessage,
     EmbedSegment,
     MessageSegment,
     StickerSegment,
@@ -116,6 +116,7 @@ MentionID = (
                 origin=int,
                 alias="@xxx",
                 accepts=[str],
+                converter=lambda _, x: int(x[1]),
             ),
             INTEGER,
         ]
@@ -135,19 +136,19 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
                 result.append(
                     StringOption(
                         name=arg.name,
-                        description=arg.notice,
+                        description=arg.notice or arg.name,
                         required=not arg.optional,
-                        choices=[OptionChoice(name=x, value=x) for x in arg.value.base],
+                        choices=[OptionChoice(name=x, value=x) for x in arg.value.base],  # type: ignore  # noqa: E501
                     )
                 )
             elif all(isinstance(x, int) for x in arg.value.base):
                 result.append(
                     IntegerOption(
                         name=arg.name,
-                        description=arg.notice,
+                        description=arg.notice or arg.name,
                         required=not arg.optional,
                         choices=[
-                            OptionChoice(name=str(x), value=x) for x in arg.value.base
+                            OptionChoice(name=str(x), value=x) for x in arg.value.base  # type: ignore  # noqa: E501
                         ],
                     )
                 )
@@ -155,10 +156,10 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
                 result.append(
                     NumberOption(
                         name=arg.name,
-                        description=arg.notice,
+                        description=arg.notice or arg.name,
                         required=not arg.optional,
                         choices=[
-                            OptionChoice(name=str(x), value=x) for x in arg.value.base
+                            OptionChoice(name=str(x), value=x) for x in arg.value.base  # type: ignore  # noqa: E501
                         ],
                     )
                 )
@@ -166,7 +167,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
                 result.append(
                     StringOption(
                         name=arg.name,
-                        description=arg.notice,
+                        description=arg.notice or arg.name,
                         required=not arg.optional,
                         choices=[
                             OptionChoice(name=str(x), value=str(x))
@@ -178,67 +179,89 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
         elif arg.value == AnyOne:
             result.append(
                 StringOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         elif arg.value == INTEGER:
             result.append(
                 IntegerOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         elif arg.value in (FLOAT, NUMBER):
             result.append(
                 NumberOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         elif arg.value.origin is str:
             result.append(
                 StringOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         elif arg.value.origin is bool:
             result.append(
                 BooleanOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         elif arg.value == Image or arg.value.origin == UniImg:
             result.append(
                 AttachmentOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         elif arg.value == MentionUser:
             result.append(
                 UserOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         elif arg.value == MentionChannel:
             result.append(
                 ChannelOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         elif arg.value == MentionRole:
             result.append(
                 RoleOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         elif arg.value.origin is At:
             result.append(
                 MentionableOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
         else:
             result.append(
                 StringOption(
-                    name=arg.name, description=arg.notice, required=not arg.optional
+                    name=arg.name,
+                    description=arg.notice or arg.name,
+                    required=not arg.optional,
                 )
             )
     return result
@@ -251,14 +274,14 @@ def _translate_options(
         return SubCommandOption(
             name=opt.name,
             description=opt.help_text,
-            options=_translate_args(opt.args),
+            options=_translate_args(opt.args),  # type: ignore
         )
     res = SubCommandGroupOption(
         name=opt.name,
         description=opt.help_text,
-        options=[_translate_options(sub) for sub in opt.options],
+        options=[_translate_options(sub) for sub in opt.options],  # type: ignore
     )
-    res.options.extend(_translate_args(opt.args))
+    res.options.extend(_translate_args(opt.args))  # type: ignore
     return res
 
 

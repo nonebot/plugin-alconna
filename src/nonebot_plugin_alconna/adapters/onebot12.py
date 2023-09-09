@@ -1,7 +1,8 @@
 from nepattern.main import URL, INTEGER
+from nonebot.adapters import Message as BaseMessage
 from arclet.alconna import argv_config, set_default_argv_type
 from nepattern import BasePattern, PatternModel, UnionPattern
-from nonebot.adapters.onebot.v12.message import Message, BaseMessage, MessageSegment
+from nonebot.adapters.onebot.v12.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
@@ -65,6 +66,7 @@ MentionID = (
                 origin=int,
                 alias="@xxx",
                 accepts=[str],
+                converter=lambda _, x: int(x[1]),
             ),
             INTEGER,
         ]

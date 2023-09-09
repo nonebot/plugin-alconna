@@ -1,5 +1,6 @@
+from nonebot.adapters import Message as BaseMessage
 from arclet.alconna import argv_config, set_default_argv_type
-from nonebot.adapters.ding.message import Message, BaseMessage, MessageSegment
+from nonebot.adapters.ding.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
