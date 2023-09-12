@@ -186,7 +186,7 @@ async def generate_feishu_message(
         elif isinstance(seg, (Voice, Audio)):
             name = seg.__class__.__name__.lower()
             if seg.id:
-                message.append(ms.audio(seg.id, 1))
+                message.append(ms.audio(seg.id))
             else:
                 if seg.url:
                     resp = await bot.adapter.request(Request("GET", seg.url))
@@ -202,7 +202,7 @@ async def generate_feishu_message(
                 params = {"method": "POST", "data": data, "files": files}
                 result = await bot.call_api("im/v1/files", **params)
                 file_key = result["file_key"]
-                message.append(ms.audio(file_key, 1))
+                message.append(ms.audio(file_key))
         elif isinstance(seg, File):
             if seg.id:
                 message.append(ms.file(seg.id, seg.name))  # type: ignore
@@ -212,7 +212,7 @@ async def generate_feishu_message(
                 params = {"method": "POST", "data": data, "files": files}
                 result = await bot.call_api("im/v1/files", **params)
                 file_key = result["file_key"]
-                message.append(ms.file(file_key, seg.name))
+                message.append(ms.file(file_key))
             else:
                 raise SerializeFailed(f"Invalid file segment: {seg!r}")
         elif isinstance(seg, Reply):

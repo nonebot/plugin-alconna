@@ -67,6 +67,9 @@ class Segment:
 
         return UniMessage(item) + self
 
+    def is_text(self) -> bool:
+        return False
+
 
 @dataclass
 class Text(Segment):
@@ -74,6 +77,12 @@ class Text(Segment):
 
     text: str
     style: Optional[str] = field(default=None)
+
+    def is_text(self) -> bool:
+        return True
+
+    def __str__(self):
+        return self.text
 
 
 @dataclass
