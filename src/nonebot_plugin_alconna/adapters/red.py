@@ -32,7 +32,7 @@ Video = SegmentPattern("video", MessageSegment, MessageSegment.video)
 Reply = SegmentPattern("reply", MessageSegment, MessageSegment.reply)
 Ark = SegmentPattern("ark", MessageSegment, MessageSegment.ark)
 MarketFace = SegmentPattern("market_face", MessageSegment, MessageSegment.market_face)
-Forward = SegmentPattern("forward_msg", MessageSegment, MessageSegment.forward_msg)
+Forward = SegmentPattern("forward", MessageSegment, MessageSegment.forward)
 
 
 ImgOrUrl = (

@@ -10,13 +10,24 @@ from .uniseg import Image
 
 
 async def image_fetch(bot: Bot, state: T_State, img: Image):
+    adapter_name = bot.adapter.get_name()
+    if adapter_name == "RedProtocol":
+        origin = img.origin
+        if TYPE_CHECKING:
+            from nonebot.adapters.red.bot import Bot
+            from nonebot.adapters.red.message import MediaMessageSegment
+
+            assert isinstance(bot, Bot)
+            assert isinstance(origin, MediaMessageSegment)
+
+        return await origin.download(bot)
+
     if img.url:  # mirai2, qqguild, kook, villa, feishu, minecraft, ding
         req = Request("GET", img.url)
         resp = await bot.adapter.request(req)
         return resp.content
     if not img.id:
         return None
-    adapter_name = bot.adapter.get_name()
     if adapter_name == "OneBot V11":
         if TYPE_CHECKING:
             from nonebot.adapters.onebot.v11.bot import Bot

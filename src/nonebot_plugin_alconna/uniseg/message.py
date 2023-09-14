@@ -137,7 +137,7 @@ class UniMessage(List[TS]):
         return "".join(str(seg) for seg in self)
 
     def __repr__(self) -> str:
-        return "".join(repr(seg) for seg in self)
+        return "[" + ", ".join(repr(seg) for seg in self) + "]"
 
     @overload
     def __add__(self, other: Union[str, TS, Iterable[TS]]) -> "UniMessage[TS]":

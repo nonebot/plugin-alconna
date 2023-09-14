@@ -33,10 +33,16 @@ class UniPattern(BasePattern[TS], Generic[TS]):
 
     def __init__(self):
         origin: Type[TS] = self.__class__.__orig_bases__[0].__args__[0]  # type: ignore
+
+        def _converter(_, seg: MessageSegment) -> Optional[TS]:
+            if (res := self.solve(seg)) and not hasattr(res, "origin"):
+                res.origin = seg
+            return res
+
         super().__init__(
             model=MatchMode.TYPE_CONVERT,
             origin=origin,
-            converter=lambda s, x: self.solve(x),  # type: ignore
+            converter=_converter,  # type: ignore
             alias=origin.__name__,
             accepts=[MessageSegment],
             validators=[self.additional] if self.additional else [],
@@ -49,6 +55,8 @@ class UniPattern(BasePattern[TS], Generic[TS]):
 @dataclass
 class Segment:
     """基类标注"""
+
+    origin: MessageSegment = field(init=False, repr=False, compare=False)
 
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
