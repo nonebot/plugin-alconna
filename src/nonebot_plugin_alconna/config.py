@@ -18,3 +18,6 @@ class Config(BaseModel, extra=Extra.ignore):
 
     alconna_use_param: bool = True
     """是否使用特制的 Param 提供更好的依赖注入"""
+
+    alconna_use_command_sep: bool = False
+    """是否将 COMMAND_SEP 作为全局命令分隔符"""

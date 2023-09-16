@@ -54,6 +54,7 @@ def on_alconna(
     comp_config: CompConfig | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
+    use_cmd_sep: bool = False,
     ...,
 ):
 ```
@@ -66,6 +67,7 @@ def on_alconna(
 - `comp_config`: 补全会话配置， 不传入则不启用补全会话
 - `use_origin`: 是否使用未经 to_me 等处理过的消息
 - `use_cmd_start`: 是否使用 COMMAND_START 作为命令前缀
+- `use_cmd_sep`: 是否使用 COMMAND_SEP 作为命令分隔符
 
 ### 依赖注入
 

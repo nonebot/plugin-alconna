@@ -80,7 +80,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .rule import set_output_converter as set_output_converter
 
-__version__ = "0.22.7"
+__version__ = "0.23.0"
 
 _meta_source = {
     "name": "Alconna 插件",
@@ -107,12 +107,16 @@ if not nonebot_version.split(".")[-1].isdigit():
 
 __plugin_meta__ = PluginMetadata(**_meta_source)
 
+_use_param = True
+
 with contextlib.suppress(ValueError, LookupError):
     global_config = get_driver().config
     _config = Config.parse_obj(global_config)
-    if _config.alconna_use_param:
-        AlconnaMatcher.HANDLER_PARAM_TYPES = (
-            *AlconnaMatcher.HANDLER_PARAM_TYPES[:-1],
-            AlconnaParam,
-            DefaultParam,
-        )
+    _use_param = _config.alconna_use_param
+
+if _use_param:
+    AlconnaMatcher.HANDLER_PARAM_TYPES = (
+        *AlconnaMatcher.HANDLER_PARAM_TYPES[:-1],
+        AlconnaParam,
+        DefaultParam,
+    )

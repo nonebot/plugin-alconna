@@ -53,7 +53,6 @@ class AlconnaRule:
         "output_converter",
         "comp_config",
         "use_origin",
-        "use_cmd_start",
     )
 
     def __init__(
@@ -65,6 +64,7 @@ class AlconnaRule:
         comp_config: Optional[CompConfig] = None,
         use_origin: bool = False,
         use_cmd_start: bool = False,
+        use_cmd_sep: bool = False,
     ):
         self.comp_config = comp_config
         self.use_origin = use_origin
@@ -81,6 +81,13 @@ class AlconnaRule:
                 command.prefixes = list(global_config.command_start)
                 command._hash = command._calc_hash()
                 command_manager.register(command)
+            if (
+                use_cmd_sep or config.alconna_use_command_sep
+            ) and global_config.command_sep:
+                command.separators = tuple(global_config.command_sep)
+                command_manager.resolve(command).separators = tuple(
+                    global_config.command_sep
+                )
             if config.alconna_auto_completion and not self.comp_config:
                 self.comp_config = {}
             self.use_origin = use_origin or config.alconna_use_origin
@@ -264,18 +271,9 @@ def alconna(
     comp_config: Optional[CompConfig] = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
+    use_cmd_sep: bool = False,
 ) -> Rule:
-    return Rule(
-        AlconnaRule(
-            command,
-            skip_for_unmatch,
-            auto_send_output,
-            output_converter,
-            comp_config,
-            use_origin,
-            use_cmd_start,
-        )
-    )
+    return Rule(AlconnaRule(**locals()))
 
 
 AlconnaRule.default_converter = lambda _, x: FallbackMessage(x)

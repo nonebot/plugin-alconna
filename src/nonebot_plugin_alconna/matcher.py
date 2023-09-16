@@ -459,6 +459,7 @@ def on_alconna(
     comp_config: CompConfig | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
+    use_cmd_sep: bool = False,
     permission: Permission | T_PermissionChecker | None = None,
     *,
     handlers: list[T_Handler | Dependent] | None = None,
@@ -481,6 +482,7 @@ def on_alconna(
         comp_config: 补全会话配置, 不传入则不启用补全会话
         use_origin: 是否使用未经 to_me 等处理过的消息
         use_cmd_start: 是否使用 nb 全局配置里的命令起始符
+        use_cmd_sep: 是否使用 nb 全局配置里的命令分隔符
         permission: 事件响应权限
         handlers: 事件处理函数列表
         temp: 是否为临时事件响应器（仅执行一次）
@@ -510,6 +512,7 @@ def on_alconna(
             comp_config,
             use_origin,
             use_cmd_start,
+            use_cmd_sep,
         ),
         Permission() | permission,
         temp=temp,
@@ -535,6 +538,7 @@ def funcommand(
     output_converter: TConvert | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
+    use_cmd_sep: bool = False,
     rule: Rule | T_RuleChecker | None = None,
     permission: Permission | T_PermissionChecker | None = None,
     *,
@@ -563,6 +567,7 @@ def funcommand(
             output_converter,
             use_origin=use_origin,
             use_cmd_start=use_cmd_start,
+            use_cmd_sep=use_cmd_sep,
             permission=permission,
             handlers=handlers,
             temp=temp,
@@ -597,6 +602,7 @@ class Command(AlconnaString):
         comp_config: CompConfig | None = None,
         use_origin: bool = False,
         use_cmd_start: bool = False,
+        use_cmd_sep: bool = False,
         permission: Permission | T_PermissionChecker | None = None,
         *,
         handlers: list[T_Handler | Dependent] | None = None,
@@ -607,7 +613,8 @@ class Command(AlconnaString):
         state: T_State | None = None,
         _depth: int = 0,
     ):
-        params = locals()
+        params = locals().copy()
+        params["_depth"] += 1
         params.pop("self")
         params.pop("__class__")
         alc = super().build()

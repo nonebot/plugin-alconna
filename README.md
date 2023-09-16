@@ -243,6 +243,7 @@ async def handle_test1(result: MyResult = AlconnaDuplication(MyResult)):
 - ALCONNA_AUTO_COMPLETION: 是否全局启用补全会话功能
 - ALCONNA_USE_ORIGIN: 是否全局使用原始消息 (即未经过 to_me 等处理的)
 - ALCONNA_USE_PARAM: 是否使用特制的 Param 提供更好的依赖注入
+- ALCONNA_USE_CMD_SEP: 是否将 COMMAND_SEP 作为全局命令分隔符
 
 ## 参数解释
 
@@ -256,6 +257,7 @@ def on_alconna(
     comp_config: CompConfig | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
+    use_cmd_sep: bool = False,
     **kwargs,
 ) -> type[AlconnaMatcher]:
 ```
@@ -268,6 +270,7 @@ def on_alconna(
 - `comp_config`: 补全会话配置, 不传入则不启用补全会话
 - `use_origin`: 是否使用未经 to_me 等处理过的消息
 - `use_cmd_start`: 是否使用 COMMAND_START 作为命令前缀
+- `use_cmd_sep`: 是否使用 COMMAND_SEP 作为命令分隔符
 
 ## 提供了 MessageSegment标注 的协议:
 

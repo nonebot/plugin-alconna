@@ -313,6 +313,5 @@ def translate(
     }
     buffer["_depth"] += 1
     buffer.pop("alc")
-    buffer.pop("__class__")
     buffer["options"].extend(_translate_args(alc.args))
     return on_slash_command(**buffer)

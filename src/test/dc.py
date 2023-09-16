@@ -8,15 +8,15 @@ from arclet.alconna import Args, Option, Alconna, CommandMeta
 from nonebot_plugin_alconna import on_alconna
 from nonebot_plugin_alconna.adapters.discord import MentionUser, translate
 
-matcher = on_alconna(
-    Alconna(
-        "permission",
-        Option("add", Args["plugin#插件名", str]["priority#优先级;?", int]),
-        Option("remove", Args["plugin#插件名", str]["time#时长;?", float]),
-        Option("ban", Args["user#用户;?", MentionUser]),
-        meta=CommandMeta("权限管理"),
-    )
+alc = Alconna(
+    "permission",
+    Option("add", Args["plugin#插件名", str]["priority?#优先级", int]),
+    Option("remove", Args["plugin#插件名", str]["time?#时长", float]),
+    Option("ban", Args["user?#用户", MentionUser]),
+    meta=CommandMeta("权限管理"),
 )
+
+matcher = on_alconna(alc)
 
 slash_matcher = translate(matcher.command)
 

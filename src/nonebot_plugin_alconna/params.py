@@ -221,7 +221,7 @@ class AlconnaParam(Param):
             return cls(param.default, name=param.name, type=Match)
         if isinstance(param.default, Query):
             return cls(param.default, type=Query)
-        return cls(param.default, name=param.name, type=Any)
+        return cls(param.default, name=param.name, type=Any, validate=True)
 
     async def _solve(self, state: T_State, **kwargs: Any) -> Any:
         t = self.extra["type"]
