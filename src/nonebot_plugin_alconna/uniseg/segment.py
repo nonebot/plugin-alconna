@@ -171,6 +171,7 @@ class Reply(Segment):
 
     origin: Any
     id: str
+    """此处不一定是消息ID，可能是其他ID，如消息序号等"""
     msg: Optional[Union[Message, str]] = field(default=None)
 
 
@@ -458,7 +459,7 @@ class _Reply(UniPattern[Reply]):
             if "message_id" in seg.data:  # ob12
                 return Reply(seg, seg.data["message_id"])
             if "msg_id" in seg.data:  # red
-                return Reply(seg, seg.data["msg_id"])
+                return Reply(seg.data["_origin"], seg.data["msg_seq"])
         if seg.type == "quote":
             if "msg_id" in seg.data:  # kook:
                 return Reply(seg, seg.data["msg_id"])

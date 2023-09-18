@@ -52,7 +52,7 @@ dev = [
     "nonebot-adapter-villa>=0.6.5",
     "nonebot-adapter-discord>=0.1.0b1",
     "nonebot-adapter-kaiheila>=0.2.9a1",
-    "nonebot-adapter-red>=0.1.0",
+    "nonebot-adapter-red>=0.4.1",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

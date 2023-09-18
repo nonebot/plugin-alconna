@@ -606,8 +606,8 @@ async def generate_red_message(
                 raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
         elif isinstance(seg, File):
             message.append(ms.file(seg.raw))  # type: ignore
-        # elif isinstance(seg, Reply):
-        #     message.append(ms.reply(seg.id))
+        elif isinstance(seg, Reply):
+            message.append(ms.reply(seg.id))
         elif isinstance(seg, Other):
             message.append(seg.origin)  # type: ignore
         elif fallback:

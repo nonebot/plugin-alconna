@@ -107,6 +107,17 @@ async def reply_handle(event: Event, bot: Bot):
                 event.message_reference.message_id,  # type: ignore
                 None,
             )
+    elif adapter_name == "RedProtocol":
+        if TYPE_CHECKING:
+            from nonebot.adapters.red.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+
+        if event.reply:
+            return Reply(
+                event.reply,
+                event.reply.replayMsgSeq,
+            )
 
     elif _reply := getattr(event, "reply", None):
         return Reply(_reply, str(_reply.message_id), getattr(_reply, "message", None))
