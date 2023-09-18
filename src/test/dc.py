@@ -22,9 +22,7 @@ slash_matcher = translate(matcher.command)
 
 
 @slash_matcher.handle_sub_command("add")
-async def handle_user_add(
-    plugin: CommandOption[str], priority: CommandOption[Optional[int]]
-):
+async def handle_user_add(plugin: CommandOption[str], priority: CommandOption[Optional[int]]):
     await slash_matcher.send_deferred_response()
     await asyncio.sleep(2)
     await slash_matcher.edit_response(f"你添加了插件 {plugin}，优先级 {priority}")
@@ -40,9 +38,7 @@ async def handle_user_add(
 
 
 @slash_matcher.handle_sub_command("remove")
-async def handle_user_remove(
-    plugin: CommandOption[str], time: CommandOption[Optional[float]]
-):
+async def handle_user_remove(plugin: CommandOption[str], time: CommandOption[Optional[float]]):
     await slash_matcher.send(f"你移除了插件 {plugin}，时长 {time}")
 
 

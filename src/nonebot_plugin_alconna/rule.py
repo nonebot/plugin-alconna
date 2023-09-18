@@ -81,13 +81,9 @@ class AlconnaRule:
                 command.prefixes = list(global_config.command_start)
                 command._hash = command._calc_hash()
                 command_manager.register(command)
-            if (
-                use_cmd_sep or config.alconna_use_command_sep
-            ) and global_config.command_sep:
+            if (use_cmd_sep or config.alconna_use_command_sep) and global_config.command_sep:
                 command.separators = tuple(global_config.command_sep)
-                command_manager.resolve(command).separators = tuple(
-                    global_config.command_sep
-                )
+                command_manager.resolve(command).separators = tuple(global_config.command_sep)
             if config.alconna_auto_completion and not self.comp_config:
                 self.comp_config = {}
             self.use_origin = use_origin or config.alconna_use_origin
@@ -103,9 +99,7 @@ class AlconnaRule:
         return f"Alconna(command={self.command!r})"
 
     def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, AlconnaRule) and self.command.path == other.command.path
-        )
+        return isinstance(other, AlconnaRule) and self.command.path == other.command.path
 
     def __hash__(self) -> int:
         return hash(self.command.__hash__())
@@ -120,9 +114,7 @@ class AlconnaRule:
         if res:
             return res
         meta = CommandMeta(compact=True, hide=True)
-        _tab = Alconna(
-            self.comp_config.get("tab", ".tab"), Args["offset", int, 1], [], meta=meta
-        )
+        _tab = Alconna(self.comp_config.get("tab", ".tab"), Args["offset", int, 1], [], meta=meta)
         _enter = Alconna(
             self.comp_config.get("enter", ".enter"),
             Args["content", AllParam, []],
@@ -141,9 +133,7 @@ class AlconnaRule:
         )
 
         @_waiter.handle()
-        async def _waiter_handle(
-            _bot: Bot, _event: Event, content: Message = EventMessage()
-        ):
+        async def _waiter_handle(_bot: Bot, _event: Event, content: Message = EventMessage()):
             if _exit.parse(content).matched:
                 _futures["_"].set_result(False)
                 await _waiter.finish()
@@ -179,25 +169,17 @@ class AlconnaRule:
         while interface.available:
             await self._send(str(interface), bot, event, res)
             await self._send(help_text, bot, event, res)
-            _future = _futures.setdefault(
-                "_", asyncio.get_running_loop().create_future()
-            )
+            _future = _futures.setdefault("_", asyncio.get_running_loop().create_future())
             _future.add_done_callback(lambda x: _futures.pop("_"))
             try:
-                await asyncio.wait_for(
-                    _future, timeout=self.comp_config.get("timeout", 60)
-                )
+                await asyncio.wait_for(_future, timeout=self.comp_config.get("timeout", 60))
             except asyncio.TimeoutError:
-                await self._send(
-                    lang.require("comp/nonebot", "timeout"), bot, event, res
-                )
+                await self._send(lang.require("comp/nonebot", "timeout"), bot, event, res)
                 clear()
                 return res
             ans: Union[Message, Literal[False]] = _future.result()
             if ans is False:
-                await self._send(
-                    lang.require("comp/nonebot", "exited"), bot, event, res
-                )
+                await self._send(lang.require("comp/nonebot", "exited"), bot, event, res)
                 clear()
                 return res
             param = list(ans)
@@ -221,9 +203,7 @@ class AlconnaRule:
                 msg: Message = getattr(event, "original_message", msg)  # type: ignore
             except (NotImplementedError, ValueError):
                 return False
-        Arparma._additional.update(
-            bot=lambda: bot, event=lambda: event, state=lambda: state
-        )
+        Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
             try:
@@ -249,11 +229,7 @@ class AlconnaRule:
         return True
 
     async def _send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Message:
-        _t = (
-            str(arp.error_info)
-            if isinstance(arp.error_info, SpecialOptionTriggered)
-            else "help"
-        )
+        _t = str(arp.error_info) if isinstance(arp.error_info, SpecialOptionTriggered) else "help"
         try:
             msg = await self.output_converter(_t, text)  # type: ignore
             if isinstance(msg, UniMessage):

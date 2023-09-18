@@ -39,12 +39,8 @@ Emoji = SegmentPattern("emoji", _Emoji, MessageSegment.emoji)
 Image = SegmentPattern("attachment", _Attachment, MessageSegment.image)
 FileImage = SegmentPattern("file_image", _LocalImage, MessageSegment.file_image)
 MentionUser = SegmentPattern("mention_user", _MentionUser, MessageSegment.mention_user)
-MentionChannel = SegmentPattern(
-    "mention_channel", _MentionChannel, MessageSegment.mention_channel
-)
-MentionEveryone = SegmentPattern(
-    "mention_everyone", _MentionEveryone, MessageSegment.mention_everyone
-)
+MentionChannel = SegmentPattern("mention_channel", _MentionChannel, MessageSegment.mention_channel)
+MentionEveryone = SegmentPattern("mention_everyone", _MentionEveryone, MessageSegment.mention_everyone)
 Reference = SegmentPattern("reference", _Reference, MessageSegment.reference)
 
 

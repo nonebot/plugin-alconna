@@ -20,12 +20,8 @@ argv_config(
 )
 
 Text = str
-AtAll = SegmentPattern(
-    "at", MessageSegment, MessageSegment.atAll, lambda x: "isAtAll" in x.data
-)
-AtMobiles = SegmentPattern(
-    "at", MessageSegment, MessageSegment.atMobiles, lambda x: "atMobiles" in x.data
-)
+AtAll = SegmentPattern("at", MessageSegment, MessageSegment.atAll, lambda x: "isAtAll" in x.data)
+AtMobiles = SegmentPattern("at", MessageSegment, MessageSegment.atMobiles, lambda x: "atMobiles" in x.data)
 AtDingtalkIds = SegmentPattern(
     "at",
     MessageSegment,

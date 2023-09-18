@@ -35,13 +35,9 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
 
     def match(self, input_: Any) -> TMS:
         if not isinstance(input_, self.origin):
-            raise MatchFailed(
-                lang.require("nepattern", "type_error").format(target=type(input_))
-            )
+            raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
         if input_.type != self.pattern:
-            raise MatchFailed(
-                lang.require("nepattern", "content_error").format(target=input_)
-            )
+            raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
         return input_
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> TMS:
@@ -68,19 +64,13 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
 
     def match(self, input_: Any) -> TMS:
         if not isinstance(input_, (str, self.origin)):  # type: ignore
-            raise MatchFailed(
-                lang.require("nepattern", "type_error").format(target=type(input_))
-            )
+            raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
         if isinstance(input_, str):
             if self.locator and not self.locator(input_, self.pattern):
-                raise MatchFailed(
-                    lang.require("nepattern", "content_error").format(target=input_)
-                )
+                raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
             return self.call(input_)  # type: ignore
         if input_.type != self.pattern:
-            raise MatchFailed(
-                lang.require("nepattern", "content_error").format(target=input_)
-            )
+            raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
         return input_
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> TMS:

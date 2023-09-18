@@ -56,9 +56,7 @@ with namespace("nbtest") as ns:
     )
 
     # auto_send already set in .env
-    pipcmd = on_alconna(
-        pip, comp_config={"timeout": 10}, block=True
-    )  # , auto_send_output=True)
+    pipcmd = on_alconna(pip, comp_config={"timeout": 10}, block=True)  # , auto_send_output=True)
     ali = on_alconna(
         Alconna(["/"], "一言"),
         aliases={"hitokoto"},
@@ -149,15 +147,7 @@ async def test(
     **kwargs: str,
 ):
     """测试"""
-    return (
-        f"a: {a}\n"
-        f"b: {b}\n"
-        f"c: {c}\n"
-        f"d: {d}\n"
-        f"e: {e}\n"
-        f"args: {args}\n"
-        f"kwargs: {kwargs}\n"
-    )
+    return f"a: {a}\n" f"b: {b}\n" f"c: {c}\n" f"d: {d}\n" f"e: {e}\n" f"args: {args}\n" f"kwargs: {kwargs}\n"
 
 
 @test_cmd.handle()
@@ -204,9 +194,7 @@ mask_cmd.shortcut(
 
 
 @mask_cmd.handle()
-async def mask_h(
-    matcher: AlconnaMatcher, img: Match[list] = AlconnaMatch("img", image_fetch)
-):
+async def mask_h(matcher: AlconnaMatcher, img: Match[list] = AlconnaMatch("img", image_fetch)):
     if img.available:
         matcher.set_path_arg("img", img.result)
 

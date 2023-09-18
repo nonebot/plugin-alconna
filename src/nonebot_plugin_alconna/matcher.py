@@ -60,11 +60,7 @@ def _validate(target: Arg[Any], arg: MessageSegment):
     if value == AnyString or (value == STRING and arg.is_text()):
         return str(arg)
     default_val = target.field.default
-    res = (
-        value.invalidate(arg, default_val)
-        if value.anti
-        else value.validate(arg, default_val)
-    )
+    res = value.invalidate(arg, default_val) if value.anti else value.validate(arg, default_val)
     if target.optional and res.flag != "valid":
         return
     if res.flag == "error":
@@ -141,11 +137,7 @@ class AlconnaMatcher(Matcher):
             matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
             if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
                 ms = event.get_message()[-1]
-                if (
-                    ms.is_text()
-                    and not ms.data["text"].strip()
-                    and len(event.get_message()) > 1
-                ):
+                if ms.is_text() and not ms.data["text"].strip() and len(event.get_message()) > 1:
                     ms = event.get_message()[-2]
                 if (res := _validate(arg, ms)) is None:  # type: ignore
                     await matcher.reject(prompt, fallback=True)

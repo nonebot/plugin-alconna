@@ -165,9 +165,7 @@ PhoneNumber = SegmentPattern("phone_number", Entity, Entity.phone_number)
 Bold = TextSegmentPattern("bold", Entity, Entity.bold, locator)
 Italic = TextSegmentPattern("italic", Entity, Entity.italic, locator)
 Underline = TextSegmentPattern("underline", Entity, Entity.underline, locator)
-Strikethrough = TextSegmentPattern(
-    "strikethrough", Entity, Entity.strikethrough, locator
-)
+Strikethrough = TextSegmentPattern("strikethrough", Entity, Entity.strikethrough, locator)
 Spoiler = TextSegmentPattern("spoiler", Entity, Entity.spoiler, locator)
 Code = TextSegmentPattern("code", Entity, Entity.code, locator)
 Pre = SegmentPattern("pre", Entity, Entity.pre)

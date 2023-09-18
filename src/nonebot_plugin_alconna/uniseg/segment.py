@@ -61,16 +61,12 @@ class Segment:
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
 
-    def __add__(
-        self: TS, item: Union[TS1, Iterable[TS1]]
-    ) -> "UniMessage[Union[TS, TS1]]":
+    def __add__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
         from .message import UniMessage
 
         return UniMessage(self) + item
 
-    def __radd__(
-        self: TS, item: Union[TS1, Iterable[TS1]]
-    ) -> "UniMessage[Union[TS, TS1]]":
+    def __radd__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
         from .message import UniMessage
 
         return UniMessage(item) + self
@@ -297,9 +293,7 @@ class _Emoji(UniPattern[Emoji]):
         if seg.type == "kmarkdown":
             content = seg.data["content"]
             if content.startswith("(emj)"):
-                mat = re.search(
-                    r"\(emj\)(?P<name>[^()\[\]]+)\(emj\)\[(?P<id>[^\[\]]+)\]", content
-                )
+                mat = re.search(r"\(emj\)(?P<name>[^()\[\]]+)\(emj\)\[(?P<id>[^\[\]]+)\]", content)
                 return mat and Emoji(mat["id"], mat["name"])
             if content.startswith(":"):
                 mat = re.search(r":(?P<id>[^:]+):", content)

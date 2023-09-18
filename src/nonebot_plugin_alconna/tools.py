@@ -45,10 +45,7 @@ async def image_fetch(bot: Bot, state: T_State, img: Image):
         resp = (await bot.get_file(type="data", file_id=img.id))["data"]
         return b64decode(resp) if isinstance(resp, str) else bytes(resp)
     if adapter_name == "mirai2":
-        url = (
-            f"https://gchat.qpic.cn/gchatpic_new/0/0-0-"
-            f"{img.id.replace('-', '').upper()}/0"
-        )
+        url = f"https://gchat.qpic.cn/gchatpic_new/0/0-0-" f"{img.id.replace('-', '').upper()}/0"
         req = Request("GET", url)
         resp = await bot.adapter.request(req)
         return resp.content
@@ -57,12 +54,7 @@ async def image_fetch(bot: Bot, state: T_State, img: Image):
             from nonebot.adapters.telegram.bot import Bot
 
             assert isinstance(bot, Bot)
-        url = (
-            URL(bot.bot_config.api_server)
-            / "file"
-            / f"bot{bot.bot_config.token}"
-            / img.id
-        )
+        url = URL(bot.bot_config.api_server) / "file" / f"bot{bot.bot_config.token}" / img.id
         req = Request("GET", url)
         resp = await bot.adapter.request(req)
         return resp.content

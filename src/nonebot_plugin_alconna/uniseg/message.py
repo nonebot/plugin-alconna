@@ -16,6 +16,7 @@ from nonebot.internal.matcher import current_bot
 from nonebot.internal.adapter import Bot, Event, Message
 
 from ..argv import FallbackMessage
+from .template import UniMessageTemplate
 from .export import MAPPING, SerializeFailed
 from .segment import Text, Other, Reply, Segment, reply, segments
 
@@ -77,19 +78,11 @@ async def reply_handle(event: Event, bot: Bot):
             assert isinstance(event, MessageEvent)
             assert isinstance(bot, KaiheilaBot)
 
-        api = (
-            "directMessage_view"
-            if event.__event__ == "message.private"
-            else "message_view"
-        )
+        api = "directMessage_view" if event.__event__ == "message.private" else "message_view"
         message = await bot.call_api(
             api,
             msg_id=event.msg_id,
-            **(
-                {"chat_code": event.event.code}
-                if event.__event__ == "message.private"
-                else {}
-            ),
+            **({"chat_code": event.event.code} if event.__event__ == "message.private" else {}),
         )
         if message.quote:
             return Reply(message.quote, message.quote.id_, None)
@@ -99,9 +92,7 @@ async def reply_handle(event: Event, bot: Bot):
 
             assert isinstance(event, MessageEvent)
 
-        if hasattr(event, "message_reference") and hasattr(
-            event.message_reference, "message_id"
-        ):
+        if hasattr(event, "message_reference") and hasattr(event.message_reference, "message_id"):
             return Reply(
                 event.message_reference,  # type: ignore
                 event.message_reference.message_id,  # type: ignore
@@ -150,19 +141,30 @@ class UniMessage(List[TS]):
     def __repr__(self) -> str:
         return "[" + ", ".join(repr(seg) for seg in self) + "]"
 
+    @classmethod
+    def template(cls, format_string: Union[str, "UniMessage"]) -> UniMessageTemplate:
+        """创建消息模板。
+
+        用法和 `str.format` 大致相同，支持以 `UniMessage` 对象作为消息模板并输出消息对象。
+        并且提供了拓展的格式化控制符，可以通过 `Segment` 的实例化方法创建消息。
+
+        参数:
+            format_string: 格式化模板
+
+        返回:
+            消息格式化器
+        """
+        return UniMessageTemplate(format_string, cls)
+
     @overload
     def __add__(self, other: Union[str, TS, Iterable[TS]]) -> "UniMessage[TS]":
         ...
 
     @overload
-    def __add__(
-        self, other: Union[str, TS1, Iterable[TS1]]
-    ) -> "UniMessage[Union[TS, TS1]]":
+    def __add__(self, other: Union[str, TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
         ...
 
-    def __add__(
-        self, other: Union[str, TS, TS1, Iterable[Union[TS, TS1]]]
-    ) -> "UniMessage[Union[TS, TS1]]":
+    def __add__(self, other: Union[str, TS, TS1, Iterable[Union[TS, TS1]]]) -> "UniMessage[Union[TS, TS1]]":
         result = self.copy()
         if isinstance(other, str):
             result.append(Text(other))  # type: ignore
@@ -174,9 +176,7 @@ class UniMessage(List[TS]):
             raise TypeError(f"Unsupported type {type(other)!r}")
         return result  # type: ignore
 
-    def __radd__(
-        self, other: Union[str, TS1, Iterable[TS1]]
-    ) -> "UniMessage[Union[TS, TS1]]":
+    def __radd__(self, other: Union[str, TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
         result = UniMessage(other)
         return result + self
 
@@ -289,9 +289,7 @@ class UniMessage(List[TS]):
         """与 {ref}``__contains__` <nonebot.adapters.Message.__contains__>` 相同"""
         return value in self
 
-    def index(
-        self, value: Union[str, Segment, Type[Segment]], *args: SupportsIndex
-    ) -> int:
+    def index(self, value: Union[str, Segment, Type[Segment]], *args: SupportsIndex) -> int:
         """索引消息段
 
         参数:
@@ -326,9 +324,7 @@ class UniMessage(List[TS]):
         if count is None:
             return self[type_]
 
-        iterator, filtered = (
-            seg for seg in self if isinstance(seg, type_)
-        ), UniMessage()
+        iterator, filtered = (seg for seg in self if isinstance(seg, type_)), UniMessage()
         for _ in range(count):
             seg = next(iterator, None)
             if seg is None:
@@ -368,9 +364,7 @@ class UniMessage(List[TS]):
             value = Text(value)
         return all(seg == value for seg in self)
 
-    def join(
-        self, iterable: Iterable[Union[TS1, "UniMessage[TS1]"]]
-    ) -> "UniMessage[Union[TS, TS1]]":
+    def join(self, iterable: Iterable[Union[TS1, "UniMessage[TS1]"]]) -> "UniMessage[Union[TS, TS1]]":
         """将多个消息连接并将自身作为分割
 
         参数:
@@ -447,9 +441,7 @@ class UniMessage(List[TS]):
             try:
                 bot = current_bot.get()
             except LookupError as e:
-                raise SerializeFailed(
-                    "Can not export message without bot instance"
-                ) from e
+                raise SerializeFailed("Can not export message without bot instance") from e
         adapter = bot.adapter
         adapter_name = adapter.get_name()
         try:

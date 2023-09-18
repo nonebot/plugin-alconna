@@ -85,18 +85,10 @@ Component = SegmentPattern("component", ComponentSegment, MessageSegment.compone
 Timestamp = SegmentPattern("timestamp", TimestampSegment, MessageSegment.timestamp)
 Emoji = SegmentPattern("emoji", CustomEmojiSegment, MessageSegment.custom_emoji)
 Image = SegmentPattern("attachment", AttachmentSegment, MessageSegment.attachment)
-MentionUser = SegmentPattern(
-    "mention_user", MentionUserSegment, MessageSegment.mention_user
-)
-MentionChannel = SegmentPattern(
-    "mention_channel", MentionChannelSegment, MessageSegment.mention_channel
-)
-MentionRole = SegmentPattern(
-    "mention_role", MentionRoleSegment, MessageSegment.mention_role
-)
-MentionEveryone = SegmentPattern(
-    "mention_everyone", MentionEveryoneSegment, MessageSegment.mention_everyone
-)
+MentionUser = SegmentPattern("mention_user", MentionUserSegment, MessageSegment.mention_user)
+MentionChannel = SegmentPattern("mention_channel", MentionChannelSegment, MessageSegment.mention_channel)
+MentionRole = SegmentPattern("mention_role", MentionRoleSegment, MessageSegment.mention_role)
+MentionEveryone = SegmentPattern("mention_everyone", MentionEveryoneSegment, MessageSegment.mention_everyone)
 Reference = SegmentPattern("reference", ReferenceSegment, MessageSegment.reference)
 
 
@@ -169,10 +161,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
                         name=arg.name,
                         description=arg.notice or arg.name,
                         required=not arg.optional,
-                        choices=[
-                            OptionChoice(name=str(x), value=str(x))
-                            for x in arg.value.base
-                        ],
+                        choices=[OptionChoice(name=str(x), value=str(x)) for x in arg.value.base],
                     )
                 )
             continue
@@ -267,9 +256,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
     return result
 
 
-def _translate_options(
-    opt: Union[Option, Subcommand]
-) -> Union[SubCommandGroupOption, SubCommandOption]:
+def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupOption, SubCommandOption]:
     if isinstance(opt, Option):
         return SubCommandOption(
             name=opt.name,

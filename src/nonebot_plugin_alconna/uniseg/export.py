@@ -28,9 +28,7 @@ class SerializeFailed(Exception):
     ...
 
 
-async def generate_bilibili_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_bilibili_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.bilibili.message import Message as BM  # type: ignore
 
     message = BM()
@@ -48,9 +46,7 @@ async def generate_bilibili_message(
     return message
 
 
-async def generate_console_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_console_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.console.message import Message as ConsoleMessage
 
     message = ConsoleMessage()
@@ -70,9 +66,7 @@ async def generate_console_message(
     return message
 
 
-async def generate_ding_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_ding_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.ding.message import Message as DingMessage
 
     message = DingMessage()
@@ -97,9 +91,7 @@ async def generate_ding_message(
     return message
 
 
-async def generate_discord_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_discord_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.discord.message import Message as DiscordMessage
 
     message = DiscordMessage()
@@ -150,9 +142,7 @@ async def generate_discord_message(
     return message
 
 
-async def generate_feishu_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_feishu_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.feishu.message import MessageSegment
     from nonebot.adapters.feishu.message import Message as FeishuMessage
 
@@ -226,9 +216,7 @@ async def generate_feishu_message(
     return message
 
 
-async def generate_github_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_github_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.github.message import Message as GithubMessage  # type: ignore
 
     message = GithubMessage()
@@ -253,9 +241,7 @@ async def generate_github_message(
     return message
 
 
-async def generate_kook_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_kook_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.kaiheila.message import MessageSegment
     from nonebot.adapters.kaiheila.message import Message as KookMessage
 
@@ -315,9 +301,7 @@ async def generate_kook_message(
     return message
 
 
-async def generate_minecraft_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_minecraft_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.minecraft.message import MessageSegment
     from nonebot.adapters.minecraft.message import Message as MinecraftMessage
 
@@ -348,9 +332,7 @@ async def generate_minecraft_message(
     return message
 
 
-async def generate_mirai_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_mirai_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.mirai2.message import MessageType
     from nonebot.adapters.mirai2.message import MessageSegment
     from nonebot.adapters.mirai2.message import MessageChain as MiraiMessage
@@ -405,9 +387,7 @@ async def generate_mirai_message(
     return message
 
 
-async def generate_onebot11_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_onebot11_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.onebot.v11.message import MessageSegment
     from nonebot.adapters.onebot.v11.message import Message as OneBot11Message
 
@@ -464,9 +444,7 @@ async def generate_onebot11_message(
     return message
 
 
-async def generate_onebot12_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_onebot12_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.onebot.v12.message import Message as OneBot12Message
 
     if TYPE_CHECKING:
@@ -498,9 +476,7 @@ async def generate_onebot12_message(
                 resp = await bot.upload_file(type="url", name=seg.name, url=seg.url)
                 message.append(method(resp["file_id"]))
             elif seg.path:
-                resp = await bot.upload_file(
-                    type="path", name=seg.name, path=str(seg.path)
-                )
+                resp = await bot.upload_file(type="path", name=seg.name, path=str(seg.path))
                 message.append(method(resp["file_id"]))
             elif seg.raw:
                 resp = await bot.upload_file(type="data", name=seg.name, data=seg.raw)
@@ -511,9 +487,7 @@ async def generate_onebot12_message(
             if seg.id:
                 message.append(ms.file(seg.id))
             elif seg.raw:
-                resp = await bot.upload_file(
-                    type="data", name=seg.name or "file", data=seg.raw
-                )
+                resp = await bot.upload_file(type="data", name=seg.name or "file", data=seg.raw)
                 message.append(ms.file(resp["file_id"]))
             else:
                 raise SerializeFailed(f"Invalid file segment: {seg!r}")
@@ -529,9 +503,7 @@ async def generate_onebot12_message(
     return message
 
 
-async def generate_qqguild_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_qqguild_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.qqguild.message import MessageSegment
     from nonebot.adapters.qqguild.message import Message as QQGuildMessage
 
@@ -571,9 +543,7 @@ async def generate_qqguild_message(
     return message
 
 
-async def generate_red_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_red_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.red.message import MessageSegment
     from nonebot.adapters.red.message import Message as RedMessage
 
@@ -618,9 +588,7 @@ async def generate_red_message(
     return message
 
 
-async def generate_telegram_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_telegram_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.telegram.message import Entity
     from nonebot.adapters.telegram.message import File as TgFile
     from nonebot.adapters.telegram.message import MessageSegment
@@ -677,9 +645,7 @@ async def generate_telegram_message(
     return message
 
 
-async def generate_villa_message(
-    source: "UniMessage", bot: Bot, fallback: bool
-) -> Message:
+async def generate_villa_message(source: "UniMessage", bot: Bot, fallback: bool) -> Message:
     from nonebot.adapters.villa.message import MessageSegment
     from nonebot.adapters.villa.message import Message as VillaMessage
 

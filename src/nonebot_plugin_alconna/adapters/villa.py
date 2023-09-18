@@ -22,21 +22,15 @@ argv_config(
 )
 
 Text = str
-MentionUser = SegmentPattern(
-    "mention_user", MessageSegment, MessageSegment.mention_user
-)
-MentionRobot = SegmentPattern(
-    "mention_robot", MessageSegment, MessageSegment.mention_robot
-)
+MentionUser = SegmentPattern("mention_user", MessageSegment, MessageSegment.mention_user)
+MentionRobot = SegmentPattern("mention_robot", MessageSegment, MessageSegment.mention_robot)
 MentionAll = SegmentPattern("mention_all", MessageSegment, MessageSegment.mention_all)
 RoomLink = SegmentPattern("room_link", MessageSegment, MessageSegment.room_link)
 Link = SegmentPattern("link", MessageSegment, MessageSegment.link)
 Quote = SegmentPattern("quote", MessageSegment, MessageSegment.quote)
 Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
 Post = SegmentPattern("post", MessageSegment, MessageSegment.post)
-PreviewLink = SegmentPattern(
-    "preview_link", MessageSegment, MessageSegment.preview_link
-)
+PreviewLink = SegmentPattern("preview_link", MessageSegment, MessageSegment.preview_link)
 Badge = SegmentPattern("badge", MessageSegment, MessageSegment.badge)
 
 ImgOrUrl = (

@@ -171,9 +171,7 @@ def match_value(path: str, value: Any, or_not: bool = False):
 _seminal = type("_seminal", (object,), {})
 
 
-def assign(
-    path: str, value: Any = _seminal, or_not: bool = False
-) -> Callable[[Arparma], bool]:
+def assign(path: str, value: Any = _seminal, or_not: bool = False) -> Callable[[Arparma], bool]:
     if value != _seminal:
         return match_value(path, value, or_not)
     if or_not:
