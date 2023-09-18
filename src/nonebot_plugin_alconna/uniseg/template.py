@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 FormatSpecFunc: TypeAlias = Callable[[Any], str]
 FormatSpecFunc_T = TypeVar("FormatSpecFunc_T", bound=FormatSpecFunc)
 
+_MAPPING = {cls.__name__: cls for cls in Segment.__subclasses__()}
+_PATTERN = re.compile("(" + "|".join(_MAPPING.keys()) + r")\((.*?)\)")
 
 class UniMessageTemplate(Formatter):
     """通用消息模板格式化实现类。
@@ -113,10 +115,25 @@ class UniMessageTemplate(Formatter):
                 results.append(literal_text)
 
             # if there's a field, output it
-            if field_name or not format_spec:
-                # this is some markup, find the object and do
-                #  the formatting
-                # handle arg indexing when empty field_names are given.
+            if field_name is not None:
+                if field_name == "" and format_spec and (mat := _PATTERN.match(format_spec)):
+                    cls, parts = _MAPPING[mat[1]], mat[2].split(",")
+                    _args = []
+                    _kwargs = {}
+                    for part in parts:
+                        if part.isdigit():
+                            _args.append(args[int(part)])
+                            used_args.add(int(part))
+                        elif part in kwargs:
+                            _kwargs[part] = kwargs[part]
+                            used_args.add(part)
+                        elif re.match(".+=.+", part):
+                            k, v = part.split("=")
+                            _kwargs[k] = v
+                        else:
+                            _kwargs[part] = part
+                    results.append(cls(*_args, **_kwargs))  # type: ignore
+                    continue
                 if field_name == "":
                     if auto_arg_index is False:
                         raise ValueError(
@@ -142,42 +159,23 @@ class UniMessageTemplate(Formatter):
                 obj = self.convert_field(obj, conversion) if conversion else obj
 
                 # format the object and append to the result
-                if not format_spec:
-                    formatted_text = obj
-                elif formatter := self.format_specs.get(format_spec):
-                    formatted_text = formatter(obj)
-                else:
-                    for subcls in Segment.__subclasses__():
-                        if format_spec == subcls.__name__:  # type: ignore
-                            formatted_text = obj if isinstance(obj, subcls) else subcls(obj)  # type: ignore
-                            break
-                    else:
-                        formatted_text = self.format_field(obj, format_spec)
-
+                formatted_text = (
+                    self.format_field(obj, format_spec) if format_spec else obj
+                )
                 results.append(formatted_text)
-            else:
-                for cls in Segment.__subclasses__():
-                    if not (mat := re.match(rf"{cls.__name__}\((.+)\)", format_spec)):
-                        continue
-                    parts = mat[1].split(",")
-                    _args = []
-                    _kwargs = {}
-                    for part in parts:
-                        if part.isdigit():
-                            _args.append(args[int(part)])
-                            used_args.add(int(part))
-                        elif part in kwargs:
-                            _kwargs[part] = kwargs[part]
-                            used_args.add(part)
-                        elif re.match(".+=.+", part):
-                            k, v = part.split("=")
-                            _kwargs[k] = v
-                        else:
-                            _kwargs[part] = part
-                    results.append(cls(*_args, **_kwargs))  # type: ignore
-                    break
 
         return functools.reduce(self._add, results), auto_arg_index
+
+    def format_field(self, value: Any, format_spec: str) -> Any:
+        formatter: Optional[FormatSpecFunc] = self.format_specs.get(format_spec)
+        if formatter is None and format_spec in _MAPPING:
+            formatter = _MAPPING[format_spec]
+        return (
+            super().format_field(value, format_spec)
+            if formatter is None
+            else formatter(value)
+        )
+
 
     def _add(self, a: Any, b: Any) -> Any:
         try:

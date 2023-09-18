@@ -30,9 +30,10 @@ from .model import CompConfig
 from .consts import ALCONNA_ARG_KEY
 from .typings import MReturn, TConvert
 from .uniseg import Segment, UniMessage
+from .uniseg.template import UniMessageTemplate
 from .params import MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch
 
-_M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage]
+_M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
 
 
 class ArgsMounter(Protocol):
@@ -319,7 +320,7 @@ class AlconnaMatcher(Matcher):
         bot = current_bot.get()
         event = current_event.get()
         state = current_matcher.get().state
-        if isinstance(message, MessageTemplate):
+        if isinstance(message, (MessageTemplate, UniMessageTemplate)):
             _message = message.format(**state)
         elif isinstance(message, Segment):
             _message = UniMessage(message)
