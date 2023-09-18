@@ -4,18 +4,7 @@ import json
 import contextlib
 from pathlib import Path
 from dataclasses import field, dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Type,
-    Union,
-    Generic,
-    Literal,
-    TypeVar,
-    Callable,
-    Iterable,
-    Optional,
-)
+from typing import TYPE_CHECKING, Any, Type, Union, Generic, Literal, TypeVar, Callable, Iterable, Optional
 
 from nonebot.internal.adapter import Message, MessageSegment
 from nepattern import MatchMode, BasePattern, create_local_patterns
@@ -81,6 +70,9 @@ class Text(Segment):
 
     text: str
     style: Optional[str] = field(default=None)
+
+    def __post_init__(self):
+        self.text = str(self.text)
 
     def is_text(self) -> bool:
         return True

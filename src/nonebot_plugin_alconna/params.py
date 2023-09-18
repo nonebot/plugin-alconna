@@ -1,17 +1,6 @@
 import inspect
 from typing_extensions import Annotated, TypeAlias, get_args
-from typing import (
-    Any,
-    Dict,
-    Type,
-    Tuple,
-    Union,
-    Literal,
-    TypeVar,
-    Callable,
-    Optional,
-    overload,
-)
+from typing import Any, Dict, Type, Tuple, Union, Literal, TypeVar, Callable, Optional, overload
 
 from nonebot.typing import T_State
 from tarina import run_always_await

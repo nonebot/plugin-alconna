@@ -17,20 +17,14 @@ from nonebot.matcher import Matcher, current_bot, current_event, current_matcher
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.exception import PausedException, FinishedException, RejectedException
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
-from nonebot.internal.adapter import (
-    Bot,
-    Event,
-    Message,
-    MessageSegment,
-    MessageTemplate,
-)
+from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 
 from .rule import alconna
 from .model import CompConfig
-from .consts import ALCONNA_ARG_KEY
 from .typings import MReturn, TConvert
 from .uniseg import Segment, UniMessage
 from .uniseg.template import UniMessageTemplate
+from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY
 from .params import MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
@@ -320,8 +314,12 @@ class AlconnaMatcher(Matcher):
         bot = current_bot.get()
         event = current_event.get()
         state = current_matcher.get().state
-        if isinstance(message, (MessageTemplate, UniMessageTemplate)):
-            _message = message.format(**state)
+        if isinstance(message, MessageTemplate):
+            _message = message.format(**state, **state[ALCONNA_RESULT].result.all_matched_args)
+        elif isinstance(message, UniMessageTemplate):
+            _message = message.format(
+                **state, **state[ALCONNA_RESULT].result.all_matched_args, **{"$event": event, "$bot": bot}
+            )
         elif isinstance(message, Segment):
             _message = UniMessage(message)
         else:

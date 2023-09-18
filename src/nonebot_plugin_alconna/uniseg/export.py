@@ -5,20 +5,7 @@ from typing import TYPE_CHECKING
 from nonebot.adapters import Bot, Message
 from nonebot.internal.driver import Request
 
-from .segment import (
-    At,
-    Card,
-    File,
-    Text,
-    AtAll,
-    Audio,
-    Emoji,
-    Image,
-    Other,
-    Reply,
-    Video,
-    Voice,
-)
+from .segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Other, Reply, Video, Voice
 
 if TYPE_CHECKING:
     from .message import UniMessage

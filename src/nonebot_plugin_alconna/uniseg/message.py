@@ -1,16 +1,6 @@
 from copy import deepcopy
 from typing_extensions import Self, SupportsIndex
-from typing import (
-    TYPE_CHECKING,
-    List,
-    Type,
-    Tuple,
-    Union,
-    TypeVar,
-    Iterable,
-    Optional,
-    overload,
-)
+from typing import TYPE_CHECKING, List, Type, Tuple, Union, TypeVar, Iterable, Optional, overload
 
 from nonebot.internal.matcher import current_bot
 from nonebot.internal.adapter import Bot, Event, Message

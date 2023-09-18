@@ -6,13 +6,7 @@ from nonebot.adapters import Message as BaseMessage
 from nepattern import BasePattern, PatternModel, UnionPattern
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 from arclet.alconna import NullMessage, argv_config, set_default_argv_type
-from nonebot.adapters.telegram.message import (
-    File,
-    Entity,
-    Message,
-    UnCombinFile,
-    MessageSegment,
-)
+from nonebot.adapters.telegram.message import File, Entity, Message, UnCombinFile, MessageSegment
 
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern

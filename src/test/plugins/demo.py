@@ -64,7 +64,13 @@ with namespace("nbtest") as ns:
         use_origin=True,
     )
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
-    login = on_alconna(Alconna("login", Args["password?", str], Option("-r|--recall")))
+    login = on_alconna(
+        Alconna(
+            "login",
+            Args["password?", str],
+            Option("-r|--recall"),
+        )
+    )
     bind = on_alconna(Alconna("bind"))
 
     class PipResult(Duplication):
@@ -167,8 +173,8 @@ async def login_exit():
 
 
 @login.handle()
-async def login_handle(arp: Arparma):
-    await login.send(str(arp))
+async def login_handle():
+    await login.send(UniMessage.template("{:At(user,$event.get_user_id())}, login success"))
 
 
 @bind.handle()

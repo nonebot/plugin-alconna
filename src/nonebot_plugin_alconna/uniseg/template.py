@@ -27,7 +27,7 @@ FormatSpecFunc: TypeAlias = Callable[[Any], str]
 FormatSpecFunc_T = TypeVar("FormatSpecFunc_T", bound=FormatSpecFunc)
 
 _MAPPING = {cls.__name__: cls for cls in Segment.__subclasses__()}
-_PATTERN = re.compile("(" + "|".join(_MAPPING.keys()) + r")\((.*?)\)")
+_PATTERN = re.compile("(" + "|".join(_MAPPING.keys()) + r")\((.*)\)$")
 
 
 class UniMessageTemplate(Formatter):
@@ -82,23 +82,23 @@ class UniMessageTemplate(Formatter):
         self.check_unused_args(list(used_args), args, kwargs)
         return full_message
 
-    def check_unused_args(
-        self,
-        used_args: Sequence[Union[str, int]],
-        args: Sequence[Any],
-        kwargs: Mapping[str, Any],
-    ) -> None:
-        indexes = [i for i in used_args if isinstance(i, int)]
-        if indexes and len(indexes) != len(args):
-            raise ValueError(
-                f"not all arguments converted during string formatting: "
-                f"{[c for i, c in enumerate(args) if i not in indexes]}"
-            )
-        keys = [k for k in used_args if isinstance(k, str)]
-        if keys and keys != list(kwargs.keys()):
-            raise ValueError(
-                f"not all arguments converted during string formatting: " f"{set(kwargs) - set(keys)}"
-            )
+    # def check_unused_args(
+    #     self,
+    #     used_args: Sequence[Union[str, int]],
+    #     args: Sequence[Any],
+    #     kwargs: Mapping[str, Any],
+    # ) -> None:
+    #     indexes = [i for i in used_args if isinstance(i, int)]
+    #     if indexes and len(indexes) != len(args):
+    #         raise ValueError(
+    #             f"not all arguments converted during string formatting: "
+    #             f"{[c for i, c in enumerate(args) if i not in indexes]}"
+    #         )
+    #     keys = [k for k in used_args if isinstance(k, str)]
+    #     if keys and keys != list(kwargs.keys()):
+    #         raise ValueError(
+    #             f"not all arguments converted during string formatting: " f"{set(kwargs) - set(keys)}"
+    #         )
 
     def _vformat(
         self,
@@ -122,17 +122,26 @@ class UniMessageTemplate(Formatter):
                     _args = []
                     _kwargs = {}
                     for part in parts:
-                        if part.isdigit():
+                        part = part.strip()
+                        if part.startswith("$") and (key := part.split(".")[0]) in kwargs:
+                            _args.append(eval(part[1:], {}, {key[1:]: kwargs[key]}))
+                        elif part.isdigit():
                             _args.append(args[int(part)])
                             used_args.add(int(part))
-                        elif part in kwargs:
-                            _kwargs[part] = kwargs[part]
-                            used_args.add(part)
                         elif re.match(".+=.+", part):
                             k, v = part.split("=")
-                            _kwargs[k] = v
+                            if v in kwargs:
+                                _kwargs[k] = kwargs[v]
+                                used_args.add(v)
+                            elif v.startswith("$") and (key := v.split(".")[0]) in kwargs:
+                                _kwargs[k] = eval(v[1:], {}, {key[1:]: kwargs[key]})
+                            else:
+                                _kwargs[k] = v
+                        elif part in kwargs:
+                            _args.append(kwargs[part])
+                            used_args.add(part)
                         else:
-                            _kwargs[part] = part
+                            _args.append(part)
                     results.append(cls(*_args, **_kwargs))  # type: ignore
                     continue
                 if field_name == "":
