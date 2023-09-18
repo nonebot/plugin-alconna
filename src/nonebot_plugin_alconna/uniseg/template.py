@@ -29,6 +29,7 @@ FormatSpecFunc_T = TypeVar("FormatSpecFunc_T", bound=FormatSpecFunc)
 _MAPPING = {cls.__name__: cls for cls in Segment.__subclasses__()}
 _PATTERN = re.compile("(" + "|".join(_MAPPING.keys()) + r")\((.*?)\)")
 
+
 class UniMessageTemplate(Formatter):
     """通用消息模板格式化实现类。
 
@@ -159,9 +160,7 @@ class UniMessageTemplate(Formatter):
                 obj = self.convert_field(obj, conversion) if conversion else obj
 
                 # format the object and append to the result
-                formatted_text = (
-                    self.format_field(obj, format_spec) if format_spec else obj
-                )
+                formatted_text = self.format_field(obj, format_spec) if format_spec else obj
                 results.append(formatted_text)
 
         return functools.reduce(self._add, results), auto_arg_index
@@ -170,12 +169,7 @@ class UniMessageTemplate(Formatter):
         formatter: Optional[FormatSpecFunc] = self.format_specs.get(format_spec)
         if formatter is None and format_spec in _MAPPING:
             formatter = _MAPPING[format_spec]
-        return (
-            super().format_field(value, format_spec)
-            if formatter is None
-            else formatter(value)
-        )
-
+        return super().format_field(value, format_spec) if formatter is None else formatter(value)
 
     def _add(self, a: Any, b: Any) -> Any:
         try:
