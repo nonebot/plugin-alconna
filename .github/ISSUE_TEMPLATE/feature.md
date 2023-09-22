@@ -9,7 +9,7 @@ assignees: ""
 ## 请确认：
 <!-- 确认后，请将方括号的空格替换为 x -->
 * [ ] 新特性的目的明确
-* [ ] 我已经阅读了文档 [the wiki](https://arcletproject.github.io/docs/alconna/tutorial) 并且找不到类似特性
+* [ ] 我已经阅读了[相关文档](https://nonebot.dev/docs/next/best-practice/alconna/) 并且找不到类似特性
 
 
 ## Feature

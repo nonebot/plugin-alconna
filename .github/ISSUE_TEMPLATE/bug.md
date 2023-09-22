@@ -10,7 +10,7 @@ assignees: ""
 <!-- 确认后，请将方括号的空格替换为 x -->
 * [ ] 问题的标题明确
 * [ ] 我翻阅过其他的issue并且找不到类似的问题
-* [ ] 我已经阅读了文档 [the wiki](https://arcletproject.github.io/docs/alconna/tutorial) 并仍然认为这是一个Bug
+* [ ] 我已经阅读了[相关文档](https://nonebot.dev/docs/next/best-practice/alconna/) 并仍然认为这是一个Bug
 
 # Bug
 
