@@ -19,13 +19,13 @@ from nonebot.exception import PausedException, FinishedException, RejectedExcept
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 
-from .rule import alconna
 from .model import CompConfig
+from .rule import TProvider, alconna
 from .typings import MReturn, TConvert
 from .uniseg import Segment, UniMessage
 from .uniseg.template import UniMessageTemplate
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY
-from .params import MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch
+from .params import CHECK, MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch, merge_path
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
 
@@ -55,6 +55,8 @@ def _validate(target: Arg[Any], arg: MessageSegment):
     if value == AnyString or (value == STRING and arg.is_text()):
         return str(arg)
     default_val = target.field.default
+    if arg.is_text():
+        arg = arg.data["text"]
     res = value.invalidate(arg, default_val) if value.anti else value.validate(arg, default_val)
     if target.optional and res.flag != "valid":
         return
@@ -65,6 +67,7 @@ def _validate(target: Arg[Any], arg: MessageSegment):
 
 class AlconnaMatcher(Matcher):
     command: ClassVar[Alconna]
+    basepath: ClassVar[str]
 
     @classmethod
     def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):
@@ -76,6 +79,7 @@ class AlconnaMatcher(Matcher):
         path: str,
         value: Any = _seminal,
         or_not: bool = False,
+        additional: CHECK | None = None,
         parameterless: Iterable[Any] | None = None,
     ) -> Callable[[T_Handler], T_Handler]:
         """装饰一个函数来向事件响应器直接添加一个处理函数
@@ -83,12 +87,18 @@ class AlconnaMatcher(Matcher):
         此装饰是 @handle([Check(assign(...))]) 的快捷写法
 
         参数:
-            path: 指定的查询路径, "$main" 表示没有任何选项/子命令匹配的时候
+            path: 指定的查询路径;
+                "$main" 表示没有任何选项/子命令匹配的时候;
+                "~XX" 时会把 "~" 替换为父级 assign 的 path
             value: 可能的指定查询值
             or_not: 是否同时处理没有查询成功的情况
+            additional: 额外的检查函数
             parameterless: 非参数类型依赖列表
         """
-        parameterless = [Check(assign(path, value, or_not)), *(parameterless or [])]
+        parameterless = [
+            Check(assign(merge_path(path, cls.basepath), value, or_not, additional)),
+            *(parameterless or []),
+        ]
 
         def _decorator(func: T_Handler) -> T_Handler:
             cls.append_handler(func, parameterless=parameterless)
@@ -98,11 +108,11 @@ class AlconnaMatcher(Matcher):
 
     def set_path_arg(self, path: str, content: Any) -> None:
         """设置一个 `got_path` 内容"""
-        self.state[ALCONNA_ARG_KEY.format(key=path)] = content
+        self.state[ALCONNA_ARG_KEY.format(key=merge_path(path, self.basepath))] = content
 
     def get_path_arg(self, path: str, default: Any) -> Any:
         """获取一个 `got_path` 内容"""
-        return self.state.get(ALCONNA_ARG_KEY.format(key=path), default)
+        return self.state.get(ALCONNA_ARG_KEY.format(key=merge_path(path, self.basepath)), default)
 
     @classmethod
     def got_path(
@@ -121,10 +131,11 @@ class AlconnaMatcher(Matcher):
         本插件会获取消息的最后一个消息段并转为 path 对应的类型
 
         参数:
-            path: 参数路径名
+            path: 参数路径名; "~XX" 时会把 "~" 替换为父级 assign 的 path
             prompt: 在参数不存在时向用户发送的消息，支持 `UniMessage`
             parameterless: 非参数类型依赖列表
         """
+        path = merge_path(path, cls.basepath)
         if not (arg := extract_arg(path, cls.command)):
             raise ValueError(f"Path {path} not found in Alconna")
 
@@ -138,7 +149,7 @@ class AlconnaMatcher(Matcher):
                     await matcher.reject(prompt, fallback=True)
                     return
                 if middleware:
-                    res = await run_always_await(middleware, bot, matcher.state, res)
+                    res = await run_always_await(middleware, event, bot, matcher.state, res)
                 matcher.set_path_arg(path, res)
                 return
             if matcher.state.get(ALCONNA_ARG_KEY.format(key=path), ...) is not ...:
@@ -178,7 +189,7 @@ class AlconnaMatcher(Matcher):
         发送一条消息给当前交互用户并将当前事件处理流程中断在当前位置，在接收用户新的一条消息后从头开始执行当前处理函数
 
         参数:
-            path: 参数路径名
+            path: 参数路径名; "~XX" 时会把 "~" 替换为父级 assign 的 path
             prompt: 消息内容, 支持 `UniMessage`
             fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
                 是否转为字符串
@@ -186,7 +197,7 @@ class AlconnaMatcher(Matcher):
                 请参考对应 adapter 的 bot 对象 api
         """
         matcher = current_matcher.get()
-        matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
+        matcher.set_target(ALCONNA_ARG_KEY.format(key=merge_path(path, cls.basepath)))
         if prompt is not None:
             await cls.send(prompt, fallback=fallback, **kwargs)
         raise RejectedException
@@ -197,6 +208,7 @@ class AlconnaMatcher(Matcher):
         path: str,
         value: Any = _seminal,
         or_not: bool = False,
+        additional: CHECK | None = None,
         rule: Rule | T_RuleChecker | None = None,
         permission: Permission | T_PermissionChecker | None = None,
         *,
@@ -212,9 +224,12 @@ class AlconnaMatcher(Matcher):
         并且当消息由指定 Alconna 解析并且结果符合 assign 预期时执行
 
         参数:
-            path: 指定的查询路径, "$main" 表示没有任何选项/子命令匹配的时候
+            path: 指定的查询路径;
+                "$main" 表示没有任何选项/子命令匹配的时候;
+                "~XX" 时会把 "~" 替换为父级 assign 的 path
             value: 可能的指定查询值
             or_not: 是否同时处理没有查询成功的情况
+            additional: 额外的检查函数
             rule: 事件响应规则
             permission: 事件响应权限
             handlers: 事件处理函数列表
@@ -225,11 +240,11 @@ class AlconnaMatcher(Matcher):
             state: 默认 state
         """
 
-        fn = _Dispatch(path, value, or_not)
+        fn = _Dispatch(merge_path(path, cls.basepath), value, or_not, additional)
         cls.handle()(fn.set)
 
         matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
-            "message",
+            "",
             rule & Rule(fn),
             Permission() | permission,
             temp=temp,
@@ -243,6 +258,7 @@ class AlconnaMatcher(Matcher):
         )
         store_matcher(matcher)
         matcher.command = cls.command
+        matcher.basepath = merge_path(path, cls.basepath)
         return matcher
 
     @classmethod
@@ -446,6 +462,7 @@ def on_alconna(
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     output_converter: TConvert | None = None,
+    message_provider: TProvider | None = None,
     aliases: set[str] | tuple[str, ...] | None = None,
     comp_config: CompConfig | None = None,
     use_origin: bool = False,
@@ -461,7 +478,7 @@ def on_alconna(
     state: T_State | None = None,
     _depth: int = 0,
 ) -> type[AlconnaMatcher]:
-    """注册一个消息事件响应器，并且当消息由指定 Alconna 解析并传出有效结果时响应。
+    """注册一个事件响应器，并且当消息由指定 Alconna 解析并传出有效结果时响应。
 
     参数:
         command: Alconna 命令
@@ -469,6 +486,7 @@ def on_alconna(
         skip_for_unmatch: 是否在解析失败时跳过
         auto_send_output: 是否自动发送输出信息并跳过
         output_converter: 输出信息字符串转换为 Message 方法
+        message_provider: 自定义消息提供器
         aliases: 命令别名
         comp_config: 补全会话配置, 不传入则不启用补全会话
         use_origin: 是否使用未经 to_me 等处理过的消息
@@ -493,13 +511,14 @@ def on_alconna(
         command._hash = command._calc_hash()
         command_manager.register(command)
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
-        "message",
+        "",
         rule
         & alconna(
             command,
             skip_for_unmatch,
             auto_send_output,
             output_converter,
+            message_provider,
             comp_config,
             use_origin,
             use_cmd_start,
@@ -517,6 +536,7 @@ def on_alconna(
     )
     store_matcher(matcher)
     matcher.command = command
+    matcher.basepath = ""
     return matcher
 
 
@@ -527,6 +547,7 @@ def funcommand(
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     output_converter: TConvert | None = None,
+    message_provider: TProvider | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
     use_cmd_sep: bool = False,
@@ -556,6 +577,7 @@ def funcommand(
             skip_for_unmatch,
             auto_send_output,
             output_converter,
+            message_provider,
             use_origin=use_origin,
             use_cmd_start=use_cmd_start,
             use_cmd_sep=use_cmd_sep,
@@ -589,6 +611,7 @@ class Command(AlconnaString):
         skip_for_unmatch: bool = True,
         auto_send_output: bool = False,
         output_converter: TConvert | None = None,
+        message_provider: TProvider | None = None,
         aliases: set[str] | tuple[str, ...] | None = None,
         comp_config: CompConfig | None = None,
         use_origin: bool = False,

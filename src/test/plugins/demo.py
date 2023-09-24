@@ -1,7 +1,9 @@
-from typing import Literal
+from typing import Union, Literal
 
 from tarina import lang
+from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
+from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
 from arclet.alconna import (
     Args,
     Option,
@@ -37,12 +39,30 @@ from nonebot_plugin_alconna import (
 
 set_output_converter(lambda t, x: UniMessage(x))
 
+
+def get_dist_map() -> dict:
+    """获取与项目相关的发行字典"""
+    dist_map: dict = {}
+    for dist in distributions():
+        name: str = dist.metadata["Name"]
+        version: str = dist.metadata["Version"]
+        if not name or not version:
+            continue
+        dist_map[name] = max(version, dist_map.get(name, ""))
+    return dist_map
+
+
+class PipResult(Duplication):
+    list: SubcommandStub
+    pak: str
+
+
 with namespace("nbtest") as ns:
     ns.headers = ["/"]
     ns.builtin_option_name["help"] = {"-h", "帮助", "--help"}
 
     help_cmd = on_alconna(Alconna("help"))
-    test_cmd = on_alconna(Alconna("test", Args["target?", At]))
+    test_cmd = on_alconna(Alconna("test", Args["target?", Union[str, At]]))
 
     pip = Alconna(
         "pip",
@@ -72,22 +92,6 @@ with namespace("nbtest") as ns:
         )
     )
     bind = on_alconna(Alconna("bind"))
-
-    class PipResult(Duplication):
-        list: SubcommandStub
-        pak: str
-
-
-def get_dist_map() -> dict:
-    """获取与项目相关的发行字典"""
-    dist_map: dict = {}
-    for dist in distributions():
-        name: str = dist.metadata["Name"]
-        version: str = dist.metadata["Version"]
-        if not name or not version:
-            continue
-        dist_map[name] = max(version, dist_map.get(name, ""))
-    return dist_map
 
 
 @help_cmd.handle()
@@ -157,13 +161,13 @@ async def test(
 
 
 @test_cmd.handle()
-async def tt_h(matcher: AlconnaMatcher, target: Match[At]):
+async def tt_h(matcher: AlconnaMatcher, target: Match[Union[str, At]]):
     if target.available:
         matcher.set_path_arg("target", target.result)
 
 
 @test_cmd.got_path("target", prompt="请输入目标")
-async def tt(target: At):
+async def tt(target: Union[str, At]):
     await test_cmd.send(UniMessage(["ok\n", target]))
 
 
@@ -229,7 +233,7 @@ pip1 = Alconna(
     Subcommand(
         "install",
         Args["pak", str],
-        Option("--upgrade"),
+        Option("--upgrade|-U"),
         Option("--force-reinstall"),
     ),
     Subcommand("list", Option("--out-dated")),
@@ -238,20 +242,87 @@ pip1 = Alconna(
 pipcmd1 = on_alconna(pip1)
 
 pip_list_cmd = pipcmd1.dispatch("list")
-pip_install_cmd = pipcmd1.dispatch("install.pak")
+pip_install_cmd = pipcmd1.dispatch("install")
 
 
 @pip_list_cmd.handle()
 async def pip1_l():
     md = "\n".join([f"- {k} {v}" for k, v in get_dist_map().items()])
-    await pipcmd1.send(UniMessage(md))
+    await pipcmd1.finish(UniMessage(md))
+
+
+@pip_install_cmd.assign("~upgrade")
+async def pip1_u(pak: Query[str] = Query("~pak")):
+    await pip_install_cmd.finish(f"pip upgrading {pak.result}...")
 
 
 @pip_install_cmd.handle()
 async def pip1_i(res: PipResult):
-    await pipcmd1.send(f"pip installing {res.pak}...")
+    await pipcmd1.finish(f"pip installing {res.pak}...")
 
 
 @pipcmd1.handle()
 async def pip1_m():
     await pipcmd1.send("WIP...")
+
+
+def recall_msg_provider(rule, event, state, bot):
+    if not isinstance(event, GroupMessageDeleteEvent):
+        return None
+    return UniMessage(f"/recall {str(event.group_id)} {str(event.user_id)} {str(event.message_id)}")
+
+
+recall = on_alconna(
+    Alconna(
+        "/recall",
+        Args["group_id", str]["user_id", str]["message_id", int],
+    ),
+    message_provider=recall_msg_provider,
+)
+
+
+@recall.handle()
+async def recall_h(group_id: str, user_id: str, message_id: str, bot: Bot):
+    await bot.send_message(
+        detail_type="group",
+        user_id=user_id,
+        group_id=group_id,
+        message=await UniMessage(f"recalled {user_id} {message_id}").export(bot),
+    )
+
+
+def permission_checker(permission: str):
+    import random
+
+    async def wrapper(event, bot, state, arp):
+        if random.random() < 0.5:
+            await bot.send(event, "permission denied")
+            return False
+        return True
+
+    return wrapper
+
+
+group = on_alconna(
+    Alconna(
+        "group",
+        Option("add", Args["group_id", int]["name", str]),
+        Option("remove", Args["group_id", int]),
+        Option("list"),
+    ),
+)
+
+
+@group.assign("add", additional=permission_checker("group.add"))
+async def group_add(group_id: int, name: str):
+    await group.finish(f"add {group_id} {name}")
+
+
+@group.assign("remove", additional=permission_checker("group.remove"))
+async def group_remove(group_id: int):
+    await group.finish(f"remove {group_id}")
+
+
+@group.assign("list")
+async def group_list():
+    await group.finish("list")

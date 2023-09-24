@@ -1,15 +1,16 @@
 import asyncio
 import traceback
-from typing import Dict, Union, Literal, ClassVar, Optional
+from typing_extensions import TypeAlias
+from typing import Dict, Union, Literal, Callable, ClassVar, Optional, Awaitable
 
 from nonebot import get_driver
 from nonebot.typing import T_State
-from tarina import lang, is_awaitable
 from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
 from nonebot.internal.matcher import matchers
 from nonebot.internal.rule import Rule as Rule
 from nonebot.adapters import Bot, Event, Message
+from tarina import lang, init_spec, is_awaitable
 from nonebot.utils import run_sync, is_coroutine_callable
 from arclet.alconna.exceptions import SpecialOptionTriggered
 from arclet.alconna import (
@@ -30,6 +31,11 @@ from .argv import FallbackMessage
 from .model import CompConfig, CommandResult
 from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT
 
+TProvider: TypeAlias = Callable[
+    ["AlconnaRule", Event, T_State, Bot],
+    Union[Message, UniMessage, None, Awaitable[Union[Message, UniMessage, None]]],
+]
+
 
 class AlconnaRule:
     """检查消息字符串是否能够通过此 Alconna 命令。
@@ -39,18 +45,21 @@ class AlconnaRule:
         skip_for_unmatch: 是否在命令不匹配时跳过该响应
         auto_send_output: 是否自动发送输出信息并跳过响应
         output_converter: 输出信息字符串转换为 Message 方法
+        message_provider: 自定义消息提供器
         comp_config: 自动补全配置
         use_origin: 是否使用未经 to_me 等处理过的消息
         use_cmd_start: 是否使用 nb 全局配置里的命令前缀
     """
 
     default_converter: ClassVar[TConvert]
+    default_provider: ClassVar[TProvider]
 
     __slots__ = (
         "command",
         "skip",
         "auto_send",
         "output_converter",
+        "message_provider",
         "comp_config",
         "use_origin",
     )
@@ -61,6 +70,7 @@ class AlconnaRule:
         skip_for_unmatch: bool = True,
         auto_send_output: bool = False,
         output_converter: Optional[TConvert] = None,
+        message_provider: Optional[TProvider] = None,
         comp_config: Optional[CompConfig] = None,
         use_origin: bool = False,
         use_cmd_start: bool = False,
@@ -92,8 +102,11 @@ class AlconnaRule:
         self.command = command
         self.skip = skip_for_unmatch
         self.output_converter = output_converter or self.__class__.default_converter
+        self.message_provider = message_provider or self.__class__.default_provider
         if not is_coroutine_callable(self.output_converter):
             self.output_converter = run_sync(self.output_converter)
+        if not is_coroutine_callable(self.message_provider):
+            self.message_provider = run_sync(self.message_provider)
 
     def __repr__(self) -> str:
         return f"Alconna(command={self.command!r})"
@@ -195,14 +208,10 @@ class AlconnaRule:
         return res
 
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
-        if event.get_type() != "message":
+        if not (msg := await self.message_provider(self, event, state, bot)):
             return False
-        msg: Message = event.get_message()
-        if self.use_origin:
-            try:
-                msg: Message = getattr(event, "original_message", msg)  # type: ignore
-            except (NotImplementedError, ValueError):
-                return False
+        elif isinstance(msg, UniMessage):
+            msg = await msg.export(bot, fallback=True)
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
@@ -239,20 +248,31 @@ class AlconnaRule:
             return await bot.send(event, event.get_message().__class__(text))
 
 
-def alconna(
-    command: Alconna,
-    skip_for_unmatch: bool = True,
-    auto_send_output: bool = False,
-    output_converter: Optional[TConvert] = None,
-    comp_config: Optional[CompConfig] = None,
-    use_origin: bool = False,
-    use_cmd_start: bool = False,
-    use_cmd_sep: bool = False,
-) -> Rule:
-    return Rule(AlconnaRule(**locals()))
+@init_spec(AlconnaRule)
+def alconna(rule: AlconnaRule) -> Rule:
+    return Rule(rule)
 
 
 AlconnaRule.default_converter = lambda _, x: FallbackMessage(x)
+
+
+def _default_provider(rule: AlconnaRule, event: Event, state: T_State, bot: Bot):
+    if event.get_type() != "message":
+        return None
+    msg: Message = event.get_message()
+    if rule.use_origin:
+        try:
+            msg: Message = getattr(event, "original_message", msg)  # type: ignore
+        except (NotImplementedError, ValueError):
+            return None
+    return msg
+
+
+AlconnaRule.default_provider = _default_provider
+
+
+def set_message_provider(fn: TProvider):
+    AlconnaRule.default_provider = fn
 
 
 def set_output_converter(fn: TConvert):

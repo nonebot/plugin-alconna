@@ -1,6 +1,6 @@
 import inspect
 from typing_extensions import Annotated, TypeAlias, get_args
-from typing import Any, Dict, Type, Tuple, Union, Literal, TypeVar, Callable, Optional, overload
+from typing import Any, Dict, Type, Tuple, Union, Literal, TypeVar, Callable, Optional, Awaitable, overload
 
 from nonebot.typing import T_State
 from tarina import run_always_await
@@ -19,7 +19,8 @@ from .model import T, Match, Query, CommandResult
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
-MIDDLEWARE: TypeAlias = Callable[[Bot, T_State, Any], Any]
+MIDDLEWARE: TypeAlias = Callable[[Event, Bot, T_State, Any], Any]
+CHECK: TypeAlias = Callable[[Event, Bot, T_State, Arparma], Awaitable[bool]]
 _Contents = (Union, CUnionType, Literal)
 
 
@@ -48,14 +49,22 @@ def AlconnaMatches() -> Arparma:
 
 
 def AlconnaMatch(name: str, middleware: Optional[MIDDLEWARE] = None) -> Match:
-    async def _alconna_match(state: T_State, bot: Bot) -> Match:
+    async def _alconna_match(state: T_State, bot: Bot, event: Event) -> Match:
         arp = _alconna_result(state).result
         mat = Match(arp.all_matched_args.get(name, Empty), name in arp.all_matched_args)
         if middleware and mat.available:
-            mat.result = await run_always_await(middleware, bot, state, mat.result)
+            mat.result = await run_always_await(middleware, event, bot, state, mat.result)
         return mat
 
     return Depends(_alconna_match, use_cache=False)
+
+
+def merge_path(path: str, parent: str) -> str:
+    if not path.startswith("~"):
+        return path
+    if path.startswith("~."):
+        path = path.replace("~.", "~", 1)
+    return f"{parent}.{path[1:]}" if parent else path[1:]
 
 
 def AlconnaQuery(
@@ -63,17 +72,18 @@ def AlconnaQuery(
     default: Union[T, Empty] = Empty,
     middleware: Optional[MIDDLEWARE] = None,
 ) -> Query[T]:
-    async def _alconna_query(state: T_State, bot: Bot) -> Query:
+    async def _alconna_query(state: T_State, bot: Bot, event: Event, matcher: Matcher) -> Query:
         arp = _alconna_result(state).result
-        q = Query(path, default)
-        result = arp.query(path, Empty)
+        _path = merge_path(path, getattr(matcher, "basepath", ""))
+        q = Query(_path, default)
+        result = arp.query(_path, Empty)
         q.available = result != Empty
         if q.available:
             q.result = result  # type: ignore
         elif default != Empty:
             q.available = True
         if middleware and q.available:
-            q.result = await run_always_await(middleware, bot, state, q.result)
+            q.result = await run_always_await(middleware, event, bot, state, q.result)
         return q
 
     return Depends(_alconna_query, use_cache=False)
@@ -126,33 +136,47 @@ AlcMatches = Annotated[Arparma, AlconnaMatches()]
 UniMsg = Annotated[UniMessage, UniversalMessage()]
 
 
-def match_path(path: str):
+def match_path(
+    path: str,
+    additional: Optional[CHECK] = None,
+):
     """
     当 Arpamar 解析成功后, 依据 path 是否存在以继续执行事件处理
 
     当 path 为 ‘$main’ 时表示认定当且仅当主命令匹配
     """
 
-    def wrapper(result: Arparma):
+    async def wrapper(event: Event, bot: Bot, state: T_State, result: Arparma):
         if path == "$main":
-            return not result.components
+            return not result.components and (not additional or await additional(event, bot, state, result))
         else:
-            return result.query(path, "\0") != "\0"
+            return result.query(path, "\0") != "\0" and (
+                not additional or await additional(event, bot, state, result)
+            )
 
     return wrapper
 
 
-def match_value(path: str, value: Any, or_not: bool = False):
+def match_value(
+    path: str,
+    value: Any,
+    or_not: bool = False,
+    additional: Optional[CHECK] = None,
+):
     """
     当 Arpamar 解析成功后, 依据查询 path 得到的结果是否符合传入的值以继续执行事件处理
 
     当 or_not 为真时允许查询 path 失败时继续执行事件处理
     """
 
-    def wrapper(result: Arparma):
+    async def wrapper(event: Event, bot: Bot, state: T_State, result: Arparma):
         if result.query(path, "\0") == value:
-            return True
-        return or_not and result.query(path, "\0") == "\0"
+            return True and (not additional or await additional(event, bot, state, result))
+        return (
+            or_not
+            and result.query(path, "\0") == "\0"
+            and (not additional or await additional(event, bot, state, result))
+        )
 
     return wrapper
 
@@ -160,18 +184,29 @@ def match_value(path: str, value: Any, or_not: bool = False):
 _seminal = type("_seminal", (object,), {})
 
 
-def assign(path: str, value: Any = _seminal, or_not: bool = False) -> Callable[[Arparma], bool]:
+def assign(
+    path: str,
+    value: Any = _seminal,
+    or_not: bool = False,
+    additional: Optional[CHECK] = None,
+) -> CHECK:
     if value != _seminal:
-        return match_value(path, value, or_not)
+        return match_value(path, value, or_not, additional)
     if or_not:
-        return lambda x: match_path("$main")(x) or match_path(path)(x)  # type: ignore
-    return match_path(path)
+
+        async def wrapper(event: Event, bot: Bot, state: T_State, result: Arparma):
+            return await match_path("$main", additional)(event, bot, state, result) or await match_path(
+                path, additional
+            )(event, bot, state, result)
+
+        return wrapper
+    return match_path(path, additional)
 
 
-def Check(fn: Callable[[Arparma], bool]) -> bool:
-    def _arparma_check(state: T_State, matcher: Matcher) -> bool:
+def Check(fn: CHECK) -> bool:
+    async def _arparma_check(bot: Bot, state: T_State, event: Event, matcher: Matcher) -> bool:
         arp = _alconna_result(state).result
-        if not (ans := fn(arp)):
+        if not (ans := await fn(event, bot, state, arp)):
             matcher.skip()
         return ans
 
@@ -210,7 +245,7 @@ class AlconnaParam(Param):
             return cls(param.default, type=Query)
         return cls(param.default, name=param.name, type=Any, validate=True)
 
-    async def _solve(self, state: T_State, **kwargs: Any) -> Any:
+    async def _solve(self, matcher: Matcher, state: T_State, **kwargs: Any) -> Any:
         t = self.extra["type"]
         res = _alconna_result(state)
         if t is CommandResult:
@@ -228,7 +263,8 @@ class AlconnaParam(Param):
             target = res.result.all_matched_args.get(self.extra["name"], Empty)
             return Match(target, target != Empty)
         if t is Query:
-            q = Query(self.default.path, self.default.result)
+            _path = merge_path(self.default.path, getattr(matcher, "basepath", ""))
+            q = Query(_path, self.default.result)
             result = res.result.query(q.path, Empty)
             q.available = result != Empty
             if q.available:
@@ -259,17 +295,18 @@ class _Dispatch:
         path: str,
         value: Any = _seminal,
         or_not: bool = False,
+        additional: Optional[CHECK] = None,
     ):
-        self.fn = assign(path, value, or_not)
+        self.fn = assign(path, value, or_not, additional)
         self.result = None
 
     def set(self, arp: AlcResult):
         self.result = arp
 
-    def __call__(self, _state: T_State) -> bool:
+    async def __call__(self, _state: T_State, event: Event, bot: Bot) -> bool:
         if self.result is None:
             return False
-        if self.fn(self.result.result):
+        if await self.fn(event, bot, _state, self.result.result):
             _state[ALCONNA_RESULT] = self.result
             self.result = None
             return True

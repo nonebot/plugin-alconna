@@ -3,13 +3,13 @@ from typing import TYPE_CHECKING
 
 from yarl import URL
 from nonebot.typing import T_State
-from nonebot.internal.adapter import Bot
+from nonebot.internal.adapter import Bot, Event
 from nonebot.internal.driver.model import Request
 
 from .uniseg import Image
 
 
-async def image_fetch(bot: Bot, state: T_State, img: Image):
+async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image):
     adapter_name = bot.adapter.get_name()
     if adapter_name == "RedProtocol":
         origin = img.origin
