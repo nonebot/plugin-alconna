@@ -17,6 +17,7 @@ msg1 = "/command " + Bold("foo bar baz")
 alc1 = Alconna("/command", Args["foo", str]["bar", Bold]["baz", Bold])
 
 print(alc1.parse(msg1))
+print(alc1.parse(msg1).baz.type)
 
 _img = type_parser(Image)
 print(_img.exec(Photo("1")))

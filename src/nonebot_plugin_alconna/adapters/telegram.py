@@ -1,18 +1,11 @@
-from typing import Any, Iterable
-from typing_extensions import Self
-
-from tarina import lang
-from nonebot.adapters import Message as BaseMessage
 from nepattern import BasePattern, PatternModel, UnionPattern
-from nonebot.adapters import MessageSegment as BaseMessageSegment
-from arclet.alconna import NullMessage, argv_config, set_default_argv_type
 from nonebot.adapters.telegram.message import File, Entity, Message, UnCombinFile, MessageSegment
 
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
 
-def is_text(x: BaseMessageSegment):
+def is_text(x: MessageSegment):
     return (
         x.type
         in {
@@ -25,8 +18,6 @@ def is_text(x: BaseMessageSegment):
             "spoiler",
             "code",
         }
-        if isinstance(x, MessageSegment)
-        else x.is_text()
     )
 
 
@@ -37,91 +28,44 @@ styles = {
 }
 
 
-class TelegramMessageArgv(MessageArgv):
-    def reset(self):
-        super().reset()
-        styles["record"].clear()
-        styles["index"] = 0
-
-    def addon(self, data: Iterable[Any]) -> Self:
-        """添加命令元素
-
-        Args:
-            data (Iterable[str | Any]): 命令元素
-
-        Returns:
-            Self: 自身
-        """
-        self.raw_data = self.bak_data.copy()
-        for i, d in enumerate(data):
-            if not d:
+def builder(self: MessageArgv, data: Message):
+    styles["msg"] = str(data)
+    _index = 0
+    for index, unit in enumerate(data):
+        if not self.is_text(unit):
+            self.raw_data.append(unit)
+            self.ndata += 1
+            continue
+        if not unit.data["text"].strip():
+            if not index or index == len(data) - 1:
                 continue
-            if not is_text(d):
-                self.raw_data.append(d)
-                self.ndata += 1
+            if not self.is_text(data[index - 1]) or not self.is_text(data[index + 1]):
                 continue
-            text = d.data["text"]
-            if i > 0 and isinstance(self.raw_data[-1], str):
-                self.raw_data[-1] += f"{self.separators[0]}{text}"
-            else:
-                self.raw_data.append(text)
-                self.ndata += 1
-        self.current_index = 0
-        self.bak_data = self.raw_data.copy()
-        if self.message_cache:
-            self.token = self.generate_token(self.raw_data)
-        return self
+        text = unit.data["text"]
+        if unit.type == "text":
+            self.raw_data.append(text)
+            self.ndata += 1
+            continue
+        if self.raw_data and self.raw_data[-1].__class__ is str:
+            self.raw_data[-1] = f"{self.raw_data[-1]}{text}"
+        else:
+            self.raw_data.append(text)
+            self.ndata += 1
+        start = styles["msg"].find(text, _index)
+        _index = start + len(text)
+        styles["record"][(start, _index)] = unit.type
 
-    def build(self, data: BaseMessage) -> Self:
-        """命令分析功能, 传入字符串或消息链
 
-        Args:
-            data (TDC): 命令
+def clean_style():
+    styles["record"].clear()
+    styles["index"] = 0
 
-        Returns:
-            Self: 自身
-        """
-        self.reset()
-        if not isinstance(data, BaseMessage):
-            if not self.converter:
-                raise TypeError(data)
-            try:
-                data = self.converter(data)
-            except Exception as e:
-                raise TypeError(data) from e
-        self.origin = data
-        styles["msg"] = str(data)
-        _index = 0
-        raw_data = self.raw_data
-        for index, unit in enumerate(data):
-            if not is_text(unit):
-                raw_data.append(unit)
-                self.ndata += 1
-                continue
-            if not unit.data["text"].strip():
-                if not index or index == len(data) - 1:
-                    continue
-                if not is_text(data[index - 1]) or not is_text(data[index + 1]):
-                    continue
-            text = unit.data["text"]
-            if unit.type == "text":
-                raw_data.append(text)
-                self.ndata += 1
-                continue
-            if raw_data and raw_data[-1].__class__ is str:
-                raw_data[-1] = f"{raw_data[-1]}{text}"
-            else:
-                raw_data.append(text)
-                self.ndata += 1
-            start = styles["msg"].find(text, _index)
-            _index = start + len(text)
-            styles["record"][(start, _index)] = unit.type
-        if self.ndata < 1:
-            raise NullMessage(lang.require("argv", "null_message").format(target=data))
-        self.bak_data = raw_data.copy()
-        if self.message_cache:
-            self.token = self.generate_token(raw_data)
-        return self
+MessageArgv.custom_build(
+    Message,
+    is_text=is_text,
+    builder=builder,
+    cleanup=clean_style
+)
 
 
 def locator(x: str, t: str):
@@ -138,9 +82,6 @@ def locator(x: str, t: str):
         for scale in styles["record"]
     )
 
-
-set_default_argv_type(TelegramMessageArgv)
-argv_config(TelegramMessageArgv, converter=lambda x: Message(x))
 
 Text = str
 Location = SegmentPattern("location", MessageSegment, MessageSegment.location)

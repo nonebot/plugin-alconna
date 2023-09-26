@@ -1,25 +1,10 @@
 from nepattern.main import URL, INTEGER
-from nonebot.adapters import Message as BaseMessage
-from arclet.alconna import argv_config, set_default_argv_type
 from nepattern import BasePattern, PatternModel, UnionPattern
-from nonebot.adapters.onebot.v12.message import Message, MessageSegment
+from nonebot.adapters.onebot.v12.message import MessageSegment
 
-from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
 
 
-class Ob12MessageArgv(MessageArgv):
-    ...
-
-
-set_default_argv_type(Ob12MessageArgv)
-argv_config(
-    Ob12MessageArgv,
-    filter_out=[],
-    checker=lambda x: isinstance(x, BaseMessage),
-    to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
-    converter=lambda x: Message(x),
-)
 Text = str
 Mention = SegmentPattern("mention", MessageSegment, MessageSegment.mention)
 MentionAll = SegmentPattern("mention_all", MessageSegment, MessageSegment.mention_all)

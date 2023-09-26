@@ -4,11 +4,10 @@ from typing import Dict, List, Type, Union, Optional
 from nonebot.rule import Rule
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
-from nonebot.adapters import Message as BaseMessage
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.adapters.discord.commands.matcher import SlashCommandMatcher, on_slash_command
 from nepattern import FLOAT, NUMBER, INTEGER, AnyOne, BasePattern, PatternModel, UnionPattern
-from arclet.alconna import Args, Option, Alconna, Subcommand, argv_config, set_default_argv_type
+from arclet.alconna import Args, Option, Alconna, Subcommand
 from nonebot.adapters.discord.api import (
     RoleOption,
     UserOption,
@@ -25,7 +24,6 @@ from nonebot.adapters.discord.api import (
     SubCommandGroupOption,
 )
 from nonebot.adapters.discord.message import (
-    Message,
     EmbedSegment,
     MessageSegment,
     StickerSegment,
@@ -41,23 +39,9 @@ from nonebot.adapters.discord.message import (
 )
 
 from nonebot_plugin_alconna.uniseg import At
-from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern
 from nonebot_plugin_alconna.uniseg import Image as UniImg
 
-
-class DiscordMessageArgv(MessageArgv):
-    ...
-
-
-set_default_argv_type(DiscordMessageArgv)
-argv_config(
-    DiscordMessageArgv,
-    filter_out=[],
-    checker=lambda x: isinstance(x, BaseMessage),
-    to_text=lambda x: x if x.__class__ is str else str(x) if x.is_text() else None,
-    converter=lambda x: Message(x),
-)
 
 
 Text = str

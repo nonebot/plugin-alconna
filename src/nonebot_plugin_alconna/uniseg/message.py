@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List, Type, Tuple, Union, TypeVar, Iterable, O
 from nonebot.internal.matcher import current_bot
 from nonebot.internal.adapter import Bot, Event, Message
 
-from ..argv import FallbackMessage
+from ..message import FallbackMessage
 from .template import UniMessageTemplate
 from .export import MAPPING, SerializeFailed
 from .segment import Text, Other, Reply, Segment, reply, segments
