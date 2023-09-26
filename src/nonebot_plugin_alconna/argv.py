@@ -8,8 +8,7 @@ from arclet.alconna import Namespace, NullMessage
 from nonebot.adapters import Message, MessageSegment
 from arclet.alconna.argv import Argv, set_default_argv_type
 
-from .message import FallbackMessage
-from .uniseg import Segment, UniMessage
+from .uniseg import Segment, UniMessage, FallbackMessage
 
 TM = TypeVar("TM", Message, UniMessage)
 

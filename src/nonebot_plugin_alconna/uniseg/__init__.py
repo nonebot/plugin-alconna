@@ -12,3 +12,5 @@ from .segment import Voice as Voice
 from .segment import Segment as Segment
 from .message import UniMessage as UniMessage
 from .export import SerializeFailed as SerializeFailed
+from .fallback import FallbackMessage as FallbackMessage
+from .fallback import FallbackSegment as FallbackSegment
