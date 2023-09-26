@@ -6,19 +6,16 @@ from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
 
 def is_text(x: MessageSegment):
-    return (
-        x.type
-        in {
-            "text",
-            "bot_command",
-            "bold",
-            "italic",
-            "underline",
-            "strikethrough",
-            "spoiler",
-            "code",
-        }
-    )
+    return x.type in {
+        "text",
+        "bot_command",
+        "bold",
+        "italic",
+        "underline",
+        "strikethrough",
+        "spoiler",
+        "code",
+    }
 
 
 styles = {
@@ -60,12 +57,8 @@ def clean_style():
     styles["record"].clear()
     styles["index"] = 0
 
-MessageArgv.custom_build(
-    Message,
-    is_text=is_text,
-    builder=builder,
-    cleanup=clean_style
-)
+
+MessageArgv.custom_build(Message, is_text=is_text, builder=builder, cleanup=clean_style)
 
 
 def locator(x: str, t: str):

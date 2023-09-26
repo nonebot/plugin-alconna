@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from typing import Iterable, Callable, TypeVar
-
 from typing_extensions import Self
+from typing import TypeVar, Callable, Iterable
 
+from tarina import lang
+from arclet.alconna import Namespace, NullMessage
 from nonebot.adapters import Message, MessageSegment
 from arclet.alconna.argv import Argv, set_default_argv_type
-from arclet.alconna import NullMessage, Namespace
-from tarina import lang
 
 from .message import FallbackMessage
-from .uniseg import UniMessage, Segment
+from .uniseg import Segment, UniMessage
 
 TM = TypeVar("TM", Message, UniMessage)
+
 
 def _default_builder(self: MessageArgv, data: Message | UniMessage):
     for unit in data:
@@ -22,6 +22,7 @@ def _default_builder(self: MessageArgv, data: Message | UniMessage):
         elif res := unit.data["text"].strip():
             self.raw_data.append(res)
             self.ndata += 1
+
 
 class MessageArgv(Argv[TM]):
     is_text: Callable[[MessageSegment | Segment], bool]
@@ -104,5 +105,6 @@ class MessageArgv(Argv[TM]):
         if self.message_cache:
             self.token = self.generate_token(self.raw_data)
         return self
+
 
 set_default_argv_type(MessageArgv)

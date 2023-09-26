@@ -2,7 +2,6 @@ from nonebot.adapters.ding.message import MessageSegment
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 
-
 Text = str
 AtAll = SegmentPattern("at", MessageSegment, MessageSegment.atAll, lambda x: "isAtAll" in x.data)
 AtMobiles = SegmentPattern("at", MessageSegment, MessageSegment.atMobiles, lambda x: "atMobiles" in x.data)

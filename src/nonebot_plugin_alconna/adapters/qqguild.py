@@ -13,9 +13,6 @@ from nonebot.adapters.qqguild.message import MentionEveryone as _MentionEveryone
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 
-
-
-
 Text = str
 Ark = SegmentPattern("ark", _Ark, MessageSegment.ark)
 Embed = SegmentPattern("embed", _Embed, MessageSegment.embed)

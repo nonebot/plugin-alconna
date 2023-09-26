@@ -1,10 +1,8 @@
 from nepattern.main import INTEGER
-from nepattern import URL, BasePattern, PatternModel, UnionPattern
 from nonebot.adapters.villa.message import MessageSegment
+from nepattern import URL, BasePattern, PatternModel, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
-
-
 
 Text = str
 MentionUser = SegmentPattern("mention_user", MessageSegment, MessageSegment.mention_user)

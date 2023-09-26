@@ -4,7 +4,6 @@ from nonebot.adapters.onebot.v12.message import MessageSegment
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 
-
 Text = str
 Mention = SegmentPattern("mention", MessageSegment, MessageSegment.mention)
 MentionAll = SegmentPattern("mention_all", MessageSegment, MessageSegment.mention_all)

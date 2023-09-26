@@ -1,5 +1,6 @@
 from nonebot.adapters import Message, MessageSegment
 
+
 class FallbackSegment(MessageSegment["FallbackMessage"]):
     @classmethod
     def get_message_class(cls):

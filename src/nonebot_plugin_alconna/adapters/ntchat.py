@@ -1,9 +1,6 @@
-from nonebot.adapters.ntchat.message import  MessageSegment
+from nonebot.adapters.ntchat.message import MessageSegment
 
 from nonebot_plugin_alconna.typings import SegmentPattern
-
-
-
 
 Text = str
 RoomAtMsg = SegmentPattern("room_at_msg", MessageSegment, MessageSegment.room_at_msg)

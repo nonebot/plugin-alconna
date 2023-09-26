@@ -1,9 +1,8 @@
 from nepattern.main import INTEGER
-from nepattern import BasePattern, PatternModel, UnionPattern
 from nonebot.adapters.feishu.message import MessageSegment
+from nepattern import BasePattern, PatternModel, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
-
 
 Text = str
 At = SegmentPattern("at", MessageSegment, MessageSegment.at)

@@ -1,9 +1,8 @@
 from nepattern.main import INTEGER
-from nepattern import URL, BasePattern, PatternModel, UnionPattern
 from nonebot.adapters.mirai2.message import MessageSegment
+from nepattern import URL, BasePattern, PatternModel, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
-
 
 Source = SegmentPattern("Source", MessageSegment, MessageSegment.source)
 Quote = SegmentPattern("Quote", MessageSegment, MessageSegment.quote)

@@ -1,9 +1,8 @@
 from nepattern.main import INTEGER
-from nonebot.adapters.red.message import  MessageSegment
+from nonebot.adapters.red.message import MessageSegment
 from nepattern import URL, BasePattern, PatternModel, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
-
 
 Text = str
 At = SegmentPattern("at", MessageSegment, MessageSegment.at)

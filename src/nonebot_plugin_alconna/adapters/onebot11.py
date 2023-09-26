@@ -1,9 +1,8 @@
 from nepattern.main import INTEGER
+from nonebot.adapters.onebot.v11.message import MessageSegment
 from nepattern import URL, BasePattern, PatternModel, UnionPattern
-from nonebot.adapters.onebot.v11.message import  MessageSegment
 
 from nonebot_plugin_alconna.typings import SegmentPattern
-
 
 Anonymous = SegmentPattern("anonymous", MessageSegment, MessageSegment.anonymous)
 Text = str
