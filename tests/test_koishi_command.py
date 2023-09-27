@@ -1,5 +1,3 @@
-from typing import Literal
-
 import pytest
 from nonebug import App
 from nonebot import get_adapter

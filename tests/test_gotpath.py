@@ -1,9 +1,9 @@
-from typing import Literal, Union
+from typing import Union
 
 import pytest
 from nonebug import App
 from nonebot import get_adapter
-from arclet.alconna import Alconna, Args
+from arclet.alconna import Args, Alconna
 from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment
 
 from tests.fake import fake_group_message_event_v11

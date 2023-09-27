@@ -253,6 +253,7 @@ def on_alconna(
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     output_converter: Callable[[OutputType, str], Message | Awaitable[Message]] | None = None,
+    message_provider: TProvider | None = None,
     aliases: set[str | tuple[str, ...]] | None = None,
     comp_config: CompConfig | None = None,
     use_origin: bool = False,
@@ -266,6 +267,7 @@ def on_alconna(
 - `skip_for_unmatch`: 是否在命令不匹配时跳过该响应
 - `auto_send_output`: 是否自动发送输出信息并跳过响应
 - `output_converter`: 输出信息字符串转换为 Message 方法
+- `message_provider`: 自定义消息提供器
 - `aliases`: 命令别名, 作用类似于 `on_command`
 - `comp_config`: 补全会话配置, 不传入则不启用补全会话
 - `use_origin`: 是否使用未经 to_me 等处理过的消息
@@ -308,16 +310,19 @@ async def echo(msg: str):
 ## 跨平台消息
 
 ```python
-from nonebot import on_command
-from nonebot_plugin_alconna import Image, UniMessage
+from nonebot_plugin_alconna import Image, UniMessage, on_alconna
 
-test = on_command("test")
+test = on_alconna("test")
 
 @test.handle()
 async def handle_test():
-    await test.send(await UniMessage(Image(path="path/to/img")).export())
+    await test.send(UniMessage(Image(path="path/to/img")))
+
+@test.got("foo", prompt=UniMessage.template("{:At(user, $event.get_user_id())}\n请输入图片"))
+async def handle_foo():
+    await test.send("图片已收到")
 ```
 
 ## 体验
 
-[demo bot](./src/test/plugins/demo.py)
+[demo bot](./example/plugins/demo.py)

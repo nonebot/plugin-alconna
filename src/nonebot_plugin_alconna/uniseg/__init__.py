@@ -21,7 +21,7 @@ from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 
-__version__ = "0.25.0"
+__version__ = "0.25.1"
 
 _meta_source = {
     "name": "Universal Segment 插件",
