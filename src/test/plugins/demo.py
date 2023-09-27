@@ -1,6 +1,7 @@
 from typing import Union, Literal
 
 from tarina import lang
+from nonebot import require
 from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
 from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
@@ -16,6 +17,8 @@ from arclet.alconna import (
     store_true,
     command_manager,
 )
+
+require("nonebot_plugin_alconna")
 
 from nonebot_plugin_alconna import (
     At,

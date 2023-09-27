@@ -1,5 +1,9 @@
 import contextlib
 
+import nonebot
+
+nonebot.load_plugin("nonebot_plugin_alconna.uniseg")
+
 from nonebot import get_driver
 from arclet.alconna import Args as Args
 from arclet.alconna import Field as Field
@@ -47,9 +51,9 @@ from .uniseg import Other as Other
 from .uniseg import Reply as Reply
 from .uniseg import Video as Video
 from .uniseg import Voice as Voice
-from .params import UniMsg as UniMsg
 from .params import assign as assign
 from .rule import alconna as alconna
+from .uniseg import UniMsg as UniMsg
 from .uniseg import Segment as Segment
 from .matcher import Command as Command
 from .params import AlcResult as AlcResult
@@ -73,8 +77,8 @@ from .params import AlconnaMatches as AlconnaMatches
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
 from .uniseg import SerializeFailed as SerializeFailed
-from .params import UniversalMessage as UniversalMessage
-from .params import UniversalSegment as UniversalSegment
+from .uniseg import UniversalMessage as UniversalMessage
+from .uniseg import UniversalSegment as UniversalSegment
 from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
