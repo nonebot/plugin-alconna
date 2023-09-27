@@ -19,9 +19,6 @@ jobs:
       - name: Install Package
         run: |
           pdm sync -G:all
-      - name: Ensure uvicorn
-        run: |
-          pdm add -d uvicorn
       - name: Test & Report
         run: |
           pdm run test
