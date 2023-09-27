@@ -119,12 +119,12 @@ class UniMessage(List[TS]):
     ):
         super().__init__()
         if isinstance(message, str):
-            self.append(Text(message))
+            self.__iadd__(Text(message))
         elif isinstance(message, Iterable):
             for i in message:
-                self.append(Text(i) if isinstance(i, str) else i)
+                self.__iadd__(Text(i) if isinstance(i, str) else i)
         elif isinstance(message, Segment):
-            self.append(message)
+            self.__iadd__(message)
 
     def __str__(self) -> str:
         return "".join(str(seg) for seg in self)
@@ -158,14 +158,21 @@ class UniMessage(List[TS]):
     def __add__(self, other: Union[str, TS, TS1, Iterable[Union[TS, TS1]]]) -> "UniMessage[Union[TS, TS1]]":
         result = self.copy()
         if isinstance(other, str):
-            result.append(Text(other))  # type: ignore
+            if result and isinstance(result[-1], Text):
+                result[-1] = Text(result[-1].text + other)
+            else:
+                result.append(Text(other))
         elif isinstance(other, Segment):
-            result.append(other)  # type: ignore
+            if result and isinstance(result[-1], Text) and isinstance(other, Text):
+                result[-1] = Text(result[-1].text + other.text)
+            else:
+                result.append(other)
         elif isinstance(other, Iterable):
-            result.extend(other)  # type: ignore
+            for seg in other:
+                result += seg
         else:
             raise TypeError(f"Unsupported type {type(other)!r}")
-        return result  # type: ignore
+        return result
 
     def __radd__(self, other: Union[str, TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
         result = UniMessage(other)
@@ -173,11 +180,18 @@ class UniMessage(List[TS]):
 
     def __iadd__(self, other: Union[str, TS, Iterable[TS]]) -> Self:
         if isinstance(other, str):
-            self.append(Text(other))  # type: ignore
+            if self and isinstance(self[-1], Text):
+                self[-1] = Text(self[-1].text + other)
+            else:
+                self.append(Text(other))
         elif isinstance(other, Segment):
-            self.append(other)
+            if self and isinstance(self[-1], Text) and isinstance(other, Text):
+                self[-1] = Text(self[-1].text + other.text)
+            else:
+                self.append(other)
         elif isinstance(other, Iterable):
-            self.extend(other)
+            for seg in other:
+                self.__iadd__(seg)
         else:
             raise TypeError(f"Unsupported type {type(other)!r}")
         return self

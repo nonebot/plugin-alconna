@@ -63,6 +63,10 @@ class Segment:
     def is_text(self) -> bool:
         return False
 
+    @property
+    def type(self) -> str:
+        return self.__class__.__name__.lower()
+
 
 @dataclass
 class Text(Segment):
@@ -85,7 +89,7 @@ class Text(Segment):
 class At(Segment):
     """At对象, 表示一类提醒某用户的元素"""
 
-    type: Literal["user", "role", "channel"]
+    flag: Literal["user", "role", "channel"]
     target: str
     display: Optional[str] = field(default=None)
 
@@ -167,7 +171,7 @@ class Reply(Segment):
 class Card(Segment):
     """Card对象，表示一类卡片消息"""
 
-    type: Literal["xml", "json"]
+    flag: Literal["xml", "json"]
     raw: str
     content: Optional[Union[dict, list]] = field(default=None)
 

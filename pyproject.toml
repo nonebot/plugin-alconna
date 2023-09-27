@@ -53,6 +53,9 @@ dev = [
     "nonebot-adapter-discord>=0.1.0b1",
     "nonebot-adapter-kaiheila>=0.2.9a1",
     "nonebot-adapter-red>=0.4.1",
+    "nonebug>=0.3.5",
+    "pytest-xdist>=3.3.1",
+    "pytest-asyncio>=0.21.1",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]
@@ -82,3 +85,15 @@ ignore = ["C901", "T201", "E731", "E402"]
 
 line-length = 110
 target-version = "py38"
+
+[tool.pyright]
+pythonVersion = "3.8"
+pythonPlatform = "All"
+typeCheckingMode = "basic"
+
+[tool.pdm.scripts]
+test = "pytest -v -n auto -W ignore"
+format = { composite = ["isort ./src/ ./example/ ./tests/","black ./src/ ./example/ ./tests/","ruff ./src/ ./example/ ./tests/"] }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

@@ -28,6 +28,10 @@ jobs:
         if: steps.version.outputs.VERSION != steps.version.outputs.TAG_VERSION
         run: exit 1
 
+      - name: Test & Report
+        run: |
+          pdm run test
+
       - name: Publish Package
         run: |
           pdm publish

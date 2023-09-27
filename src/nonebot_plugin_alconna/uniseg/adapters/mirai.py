@@ -65,7 +65,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
-        return ms.xml(seg.raw) if seg.type == "xml" else ms.app(seg.raw)
+        return ms.xml(seg.raw) if seg.flag == "xml" else ms.app(seg.raw)
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

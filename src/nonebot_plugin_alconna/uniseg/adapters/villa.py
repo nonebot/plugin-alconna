@@ -29,9 +29,9 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
-        if seg.type == "user":
+        if seg.flag == "user":
             return ms.mention_user(int(seg.target), seg.display)
-        elif seg.type == "channel":
+        elif seg.flag == "channel":
             villa_id, room_id = seg.target.split(":", 1)
             return ms.room_link(int(villa_id), int(room_id), seg.display)
         else:

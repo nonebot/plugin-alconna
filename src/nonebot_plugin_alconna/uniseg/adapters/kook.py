@@ -27,9 +27,9 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
-        if seg.type == "role":
+        if seg.flag == "role":
             return ms.KMarkdown(f"(rol){seg.target}(rol)")
-        elif seg.type == "channel":
+        elif seg.flag == "channel":
             return ms.KMarkdown(f"(chn){seg.target}(chn)")
         else:
             return ms.KMarkdown(f"(met){seg.target}(met)")
@@ -72,7 +72,7 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
     async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
-        if seg.type == "xml":
+        if seg.flag == "xml":
             raise SerializeFailed("Cannot serialize xml card to kook message")
         return ms.Card(seg.raw)
 

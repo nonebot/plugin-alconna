@@ -30,9 +30,9 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
-        if seg.type == "role":
+        if seg.flag == "role":
             return ms.mention_role(int(seg.target))
-        elif seg.type == "channel":
+        elif seg.flag == "channel":
             return ms.mention_channel(int(seg.target))
         else:
             return ms.mention_user(int(seg.target))
