@@ -79,7 +79,7 @@ class UniMessageTemplate(Formatter):
         else:
             raise TypeError("template must be a string or instance of UniMessage!")
 
-        self.check_unused_args(list(used_args), args, kwargs)
+        # self.check_unused_args(used_args, args, kwargs)
         return full_message
 
     # def check_unused_args(
@@ -108,7 +108,7 @@ class UniMessageTemplate(Formatter):
         used_args: Set[Union[int, str]],
         auto_arg_index: int = 0,
     ) -> Tuple["UniMessage", int]:
-        results = [self.factory()]
+        results: list = [self.factory()]
 
         for literal_text, field_name, format_spec, conversion in self.parse(format_string):
             # output the literal text
@@ -125,9 +125,6 @@ class UniMessageTemplate(Formatter):
                         part = part.strip()
                         if part.startswith("$") and (key := part.split(".")[0]) in kwargs:
                             _args.append(eval(part[1:], {}, {key[1:]: kwargs[key]}))
-                        elif part.isdigit():
-                            _args.append(args[int(part)])
-                            used_args.add(int(part))
                         elif re.match(".+=.+", part):
                             k, v = part.split("=")
                             if v in kwargs:

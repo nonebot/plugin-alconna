@@ -1,4 +1,4 @@
-from nonebot_plugin_alconna.argv import FallbackSegment
+from nonebot_plugin_alconna.uniseg import FallbackSegment
 from nonebot_plugin_alconna import Text, Other, Segment, UniMessage
 
 print(Other(FallbackSegment.text("123")))

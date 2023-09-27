@@ -62,13 +62,13 @@ class MessageArgv(Argv[TM]):
         self.reset()
         if not isinstance(data, (Message, UniMessage)):
             data = FallbackMessage(data)
-        __cache = self.__class__._cache.get(data.__class__, {})
-        if "cleanup" in __cache:
-            __cache["cleanup"]()
-        self.is_text = __cache.get("is_text", self.is_text)
+        cache = self.__class__._cache.get(data.__class__, {})
+        if "cleanup" in cache:
+            cache["cleanup"]()
+        self.is_text = cache.get("is_text", self.is_text)
         self.converter = lambda x: data.__class__(x)
         self.origin = data
-        __cache.get("builder", _default_builder)(self, data)
+        cache.get("builder", _default_builder)(self, data)
         if self.ndata < 1:
             raise NullMessage(lang.require("argv", "null_message").format(target=data))
         self.bak_data = self.raw_data.copy()
@@ -76,11 +76,11 @@ class MessageArgv(Argv[TM]):
             self.token = self.generate_token(self.raw_data)
         return self
 
-    def addon(self, data: Iterable[MessageSegment]) -> Self:
+    def addon(self, data: Iterable[str | MessageSegment]) -> Self:
         """添加命令元素
 
         Args:
-            data (Iterable[MessageSegment]): 命令元素
+            data (Iterable[str | MessageSegment]): 命令元素
 
         Returns:
             Self: 自身
@@ -89,11 +89,14 @@ class MessageArgv(Argv[TM]):
         for i, d in enumerate(data):
             if not d:
                 continue
-            if not self.is_text(d):
+            if d.__class__ is str:
+                text = d
+            elif self.is_text(d):
+                text = d.data["text"]
+            else:
                 self.raw_data.append(d)
                 self.ndata += 1
                 continue
-            text = d.data["text"]
             if i > 0 and isinstance(self.raw_data[-1], str):
                 self.raw_data[-1] += f"{self.separators[0]}{text}"
             else:

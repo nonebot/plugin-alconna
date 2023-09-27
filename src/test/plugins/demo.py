@@ -204,7 +204,7 @@ mask_cmd.shortcut(
 
 
 @mask_cmd.handle()
-async def mask_h(matcher: AlconnaMatcher, img: Match[list] = AlconnaMatch("img", image_fetch)):
+async def mask_h(matcher: AlconnaMatcher, img: Match[bytes] = AlconnaMatch("img", image_fetch)):
     if img.available:
         matcher.set_path_arg("img", img.result)
 
