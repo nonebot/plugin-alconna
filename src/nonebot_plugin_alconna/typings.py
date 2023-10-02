@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from typing_extensions import ParamSpec, TypeAlias
-from typing import Any, Union, Generic, Literal, TypeVar, Callable, Awaitable
+from typing import Any, Union, Generic, TypeVar, Callable, Awaitable
 
 from tarina import lang
+from arclet.alconna import Arparma
+from nonebot.typing import T_State
 from nepattern import MatchMode, BasePattern, MatchFailed
-from nonebot.internal.adapter.message import Message, MessageSegment
+from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
 
 from .uniseg import Segment, UniMessage
 
@@ -77,11 +79,9 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         return self.call(*args, **kwargs)  # type: ignore
 
 
-OutputType = Literal["help", "shortcut", "completion"]
-TConvert: TypeAlias = Callable[
-    [OutputType, str], Union[Message, UniMessage, Awaitable[Union[Message, UniMessage]]]
-]
 MReturn: TypeAlias = Union[
     Union[str, Segment, UniMessage, Message, MessageSegment],
     Awaitable[Union[str, Segment, UniMessage, Message, MessageSegment]],
 ]
+MIDDLEWARE: TypeAlias = Callable[[Event, Bot, T_State, Any], Any]
+CHECK: TypeAlias = Callable[[Event, Bot, T_State, Arparma], Awaitable[bool]]

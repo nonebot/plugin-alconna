@@ -19,12 +19,13 @@ from nonebot.exception import PausedException, FinishedException, RejectedExcept
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 
+from .rule import alconna
+from .typings import MReturn
 from .model import CompConfig
-from .rule import TProvider, alconna
-from .typings import MReturn, TConvert
 from .uniseg import Segment, UniMessage
 from .uniseg.template import UniMessageTemplate
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY
+from .extension import Extension, ExtensionExecutor
 from .params import CHECK, MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch, merge_path
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
@@ -68,6 +69,7 @@ def _validate(target: Arg[Any], arg: MessageSegment):
 class AlconnaMatcher(Matcher):
     command: ClassVar[Alconna]
     basepath: ClassVar[str]
+    executor: ClassVar[ExtensionExecutor]
 
     @classmethod
     def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):
@@ -259,6 +261,7 @@ class AlconnaMatcher(Matcher):
         store_matcher(matcher)
         matcher.command = cls.command
         matcher.basepath = merge_path(path, cls.basepath)
+        matcher.executor = cls.executor
         return matcher
 
     @classmethod
@@ -340,8 +343,7 @@ class AlconnaMatcher(Matcher):
             _message = UniMessage(message)
         else:
             _message = message
-        if isinstance(_message, UniMessage):
-            _message = await _message.export(bot, fallback)
+        _message = await cls.executor.send_hook(bot, event, _message, fallback=fallback)
         return await bot.send(event=event, message=_message, **kwargs)
 
     @classmethod
@@ -461,10 +463,9 @@ def on_alconna(
     rule: Rule | T_RuleChecker | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
-    output_converter: TConvert | None = None,
-    message_provider: TProvider | None = None,
     aliases: set[str] | tuple[str, ...] | None = None,
     comp_config: CompConfig | None = None,
+    extensions: list[type[Extension]] | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
     use_cmd_sep: bool = False,
@@ -510,20 +511,19 @@ def on_alconna(
         command.command = "re:(" + "|".join(aliases) + ")"
         command._hash = command._calc_hash()
         command_manager.register(command)
+    _rule = alconna(
+        command,
+        skip_for_unmatch,
+        auto_send_output,
+        comp_config,
+        extensions,
+        use_origin,
+        use_cmd_start,
+        use_cmd_sep,
+    )
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "",
-        rule
-        & alconna(
-            command,
-            skip_for_unmatch,
-            auto_send_output,
-            output_converter,
-            message_provider,
-            comp_config,
-            use_origin,
-            use_cmd_start,
-            use_cmd_sep,
-        ),
+        rule & _rule,
         Permission() | permission,
         temp=temp,
         expire_time=expire_time,
@@ -537,6 +537,7 @@ def on_alconna(
     store_matcher(matcher)
     matcher.command = command
     matcher.basepath = ""
+    matcher.executor = list(_rule.checkers)[0].call.executor  # type: ignore
     return matcher
 
 
@@ -546,8 +547,7 @@ def funcommand(
     description: str | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
-    output_converter: TConvert | None = None,
-    message_provider: TProvider | None = None,
+    extensions: list[type[Extension]] | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
     use_cmd_sep: bool = False,
@@ -576,8 +576,7 @@ def funcommand(
             rule,
             skip_for_unmatch,
             auto_send_output,
-            output_converter,
-            message_provider,
+            extensions=extensions,
             use_origin=use_origin,
             use_cmd_start=use_cmd_start,
             use_cmd_sep=use_cmd_sep,
@@ -610,10 +609,9 @@ class Command(AlconnaString):
         rule: Rule | T_RuleChecker | None = None,
         skip_for_unmatch: bool = True,
         auto_send_output: bool = False,
-        output_converter: TConvert | None = None,
-        message_provider: TProvider | None = None,
         aliases: set[str] | tuple[str, ...] | None = None,
         comp_config: CompConfig | None = None,
+        extensions: list[type[Extension]] | None = None,
         use_origin: bool = False,
         use_cmd_start: bool = False,
         use_cmd_sep: bool = False,

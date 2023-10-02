@@ -1,6 +1,6 @@
 import inspect
-from typing_extensions import Annotated, TypeAlias, get_args
-from typing import Any, Dict, Type, Tuple, Union, Literal, TypeVar, Callable, Optional, Awaitable, overload
+from typing_extensions import Annotated, get_args
+from typing import Any, Dict, Type, Tuple, Union, Literal, TypeVar, Optional, overload
 
 from nonebot.typing import T_State
 from tarina import run_always_await
@@ -14,12 +14,12 @@ from nonebot.internal.adapter import Bot, Event
 from arclet.alconna.builtin import generate_duplication
 from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
+from .typings import CHECK, MIDDLEWARE
 from .model import T, Match, Query, CommandResult
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
-MIDDLEWARE: TypeAlias = Callable[[Event, Bot, T_State, Any], Any]
-CHECK: TypeAlias = Callable[[Event, Bot, T_State, Arparma], Awaitable[bool]]
+
 _Contents = (Union, CUnionType, Literal)
 
 

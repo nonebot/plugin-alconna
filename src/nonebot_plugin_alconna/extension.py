@@ -1,9 +1,106 @@
-# OutputType = Literal["help", "shortcut", "completion"]
-# TConvert: TypeAlias = Callable[
-#     [OutputType, str], Union[Message, UniMessage, Awaitable[Union[Message, UniMessage]]]
-# ]
+from __future__ import annotations
 
-# TProvider: TypeAlias = Callable[
-#     ["AlconnaRule", Event, T_State, Bot],
-#     Union[Message, UniMessage, None, Awaitable[Union[Message, UniMessage, None]]],
-# ]
+from typing import Literal
+from typing_extensions import Self
+
+from arclet.alconna import Alconna
+from nonebot.typing import T_State
+from nonebot.adapters import Bot, Event, Message
+
+from .uniseg import UniMessage, FallbackMessage
+
+OutputType = Literal["help", "shortcut", "completion"]
+
+
+class Extension:
+    priority: int = 16
+
+    def validate(self, bot: Bot, event: Event) -> bool:
+        return True
+
+    async def output_converter(self, output_type: OutputType, content: str) -> Message | UniMessage:
+        """依据输出信息的类型，将字符串转换为消息对象以便发送。"""
+        return FallbackMessage(content)
+
+    async def message_provider(
+        self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
+    ) -> Message | UniMessage | None:
+        """提供消息对象以便 Alconna 进行处理。"""
+        if event.get_type() != "message":
+            return None
+        msg: Message = event.get_message()
+        if use_origin:
+            try:
+                msg: Message = getattr(event, "original_message", msg)  # type: ignore
+            except (NotImplementedError, ValueError):
+                return None
+        return msg
+
+    async def send_hook(
+        self, bot: Bot, event: Event, send: Message | UniMessage, fallback: bool = False
+    ) -> Message:
+        """发送消息前的钩子函数。"""
+        if isinstance(send, UniMessage):
+            return await send.export(bot, fallback)
+        return send
+
+    def post_init(self, alc: Alconna) -> None:
+        """Alconna 初始化后的钩子函数。"""
+        pass
+
+
+class ExtensionExecutor:
+    globals = [Extension]
+
+    def __init__(self, extensions: list[Extension] | None = None):
+        self.extensions = [ext() for ext in self.globals]
+        if extensions:
+            self.extensions.extend(extensions)
+        self.context = []
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.context.clear()
+
+    def select(self, bot: Bot, event: Event) -> Self:
+        self.context = [ext for ext in self.extensions if ext.validate(bot, event)]
+        self.context.sort(key=lambda ext: ext.priority, reverse=True)
+        return self
+
+    async def output_converter(self, output_type: OutputType, content: str) -> Message | UniMessage:
+        exc = None
+        for ext in self.context:
+            try:
+                return await ext.output_converter(output_type, content)
+            except Exception as e:
+                exc = e
+        raise exc  # type: ignore
+
+    async def message_provider(
+        self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
+    ) -> Message | UniMessage | None:
+        exc = None
+        for ext in self.context:
+            try:
+                return await ext.message_provider(event, state, bot, use_origin)
+            except Exception as e:
+                exc = e
+        raise exc  # type: ignore
+
+    async def send_hook(
+        self, bot: Bot, event: Event, send: Message | UniMessage, fallback: bool = False
+    ) -> Message:
+        exc = None
+        for ext in self.context:
+            try:
+                return await ext.send_hook(bot, event, send, fallback)
+            except Exception as e:
+                exc = e
+        raise exc  # type: ignore
+
+    def post_init(self, alc: Alconna) -> None:
+        for ext in self.context:
+            ext.post_init(alc)
+
+
+def add_global_extension(*ext: type[Extension]) -> None:
+    ExtensionExecutor.globals.extend(ext)

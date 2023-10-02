@@ -82,7 +82,7 @@ from .uniseg import UniversalSegment as UniversalSegment
 from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
-from .rule import set_output_converter as set_output_converter
+from .extension import add_global_extension as add_global_extension
 
 __version__ = "0.25.1"
 
