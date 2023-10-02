@@ -14,11 +14,13 @@ from nonebot.internal.adapter import Bot, Event
 from arclet.alconna.builtin import generate_duplication
 from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
+from .extension import Extension
 from .typings import CHECK, MIDDLEWARE
 from .model import T, Match, Query, CommandResult
-from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXEC_RESULT
+from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
+T_Extension = TypeVar("T_Extension", bound=Extension)
 
 _Contents = (Union, CUnionType, Literal)
 
@@ -196,6 +198,14 @@ def Check(fn: CHECK) -> bool:
     return Depends(_arparma_check, use_cache=False)
 
 
+def AlconnaExtension(target: Type[T_Extension]) -> T_Extension:
+    def _alconna_extension(state: T_State):
+        exts = state[ALCONNA_EXTENSION]
+        return next((i for i in exts if isinstance(i, target)), None)  # type: ignore
+
+    return Depends(_alconna_extension, use_cache=False)
+
+
 class AlconnaParam(Param):
     """Alconna 相关注入参数
 
@@ -222,6 +232,8 @@ class AlconnaParam(Param):
             return cls(..., type=Duplication)
         if inspect.isclass(annotation) and issubclass(annotation, Duplication):
             return cls(..., anno=param.annotation, type=Duplication)
+        if inspect.isclass(annotation) and issubclass(annotation, Extension):
+            return cls(..., anno=param.annotation, type=Extension)
         if annotation is Match:
             return cls(param.default, name=param.name, type=Match)
         if isinstance(param.default, Query):
@@ -242,6 +254,9 @@ class AlconnaParam(Param):
                 return anno(res.result)
             else:
                 return generate_duplication(res.source)(res.result)
+        if t is Extension:
+            anno = self.extra["anno"]
+            return next((i for i in state[ALCONNA_EXTENSION] if isinstance(i, anno)), None)  # type: ignore
         if t is Match:
             target = res.result.all_matched_args.get(self.extra["name"], Empty)
             return Match(target, target != Empty)

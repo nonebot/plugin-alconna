@@ -217,7 +217,7 @@ class AlconnaRule:
             elif isinstance(value, (str, Message)):
                 exec_result[key] = await bot.send(event, value)
         state[ALCONNA_EXEC_RESULT] = exec_result
-        state[ALCONNA_EXTENSION] = self.executor.context[0]
+        state[ALCONNA_EXTENSION] = self.executor.context
         return True
 
     async def _send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Message:

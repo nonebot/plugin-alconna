@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 from datetime import datetime, timedelta
 from typing import Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol
 
@@ -72,18 +71,18 @@ class AlconnaMatcher(Matcher):
     basepath: ClassVar[str]
     executor: ClassVar[ExtensionExecutor]
 
-    @contextmanager
-    def ensure_context(self, bot: Bot, event: Event):
-        b_t = current_bot.set(bot)
-        e_t = current_event.set(event)
-        m_t = current_matcher.set(self)
-        try:
-            yield
-        finally:
-            current_bot.reset(b_t)
-            current_event.reset(e_t)
-            current_matcher.reset(m_t)
-            self.executor.context.clear()
+    # @contextmanager
+    # def ensure_context(self, bot: Bot, event: Event):
+    #     b_t = current_bot.set(bot)
+    #     e_t = current_event.set(event)
+    #     m_t = current_matcher.set(self)
+    #     try:
+    #         yield
+    #     finally:
+    #         current_bot.reset(b_t)
+    #         current_event.reset(e_t)
+    #         current_matcher.reset(m_t)
+    #         self.executor.context.clear()
 
     @classmethod
     def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):

@@ -29,6 +29,7 @@ from nonebot_plugin_alconna import (
     Reply,
     UniMsg,
     Command,
+    Extension,
     UniMessage,
     AlconnaMatch,
     AlconnaMatcher,
@@ -37,10 +38,18 @@ from nonebot_plugin_alconna import (
     funcommand,
     on_alconna,
     image_fetch,
-    set_output_converter,
+    add_global_extension,
 )
 
-set_output_converter(lambda t, x: UniMessage(x))
+
+class DemoExtension(Extension):
+    priority = 15
+
+    async def output_converter(self, output_type, content: str):
+        return UniMessage(content)
+
+
+add_global_extension(DemoExtension())
 
 
 def get_dist_map() -> dict:
@@ -269,10 +278,13 @@ async def pip1_m():
     await pipcmd1.send("WIP...")
 
 
-def recall_msg_provider(rule, event, state, bot):
-    if not isinstance(event, GroupMessageDeleteEvent):
-        return None
-    return UniMessage(f"/recall {str(event.group_id)} {str(event.user_id)} {str(event.message_id)}")
+class TestExtension(DemoExtension):
+    priority = 14
+
+    async def message_provider(self, event, state, bot: Bot, use_origin: bool = False):
+        if not isinstance(event, GroupMessageDeleteEvent):
+            return None
+        return UniMessage(f"/recall {str(event.group_id)} {str(event.user_id)} {str(event.message_id)}")
 
 
 recall = on_alconna(
@@ -280,7 +292,7 @@ recall = on_alconna(
         "/recall",
         Args["group_id", str]["user_id", str]["message_id", int],
     ),
-    message_provider=recall_msg_provider,
+    extensions=[TestExtension],
 )
 
 
