@@ -26,7 +26,7 @@ from .config import Config
 from .uniseg import UniMessage
 from .model import CompConfig, CommandResult
 from .extension import Extension, ExtensionExecutor
-from .consts import ALCONNA_RESULT, ALCONNA_EXEC_RESULT
+from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
 
 
 class AlconnaRule:
@@ -56,7 +56,7 @@ class AlconnaRule:
         skip_for_unmatch: bool = True,
         auto_send_output: bool = False,
         comp_config: Optional[CompConfig] = None,
-        extensions: Optional[List[Type[Extension]]] = None,
+        extensions: Optional[List[Union[Type[Extension], Extension]]] = None,
         use_origin: bool = False,
         use_cmd_start: bool = False,
         use_cmd_sep: bool = False,
@@ -217,6 +217,7 @@ class AlconnaRule:
             elif isinstance(value, (str, Message)):
                 exec_result[key] = await bot.send(event, value)
         state[ALCONNA_EXEC_RESULT] = exec_result
+        state[ALCONNA_EXTENSION] = self.executor.context[0]
         return True
 
     async def _send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Message:

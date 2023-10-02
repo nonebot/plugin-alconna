@@ -62,6 +62,7 @@ from .params import AlcMatches as AlcMatches
 from .params import AlconnaArg as AlconnaArg
 from .params import match_path as match_path
 from .uniseg import UniMessage as UniMessage
+from .extension import Extension as Extension
 from .matcher import funcommand as funcommand
 from .matcher import on_alconna as on_alconna
 from .tools import image_fetch as image_fetch

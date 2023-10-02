@@ -50,12 +50,21 @@ class Extension:
 
 
 class ExtensionExecutor:
-    globals = [Extension]
+    globals: list[type[Extension] | Extension] = [Extension()]
 
-    def __init__(self, extensions: list[Extension] | None = None):
-        self.extensions = [ext() for ext in self.globals]
+    def __init__(self, extensions: list[type[Extension] | Extension] | None = None):
+        self.extensions = []
+        for ext in self.globals:
+            if isinstance(ext, type):
+                self.extensions.append(ext())
+            else:
+                self.extensions.append(ext)
         if extensions:
-            self.extensions.extend(extensions)
+            for ext in extensions:
+                if isinstance(ext, type):
+                    self.extensions.append(ext())
+                else:
+                    self.extensions.append(ext)
         self.context = []
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -102,5 +111,5 @@ class ExtensionExecutor:
             ext.post_init(alc)
 
 
-def add_global_extension(*ext: type[Extension]) -> None:
+def add_global_extension(*ext: type[Extension] | Extension) -> None:
     ExtensionExecutor.globals.extend(ext)

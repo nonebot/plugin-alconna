@@ -2,12 +2,35 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Type, Union, Optional
 
 from nonebot.rule import Rule
+from nonebot.adapters import Event
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from arclet.alconna import Args, Option, Alconna, Subcommand
+from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
-from nonebot.adapters.discord.commands.matcher import SlashCommandMatcher, on_slash_command
+from nonebot.adapters.discord.commands.storage import _application_command_storage
 from nepattern import FLOAT, NUMBER, INTEGER, AnyOne, BasePattern, PatternModel, UnionPattern
+from nonebot.adapters.discord.commands.matcher import (
+    SlashCommandMatcher,
+    ApplicationCommandConfig,
+    ApplicationCommandMatcher,
+    on_slash_command,
+)
+from nonebot.adapters.discord.message import (
+    Message,
+    EmbedSegment,
+    MessageSegment,
+    StickerSegment,
+    ComponentSegment,
+    ReferenceSegment,
+    TimestampSegment,
+    AttachmentSegment,
+    CustomEmojiSegment,
+    MentionRoleSegment,
+    MentionUserSegment,
+    MentionChannelSegment,
+    MentionEveryoneSegment,
+)
 from nonebot.adapters.discord.api import (
     RoleOption,
     UserOption,
@@ -22,22 +45,12 @@ from nonebot.adapters.discord.api import (
     SubCommandOption,
     MentionableOption,
     SubCommandGroupOption,
-)
-from nonebot.adapters.discord.message import (
-    EmbedSegment,
-    MessageSegment,
-    StickerSegment,
-    ComponentSegment,
-    ReferenceSegment,
-    TimestampSegment,
-    AttachmentSegment,
-    CustomEmojiSegment,
-    MentionRoleSegment,
-    MentionUserSegment,
-    MentionChannelSegment,
-    MentionEveryoneSegment,
+    ApplicationCommandType,
+    ApplicationCommandOptionType,
+    ApplicationCommandInteractionDataOption,
 )
 
+from nonebot_plugin_alconna import Extension
 from nonebot_plugin_alconna.uniseg import At
 from nonebot_plugin_alconna.typings import SegmentPattern
 from nonebot_plugin_alconna.uniseg import Image as UniImg
@@ -266,3 +279,79 @@ def translate(
     buffer.pop("alc")
     buffer["options"].extend(_translate_args(alc.args))
     return on_slash_command(**buffer)
+
+
+class DiscordExtension(Extension, ApplicationCommandMatcher):
+    priority = 10
+    application_command: ApplicationCommandConfig
+
+    def __init__(
+        self,
+        internal_id: Optional[str] = None,
+        name_localizations: Optional[Dict[str, str]] = None,
+        description: Optional[str] = None,
+        description_localizations: Optional[Dict[str, str]] = None,
+        default_member_permissions: Optional[str] = None,
+        dm_permission: Optional[bool] = None,
+        default_permission: Optional[bool] = None,
+        nsfw: Optional[bool] = None,
+    ):
+        self.internal_id = internal_id
+        self.name_localizations = name_localizations
+        self.description = description
+        self.description_localizations = description_localizations
+        self.default_member_permissions = default_member_permissions
+        self.dm_permission = dm_permission
+        self.default_permission = default_permission
+        self.nsfw = nsfw
+        super().__init__()
+
+    def post_init(self, alc: Alconna) -> None:
+        options = [_translate_options(opt) for opt in alc.options]
+        options.extend(_translate_args(alc.args))
+        config = ApplicationCommandConfig(
+            type=ApplicationCommandType.CHAT_INPUT,
+            name=alc.command,
+            name_localizations=self.name_localizations,
+            description=self.description or alc.meta.description,
+            description_localizations=self.description_localizations,
+            options=options,
+            default_member_permissions=self.default_member_permissions,
+            dm_permission=self.dm_permission,
+            default_permission=self.default_permission,
+            nsfw=self.nsfw,
+        )
+        _application_command_storage[self.internal_id or config.name] = config
+        self.config = config
+
+    def validate(self, bot, event: Event) -> bool:
+        if not isinstance(event, ApplicationCommandInteractionEvent):
+            return False
+        if event.data.name != self.config.name or event.data.type != self.config.type:
+            return False
+        if not event.data.guild_id and self.config.guild_ids is None:
+            return True
+        return event.data.guild_id and self.config.guild_ids and event.data.guild_id in self.config.guild_ids
+
+    async def message_provider(self, event: Event, state: T_State, bot, use_origin: bool = False):
+        if not isinstance(event, ApplicationCommandInteractionEvent):
+            return
+        data = event.data
+        cmd = f"/{data.name}"
+
+        def _handle_option(opt: ApplicationCommandInteractionDataOption):
+            if opt.type in (
+                ApplicationCommandOptionType.SUB_COMMAND,
+                ApplicationCommandOptionType.SUB_COMMAND_GROUP,
+            ):
+                yield f"{opt.name}"
+                if opt.options:
+                    yield from (_handle_option(o) for o in opt.options)
+            else:
+                yield f"{opt.value}"
+
+        if data.options:
+            cmd += " "
+            for opt in data.options:
+                cmd += " ".join(_handle_option(opt)) + " "
+        return Message(cmd.rstrip())
