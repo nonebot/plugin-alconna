@@ -1,24 +1,17 @@
-import warnings
-
-warnings.warn(
-    "nonebot_plugin_alconna.adapters.qqguild is deprecated, "
-    "use nonebot_plugin_alconna.adapters.qq instead.",
-    DeprecationWarning,
-    stacklevel=2,
-)
-
 from nepattern.main import URL, INTEGER
-from nonebot.adapters.qqguild.message import Ark as _Ark
-from nonebot.adapters.qqguild.message import MessageSegment
-from nonebot.adapters.qqguild.message import Embed as _Embed
-from nonebot.adapters.qqguild.message import Emoji as _Emoji
+from nonebot.adapters.qq.message import Ark as _Ark
+from nonebot.adapters.qq.message import MessageSegment
+from nonebot.adapters.qq.message import Embed as _Embed
+from nonebot.adapters.qq.message import Emoji as _Emoji
 from nepattern import BasePattern, PatternModel, UnionPattern
-from nonebot.adapters.qqguild.message import Reference as _Reference
-from nonebot.adapters.qqguild.message import Attachment as _Attachment
-from nonebot.adapters.qqguild.message import LocalImage as _LocalImage
-from nonebot.adapters.qqguild.message import MentionUser as _MentionUser
-from nonebot.adapters.qqguild.message import MentionChannel as _MentionChannel
-from nonebot.adapters.qqguild.message import MentionEveryone as _MentionEveryone
+from nonebot.adapters.qq.message import Keyboard as _Keyboard
+from nonebot.adapters.qq.message import Markdown as _Markdown
+from nonebot.adapters.qq.message import Reference as _Reference
+from nonebot.adapters.qq.message import Attachment as _Attachment
+from nonebot.adapters.qq.message import LocalImage as _LocalImage
+from nonebot.adapters.qq.message import MentionUser as _MentionUser
+from nonebot.adapters.qq.message import MentionChannel as _MentionChannel
+from nonebot.adapters.qq.message import MentionEveryone as _MentionEveryone
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 
@@ -28,6 +21,8 @@ Embed = SegmentPattern("embed", _Embed, MessageSegment.embed)
 Emoji = SegmentPattern("emoji", _Emoji, MessageSegment.emoji)
 Image = SegmentPattern("attachment", _Attachment, MessageSegment.image)
 FileImage = SegmentPattern("file_image", _LocalImage, MessageSegment.file_image)
+Keyboard = SegmentPattern("keyboard", _Keyboard, MessageSegment.keyboard)
+Markdown = SegmentPattern("markdown", _Markdown, MessageSegment.markdown)
 MentionUser = SegmentPattern("mention_user", _MentionUser, MessageSegment.mention_user)
 MentionChannel = SegmentPattern("mention_channel", _MentionChannel, MessageSegment.mention_channel)
 MentionEveryone = SegmentPattern("mention_everyone", _MentionEveryone, MessageSegment.mention_everyone)

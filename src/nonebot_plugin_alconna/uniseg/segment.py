@@ -219,12 +219,12 @@ class _At(UniPattern[At]):
                 return At("user", str(seg.data["user_id"]))
             if "text" in seg.data:
                 return At("user", seg.data["text"])
-        if seg.type == "mention_user":  # qqguild, discord, villa
+        if seg.type == "mention_user":  # qq, qqguild, discord, villa
             if "user_id" in seg.data:
                 return At("user", str(seg.data["user_id"]))
             if "mention_user" in seg.data:
                 return At("user", str(seg.data["mention_user"].user_id))
-        if seg.type == "mention_channel":  # discord, qqguild
+        if seg.type == "mention_channel":  # discord, qq, qqguild
             return At("channel", str(seg.data["channel_id"]))
         if seg.type == "mention_role":  # discord
             return At("role", str(seg.data["role_id"]))
@@ -441,7 +441,7 @@ class _Reply(UniPattern[Reply]):
         if seg.type == "reference":
             if "message_id" in seg.data:  # telegram
                 return Reply(seg, seg.data["message_id"])
-            if "reference" in seg.data:  # discord
+            if "reference" in seg.data:  # discord, qq, qqguild
                 return Reply(seg, seg.data["reference"].message_id)
         if seg.type == "reply":
             if "id" in seg.data:  # ob11

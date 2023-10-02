@@ -282,7 +282,8 @@ def on_alconna(
 | [Telegram](https://core.telegram.org/bots/api)                      | adapters.telegram                    |
 | [飞书](https://open.feishu.cn/document/home/index)                    | adapters.feishu                      |
 | [GitHub](https://docs.github.com/en/developers/apps)                | adapters.github                      |
-| [QQ 频道](https://bot.q.qq.com/wiki/)                                 | adapters.qqguild                     |
+| [QQ bot](https://github.com/nonebot/adapter-qq)                     | adapters.qqguild                     |
+| [QQ 频道bot](https://bot.q.qq.com/wiki/)                              | adapters.qqguild                     |
 | [钉钉](https://open.dingtalk.com/document/)                           | adapters.ding                        |
 | [Console](https://github.com/nonebot/adapter-console)               | adapters.console                     |
 | [开黑啦](https://developer.kookapp.cn/)                                | adapters.kook                        |
