@@ -29,7 +29,7 @@ async def test_got_path(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         event = fake_group_message_event_v11(message=Message("test"), user_id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, "请输入目标", result=None)
+        ctx.should_call_send(event, Message("请输入目标"), result=None)
         ctx.should_rejected(test_cmd)
         event = fake_group_message_event_v11(message=Message("1234"), user_id=123)
         ctx.receive_event(bot, event)
@@ -37,7 +37,7 @@ async def test_got_path(app: App):
 
         event = fake_group_message_event_v11(message=Message("test"), user_id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, "请输入目标", result=None)
+        ctx.should_call_send(event, Message("请输入目标"), result=None)
         ctx.should_rejected(test_cmd)
         event = fake_group_message_event_v11(message=Message(MessageSegment.at(1234)), user_id=123)
         ctx.receive_event(bot, event)

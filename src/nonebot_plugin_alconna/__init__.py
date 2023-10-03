@@ -78,6 +78,7 @@ from .params import AlconnaMatches as AlconnaMatches
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
 from .uniseg import SerializeFailed as SerializeFailed
+from .extension import load_from_path as load_from_path
 from .uniseg import UniversalMessage as UniversalMessage
 from .uniseg import UniversalSegment as UniversalSegment
 from .params import AlconnaExecResult as AlconnaExecResult
@@ -118,6 +119,8 @@ with contextlib.suppress(ValueError, LookupError):
     global_config = get_driver().config
     _config = Config.parse_obj(global_config)
     _use_param = _config.alconna_use_param
+    for path in _config.alconna_global_extensions:
+        load_from_path(path)
 
 if _use_param:
     AlconnaMatcher.HANDLER_PARAM_TYPES = (

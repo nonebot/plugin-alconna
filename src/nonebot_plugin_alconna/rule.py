@@ -37,6 +37,8 @@ class AlconnaRule:
         skip_for_unmatch: 是否在命令不匹配时跳过该响应
         auto_send_output: 是否自动发送输出信息并跳过响应
         comp_config: 自动补全配置
+        extensions: 需要加载的匹配扩展
+        exclude_ext: 需要排除的匹配扩展
         use_origin: 是否使用未经 to_me 等处理过的消息
         use_cmd_start: 是否使用 nb 全局配置里的命令前缀
     """
@@ -57,6 +59,7 @@ class AlconnaRule:
         auto_send_output: bool = False,
         comp_config: Optional[CompConfig] = None,
         extensions: Optional[List[Union[Type[Extension], Extension]]] = None,
+        exclude_ext: Optional[List[Union[Type[Extension], str]]] = None,
         use_origin: bool = False,
         use_cmd_start: bool = False,
         use_cmd_sep: bool = False,
@@ -86,7 +89,7 @@ class AlconnaRule:
             self.auto_send = auto_send_output
         self.command = command
         self.skip = skip_for_unmatch
-        self.executor = ExtensionExecutor(extensions)
+        self.executor = ExtensionExecutor(extensions, exclude_ext)
         self.executor.post_init(self.command)
 
     def __repr__(self) -> str:

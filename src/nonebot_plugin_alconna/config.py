@@ -1,4 +1,6 @@
-from pydantic import Extra, BaseModel
+from typing import List
+
+from pydantic import Extra, Field, BaseModel
 
 
 class Config(BaseModel, extra=Extra.ignore):
@@ -21,3 +23,6 @@ class Config(BaseModel, extra=Extra.ignore):
 
     alconna_use_command_sep: bool = False
     """是否将 COMMAND_SEP 作为全局命令分隔符"""
+
+    alconna_global_extensions: List[str] = Field(default_factory=list)
+    """全局加载的扩展, 路径以 . 分隔, 如 foo.bar.baz:DemoExtension"""

@@ -29,4 +29,4 @@ async def test_unimsg_template(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         event = fake_group_message_event_v11(message=Message("calc add 1.3 2.4"), user_id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, "1.3 add 2.4 = 3.7")
+        ctx.should_call_send(event, Message("1.3 add 2.4 = 3.7"))

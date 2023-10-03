@@ -1,7 +1,7 @@
 import pytest
 from nonebug import App
 from nonebot import get_adapter
-from nonebot.adapters.discord import Bot, Adapter
+from nonebot.adapters.discord import Bot, Adapter, Message
 from arclet.alconna import Args, Option, Alconna, Subcommand, CommandMeta
 from nonebot.adapters.discord.api.types import ApplicationCommandType, ApplicationCommandOptionType
 from nonebot.adapters.discord.api.model import (
@@ -61,7 +61,7 @@ async def test_dc_ext(app: App):
             )
         )
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, "added test with 99")
+        ctx.should_call_send(event, Message("added test with 99"))
         ctx.should_finished(matcher)
 
     assert alc.parse("/permission remove test 123").matched
@@ -90,5 +90,5 @@ async def test_dc_ext(app: App):
             )
         )
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, "removed test with 123")
+        ctx.should_call_send(event, Message("removed test with 123"))
         ctx.should_finished(matcher)

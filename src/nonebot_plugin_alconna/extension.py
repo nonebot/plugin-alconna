@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import re
+import functools
+import importlib as imp
 from typing import Literal
 from typing_extensions import Self
+from abc import ABCMeta, abstractmethod
 
 from arclet.alconna import Alconna
 from nonebot.typing import T_State
@@ -12,8 +16,18 @@ from .uniseg import UniMessage, FallbackMessage
 OutputType = Literal["help", "shortcut", "completion"]
 
 
-class Extension:
-    priority: int = 16
+class Extension(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def priority(self) -> int:
+        """插件优先级。"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def id(self) -> str:
+        """插件 ID。"""
+        raise NotImplementedError
 
     def validate(self, bot: Bot, event: Event) -> bool:
         return True
@@ -49,10 +63,24 @@ class Extension:
         pass
 
 
-class ExtensionExecutor:
-    globals: list[type[Extension] | Extension] = [Extension()]
+class DefaultExtension(Extension):
+    @property
+    def priority(self) -> int:
+        return 16
 
-    def __init__(self, extensions: list[type[Extension] | Extension] | None = None):
+    @property
+    def id(self) -> str:
+        return "!default"
+
+
+class ExtensionExecutor:
+    globals: list[type[Extension] | Extension] = [DefaultExtension()]
+
+    def __init__(
+        self,
+        extensions: list[type[Extension] | Extension] | None = None,
+        excludes: list[str | type[Extension]] | None = None,
+    ):
         self.extensions: list[Extension] = []
         for ext in self.globals:
             if isinstance(ext, type):
@@ -65,6 +93,14 @@ class ExtensionExecutor:
                     self.extensions.append(ext())
                 else:
                     self.extensions.append(ext)
+        if excludes:
+            for ext in excludes:
+                if isinstance(ext, str):
+                    if ext.startswith("!"):
+                        raise ValueError("Extension which id starts with '!' cannot be excluded")
+                    self.extensions = [ext for ext in self.extensions if ext.id != ext]
+                else:
+                    self.extensions = [ext for ext in self.extensions if not isinstance(ext, ext)]
         self.context: list[Extension] = []
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -115,3 +151,23 @@ class ExtensionExecutor:
 
 def add_global_extension(*ext: type[Extension] | Extension) -> None:
     ExtensionExecutor.globals.extend(ext)
+
+
+pattern = re.compile(r"(?P<module>[\w.]+)\s*" r"(:\s*(?P<attr>[\w.]+)\s*)?" r"((?P<extras>\[.*\])\s*)?$")
+
+
+def load_from_path(path: str) -> None:
+    if path.startswith("~."):
+        path = f"nonebot_plugin_alconna{path[1:]}"
+    elif path.startswith("~"):
+        path = f"nonebot_plugin_alconna.{path[1:]}"
+    match = pattern.match(path)
+    module = imp.import_module(match.group("module"))
+    attrs = filter(None, (match.group("attr") or "__extension__").split("."))
+    ext = functools.reduce(getattr, attrs, module)
+    if isinstance(ext, type) and issubclass(ext, Extension):
+        add_global_extension(ext)
+    elif isinstance(ext, Extension):
+        add_global_extension(ext)
+    else:
+        raise TypeError(f"Value of {path} is not a subclass of Extension")

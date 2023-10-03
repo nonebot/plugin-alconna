@@ -326,6 +326,23 @@ class AlconnaMatcher(Matcher):
         return _decorator
 
     @classmethod
+    def convert(cls, message: _M) -> Message | UniMessage:
+        bot = current_bot.get()
+        event = current_event.get()
+        state = current_matcher.get().state
+        if isinstance(message, MessageTemplate):
+            return message.format(**state, **state[ALCONNA_RESULT].result.all_matched_args)
+        if isinstance(message, UniMessageTemplate):
+            return message.format(
+                **state, **state[ALCONNA_RESULT].result.all_matched_args, **{"$event": event, "$bot": bot}
+            )
+        if isinstance(message, (str, Segment)):
+            return UniMessage(message)
+        if isinstance(message, MessageSegment):
+            return message.get_message_class()(message)
+        return message
+
+    @classmethod
     async def send(
         cls,
         message: _M,
@@ -345,18 +362,7 @@ class AlconnaMatcher(Matcher):
         """
         bot = current_bot.get()
         event = current_event.get()
-        state = current_matcher.get().state
-        if isinstance(message, MessageTemplate):
-            _message = message.format(**state, **state[ALCONNA_RESULT].result.all_matched_args)
-        elif isinstance(message, UniMessageTemplate):
-            _message = message.format(
-                **state, **state[ALCONNA_RESULT].result.all_matched_args, **{"$event": event, "$bot": bot}
-            )
-        elif isinstance(message, Segment):
-            _message = UniMessage(message)
-        else:
-            _message = message
-        _message = await cls.executor.send_hook(bot, event, _message, fallback=fallback)
+        _message = await cls.executor.send_hook(bot, event, cls.convert(message), fallback=fallback)
         return await bot.send(event=event, message=_message, **kwargs)
 
     @classmethod
@@ -479,6 +485,7 @@ def on_alconna(
     aliases: set[str] | tuple[str, ...] | None = None,
     comp_config: CompConfig | None = None,
     extensions: list[type[Extension] | Extension] | None = None,
+    exclude_ext: list[type[Extension] | str] | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
     use_cmd_sep: bool = False,
@@ -499,10 +506,10 @@ def on_alconna(
         rule: 事件响应规则
         skip_for_unmatch: 是否在解析失败时跳过
         auto_send_output: 是否自动发送输出信息并跳过
-        output_converter: 输出信息字符串转换为 Message 方法
-        message_provider: 自定义消息提供器
         aliases: 命令别名
         comp_config: 补全会话配置, 不传入则不启用补全会话
+        extensions: 需要加载的匹配扩展
+        exclude_ext: 需要排除的匹配扩展
         use_origin: 是否使用未经 to_me 等处理过的消息
         use_cmd_start: 是否使用 nb 全局配置里的命令起始符
         use_cmd_sep: 是否使用 nb 全局配置里的命令分隔符
@@ -530,6 +537,7 @@ def on_alconna(
         auto_send_output,
         comp_config,
         extensions,
+        exclude_ext,
         use_origin,
         use_cmd_start,
         use_cmd_sep,
@@ -561,6 +569,7 @@ def funcommand(
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
     extensions: list[type[Extension] | Extension] | None = None,
+    exclude_ext: list[type[Extension] | str] | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
     use_cmd_sep: bool = False,
@@ -590,6 +599,7 @@ def funcommand(
             skip_for_unmatch,
             auto_send_output,
             extensions=extensions,
+            exclude_ext=exclude_ext,
             use_origin=use_origin,
             use_cmd_start=use_cmd_start,
             use_cmd_sep=use_cmd_sep,
@@ -625,6 +635,7 @@ class Command(AlconnaString):
         aliases: set[str] | tuple[str, ...] | None = None,
         comp_config: CompConfig | None = None,
         extensions: list[type[Extension] | Extension] | None = None,
+        exclude_ext: list[type[Extension] | str] | None = None,
         use_origin: bool = False,
         use_cmd_start: bool = False,
         use_cmd_sep: bool = False,

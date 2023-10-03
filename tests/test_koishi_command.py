@@ -29,4 +29,4 @@ async def test_command(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         event = fake_group_message_event_v11(message=Message("book --anonymous"), user_id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, "{'writer': (value=Ellipsis args={'id': 0})}")
+        ctx.should_call_send(event, Message("{'writer': (value=Ellipsis args={'id': 0})}"))

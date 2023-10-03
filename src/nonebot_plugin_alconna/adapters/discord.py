@@ -4,17 +4,19 @@ from typing import Dict, List, Type, Union, Optional
 from nonebot import logger
 from nonebot.rule import Rule
 from nonebot.adapters import Event
+from nonebot.adapters.discord import Bot
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from arclet.alconna import Args, Option, Alconna, Subcommand
 from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.adapters.discord.commands.storage import _application_command_storage
+from nonebot.adapters.discord.api.types import MessageFlag, InteractionCallbackType
+from nonebot.internal.matcher.matcher import current_bot, current_event, current_matcher
 from nepattern import FLOAT, NUMBER, INTEGER, AnyOne, BasePattern, PatternModel, UnionPattern
 from nonebot.adapters.discord.commands.matcher import (
     SlashCommandMatcher,
     ApplicationCommandConfig,
-    ApplicationCommandMatcher,
     on_slash_command,
 )
 from nonebot.adapters.discord.message import (
@@ -31,8 +33,10 @@ from nonebot.adapters.discord.message import (
     MentionUserSegment,
     MentionChannelSegment,
     MentionEveryoneSegment,
+    parse_message,
 )
 from nonebot.adapters.discord.api import (
+    MessageGet,
     RoleOption,
     UserOption,
     NumberOption,
@@ -41,10 +45,12 @@ from nonebot.adapters.discord.api import (
     BooleanOption,
     ChannelOption,
     IntegerOption,
+    SnowflakeType,
     AnyCommandOption,
     AttachmentOption,
     SubCommandOption,
     MentionableOption,
+    InteractionResponse,
     SubCommandGroupOption,
     ApplicationCommandType,
     ApplicationCommandOptionType,
@@ -55,6 +61,7 @@ from nonebot_plugin_alconna import Extension
 from nonebot_plugin_alconna.uniseg import At
 from nonebot_plugin_alconna.typings import SegmentPattern
 from nonebot_plugin_alconna.uniseg import Image as UniImg
+from nonebot_plugin_alconna.matcher import _M, AlconnaMatcher
 
 Text = str
 Embed = SegmentPattern("embed", EmbedSegment, MessageSegment.embed)
@@ -288,9 +295,16 @@ def translate(
     return on_slash_command(**buffer)
 
 
-class DiscordExtension(Extension, ApplicationCommandMatcher):
-    priority = 10
+class DiscordExtension(Extension):
     application_command: ApplicationCommandConfig
+
+    @property
+    def priority(self) -> int:
+        return 10
+
+    @property
+    def id(self) -> str:
+        return "~adapters.discord:DiscordExtension"
 
     def __init__(
         self,
@@ -384,3 +398,125 @@ class DiscordExtension(Extension, ApplicationCommandMatcher):
             cmd += " ".join(_handle_options(data.options))
 
         return Message(cmd.rstrip())
+
+    @classmethod
+    async def send_deferred_response(cls) -> None:
+        event = current_event.get()
+        bot = current_bot.get()
+        if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
+            raise ValueError("Invalid event or bot")
+        await bot.create_interaction_response(
+            interaction_id=event.id,
+            interaction_token=event.token,
+            response=InteractionResponse(type=InteractionCallbackType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE),
+        )
+
+    @classmethod
+    async def send_response(cls, message: _M, fallback: bool = False) -> None:
+        matcher = current_matcher.get()
+        return await matcher.send(message, fallback=fallback)  # type: ignore
+
+    @classmethod
+    async def get_response(cls) -> MessageGet:
+        event = current_event.get()
+        bot = current_bot.get()
+        if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
+            raise ValueError("Invalid event or bot")
+        return await bot.get_origin_interaction_response(
+            application_id=bot.application_id,
+            interaction_token=event.token,
+        )
+
+    async def edit_response(
+        self,
+        message: _M,
+        fallback: bool = False,
+    ) -> None:
+        event = current_event.get()
+        bot = current_bot.get()
+        if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
+            raise ValueError("Invalid event or bot")
+        _message = AlconnaMatcher.convert(message)
+        message_data = parse_message(await self.send_hook(bot, event, _message, fallback))
+        await bot.edit_origin_interaction_response(
+            application_id=bot.application_id,
+            interaction_token=event.token,
+            **message_data,
+        )
+
+    @classmethod
+    async def delete_response(cls) -> None:
+        event = current_event.get()
+        bot = current_bot.get()
+        if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
+            raise ValueError("Invalid event or bot")
+        await bot.delete_origin_interaction_response(
+            application_id=bot.application_id,
+            interaction_token=event.token,
+        )
+
+    async def send_followup_msg(
+        self,
+        message: _M,
+        fallback: bool = False,
+        flags: Optional[MessageFlag] = None,
+    ) -> MessageGet:
+        event = current_event.get()
+        bot = current_bot.get()
+        if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
+            raise ValueError("Invalid event or bot")
+        _message = AlconnaMatcher.convert(message)
+        message_data = parse_message(await self.send_hook(bot, event, _message, fallback))
+        if flags:
+            message_data["flags"] = int(flags)
+        return await bot.create_followup_message(
+            application_id=bot.application_id,
+            interaction_token=event.token,
+            **message_data,
+        )
+
+    @classmethod
+    async def get_followup_msg(cls, message_id: SnowflakeType):
+        event = current_event.get()
+        bot = current_bot.get()
+        if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
+            raise ValueError("Invalid event or bot")
+        return await bot.get_followup_message(
+            application_id=bot.application_id,
+            interaction_token=event.token,
+            message_id=message_id,
+        )
+
+    async def edit_followup_msg(
+        self,
+        message_id: SnowflakeType,
+        message: _M,
+        fallback: bool = False,
+    ) -> MessageGet:
+        event = current_event.get()
+        bot = current_bot.get()
+        if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
+            raise ValueError("Invalid event or bot")
+        _message = AlconnaMatcher.convert(message)
+        message_data = parse_message(await self.send_hook(bot, event, _message, fallback))
+        return await bot.edit_followup_message(
+            application_id=bot.application_id,
+            interaction_token=event.token,
+            message_id=message_id,
+            **message_data,
+        )
+
+    @classmethod
+    async def delete_followup_msg(cls, message_id: SnowflakeType) -> None:
+        event = current_event.get()
+        bot = current_bot.get()
+        if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
+            raise ValueError("Invalid event or bot")
+        await bot.delete_followup_message(
+            application_id=bot.application_id,
+            interaction_token=event.token,
+            message_id=message_id,
+        )
+
+
+__extension__ = DiscordExtension

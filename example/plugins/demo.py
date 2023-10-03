@@ -43,7 +43,13 @@ from nonebot_plugin_alconna import (
 
 
 class DemoExtension(Extension):
-    priority = 15
+    @property
+    def priority(self) -> int:
+        return 15
+
+    @property
+    def id(self) -> str:
+        return "demo"
 
     async def output_converter(self, output_type, content: str):
         return UniMessage(content)
@@ -279,7 +285,14 @@ async def pip1_m():
 
 
 class TestExtension(DemoExtension):
-    priority = 14
+
+    @property
+    def priority(self) -> int:
+        return 14
+
+    @property
+    def id(self) -> str:
+        return "test"
 
     async def message_provider(self, event, state, bot: Bot, use_origin: bool = False):
         if not isinstance(event, GroupMessageDeleteEvent):
