@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
+    from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
     from nonebot.adapters.onebot.v11 import GroupMessageEvent as GroupMessageEventV11
     from nonebot.adapters.onebot.v12 import GroupMessageEvent as GroupMessageEventV12
     from nonebot.adapters.onebot.v11 import PrivateMessageEvent as PrivateMessageEventV11
@@ -118,5 +119,22 @@ def fake_private_message_event_v12(**field) -> "PrivateMessageEventV12":
 
         class Config:
             extra = "forbid"
+
+    return FakeEvent(**field)
+
+
+def fake_discord_interaction_event(**field) -> "ApplicationCommandInteractionEvent":
+    from pydantic import create_model
+    from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
+
+    _Fake = create_model("_Fake", __base__=ApplicationCommandInteractionEvent)
+    field["type"] = 2
+    field["id"] = 123456
+    field["application_id"] = 123456789
+    field["token"] = "sometoken"
+    field["version"] = 1
+
+    class FakeEvent(_Fake):
+        pass
 
     return FakeEvent(**field)

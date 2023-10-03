@@ -343,16 +343,23 @@ class DiscordExtension(Extension, ApplicationCommandMatcher):
             nsfw=self.nsfw,
         )
         _application_command_storage[self.internal_id or config.name] = config
-        self.config = config
+        self.application_command = config
 
     def validate(self, bot, event: Event) -> bool:
         if not isinstance(event, ApplicationCommandInteractionEvent):
             return False
-        if event.data.name != self.config.name or event.data.type != self.config.type:
+        if (
+            event.data.name != self.application_command.name
+            or event.data.type != self.application_command.type
+        ):
             return False
-        if not event.data.guild_id and self.config.guild_ids is None:
+        if not event.data.guild_id and self.application_command.guild_ids is None:
             return True
-        return event.data.guild_id and self.config.guild_ids and event.data.guild_id in self.config.guild_ids
+        return (
+            event.data.guild_id
+            and self.application_command.guild_ids
+            and event.data.guild_id in self.application_command.guild_ids
+        )
 
     async def message_provider(self, event: Event, state: T_State, bot, use_origin: bool = False):
         if not isinstance(event, ApplicationCommandInteractionEvent):
@@ -360,20 +367,20 @@ class DiscordExtension(Extension, ApplicationCommandMatcher):
         data = event.data
         cmd = f"/{data.name}"
 
-        def _handle_option(opt: ApplicationCommandInteractionDataOption):
-            if opt.type in (
-                ApplicationCommandOptionType.SUB_COMMAND,
-                ApplicationCommandOptionType.SUB_COMMAND_GROUP,
-            ):
-                yield f"{opt.name}"
-                if opt.options:
-                    for o in opt.options:
-                        yield from _handle_option(o)
-            else:
-                yield f"{opt.value}"
+        def _handle_options(options: List[ApplicationCommandInteractionDataOption]):
+            for opt in options:
+                if opt.type in (
+                    ApplicationCommandOptionType.SUB_COMMAND,
+                    ApplicationCommandOptionType.SUB_COMMAND_GROUP,
+                ):
+                    yield f"{opt.name}"
+                    if opt.options:
+                        yield from _handle_options(opt.options)
+                else:
+                    yield f"{opt.value}"
 
         if data.options:
             cmd += " "
-            for opt in data.options:
-                cmd += " ".join(_handle_option(opt)) + " "
+            cmd += " ".join(_handle_options(data.options))
+
         return Message(cmd.rstrip())
