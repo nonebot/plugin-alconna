@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Type, Union, Optional
 
+from nonebot import logger
 from nonebot.rule import Rule
 from nonebot.adapters import Event
 from nonebot.permission import Permission
@@ -240,6 +241,10 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
             description=opt.help_text,
             options=_translate_args(opt.args),  # type: ignore
         )
+    if not opt.args.empty and opt.options:
+        logger.warning(
+            f"cannot have both Args and Option/Subcommand in Subcommand::{opt.name} with DiscordExtension"
+        )
     if not opt.args.empty:
         return SubCommandOption(
             name=opt.name, description=opt.help_text, options=_translate_args(opt.args)  # type: ignore
@@ -309,6 +314,15 @@ class DiscordExtension(Extension, ApplicationCommandMatcher):
         super().__init__()
 
     def post_init(self, alc: Alconna) -> None:
+        if alc.prefixes != ["/"]:
+            logger.warning(
+                f'prefix of Alconna::{alc.name} with DiscordExtension is not ["/"], '
+                "the slash command will not respond properly"
+            )
+        if not alc.args.empty and alc.options:
+            logger.warning(
+                f"cannot have both Args and Option/Subcommand in Alconna::{alc.name} with DiscordExtension"
+            )
         if not (options := _translate_args(alc.args)):
             options = [
                 _translate_options(opt)
