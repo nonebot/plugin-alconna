@@ -319,16 +319,13 @@ class DiscordExtension(Extension, ApplicationCommandMatcher):
                 f'prefix of Alconna::{alc.name} with DiscordExtension is not ["/"], '
                 "the slash command will not respond properly"
             )
-        if not alc.args.empty and alc.options:
+        allow_opt = [opt for opt in alc.options if opt.name not in alc.namespace_config.builtin_option_name]
+        if not alc.args.empty and allow_opt:
             logger.warning(
                 f"cannot have both Args and Option/Subcommand in Alconna::{alc.name} with DiscordExtension"
             )
         if not (options := _translate_args(alc.args)):
-            options = [
-                _translate_options(opt)
-                for opt in alc.options
-                if opt.name not in alc.namespace_config.builtin_option_name
-            ]
+            options = [_translate_options(opt) for opt in allow_opt]
         config = ApplicationCommandConfig(
             type=ApplicationCommandType.CHAT_INPUT,
             name=alc.command,
