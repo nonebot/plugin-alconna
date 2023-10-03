@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Type, Union, Optional
 
 from nonebot.rule import Rule
-from tarina.const import Empty
 from nonebot.adapters import Event
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
@@ -241,7 +240,7 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
             description=opt.help_text,
             options=_translate_args(opt.args),  # type: ignore
         )
-    if opt.args is not Empty:
+    if not opt.args.empty:
         return SubCommandOption(
             name=opt.name, description=opt.help_text, options=_translate_args(opt.args)  # type: ignore
         )
