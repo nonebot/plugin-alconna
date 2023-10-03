@@ -53,7 +53,7 @@ class ExtensionExecutor:
     globals: list[type[Extension] | Extension] = [Extension()]
 
     def __init__(self, extensions: list[type[Extension] | Extension] | None = None):
-        self.extensions = []
+        self.extensions: list[Extension] = []
         for ext in self.globals:
             if isinstance(ext, type):
                 self.extensions.append(ext())
@@ -65,14 +65,14 @@ class ExtensionExecutor:
                     self.extensions.append(ext())
                 else:
                     self.extensions.append(ext)
-        self.context = []
+        self.context: list[Extension] = []
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.context.clear()
 
     def select(self, bot: Bot, event: Event) -> Self:
         self.context = [ext for ext in self.extensions if ext.validate(bot, event)]
-        self.context.sort(key=lambda ext: ext.priority, reverse=True)
+        self.context.sort(key=lambda ext: ext.priority)
         return self
 
     async def output_converter(self, output_type: OutputType, content: str) -> Message | UniMessage:
@@ -90,10 +90,12 @@ class ExtensionExecutor:
         exc = None
         for ext in self.context:
             try:
-                return await ext.message_provider(event, state, bot, use_origin)
+                if (msg := await ext.message_provider(event, state, bot, use_origin)) is not None:
+                    return msg
             except Exception as e:
                 exc = e
-        raise exc  # type: ignore
+        if exc is not None:
+            raise exc
 
     async def send_hook(
         self, bot: Bot, event: Event, send: Message | UniMessage, fallback: bool = False
@@ -107,7 +109,7 @@ class ExtensionExecutor:
         raise exc  # type: ignore
 
     def post_init(self, alc: Alconna) -> None:
-        for ext in self.context:
+        for ext in self.extensions:
             ext.post_init(alc)
 
 

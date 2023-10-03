@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Type, Union, Optional
 
+from nonebot import logger
 from nonebot.rule import Rule
 from nonebot.adapters import Event
 from nonebot.permission import Permission
@@ -97,7 +98,7 @@ MentionID = (
 """
 
 
-def _translate_args(args: Args) -> list[AnyCommandOption]:
+def _translate_args(args: Args) -> List[AnyCommandOption]:
     result = []
     for arg in args:
         if isinstance(arg.value, UnionPattern):
@@ -240,13 +241,19 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
             description=opt.help_text,
             options=_translate_args(opt.args),  # type: ignore
         )
-    res = SubCommandGroupOption(
+    if not opt.args.empty and opt.options:
+        logger.warning(
+            f"cannot have both Args and Option/Subcommand in Subcommand::{opt.name} with DiscordExtension"
+        )
+    if not opt.args.empty:
+        return SubCommandOption(
+            name=opt.name, description=opt.help_text, options=_translate_args(opt.args)  # type: ignore
+        )
+    return SubCommandGroupOption(
         name=opt.name,
         description=opt.help_text,
         options=[_translate_options(sub) for sub in opt.options],  # type: ignore
     )
-    res.options.extend(_translate_args(opt.args))  # type: ignore
-    return res
 
 
 def translate(
@@ -307,15 +314,29 @@ class DiscordExtension(Extension, ApplicationCommandMatcher):
         super().__init__()
 
     def post_init(self, alc: Alconna) -> None:
-        options = [_translate_options(opt) for opt in alc.options]
-        options.extend(_translate_args(alc.args))
+        if alc.prefixes != ["/"]:
+            logger.warning(
+                f'prefix of Alconna::{alc.name} with DiscordExtension is not ["/"], '
+                "the slash command will not respond properly"
+            )
+        allow_opt = [
+            opt
+            for opt in alc.options
+            if opt.name not in set().union(*alc.namespace_config.builtin_option_name.values())  # type: ignore
+        ]
+        if not alc.args.empty and allow_opt:
+            logger.warning(
+                f"cannot have both Args and Option/Subcommand in Alconna::{alc.name} with DiscordExtension"
+            )
+        if not (options := _translate_args(alc.args)):
+            options = [_translate_options(opt) for opt in allow_opt]
         config = ApplicationCommandConfig(
             type=ApplicationCommandType.CHAT_INPUT,
             name=alc.command,
             name_localizations=self.name_localizations,
             description=self.description or alc.meta.description,
             description_localizations=self.description_localizations,
-            options=options,
+            options=options,  # type: ignore
             default_member_permissions=self.default_member_permissions,
             dm_permission=self.dm_permission,
             default_permission=self.default_permission,
@@ -346,7 +367,8 @@ class DiscordExtension(Extension, ApplicationCommandMatcher):
             ):
                 yield f"{opt.name}"
                 if opt.options:
-                    yield from (_handle_option(o) for o in opt.options)
+                    for o in opt.options:
+                        yield from _handle_option(o)
             else:
                 yield f"{opt.value}"
 
