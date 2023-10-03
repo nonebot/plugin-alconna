@@ -285,7 +285,6 @@ async def pip1_m():
 
 
 class TestExtension(DemoExtension):
-
     @property
     def priority(self) -> int:
         return 14
