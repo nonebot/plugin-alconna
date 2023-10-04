@@ -2,6 +2,7 @@ from copy import deepcopy
 from typing_extensions import Self, SupportsIndex
 from typing import TYPE_CHECKING, List, Type, Tuple, Union, TypeVar, Iterable, Optional, overload
 
+from tarina import lang
 from nonebot.internal.matcher import current_bot
 from nonebot.internal.adapter import Bot, Event, Message
 
@@ -457,7 +458,7 @@ class UniMessage(List[TS]):
             try:
                 bot = current_bot.get()
             except LookupError as e:
-                raise SerializeFailed("Can not export message without bot instance") from e
+                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
         adapter = bot.adapter
         adapter_name = adapter.get_name()
         try:
@@ -469,4 +470,4 @@ class UniMessage(List[TS]):
             raise
         if fallback:
             return FallbackMessage(str(self))
-        raise SerializeFailed(f"Can not export message to {adapter_name} message")
+        raise SerializeFailed(lang.require("nbp-uniseg", "failed").format(target=self, adapter=adapter_name))

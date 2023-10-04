@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Union
 
+from tarina import lang
 from nonebot.adapters import Bot
 
 from ..export import MessageExporter, SerializeFailed, export
@@ -55,7 +56,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
         elif seg.path:
             return method(path=str(seg.path))
         else:
-            raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def file(self, seg: File, bot: Bot) -> "MessageSegment":

@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
+from tarina import lang
 from nonebot.adapters import Bot
 from nonebot.internal.driver import Request
 
@@ -52,6 +53,7 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Bot) -> "MessageSegment":
         ms = self.segment_class
+        name = seg.__class__.__name__.lower()
 
         if seg.raw:
             return ms.attachment(seg.id or seg.name, content=seg.raw)
@@ -65,13 +67,13 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
                 content=resp.content,  # type: ignore
             )
         else:
-            raise SerializeFailed(f"Invalid image segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def file(self, seg: File, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
         if not seg.raw:
-            raise SerializeFailed(f"Invalid file segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
         return ms.attachment(seg.name, content=seg.raw)  # type: ignore
 
     @export

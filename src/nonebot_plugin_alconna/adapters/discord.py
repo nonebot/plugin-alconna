@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Type, Union, Optional
 
+from tarina import lang
 from nonebot.rule import Rule
 from nonebot.adapters import Event
 from nonebot.adapters.discord import Bot
@@ -250,8 +251,7 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
     if not opt.args.empty and opt.options:
         log(
             "WARNING",
-            f"Subcommand {opt.name} which have both Args and sub Option/Subcommand "
-            "can make unintended consequences when you translate Alconna to Discord slash-command",
+            lang.require("nbp-alc", "log.discord_ambiguous_subcommand").format(name=opt.name),
         )
     if not opt.args.empty:
         return SubCommandOption(
@@ -287,9 +287,7 @@ def translate(
     if alc.prefixes != ["/"] or (
         not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")
     ):
-        raise ValueError(
-            "The Alconna obj must have '/' prefix when use to translate to Discord slash-command"
-        )
+        raise ValueError(lang.require("nbp-alc", "error.discord_prefix"))
     allow_opt = [
         opt
         for opt in alc.options
@@ -298,8 +296,7 @@ def translate(
     if not alc.args.empty and allow_opt:
         log(
             "WARNING",
-            f"{alc.path} which have both Args and Option/Subcommand "
-            "can make unintended consequences when you translate it to Discord slash-command",
+            lang.require("nbp-alc", "log.discord_ambiguous_command").format(cmd=alc.path),
         )
     if not (options := _translate_args(alc.args)):
         options = [_translate_options(opt) for opt in allow_opt]
@@ -323,7 +320,7 @@ class DiscordSlashExtension(Extension):
 
     @property
     def id(self) -> str:
-        return "~adapters.discord:DiscordExtension"
+        return "adapters.discord:DiscordSlashExtension"
 
     def __init__(
         self,
@@ -350,9 +347,7 @@ class DiscordSlashExtension(Extension):
         if alc.prefixes != ["/"] or (
             not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")
         ):
-            raise ValueError(
-                "The Alconna obj must have '/' prefix when use to translate to Discord slash-command"
-            )
+            raise ValueError(lang.require("nbp-alc", "error.discord_prefix"))
         allow_opt = [
             opt
             for opt in alc.options
@@ -361,8 +356,7 @@ class DiscordSlashExtension(Extension):
         if not alc.args.empty and allow_opt:
             log(
                 "WARNING",
-                f"{alc.path} which have both Args and Option/Subcommand "
-                "can make unintended consequences when you translate it to Discord slash-command",
+                lang.require("nbp-alc", "log.discord_ambiguous_command").format(cmd=alc.path),
             )
         if not (options := _translate_args(alc.args)):
             options = [_translate_options(opt) for opt in allow_opt]

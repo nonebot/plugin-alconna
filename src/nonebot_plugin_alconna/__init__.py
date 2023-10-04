@@ -4,6 +4,7 @@ import nonebot
 
 nonebot.load_plugin("nonebot_plugin_alconna.uniseg")
 
+from tarina import lang
 from nonebot import get_driver
 from arclet.alconna import Args as Args
 from arclet.alconna import Field as Field
@@ -87,7 +88,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.25.1"
+__version__ = "0.26.0"
 
 _meta_source = {
     "name": "Alconna 插件",
@@ -121,7 +122,7 @@ with contextlib.suppress(ValueError, LookupError):
     _config = Config.parse_obj(global_config)
     _use_param = _config.alconna_use_param
     for path in _config.alconna_global_extensions:
-        log("TRACE", f"Loading Global Extension: {path}")
+        log("DEBUG", lang.require("nbp-alc", "log.load_global_extensions").format(path=path))
         load_from_path(path)
 
 if _use_param:

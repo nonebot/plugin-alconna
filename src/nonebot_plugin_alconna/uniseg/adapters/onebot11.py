@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
+from tarina import lang
 from nonebot.adapters import Bot
 from nonebot.internal.driver import Request
 
@@ -65,7 +66,7 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
         elif seg.id:
             return method(seg.id)
         else:
-            raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def card(self, seg: Card, bot: Bot) -> "MessageSegment":

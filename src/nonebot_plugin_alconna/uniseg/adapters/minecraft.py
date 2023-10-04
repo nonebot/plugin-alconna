@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Union
 
+from tarina import lang
 from nonebot.adapters import Bot
 
 from ..segment import Text, Image, Video
@@ -36,4 +37,4 @@ class MinecraftMessageExporter(MessageExporter["MessageSegment"]):
         if seg.id or seg.url:
             return method(seg.id or seg.url)  # type: ignore
         else:
-            raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))

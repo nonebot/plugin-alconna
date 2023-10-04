@@ -208,7 +208,7 @@ class AlconnaRule:
         if not arp.matched and not may_help_text and self.skip:
             return False
         if arp.head_matched:
-            log("DEBUG", f'Parse result of "{msg}" by {self.command.path} is ({arp})')
+            log("DEBUG", lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp))
         if not may_help_text and arp.error_info:
             may_help_text = repr(arp.error_info)
         if self.auto_send and may_help_text:

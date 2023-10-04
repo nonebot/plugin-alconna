@@ -1,8 +1,7 @@
 import warnings
 
 warnings.warn(
-    "nonebot_plugin_alconna.adapters.qqguild is deprecated, "
-    "use nonebot_plugin_alconna.adapters.qq instead.",
+    "~adapters.qqguild is deprecated, " "use ~adapters.qq instead.",
     DeprecationWarning,
     stacklevel=2,
 )

@@ -14,6 +14,7 @@ from typing import (
     get_origin,
 )
 
+from tarina import lang
 from nonebot.adapters import Bot, Message, MessageSegment
 
 from .segment import Other, Segment
@@ -73,5 +74,7 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
             elif fallback:
                 message += str(seg)
             else:
-                raise SerializeFailed(f"Cannot serialize {seg!r} to {bot.adapter.get_name()} message")
+                raise SerializeFailed(
+                    lang.require("nbp-uniseg", "failed").format(target=seg, adapter=bot.adapter.get_name())
+                )
         return message

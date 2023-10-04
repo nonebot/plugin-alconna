@@ -1,0 +1,9 @@
+{
+  "default": "zh-CN",
+  "frozen": [
+    "nbp-uniseg"
+  ],
+  "require": [
+    "nbp-uniseg"
+  ]
+}

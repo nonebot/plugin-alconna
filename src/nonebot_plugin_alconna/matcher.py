@@ -9,7 +9,7 @@ from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from nepattern import STRING, AnyOne, AnyString
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
-from tarina import is_awaitable, run_always_await
+from tarina import lang, is_awaitable, run_always_await
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
@@ -24,8 +24,8 @@ from .typings import MReturn
 from .model import CompConfig
 from .uniseg import Segment, UniMessage
 from .uniseg.template import UniMessageTemplate
-from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY
 from .extension import Extension, ExtensionExecutor
+from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, log
 from .params import CHECK, MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch, merge_path
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
@@ -70,19 +70,6 @@ class AlconnaMatcher(Matcher):
     command: ClassVar[Alconna]
     basepath: ClassVar[str]
     executor: ClassVar[ExtensionExecutor]
-
-    # @contextmanager
-    # def ensure_context(self, bot: Bot, event: Event):
-    #     b_t = current_bot.set(bot)
-    #     e_t = current_event.set(event)
-    #     m_t = current_matcher.set(self)
-    #     try:
-    #         yield
-    #     finally:
-    #         current_bot.reset(b_t)
-    #         current_event.reset(e_t)
-    #         current_matcher.reset(m_t)
-    #         self.executor.context.clear()
 
     @classmethod
     def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):
@@ -152,7 +139,9 @@ class AlconnaMatcher(Matcher):
         """
         path = merge_path(path, cls.basepath)
         if not (arg := extract_arg(path, cls.command)):
-            raise ValueError(f"Path {path} not found in Alconna")
+            raise ValueError(
+                lang.require("nbp-alc", "error.matcher_got_path").format(path=path, cmd=cls.command.path)
+            )
 
         async def _key_getter(event: Event, bot: Bot, matcher: AlconnaMatcher):
             matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
@@ -160,7 +149,12 @@ class AlconnaMatcher(Matcher):
                 ms = event.get_message()[-1]
                 if ms.is_text() and not ms.data["text"].strip() and len(event.get_message()) > 1:
                     ms = event.get_message()[-2]
+                log("DEBUG", lang.require("nbp-alc", "log.got_path/ms").format(path=path, ms=ms))
                 if (res := _validate(arg, ms)) is None:  # type: ignore
+                    log(
+                        "TRACE",
+                        lang.require("nbp-alc", "log.got_path/validate").format(path=path, validate=res),
+                    )
                     await matcher.reject(prompt, fallback=True)
                     return
                 if middleware:

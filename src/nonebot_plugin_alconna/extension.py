@@ -7,6 +7,7 @@ from typing_extensions import Self
 from typing import Literal, TypeVar
 from abc import ABCMeta, abstractmethod
 
+from tarina import lang
 from arclet.alconna import Alconna
 from nonebot.typing import T_State
 from nonebot.adapters import Bot, Event, Message
@@ -94,7 +95,7 @@ class ExtensionExecutor:
             for ext in excludes:
                 if isinstance(ext, str):
                     if ext.startswith("!"):
-                        raise ValueError("Extension which id starts with '!' cannot be excluded")
+                        raise ValueError(lang.require("nbp-alc", "error.extension_forbid_exclude"))
                     self.extensions = [ext for ext in self.extensions if ext.id != ext]
                 else:
                     self.extensions = [ext for ext in self.extensions if not isinstance(ext, ext)]
@@ -162,4 +163,4 @@ def load_from_path(path: str) -> None:
     elif isinstance(ext, Extension):
         add_global_extension(ext)
     else:
-        raise TypeError(f"Value of {path} is not a subclass of Extension")
+        raise TypeError(lang.require("nbp-alc", "error.extension_path_load").format(path=path))

@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Union
 
+from tarina import lang
 from nonebot.adapters import Bot
 
 from ..export import MessageExporter, SerializeFailed, export
@@ -59,7 +60,7 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
             resp = await bot.upload_file(type="data", name=seg.name, data=seg.raw)
             return method(resp["file_id"])
         else:
-            raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def file(self, seg: File, bot: Bot) -> "MessageSegment":
@@ -71,7 +72,7 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
             resp = await bot.upload_file(type="data", name=seg.name or "file", data=seg.raw)
             return ms.file(resp["file_id"])
         else:
-            raise SerializeFailed(f"Invalid file segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

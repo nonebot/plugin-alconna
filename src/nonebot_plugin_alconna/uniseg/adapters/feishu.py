@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
+from tarina import lang
 from nonebot.adapters import Bot
 from nonebot.internal.driver import Request
 
@@ -46,7 +47,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         elif seg.raw:
             image = seg.raw
         else:
-            raise SerializeFailed(f"Invalid image segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
         data = {"image_type": "message"}
         files = {"image": ("file", image)}
         params = {"method": "POST", "data": data, "files": files}
@@ -69,7 +70,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         elif seg.raw:
             audio = seg.raw
         else:
-            raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
         data = {"file_type": "stream", "file_name": seg.name}
         files = {"file": ("file", audio)}
         params = {"method": "POST", "data": data, "files": files}
@@ -91,7 +92,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
             file_key = result["file_key"]
             return ms.file(file_key)
         else:
-            raise SerializeFailed(f"Invalid file segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

@@ -5,5 +5,17 @@
     "exit": "Send {cmd} to exit the completion session",
     "timeout": "Completion session timed out. Exited automatically",
     "exited": "Completion session exited"
+  },
+  "nbp-alc": {
+    "log.load_global_extensions": "Loading global extension from {path}",
+    "log.got_path/ms": "MessageSegment for got_path({path}) is {ms!r}",
+    "log.got_path/validate": "{validate} for got_path({path})",
+    "log.discord_ambiguous_command": "{cmd} which have both Args and Option/Subcommand can make unintended consequences when you translate it to Discord slash-command",
+    "log.discord_ambiguous_subcommand": "Subcommand {name} which have both Args and sub Option/Subcommand can make unintended consequences when you translate Alconna to Discord slash-command",
+    "log.parse": "Parse result of \"{msg}\" by {cmd} is ({arp})",
+    "error.discord_prefix": "The Alconna obj must have '/' prefix when use to translate to Discord slash-command",
+    "error.extension_forbid_exclude": "Extension which id starts with '!' cannot be excluded",
+    "error.extension_path_load": "Value of {path} is not a subclass of Extension",
+    "error.matcher_got_path": "Path {path} not found in Alconna {cmd}"
   }
 }

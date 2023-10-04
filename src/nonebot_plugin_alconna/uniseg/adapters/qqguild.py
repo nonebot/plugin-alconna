@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from tarina import lang
 from nonebot.adapters import Bot
 
 from ..segment import At, Text, AtAll, Emoji, Image, Reply
@@ -35,7 +36,11 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
         elif seg.target == "user":
             return ms.mention_user(int(seg.target))
         else:
-            raise SerializeFailed(f"Cannot serialize {seg!r} to qqguild mention")
+            raise SerializeFailed(
+                lang.require("nbp-uniseg", "failed_segment").format(
+                    adapter="qqguild", seg=seg, target="mention"
+                )
+            )
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
@@ -58,7 +63,7 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
         elif seg.raw or seg.path:
             return ms.file_image(seg.raw or Path(seg.path))
         else:
-            raise SerializeFailed(f"Invalid image segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

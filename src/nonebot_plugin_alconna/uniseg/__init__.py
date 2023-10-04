@@ -12,6 +12,7 @@ from .segment import Other as Other
 from .segment import Reply as Reply
 from .segment import Video as Video
 from .segment import Voice as Voice
+from .const import log  # noqa: F401
 from .params import UniMsg as UniMsg
 from .segment import Segment as Segment
 from .message import UniMessage as UniMessage
@@ -21,7 +22,7 @@ from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 
-__version__ = "0.25.1"
+__version__ = "0.26.0"
 
 _meta_source = {
     "name": "Universal Segment 插件",

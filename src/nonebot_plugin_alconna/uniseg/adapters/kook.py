@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Union
 
+from tarina import lang
 from nonebot.adapters import Bot
 
 from ..export import MessageExporter, SerializeFailed, export
@@ -66,14 +67,16 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
             file_key = await bot.upload_file(seg.path or seg.raw)
             return method(file_key)
         else:
-            raise SerializeFailed(f"Invalid {name} segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
         if seg.flag == "xml":
-            raise SerializeFailed("Cannot serialize xml card to kook message")
+            raise SerializeFailed(
+                lang.require("nbp-uniseg", "failed_segment").format(adapter="kook", seg=seg, target="Card")
+            )
         return ms.Card(seg.raw)
 
     @export

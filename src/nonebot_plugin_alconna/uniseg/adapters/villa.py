@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from tarina import lang
 from nonebot.adapters import Bot
 
 from ..segment import At, Text, AtAll, Image, Reply
@@ -35,7 +36,7 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
             villa_id, room_id = seg.target.split(":", 1)
             return ms.room_link(int(villa_id), int(room_id), seg.display)
         else:
-            raise SerializeFailed(f"Invalid At segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
@@ -49,7 +50,7 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         if seg.url:
             return ms.image(seg.url)
         else:
-            raise SerializeFailed(f"Invalid image segment: {seg!r}")
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
