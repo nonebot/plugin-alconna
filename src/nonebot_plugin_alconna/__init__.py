@@ -36,6 +36,7 @@ from arclet.alconna import ArparmaBehavior as ArparmaBehavior
 from arclet.alconna import command_manager as command_manager
 from arclet.alconna import SubcommandResult as SubcommandResult
 
+from .consts import log
 from .config import Config
 from .uniseg import At as At
 from .uniseg import File as File
@@ -120,6 +121,7 @@ with contextlib.suppress(ValueError, LookupError):
     _config = Config.parse_obj(global_config)
     _use_param = _config.alconna_use_param
     for path in _config.alconna_global_extensions:
+        log("TRACE", f"Loading Global Extension: {path}")
         load_from_path(path)
 
 if _use_param:

@@ -26,7 +26,7 @@ from .config import Config
 from .uniseg import UniMessage
 from .model import CompConfig, CommandResult
 from .extension import Extension, ExtensionExecutor
-from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
+from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT, log
 
 
 class AlconnaRule:
@@ -207,6 +207,8 @@ class AlconnaRule:
             may_help_text: Optional[str] = cap.get("output", None)
         if not arp.matched and not may_help_text and self.skip:
             return False
+        if arp.head_matched:
+            log("DEBUG", f'Parse result of "{msg}" by {self.command.path} is ({arp})')
         if not may_help_text and arp.error_info:
             may_help_text = repr(arp.error_info)
         if self.auto_send and may_help_text:

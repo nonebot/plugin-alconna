@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Type, Union, Optional
 
-from nonebot import logger
 from nonebot.rule import Rule
 from nonebot.adapters import Event
 from nonebot.adapters.discord import Bot
@@ -57,10 +56,10 @@ from nonebot.adapters.discord.api import (
     ApplicationCommandInteractionDataOption,
 )
 
-from nonebot_plugin_alconna import Extension
 from nonebot_plugin_alconna.uniseg import At
 from nonebot_plugin_alconna.typings import SegmentPattern
 from nonebot_plugin_alconna.uniseg import Image as UniImg
+from nonebot_plugin_alconna import Extension, UniMessage, log
 from nonebot_plugin_alconna.matcher import _M, AlconnaMatcher
 
 Text = str
@@ -249,8 +248,10 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
             options=_translate_args(opt.args),  # type: ignore
         )
     if not opt.args.empty and opt.options:
-        logger.warning(
-            f"cannot have both Args and Option/Subcommand in Subcommand::{opt.name} with DiscordExtension"
+        log(
+            "WARNING",
+            f"Subcommand {opt.name} which have both Args and sub Option/Subcommand "
+            "can make unintended consequences when you translate Alconna to Discord slash-command",
         )
     if not opt.args.empty:
         return SubCommandOption(
@@ -283,19 +284,37 @@ def translate(
     state: Optional[T_State] = None,
     _depth: int = 0,
 ) -> Type[SlashCommandMatcher]:
+    if alc.prefixes != ["/"] or (
+        not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")
+    ):
+        raise ValueError(
+            "The Alconna obj must have '/' prefix when use to translate to Discord slash-command"
+        )
+    allow_opt = [
+        opt
+        for opt in alc.options
+        if opt.name not in set().union(*alc.namespace_config.builtin_option_name.values())  # type: ignore
+    ]
+    if not alc.args.empty and allow_opt:
+        log(
+            "WARNING",
+            f"{alc.path} which have both Args and Option/Subcommand "
+            "can make unintended consequences when you translate it to Discord slash-command",
+        )
+    if not (options := _translate_args(alc.args)):
+        options = [_translate_options(opt) for opt in allow_opt]
     buffer = {
         "name": alc.command,
         "description": alc.meta.description,
-        "options": [_translate_options(opt) for opt in alc.options],
+        "options": options,
         **locals(),
     }
     buffer["_depth"] += 1
     buffer.pop("alc")
-    buffer["options"].extend(_translate_args(alc.args))
     return on_slash_command(**buffer)
 
 
-class DiscordExtension(Extension):
+class DiscordSlashExtension(Extension):
     application_command: ApplicationCommandConfig
 
     @property
@@ -328,10 +347,11 @@ class DiscordExtension(Extension):
         super().__init__()
 
     def post_init(self, alc: Alconna) -> None:
-        if alc.prefixes != ["/"]:
-            logger.warning(
-                f'prefix of Alconna::{alc.name} with DiscordExtension is not ["/"], '
-                "the slash command will not respond properly"
+        if alc.prefixes != ["/"] or (
+            not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")
+        ):
+            raise ValueError(
+                "The Alconna obj must have '/' prefix when use to translate to Discord slash-command"
             )
         allow_opt = [
             opt
@@ -339,8 +359,10 @@ class DiscordExtension(Extension):
             if opt.name not in set().union(*alc.namespace_config.builtin_option_name.values())  # type: ignore
         ]
         if not alc.args.empty and allow_opt:
-            logger.warning(
-                f"cannot have both Args and Option/Subcommand in Alconna::{alc.name} with DiscordExtension"
+            log(
+                "WARNING",
+                f"{alc.path} which have both Args and Option/Subcommand "
+                "can make unintended consequences when you translate it to Discord slash-command",
             )
         if not (options := _translate_args(alc.args)):
             options = [_translate_options(opt) for opt in allow_opt]
@@ -412,9 +434,9 @@ class DiscordExtension(Extension):
         )
 
     @classmethod
-    async def send_response(cls, message: _M, fallback: bool = False) -> None:
-        matcher = current_matcher.get()
-        return await matcher.send(message, fallback=fallback)  # type: ignore
+    async def send_response(cls, message: _M, fallback: bool = False):
+        matcher: AlconnaMatcher = current_matcher.get()  # type: ignore
+        return await matcher.send(message, fallback)
 
     @classmethod
     async def get_response(cls) -> MessageGet:
@@ -432,12 +454,16 @@ class DiscordExtension(Extension):
         message: _M,
         fallback: bool = False,
     ) -> None:
+        matcher: AlconnaMatcher = current_matcher.get()  # type: ignore
         event = current_event.get()
         bot = current_bot.get()
         if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
             raise ValueError("Invalid event or bot")
-        _message = AlconnaMatcher.convert(message)
-        message_data = parse_message(await self.send_hook(bot, event, _message, fallback))
+        _message = await matcher.executor.send_hook(bot, event, matcher.convert(message))
+        if isinstance(_message, UniMessage):
+            message_data = parse_message(await _message.export(bot, fallback))
+        else:
+            message_data = parse_message(_message)
         await bot.edit_origin_interaction_response(
             application_id=bot.application_id,
             interaction_token=event.token,
@@ -461,12 +487,16 @@ class DiscordExtension(Extension):
         fallback: bool = False,
         flags: Optional[MessageFlag] = None,
     ) -> MessageGet:
+        matcher: AlconnaMatcher = current_matcher.get()  # type: ignore
         event = current_event.get()
         bot = current_bot.get()
         if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
             raise ValueError("Invalid event or bot")
-        _message = AlconnaMatcher.convert(message)
-        message_data = parse_message(await self.send_hook(bot, event, _message, fallback))
+        _message = await matcher.executor.send_hook(bot, event, matcher.convert(message))
+        if isinstance(_message, UniMessage):
+            message_data = parse_message(await _message.export(bot, fallback))
+        else:
+            message_data = parse_message(_message)
         if flags:
             message_data["flags"] = int(flags)
         return await bot.create_followup_message(
@@ -493,12 +523,16 @@ class DiscordExtension(Extension):
         message: _M,
         fallback: bool = False,
     ) -> MessageGet:
+        matcher: AlconnaMatcher = current_matcher.get()  # type: ignore
         event = current_event.get()
         bot = current_bot.get()
         if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
             raise ValueError("Invalid event or bot")
-        _message = AlconnaMatcher.convert(message)
-        message_data = parse_message(await self.send_hook(bot, event, _message, fallback))
+        _message = await matcher.executor.send_hook(bot, event, matcher.convert(message))
+        if isinstance(_message, UniMessage):
+            message_data = parse_message(await _message.export(bot, fallback))
+        else:
+            message_data = parse_message(_message)
         return await bot.edit_followup_message(
             application_id=bot.application_id,
             interaction_token=event.token,
@@ -519,4 +553,4 @@ class DiscordExtension(Extension):
         )
 
 
-__extension__ = DiscordExtension
+__extension__ = DiscordSlashExtension

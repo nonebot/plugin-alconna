@@ -8,7 +8,10 @@ from nonebot.adapters.onebot.v11 import Adapter as Onebot11Adapter
 
 
 def pytest_configure(config: pytest.Config):
-    config.stash[NONEBOT_INIT_KWARGS] = {"driver": "~fastapi+~httpx+~websockets"}
+    config.stash[NONEBOT_INIT_KWARGS] = {
+        "driver": "~fastapi+~httpx+~websockets",
+        "log_level": "DEBUG",
+    }
 
 
 @pytest.fixture(scope="session", autouse=True)

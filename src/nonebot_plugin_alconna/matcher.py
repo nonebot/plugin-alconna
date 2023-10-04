@@ -362,8 +362,12 @@ class AlconnaMatcher(Matcher):
         """
         bot = current_bot.get()
         event = current_event.get()
-        _message = await cls.executor.send_hook(bot, event, cls.convert(message), fallback=fallback)
-        return await bot.send(event=event, message=_message, **kwargs)
+        _message = await cls.executor.send_hook(bot, event, cls.convert(message))
+        if isinstance(_message, UniMessage):
+            res = await _message.export(bot, fallback)
+        else:
+            res = _message
+        return await bot.send(event=event, message=res, **kwargs)
 
     @classmethod
     async def finish(

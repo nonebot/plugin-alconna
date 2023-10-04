@@ -3,8 +3,8 @@ from __future__ import annotations
 import re
 import functools
 import importlib as imp
-from typing import Literal
 from typing_extensions import Self
+from typing import Literal, TypeVar
 from abc import ABCMeta, abstractmethod
 
 from arclet.alconna import Alconna
@@ -14,6 +14,7 @@ from nonebot.adapters import Bot, Event, Message
 from .uniseg import UniMessage, FallbackMessage
 
 OutputType = Literal["help", "shortcut", "completion"]
+TM = TypeVar("TM", Message, UniMessage)
 
 
 class Extension(metaclass=ABCMeta):
@@ -50,12 +51,8 @@ class Extension(metaclass=ABCMeta):
                 return None
         return msg
 
-    async def send_hook(
-        self, bot: Bot, event: Event, send: Message | UniMessage, fallback: bool = False
-    ) -> Message:
+    async def send_hook(self, bot: Bot, event: Event, send: TM) -> TM:
         """发送消息前的钩子函数。"""
-        if isinstance(send, UniMessage):
-            return await send.export(bot, fallback)
         return send
 
     def post_init(self, alc: Alconna) -> None:
@@ -133,16 +130,11 @@ class ExtensionExecutor:
         if exc is not None:
             raise exc
 
-    async def send_hook(
-        self, bot: Bot, event: Event, send: Message | UniMessage, fallback: bool = False
-    ) -> Message:
-        exc = None
+    async def send_hook(self, bot: Bot, event: Event, send: TM) -> TM:
+        res = send
         for ext in self.context:
-            try:
-                return await ext.send_hook(bot, event, send, fallback)
-            except Exception as e:
-                exc = e
-        raise exc  # type: ignore
+            res = await ext.send_hook(bot, event, res)
+        return res
 
     def post_init(self, alc: Alconna) -> None:
         for ext in self.extensions:
