@@ -97,20 +97,22 @@ async def _(result: Arparma = AlconnaMatches()):
 - `command: Alconna | str`: Alconna 命令
 - `skip_for_unmatch: bool = True`: 是否在命令不匹配时跳过该响应
 - `auto_send_output: bool = False`: 是否自动发送输出信息并跳过响应
-- `output_converter: TConvert | None = None`: 输出信息字符串转换为 Message 方法
 - `aliases: set[str | tuple[str, ...]] | None = None`: 命令别名， 作用类似于 `on_command` 中的 aliases
 - `comp_config: CompConfig | None = None`: 补全会话配置， 不传入则不启用补全会话
+- `extensions`: 需要加载的匹配扩展, 可以是扩展类或扩展实例
+- `exclude_ext`: 需要排除的匹配扩展, 可以是扩展类或扩展的id
 - `use_origin: bool = False`: 是否使用未经 to_me 等处理过的消息
 - `use_cmd_start`: 是否使用 COMMAND_START 作为命令前缀
+- `use_cmd_sep`: 是否使用 COMMAND_SEP 作为命令分隔符
 
 `AlconnaMatches` 是一个依赖注入函数，可注入 `Alconna` 命令解析结果。
 
 ## References
 
-插件文档: [📦这里](https://github.com/ArcletProject/nonebot-plugin-alconna/blob/master/docs.md)
+Nonebot 文档: [📚文档](https://nonebot.dev/docs/next/best-practice/alconna/alconna)
 
 官方文档: [👉指路](https://arclet.top/)
 
 QQ 交流群: [🔗链接](https://jq.qq.com/?_wv=1027&k=PUPOnCSH)
 
-友链: [📚文档](https://graiax.cn/guide/message_parser/alconna.html)
+友链: [📦这里](https://graiax.cn/guide/message_parser/alconna.html)

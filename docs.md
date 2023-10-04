@@ -49,12 +49,14 @@ def on_alconna(
     command: Alconna | str,
     skip_for_unmatch: bool = True,
     auto_send_output: bool = False,
-    output_converter: Callable[[OutputType, str], Message | Awaitable[Message]] | None = None,
     aliases: set[str | tuple[str, ...]] | None = None,
     comp_config: CompConfig | None = None,
+    extensions: list[type[Extension] | Extension] | None = None,
+    exclude_ext: list[type[Extension] | str] | None = None,
     use_origin: bool = False,
     use_cmd_start: bool = False,
     use_cmd_sep: bool = False,
+    **kwargs,
     ...,
 ):
 ```
@@ -62,9 +64,10 @@ def on_alconna(
 - `command`: Alconna 命令或字符串，字符串将通过 `AlconnaFormat` 转换为 Alconna 命令
 - `skip_for_unmatch`: 是否在命令不匹配时跳过该响应
 - `auto_send_output`: 是否自动发送输出信息并跳过响应
-- `output_converter`: 输出信息字符串转换为 Message 方法
 - `aliases`: 命令别名， 作用类似于 `on_command` 中的 aliases
 - `comp_config`: 补全会话配置， 不传入则不启用补全会话
+- `extensions`: 需要加载的匹配扩展, 可以是扩展类或扩展实例
+- `exclude_ext`: 需要排除的匹配扩展, 可以是扩展类或扩展的id
 - `use_origin`: 是否使用未经 to_me 等处理过的消息
 - `use_cmd_start`: 是否使用 COMMAND_START 作为命令前缀
 - `use_cmd_sep`: 是否使用 COMMAND_SEP 作为命令分隔符
@@ -234,6 +237,42 @@ async def echo(msg: str):
     return msg
 ```
 
+### 匹配拓展
+
+本插件提供了一个 `Extension` 类，其用于拓展 AlconnaMatcher 的行为。
+
+例如：
+
+```python
+from nonebot_plugin_alconna import Extension, Alconna, on_alconna
+
+class LLMExtension(Extension):
+    @property
+    def priority(self) -> int:
+        return 10
+
+    @property
+    def id(self) -> str:
+        return "LLMExt"
+    
+    def __init__(self, llm):
+      self.llm = llm
+    
+    def post_init(self, alc: Alconna) -> None:
+        self.llm.add_context(alc.command, alc.meta.description)
+
+    async def message_provider(
+        self, event, state, bot, use_origin: bool = False
+    ):
+        if event.get_type() != "message":
+            return 
+        resp = await self.llm.input(str(event.get_message()))
+        return event.get_message().__class__(resp.content)
+
+matcher = on_alconna(Alconna(...), extensions=[DemoExtension(LLM)])
+...
+```
+
 ## MessageSegment 标注
 
 本插件提供了一系列便捷的 `MessageSegment` 标注，可用于匹配消息中除 text 外的其他 `MessageSegment`，也可用于快速创建 `MessageSegment`。
@@ -336,6 +375,7 @@ async def _(msg: UniMsg):
 | [Telegram](https://github.com/nonebot/adapter-telegram)             | adapters.telegram                    |
 | [飞书](https://github.com/nonebot/adapter-feishu)                     | adapters.feishu                      |
 | [GitHub](https://github.com/nonebot/adapter-github)                 | adapters.github                      |
+| [QQ bot](https://github.com/nonebot/adapter-qq)                     | adapters.qq                          |
 | [QQ 频道](https://github.com/nonebot/adapter-qqguild)                 | adapters.qqguild                     |
 | [钉钉](https://github.com/nonebot/adapter-ding)                       | adapters.ding                        |
 | [Console](https://github.com/nonebot/adapter-console)               | adapters.console                     |
@@ -789,10 +829,10 @@ class MyDup(Duplication):
 
 ## References
 
-插件仓库: [📦这里](https://github.com/ArcletProject/nonebot-plugin-alconna)
+Nonebot 文档: [📚文档](https://nonebot.dev/docs/next/best-practice/alconna/alconna)
 
 官方文档: [👉指路](https://arclet.top/)
 
 QQ 交流群: [🔗链接](https://jq.qq.com/?_wv=1027&k=PUPOnCSH)
 
-友链: [📚文档](https://graiax.cn/guide/message_parser/alconna.html)
+友链: [📦这里](https://graiax.cn/guide/message_parser/alconna.html)

@@ -342,12 +342,14 @@ class DiscordSlashExtension(Extension):
         self.default_permission = default_permission
         self.nsfw = nsfw
         super().__init__()
+        self.using = False
 
     def post_init(self, alc: Alconna) -> None:
         if alc.prefixes != ["/"] or (
             not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")
         ):
-            raise ValueError(lang.require("nbp-alc", "error.discord_prefix"))
+            return
+        self.using = True
         allow_opt = [
             opt
             for opt in alc.options
@@ -376,6 +378,8 @@ class DiscordSlashExtension(Extension):
         self.application_command = config
 
     def validate(self, bot, event: Event) -> bool:
+        if not self.using:
+            return False
         if not isinstance(event, ApplicationCommandInteractionEvent):
             return False
         if (

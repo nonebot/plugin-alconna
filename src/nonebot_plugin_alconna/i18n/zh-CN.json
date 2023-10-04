@@ -5,5 +5,17 @@
     "exit": "发送 {cmd} 退出补全会话",
     "timeout": "补全会话超时, 已自动退出",
     "exited": "补全会话已退出"
+  },
+  "nbp-alc": {
+    "log.load_global_extensions": "正在从 {path} 加载全局扩展 。。。",
+    "log.got_path/ms": "got_path({path}) 下使用的消息段是 {ms!r}",
+    "log.got_path/validate": "got_path({path}) 下的验证结果 是 {validate!r}",
+    "log.discord_ambiguous_command": "同时具有 Args 和 OptionSubcommand 的 {cmd} 在将其转换为 Discord 斜杠命令时会造成意料之外的后果",
+    "log.discord_ambiguous_subcommand": "同时具有 Args 和 OptionSubcommand 的子命令 {name} 在将其转换为 Discord 斜杠命令时会造成意料之外的后果",
+    "log.parse": "{cmd} 对 \"{msg}\" 的解析结果是 ({arp})",
+    "error.discord_prefix": "Alconna 命令对象在用于转换为 Discord 斜杠命令时必须具有 '/' 前缀",
+    "error.extension_forbid_exclude": "不能排除 id 以“！”开头的扩展",
+    "error.extension_path_load": "{path} 的值不是扩展的子类",
+    "error.matcher_got_path": "在 Alconna {cmd} 中找不到路径 {path}"
   }
 }

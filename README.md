@@ -39,8 +39,8 @@ QQ 交流群: [链接](https://jq.qq.com/?_wv=1027&k=PUPOnCSH)
 
 ## 使用方法
 
-Nonebot文档: [📖这里](https://nonebot.dev/docs/advanced/matcher#alconna)
-详细介绍: [📦这里](/docs.md)
+Nonebot文档: [📖这里](https://nonebot.dev/docs/next/best-practice/alconna/alconna)
+仓库内介绍: [📦这里](/docs.md)
 
 ### 消息解析
 
@@ -283,7 +283,7 @@ def on_alconna(
 | [Telegram](https://core.telegram.org/bots/api)                      | adapters.telegram                    |
 | [飞书](https://open.feishu.cn/document/home/index)                    | adapters.feishu                      |
 | [GitHub](https://docs.github.com/en/developers/apps)                | adapters.github                      |
-| [QQ bot](https://github.com/nonebot/adapter-qq)                     | adapters.qqguild                     |
+| [QQ bot](https://github.com/nonebot/adapter-qq)                     | adapters.qq                          |
 | [QQ 频道bot](https://bot.q.qq.com/wiki/)                              | adapters.qqguild                     |
 | [钉钉](https://open.dingtalk.com/document/)                           | adapters.ding                        |
 | [Console](https://github.com/nonebot/adapter-console)               | adapters.console                     |

@@ -4,6 +4,7 @@
     "comp/nonebot"
   ],
   "require": [
-    "comp/nonebot"
+    "comp/nonebot",
+    "nbp-alc"
   ]
 }
