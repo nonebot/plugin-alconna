@@ -7,6 +7,7 @@ from nonebot.rule import Rule
 from nonebot.params import Depends
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
+from nonebot.message import run_postprocessor
 from nepattern import STRING, AnyOne, AnyString
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from tarina import lang, is_awaitable, run_always_await
@@ -356,7 +357,7 @@ class AlconnaMatcher(Matcher):
         """
         bot = current_bot.get()
         event = current_event.get()
-        _message = await cls.executor.send_hook(bot, event, cls.convert(message))
+        _message = await cls.executor.send_wrapper(bot, event, cls.convert(message))
         if isinstance(_message, UniMessage):
             res = await _message.export(bot, fallback)
         else:
@@ -653,3 +654,8 @@ class Command(AlconnaString):
         params.pop("__class__")
         alc = super().build()
         return on_alconna(alc, **params)
+
+
+@run_postprocessor
+def _exit_executor(matcher: AlconnaMatcher):
+    matcher.executor.context.clear()

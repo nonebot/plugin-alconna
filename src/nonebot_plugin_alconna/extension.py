@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import asyncio
 import functools
 import importlib as imp
 from typing_extensions import Self
@@ -8,8 +9,8 @@ from typing import Literal, TypeVar
 from abc import ABCMeta, abstractmethod
 
 from tarina import lang
-from arclet.alconna import Alconna
 from nonebot.typing import T_State
+from arclet.alconna import Alconna, Arparma
 from nonebot.adapters import Bot, Event, Message
 
 from .uniseg import UniMessage, FallbackMessage
@@ -19,6 +20,15 @@ TM = TypeVar("TM", Message, UniMessage)
 
 
 class Extension(metaclass=ABCMeta):
+    _overrides: dict[str, bool]
+
+    def __init_subclass__(cls, **kwargs):
+        cls._overrides = {
+            "send_wrapper": cls.send_wrapper == Extension.send_wrapper,
+            "receive_wrapper": cls.receive_wrapper == Extension.receive_wrapper,
+            "parse_wrapper": cls.parse_wrapper == Extension.parse_wrapper,
+        }
+
     @property
     @abstractmethod
     def priority(self) -> int:
@@ -52,7 +62,15 @@ class Extension(metaclass=ABCMeta):
                 return None
         return msg
 
-    async def send_hook(self, bot: Bot, event: Event, send: TM) -> TM:
+    async def receive_wrapper(self, bot: Bot, event: Event, receive: TM) -> TM:
+        """接收消息后的钩子函数。"""
+        return receive
+
+    async def parse_wrapper(self, bot: Bot, state: T_State, event: Event, res: Arparma) -> None:
+        """解析消息后的钩子函数。"""
+        pass
+
+    async def send_wrapper(self, bot: Bot, event: Event, send: TM) -> TM:
         """发送消息前的钩子函数。"""
         return send
 
@@ -131,10 +149,29 @@ class ExtensionExecutor:
         if exc is not None:
             raise exc
 
-    async def send_hook(self, bot: Bot, event: Event, send: TM) -> TM:
+        return None
+
+    async def receive_wrapper(self, bot: Bot, event: Event, receive: TM) -> TM:
+        res = receive
+        for ext in self.context:
+            if ext._overrides["receive_wrapper"]:
+                res = await ext.receive_wrapper(bot, event, res)
+        return res
+
+    async def parse_wrapper(self, bot: Bot, state: T_State, event: Event, res: Arparma) -> None:
+        await asyncio.gather(
+            *(
+                ext.parse_wrapper(bot, state, event, res)
+                for ext in self.context
+                if ext._overrides["parse_wrapper"]
+            )
+        )
+
+    async def send_wrapper(self, bot: Bot, event: Event, send: TM) -> TM:
         res = send
         for ext in self.context:
-            res = await ext.send_hook(bot, event, res)
+            if ext._overrides["send_wrapper"]:
+                res = await ext.send_wrapper(bot, event, res)
         return res
 
     def post_init(self, alc: Alconna) -> None:

@@ -195,7 +195,8 @@ class AlconnaRule:
         self.executor.select(bot, event)
         if not (msg := await self.executor.message_provider(event, state, bot, self.use_origin)):
             return False
-        elif isinstance(msg, UniMessage):
+        msg = await self.executor.receive_wrapper(bot, event, msg)
+        if isinstance(msg, UniMessage):
             msg = await msg.export(bot, fallback=True)
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
         with output_manager.capture(self.command.name) as cap:
@@ -214,6 +215,7 @@ class AlconnaRule:
         if self.auto_send and may_help_text:
             await self._send(may_help_text, bot, event, arp)
             return False
+        await self.executor.parse_wrapper(bot, state, event, arp)
         state[ALCONNA_RESULT] = CommandResult(self.command, arp, may_help_text)
         exec_result = self.command.exec_result
         for key, value in exec_result.items():

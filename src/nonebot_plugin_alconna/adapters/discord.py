@@ -457,7 +457,7 @@ class DiscordSlashExtension(Extension):
         bot = current_bot.get()
         if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
             raise ValueError("Invalid event or bot")
-        _message = await matcher.executor.send_hook(bot, event, matcher.convert(message))
+        _message = await matcher.executor.send_wrapper(bot, event, matcher.convert(message))
         if isinstance(_message, UniMessage):
             message_data = parse_message(await _message.export(bot, fallback))
         else:
@@ -490,7 +490,7 @@ class DiscordSlashExtension(Extension):
         bot = current_bot.get()
         if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
             raise ValueError("Invalid event or bot")
-        _message = await matcher.executor.send_hook(bot, event, matcher.convert(message))
+        _message = await matcher.executor.send_wrapper(bot, event, matcher.convert(message))
         if isinstance(_message, UniMessage):
             message_data = parse_message(await _message.export(bot, fallback))
         else:
@@ -526,7 +526,7 @@ class DiscordSlashExtension(Extension):
         bot = current_bot.get()
         if not isinstance(event, ApplicationCommandInteractionEvent) or not isinstance(bot, Bot):
             raise ValueError("Invalid event or bot")
-        _message = await matcher.executor.send_hook(bot, event, matcher.convert(message))
+        _message = await matcher.executor.send_wrapper(bot, event, matcher.convert(message))
         if isinstance(_message, UniMessage):
             message_data = parse_message(await _message.export(bot, fallback))
         else:

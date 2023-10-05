@@ -261,13 +261,9 @@ class LLMExtension(Extension):
     def post_init(self, alc: Alconna) -> None:
         self.llm.add_context(alc.command, alc.meta.description)
 
-    async def message_provider(
-        self, event, state, bot, use_origin: bool = False
-    ):
-        if event.get_type() != "message":
-            return 
-        resp = await self.llm.input(str(event.get_message()))
-        return event.get_message().__class__(resp.content)
+    async def receive_wrapper(self, bot, event, receive):
+        resp = await self.llm.input(str(receive))
+        return receive.__class__(resp.content)
 
 matcher = on_alconna(Alconna(...), extensions=[DemoExtension(LLM)])
 ...
