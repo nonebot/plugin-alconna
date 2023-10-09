@@ -3,6 +3,7 @@ from arclet.alconna import Args, Alconna
 
 def test_satori():
     from nonebot.adapters.satori import Message
+
     from nonebot_plugin_alconna.adapters.satori import Bold, Underline
 
     msg = Message("/com<b>mand some_arg</b> <u>some_arg</u> some_arg")

@@ -1,4 +1,5 @@
 import contextlib
+
 import nonebot
 
 nonebot.load_plugin("nonebot_plugin_alconna.uniseg")
