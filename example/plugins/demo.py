@@ -2,6 +2,7 @@ from typing import Union, Literal
 
 from tarina import lang
 from nonebot import require
+from nepattern import parser
 from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
 from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
@@ -10,12 +11,13 @@ from arclet.alconna import (
     Option,
     Alconna,
     Arparma,
+    MultiVar,
     Subcommand,
+    CommandMeta,
     Duplication,
     SubcommandStub,
     namespace,
     store_true,
-    command_manager,
 )
 
 require("nonebot_plugin_alconna")
@@ -79,7 +81,6 @@ with namespace("nbtest") as ns:
     ns.headers = ["/"]
     ns.builtin_option_name["help"] = {"-h", "帮助", "--help"}
 
-    help_cmd = on_alconna(Alconna("help"))
     test_cmd = on_alconna(Alconna("test", Args["target?", Union[str, At]]))
 
     pip = Alconna(
@@ -110,11 +111,6 @@ with namespace("nbtest") as ns:
         )
     )
     bind = on_alconna(Alconna("bind"))
-
-
-@help_cmd.handle()
-async def _help():
-    await help_cmd.send(UniMessage(command_manager.all_command_help()))
 
 
 @i18n.handle()
@@ -353,3 +349,17 @@ async def group_remove(group_id: int):
 @group.assign("list")
 async def group_list():
     await group.finish("list")
+
+
+demo = on_alconna(
+    Alconna(parser([At, "trig"]), Args["rest", MultiVar("any_str"), []], meta=CommandMeta(compact=True)),
+)
+
+
+@demo.handle()
+async def demo_h(arp: Arparma):
+    args = []
+    if isinstance(arp.header_match.result, str) and not arp.header_match.result.endswith("trig"):
+        args.append(arp.header_match.result[4:])
+    args.extend(arp.query[tuple[str, ...]]("rest"))
+    await demo.finish(f"args: {args}")

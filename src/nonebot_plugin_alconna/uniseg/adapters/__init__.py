@@ -7,6 +7,7 @@ from .mirai import MiraiMessageExporter  # noqa: F401
 from .villa import VillaMessageExporter  # noqa: F401
 from .feishu import FeishuMessageExporter  # noqa: F401
 from .github import GithubMessageExporter  # noqa: F401
+from .satori import SatoriMessageExporter  # noqa: F401
 from .console import ConsoleMessageExporter  # noqa: F401
 from .discord import DiscordMessageExporter  # noqa: F401
 from .qqguild import QQGuildMessageExporter  # noqa: F401

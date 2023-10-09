@@ -66,6 +66,17 @@ async def reply_handle(event: Event, bot: Bot):
                 str(event.reply.id),
                 event.reply.content,
             )
+    elif adapter_name == "Satori":
+        if TYPE_CHECKING:
+            from nonebot.adapters.satori.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+        if event.reply:
+            return Reply(
+                event.reply,
+                str(event.reply.data["id"]),
+                event.reply.data.get("content"),
+            )
     elif adapter_name == "mirai2":
         if TYPE_CHECKING:
             from nonebot.adapters.mirai2.event import MessageEvent

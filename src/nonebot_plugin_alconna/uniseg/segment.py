@@ -3,8 +3,20 @@ import re
 import json
 import contextlib
 from pathlib import Path
-from dataclasses import field, dataclass
-from typing import TYPE_CHECKING, Any, Type, Union, Generic, Literal, TypeVar, Callable, Iterable, Optional
+from dataclasses import field, asdict, dataclass
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Type,
+    Union,
+    Generic,
+    Literal,
+    TypeVar,
+    Callable,
+    Iterable,
+    Optional,
+)
 
 from nonebot.internal.adapter import Message, MessageSegment
 from nepattern import MatchMode, BasePattern, create_local_patterns
@@ -67,6 +79,10 @@ class Segment:
     def type(self) -> str:
         return self.__class__.__name__.lower()
 
+    @property
+    def data(self) -> Dict[str, Any]:
+        return asdict(self)
+
 
 @dataclass
 class Text(Segment):
@@ -97,6 +113,8 @@ class At(Segment):
 @dataclass
 class AtAll(Segment):
     """AtAll对象, 表示一类提醒所有人的元素"""
+
+    here: bool = field(default=False)
 
 
 @dataclass
@@ -202,6 +220,12 @@ class _Text(UniPattern[Text]):
     def solve(self, seg: MessageSegment):
         if seg.is_text():
             return Text(seg.data["text"], seg.type if seg.type != "text" else None)
+        if seg.type == "entity":  # satori
+            return Text(seg.data["text"], seg.data["style"])
+        if seg.type == "br":
+            return Text("\n", "br")
+        if seg.type in ("p", "paragraph"):
+            return Text(seg.data["text"], "paragraph")
 
 
 text = _Text()
@@ -209,11 +233,17 @@ text = _Text()
 
 class _At(UniPattern[At]):
     def solve(self, seg: MessageSegment):
-        if seg.type == "at":  # ob11, feishu, red
+        if seg.type == "at":  # ob11, feishu, red, satori
             if "qq" in seg.data and seg.data["qq"] != "all":
                 return At("user", str(seg.data["qq"]))
             if "user_id" in seg.data:
                 return At("user", str(seg.data["user_id"]))
+            if "id" in seg.data:
+                return At("user", seg.data["id"], seg.data["name"])
+            if "role" in seg.data:
+                return At("role", seg.data["role"], seg.data["name"])
+        if seg.type == "sharp":  # satori
+            return At("channel", seg.data["channel_id"], seg.data["name"])
         if seg.type == "mention":  # ob12, tg
             if "user_id" in seg.data:
                 return At("user", str(seg.data["user_id"]))
@@ -251,8 +281,11 @@ at = _At()
 
 class _AtAll(UniPattern[AtAll]):
     def solve(self, seg: MessageSegment):
-        if seg.type == "at" and ("qq" in seg.data and seg.data["qq"] == "all"):
-            return AtAll()
+        if seg.type == "at":
+            if "qq" in seg.data and seg.data["qq"] == "all":  # ob11
+                return AtAll()
+            if "type" in seg.data and seg.data["type"] in ("all", "here"):
+                return AtAll(here=seg.data["type"] == "here")
         if seg.type in {"at_all", "AtAll", "mention_everyone", "mention_all"}:
             return AtAll()
         if seg.type == "kmarkdown":
@@ -261,7 +294,7 @@ class _AtAll(UniPattern[AtAll]):
                 return None
             if (end := content.find("(met)", 5)) == -1:
                 return None
-            return content[5:end] in ("here", "all") and AtAll()
+            return content[5:end] in ("here", "all") and AtAll(content[5:end] == "here")
 
 
 at_all = _AtAll()
@@ -327,15 +360,17 @@ class _Image(UniPattern[Image]):
                 return Image(id=seg.data["file_path"], path=seg.data["file_path"])
             if "picURL" in seg.data:  # ding
                 return Image(url=seg.data["picURL"])
-        if seg.type == "photo":
+        if seg.type == "photo":  # tg
             return Image(id=seg.data["file"])
         if seg.type == "attachment":
-            if "url" in seg.data:
+            if "url" in seg.data:  # qq, qqguild
                 return Image(url=seg.data["url"])
             if "attachment" in seg.data:  # discord
                 return Image(id=seg.data["attachment"].filename)
-        if seg.type == "Image":
+        if seg.type == "Image":  # mirai
             return Image(seg.data["url"], seg.data["imageId"])
+        if seg.type == "img":
+            return Image(seg.data["src"], seg.data["src"])
 
 
 image = _Image()
@@ -360,6 +395,8 @@ class _Video(UniPattern[Video]):
                 return Video(url=seg.data["msgData"])
             if "file_path" in seg.data:  # ntchat
                 return Video(id=seg.data["file_path"], path=seg.data["file_path"])
+            if "src" in seg.data:
+                return Video(seg.data["src"], seg.data["src"])
         if seg.type == "video":
             return Video(seg.data["url"], seg.data["videoId"])
         if seg.type == "animation":
@@ -405,6 +442,8 @@ class _Audio(UniPattern[Audio]):
             return Audio(url=seg.data["file_key"])
         if "file_path" in seg.data:  # ntchat
             return Audio(id=seg.data["file_path"], path=seg.data["file_path"])
+        if "src" in seg.data:
+            return Audio(seg.data["src"], seg.data["src"])
 
 
 audio = _Audio()
@@ -427,6 +466,8 @@ class _File(UniPattern[File]):
                 )
             if "file_path" in seg.data:  # ntchat
                 return File(id=seg.data["file_path"])
+            if "src" in seg.data:
+                return File(seg.data["src"])
         if seg.type == "document":
             return File(seg.data["file_id"], seg.data["file_name"])
         if seg.type == "File":
@@ -451,6 +492,8 @@ class _Reply(UniPattern[Reply]):
             if "msg_id" in seg.data:  # red
                 return Reply(seg.data["_origin"], seg.data["msg_seq"])
         if seg.type == "quote":
+            if "id" in seg.data:  # satori
+                return Reply(seg, seg.data["id"], seg.data["content"])
             if "msg_id" in seg.data:  # kook:
                 return Reply(seg, seg.data["msg_id"])
             if "quoted_message_id" in seg.data:  # villa
@@ -484,7 +527,7 @@ class _Card(UniPattern[Card]):
 
 
 card = _Card()
-segments = [at, at_all, emoji, image, video, voice, audio, file, card, text, other]
+segments = [at_all, at, emoji, image, video, voice, audio, file, card, text, other]
 env = create_local_patterns("nonebot")
 env.sets(segments)
 

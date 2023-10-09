@@ -207,6 +207,7 @@ class AlconnaRule:
                 arp = Arparma(self.command.path, msg, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
         if not arp.matched and not may_help_text and self.skip:
+            log("TRACE", lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp))
             return False
         if arp.head_matched:
             log("DEBUG", lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp))

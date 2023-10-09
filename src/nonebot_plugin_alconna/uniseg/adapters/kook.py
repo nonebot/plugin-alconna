@@ -39,7 +39,7 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
-        return ms.KMarkdown("(met)all(met)")
+        return ms.KMarkdown(f"(met){'here' if seg.here else 'all'}(met)")
 
     @export
     async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":

@@ -384,6 +384,7 @@ async def _(msg: UniMsg):
 | [Villa](https://github.com/CMHopeSunshine/nonebot-adapter-villa)    | adapters.villa                       |
 | [Discord](https://github.com/nonebot/adapter-discord)               | adapters.discord                     |
 | [Red 协议](https://github.com/nonebot/adapter-red)                    | adapters.red                         |
+| [Satori](https://github.com/nonebot/adapter-satori)                 | adapters.satori                      |
 
 
 ### 示例
