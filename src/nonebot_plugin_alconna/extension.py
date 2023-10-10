@@ -16,7 +16,7 @@ from nonebot.adapters import Bot, Event, Message
 from .uniseg import UniMessage, FallbackMessage
 
 OutputType = Literal["help", "shortcut", "completion"]
-TM = TypeVar("TM", Message, UniMessage)
+TM = TypeVar("TM", str, Message, UniMessage)
 
 
 class Extension(metaclass=ABCMeta):

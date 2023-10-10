@@ -321,7 +321,7 @@ class AlconnaMatcher(Matcher):
         return _decorator
 
     @classmethod
-    def convert(cls, message: _M) -> Message | UniMessage:
+    def convert(cls, message: _M) -> Message | UniMessage | str:
         bot = current_bot.get()
         event = current_event.get()
         state = current_matcher.get().state
@@ -331,7 +331,7 @@ class AlconnaMatcher(Matcher):
             return message.format(
                 **state, **state[ALCONNA_RESULT].result.all_matched_args, **{"$event": event, "$bot": bot}
             )
-        if isinstance(message, (str, Segment)):
+        if isinstance(message, Segment):
             return UniMessage(message)
         if isinstance(message, MessageSegment):
             return message.get_message_class()(message)
