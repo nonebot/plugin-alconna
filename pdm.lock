@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:7d67cbf3a7d1faf8679c8836d5584c32b90049c94f8988efea376e6bd265a3ec"
+content_hash = "sha256:c0d5830a7f352f0fe69c895c85f3d729d47db2d682e0ede26a133751f0cf89bb"
 
 [[package]]
 name = "aio-mc-rcon"

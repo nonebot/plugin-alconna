@@ -20,7 +20,6 @@ from arclet.alconna import MultiVar as MultiVar
 from nonebot.internal.params import DefaultParam
 from arclet.alconna import Namespace as Namespace
 from arclet.alconna import namespace as namespace
-from nonebot import __version__ as nonebot_version
 from arclet.alconna import KeyWordVar as KeyWordVar
 from arclet.alconna import OptionStub as OptionStub
 from arclet.alconna import Subcommand as Subcommand
@@ -88,32 +87,23 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.27.1"
+__version__ = "0.27.2"
 
-_meta_source = {
-    "name": "Alconna 插件",
-    "description": "提供 ArcletProject/Alconna 的 Nonebot2 适配版本与工具",
-    "usage": "matcher = on_alconna(...)",
-    "homepage": "https://github.com/nonebot/plugin-alconna",
-    "type": "library",
-    "supported_adapters": None,
-    "config": Config,
-    "extra": {
+__plugin_meta__ = PluginMetadata(
+    name="Alconna 插件",
+    description="提供 ArcletProject/Alconna 的 Nonebot2 适配版本与工具",
+    usage="matcher = on_alconna(...)",
+    homepage="https://github.com/nonebot/plugin-alconna",
+    type="library",
+    supported_adapters=None,
+    config=Config,
+    extra={
         "author": "RF-Tar-Railt",
         "priority": 1,
         "version": __version__,
     },
-}
+)
 
-
-if not nonebot_version.split(".")[-1].isdigit():
-    _meta_source["extra"]["homepage"] = _meta_source.pop("homepage")
-    _meta_source["extra"]["type"] = _meta_source.pop("type")
-    _meta_source["extra"]["config"] = _meta_source.pop("config")
-    _meta_source["extra"]["supported_adapters"] = _meta_source.pop("supported_adapters")
-
-
-__plugin_meta__ = PluginMetadata(**_meta_source)
 
 _use_param = True
 
