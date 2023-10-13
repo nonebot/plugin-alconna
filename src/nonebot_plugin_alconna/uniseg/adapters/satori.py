@@ -22,15 +22,20 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+        from nonebot.adapters.satori.message import STYLE_TYPE_MAP
+
         ms = self.segment_class
 
         if not seg.style:
             return ms.text(seg.text)
         if seg.style == "br" or seg.text == "\n":
             return ms.br()
-        if seg.style in ("p", "paragraph"):
-            return ms.paragraph(seg.text)
-        return ms.entity(seg.text, seg.style)
+        if seg.style in STYLE_TYPE_MAP:
+            seg_cls, seg_type = STYLE_TYPE_MAP[seg.style]
+            return seg_cls(seg_type, {"text": seg.text})
+        if hasattr(ms, seg.style):
+            return getattr(ms, seg.style)(seg.text)
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=seg.style, seg=seg))
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":

@@ -2,6 +2,8 @@ from nepattern.main import URL, INTEGER
 from nonebot.adapters.satori.message import Message
 from nonebot.adapters.satori.message import At as _At
 from nonebot.adapters.satori.message import Br as _Br
+from nonebot.adapters.satori.message import Bold as _Bold
+from nonebot.adapters.satori.message import Code as _Code
 from nonebot.adapters.satori.message import File as _File
 from nonebot.adapters.satori.message import Link as _Link
 from nonebot.adapters.satori.message import MessageSegment
@@ -11,9 +13,14 @@ from nonebot.adapters.satori.message import Sharp as _Sharp
 from nonebot.adapters.satori.message import Video as _Video
 from nepattern import BasePattern, PatternModel, UnionPattern
 from nonebot.adapters.satori.message import Author as _Author
-from nonebot.adapters.satori.message import Entity as _Entity
+from nonebot.adapters.satori.message import Italic as _Italic
+from nonebot.adapters.satori.message import Spoiler as _Spoiler
 from nonebot.adapters.satori.message import Paragraph as _Paragraph
+from nonebot.adapters.satori.message import Subscript as _Subscript
+from nonebot.adapters.satori.message import Underline as _Underline
+from nonebot.adapters.satori.message import Superscript as _Superscript
 from nonebot.adapters.satori.message import RenderMessage as _RenderMessage
+from nonebot.adapters.satori.message import Strikethrough as _Strikethrough
 
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
@@ -21,7 +28,6 @@ from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 Text = str
 At = SegmentPattern("at", _At, MessageSegment.at)
 AtRole = SegmentPattern("at", _At, MessageSegment.at_role)
-Entity = SegmentPattern("entity", _Entity, MessageSegment.entity)
 AtAll = SegmentPattern("at", _At, MessageSegment.at_all)
 Sharp = SegmentPattern("sharp", _Sharp, MessageSegment.sharp)
 Link = SegmentPattern("link", _Link, MessageSegment.link)
@@ -80,10 +86,6 @@ MentionID = (
 """
 
 
-def is_text(x: MessageSegment):
-    return x.type in {"text", "br", "paragraph", "entity"}
-
-
 styles = {
     "record": {},
     "index": 0,
@@ -99,8 +101,6 @@ def builder(self: MessageArgv, data: Message):
             self.raw_data.append(unit)
             self.ndata += 1
             continue
-        if unit.type == "br":
-            unit.data["text"] = "\n"
         if not unit.data["text"].strip():
             if not index or index == len(data) - 1:
                 continue
@@ -118,7 +118,7 @@ def builder(self: MessageArgv, data: Message):
             self.ndata += 1
         start = styles["msg"].find(text, _index)
         _index = start + len(text)
-        styles["record"][(start, _index)] = unit.data["style"] if unit.type == "entity" else unit.type
+        styles["record"][(start, _index)] = unit.type
 
 
 def clean_style():
@@ -126,79 +126,31 @@ def clean_style():
     styles["index"] = 0
 
 
-MessageArgv.custom_build(Message, is_text=is_text, builder=builder, cleanup=clean_style)
+MessageArgv.custom_build(Message, builder=builder, cleanup=clean_style)
 
 
-def locator(x: str, *t: str):
+def locator(x: str, t: str):
     start = styles["msg"].find(x, styles["index"])
     if start == -1:
         return False
     styles["index"] = start + len(x)
-    if (maybe := styles["record"].get((start, styles["index"]))) and maybe in t:
+    if (maybe := styles["record"].get((start, styles["index"]))) and maybe == t:
         return True
     return any(
         scale[0] <= start <= scale[1]
         and scale[0] <= styles["index"] <= scale[1]
-        and styles["record"][scale] in t
+        and styles["record"][scale] == t
         for scale in styles["record"]
     )
 
 
-Br = TextSegmentPattern("br", _Br, MessageSegment.br, locator=locator)
-Paragraph = TextSegmentPattern("paragraph", _Paragraph, MessageSegment.paragraph, locator=locator)
-Bold = TextSegmentPattern(
-    "bold",
-    _Entity,
-    lambda m: MessageSegment.entity(m, "b"),
-    lambda m, _: m.type == "entity",
-    lambda m, _: locator(m, "b", "strong"),
-)
-Italic = TextSegmentPattern(
-    "italic",
-    _Entity,
-    lambda m: MessageSegment.entity(m, "i"),
-    lambda m, _: m.type == "entity",
-    lambda m, _: locator(m, "i", "em"),
-)
-Underline = TextSegmentPattern(
-    "underline",
-    _Entity,
-    lambda m: MessageSegment.entity(m, "u"),
-    lambda m, _: m.type == "entity",
-    lambda m, _: locator(m, "u", "ins"),
-)
-Strikethrough = TextSegmentPattern(
-    "strikethrough",
-    _Entity,
-    lambda m: MessageSegment.entity(m, "s"),
-    lambda m, _: m.type == "entity",
-    lambda m, _: locator(m, "s", "del"),
-)
-Spoiler = TextSegmentPattern(
-    "spoiler",
-    _Entity,
-    lambda m: MessageSegment.entity(m, "spl"),
-    lambda m, _: m.type == "entity",
-    lambda m, _: locator(m, "spl"),
-)
-Code = TextSegmentPattern(
-    "code",
-    _Entity,
-    lambda m: MessageSegment.entity(m, "code"),
-    lambda m, _: m.type == "entity",
-    lambda m, _: locator(m, "code"),
-)
-Superscript = TextSegmentPattern(
-    "superscript",
-    _Entity,
-    lambda m: MessageSegment.entity(m, "sup"),
-    lambda m, _: m.type == "entity",
-    lambda m, _: locator(m, "sup"),
-)
-Subscript = TextSegmentPattern(
-    "subscript",
-    _Entity,
-    lambda m: MessageSegment.entity(m, "sub"),
-    lambda m, _: m.type == "entity",
-    lambda m, _: locator(m, "sub"),
-)
+Br = TextSegmentPattern("br", _Br, MessageSegment.br, locator)
+Paragraph = TextSegmentPattern("paragraph", _Paragraph, MessageSegment.paragraph, locator)
+Bold = TextSegmentPattern("bold", _Bold, MessageSegment.bold, locator)
+Italic = TextSegmentPattern("italic", _Italic, MessageSegment.italic, locator)
+Underline = TextSegmentPattern("underline", _Underline, MessageSegment.underline, locator)
+Strikethrough = TextSegmentPattern("strikethrough", _Strikethrough, MessageSegment.strikethrough, locator)
+Spoiler = TextSegmentPattern("spoiler", _Spoiler, MessageSegment.spoiler, locator)
+Code = TextSegmentPattern("code", _Code, MessageSegment.code, locator)
+Superscript = TextSegmentPattern("superscript", _Superscript, MessageSegment.superscript, locator)
+Subscript = TextSegmentPattern("subscript", _Subscript, MessageSegment.subscript, locator)

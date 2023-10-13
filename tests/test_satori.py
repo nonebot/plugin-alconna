@@ -12,8 +12,8 @@ def test_satori():
 
     res = alc.parse(msg)
     assert res.matched
-    assert res.some_arg.data["style"] == "b"
-    assert res.some_arg1.data["style"] == "u"
+    assert res.some_arg.type == "bold"
+    assert res.some_arg1.type == "underline"
     assert isinstance(res.some_arg2, str)
 
     msg1 = "/command " + Bold("foo bar baz")
@@ -23,5 +23,5 @@ def test_satori():
     res1 = alc1.parse(msg1)
     assert res1.matched
     assert isinstance(res1.foo, str)
-    assert res1.bar.type == "entity"
-    assert res1.baz.data["style"] == "b"
+    assert res1.bar.type == "bold"
+    assert res1.baz.data["text"] == "baz"

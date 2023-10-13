@@ -220,12 +220,6 @@ class _Text(UniPattern[Text]):
     def solve(self, seg: MessageSegment):
         if seg.is_text():
             return Text(seg.data["text"], seg.type if seg.type != "text" else None)
-        if seg.type == "entity":  # satori
-            return Text(seg.data["text"], seg.data["style"])
-        if seg.type == "br":
-            return Text("\n", "br")
-        if seg.type in ("p", "paragraph"):
-            return Text(seg.data["text"], "paragraph")
 
 
 text = _Text()

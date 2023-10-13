@@ -24,7 +24,7 @@ def test_tg():
     assert res1.matched
     assert isinstance(res1.foo, str)
     assert res1.bar.type == "bold"
-    assert res1.baz.type == "bold"
+    assert res1.baz.data["text"] == "baz"
 
     _img = type_parser(Image)
     assert _img.exec(Photo("1")).value == Image(id="1")

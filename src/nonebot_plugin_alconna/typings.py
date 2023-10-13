@@ -52,7 +52,6 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         name: str,
         origin: type[TMS],
         call: Callable[P, TMS],
-        checker: Callable[[TMS, str], bool] = lambda m, t: m.type == t,
         locator: Callable[[str, str], bool] | None = None,
     ):
         super().__init__(
@@ -63,7 +62,6 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         )
         self.pattern = name
         self.call = call
-        self.checker = checker
         self.locator = locator
 
     def match(self, input_: Any) -> TMS:
@@ -73,7 +71,7 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
             if self.locator and not self.locator(input_, self.pattern):
                 raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
             return self.call(input_)  # type: ignore
-        if self.checker(input_, self.pattern):
+        if input_.type != self.pattern:
             raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
         return input_
 
