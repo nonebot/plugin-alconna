@@ -2,7 +2,10 @@
 import re
 import json
 import contextlib
+from io import BytesIO
 from pathlib import Path
+from base64 import b64decode
+from typing_extensions import NotRequired
 from dataclasses import field, asdict, dataclass
 from typing import (
     TYPE_CHECKING,
@@ -16,6 +19,7 @@ from typing import (
     Callable,
     Iterable,
     Optional,
+    TypedDict,
 )
 
 from nonebot.internal.adapter import Message, MessageSegment
@@ -125,17 +129,30 @@ class Emoji(Segment):
     name: Optional[str] = field(default=None)
 
 
+class RawData(TypedDict):
+    data: Union[bytes, BytesIO]
+    mimetype: NotRequired[str]
+
+
 @dataclass
 class Media(Segment):
-    url: Optional[str] = field(default=None)
     id: Optional[str] = field(default=None)
+    url: Optional[str] = field(default=None)
     path: Optional[Union[str, Path]] = field(default=None)
-    raw: Optional[bytes] = field(default=None)
+    raw: Optional[RawData] = field(default=None)
     name: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if self.path:
             self.name = Path(self.path).name
+
+    @property
+    def raw_bytes(self):
+        if not self.raw:
+            raise ValueError(f"{self} has no raw data")
+        if isinstance(self.raw["data"], BytesIO):
+            return self.raw["data"].getvalue()
+        return self.raw["data"]
 
 
 @dataclass
@@ -167,12 +184,10 @@ class Video(Media):
 
 
 @dataclass
-class File(Segment):
+class File(Media):
     """File对象, 表示一类文件元素"""
 
-    id: Optional[str] = field(default=None)
-    name: Optional[str] = field(default=None)
-    raw: Optional[bytes] = field(default=None)
+    name: str = field(default="file.bin")
 
 
 @dataclass
@@ -362,9 +377,17 @@ class _Image(UniPattern[Image]):
             if "attachment" in seg.data:  # discord
                 return Image(id=seg.data["attachment"].filename)
         if seg.type == "Image":  # mirai
-            return Image(seg.data["url"], seg.data["imageId"])
+            return Image(url=seg.data["url"], id=seg.data["imageId"])
         if seg.type == "img":
-            return Image(seg.data["src"], seg.data["src"])
+            src = seg.data["src"]
+            if src.startswith("http"):
+                return Image(url=src)
+            if src.startswith("file://"):
+                return Image(path=Path(src[7:]))
+            if src.startswith("data:"):
+                mime, b64 = src[5:].split(";", 1)
+                return Image(raw={"data": b64decode(b64[7:]), "mimetype": mime})
+            return Image(seg.data["src"])
 
 
 image = _Image()
@@ -390,9 +413,17 @@ class _Video(UniPattern[Video]):
             if "file_path" in seg.data:  # ntchat
                 return Video(id=seg.data["file_path"], path=seg.data["file_path"])
             if "src" in seg.data:
-                return Video(seg.data["src"], seg.data["src"])
-        if seg.type == "video":
-            return Video(seg.data["url"], seg.data["videoId"])
+                src = seg.data["src"]
+                if src.startswith("http"):
+                    return Video(url=src)
+                if src.startswith("file://"):
+                    return Video(path=Path(src[7:]))
+                if src.startswith("data:"):
+                    mime, b64 = src[5:].split(";", 1)
+                    return Video(raw={"data": b64decode(b64[7:]), "mimetype": mime})
+                return Video(seg.data["src"])
+        if seg.type == "Video":
+            return Video(url=seg.data["url"], id=seg.data["videoId"])
         if seg.type == "animation":
             return Video(id=seg.data["file_id"])
         if seg.type == "media":  # feishu
@@ -418,9 +449,9 @@ class _Voice(UniPattern[Voice]):
             if "file_path" in seg.data:  # ntchat
                 return Voice(id=seg.data["file_path"], path=seg.data["file_path"])
         if seg.type == "record":
-            return Voice(seg.data["url"])
+            return Voice(url=seg.data["url"])
         if seg.type == "Voice":
-            return Voice(seg.data["url"], seg.data["voiceId"])
+            return Voice(url=seg.data["url"], id=seg.data["voiceId"])
 
 
 voice = _Voice()
@@ -437,7 +468,15 @@ class _Audio(UniPattern[Audio]):
         if "file_path" in seg.data:  # ntchat
             return Audio(id=seg.data["file_path"], path=seg.data["file_path"])
         if "src" in seg.data:
-            return Audio(seg.data["src"], seg.data["src"])
+            src = seg.data["src"]
+            if src.startswith("http"):
+                return Audio(url=src)
+            if src.startswith("file://"):
+                return Audio(path=Path(src[7:]))
+            if src.startswith("data:"):
+                mime, b64 = src[5:].split(";", 1)
+                return Audio(raw={"data": b64decode(b64[7:]), "mimetype": mime})
+            return Audio(seg.data["src"])
 
 
 audio = _Audio()
@@ -461,11 +500,19 @@ class _File(UniPattern[File]):
             if "file_path" in seg.data:  # ntchat
                 return File(id=seg.data["file_path"])
             if "src" in seg.data:
+                src = seg.data["src"]
+                if src.startswith("http"):
+                    return File(url=src)
+                if src.startswith("file://"):
+                    return File(path=Path(src[7:]))
+                if src.startswith("data:"):
+                    mime, b64 = src[5:].split(";", 1)
+                    return File(raw={"data": b64decode(b64[7:]), "mimetype": mime})
                 return File(seg.data["src"])
         if seg.type == "document":
-            return File(seg.data["file_id"], seg.data["file_name"])
+            return File(seg.data["file_id"], name=seg.data["file_name"])
         if seg.type == "File":
-            return File(seg.data["id"], seg.data["name"])
+            return File(seg.data["id"], name=seg.data["name"])
 
 
 file = _File()

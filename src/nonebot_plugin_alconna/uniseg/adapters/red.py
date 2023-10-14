@@ -46,7 +46,7 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
         return ms.face(seg.id)
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
         name = seg.__class__.__name__.lower()
@@ -55,20 +55,17 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
             "voice": ms.voice,
             "video": ms.video,
             "audio": ms.voice,
+            "file": ms.file,
         }[name]
-        if seg.raw or seg.path:
-            return method(seg.raw or Path(seg.path))  # type: ignore
+        if seg.path:
+            return method(Path(seg.path))
+        elif seg.raw:
+            return method(seg.raw_bytes)
         elif seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             return method(resp.content)  # type: ignore
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
-
-    @export
-    async def file(self, seg: File, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.file(seg.raw)  # type: ignore
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

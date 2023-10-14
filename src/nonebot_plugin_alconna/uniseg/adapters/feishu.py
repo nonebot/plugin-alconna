@@ -56,46 +56,35 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         return ms.image(file_key)
 
     @export
-    async def audio(self, seg: Union[Voice, Audio], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Voice, Audio, File], bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
         name = seg.__class__.__name__.lower()
+        method = {
+            "voice": ms.audio,
+            "audio": ms.audio,
+            "file": ms.file,
+        }[name]
         if seg.id:
-            return ms.audio(seg.id)
+            return method(seg.id)
         elif seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
-            audio = resp.content
+            raw = resp.content
         elif seg.path:
-            audio = Path(seg.path).read_bytes()
+            raw = Path(seg.path).read_bytes()
         elif seg.raw:
-            audio = seg.raw
+            raw = seg.raw_bytes
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
         data = {"file_type": "stream", "file_name": seg.name}
-        files = {"file": ("file", audio)}
+        files = {"file": ("file", raw)}
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
         file_key = result["file_key"]
-        return ms.audio(file_key)
-
-    @export
-    async def file(self, seg: File, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        if seg.id:
-            return ms.file(seg.id)
-        elif seg.raw and seg.name:
-            data = {"file_type": "stream", "file_name": seg.name}
-            files = {"file": ("file", seg.raw)}
-            params = {"method": "POST", "data": data, "files": files}
-            result = await bot.call_api("im/v1/files", **params)
-            file_key = result["file_key"]
-            return ms.file(file_key)
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
+        return method(file_key)
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
-        return ms("reply", {"message_id": seg.id})
+        return ms("reply", {"message_id": seg.id})  # type: ignore

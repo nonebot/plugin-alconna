@@ -38,7 +38,7 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
         return ms.mention_all()
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
         name = seg.__class__.__name__.lower()
@@ -47,6 +47,7 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
             "voice": ms.voice,
             "video": ms.video,
             "audio": ms.audio,
+            "file": ms.file,
         }[name]
         if seg.id:
             return method(seg.id)
@@ -57,22 +58,10 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
             resp = await bot.upload_file(type="path", name=seg.name, path=str(seg.path))
             return method(resp["file_id"])
         elif seg.raw:
-            resp = await bot.upload_file(type="data", name=seg.name, data=seg.raw)
+            resp = await bot.upload_file(type="data", name=seg.name, data=seg.raw_bytes)
             return method(resp["file_id"])
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
-
-    @export
-    async def file(self, seg: File, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        if seg.id:
-            return ms.file(seg.id)
-        elif seg.raw:
-            resp = await bot.upload_file(type="data", name=seg.name or "file", data=seg.raw)
-            return ms.file(resp["file_id"])
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

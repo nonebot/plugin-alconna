@@ -4,7 +4,7 @@ from tarina import lang
 from nonebot.adapters import Bot
 
 from ..export import MessageExporter, SerializeFailed, export
-from ..segment import At, Card, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
+from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
     from nonebot.adapters.kaiheila.message import MessageSegment
@@ -51,20 +51,24 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
             return ms.KMarkdown(f":{seg.id}:")
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
         ms = self.segment_class
+        if TYPE_CHECKING:
+            from nonebot.adapters.kaiheila.bot import Bot as KBot
 
+            assert isinstance(bot, KBot)
         name = seg.__class__.__name__.lower()
         method = {
             "image": ms.image,
             "voice": ms.audio,
             "audio": ms.audio,
             "video": ms.video,
+            "file": ms.file,
         }[name]
         if seg.id or seg.url:
             return method(seg.id or seg.url)
         elif seg.path or seg.raw:
-            file_key = await bot.upload_file(seg.path or seg.raw)
+            file_key = await bot.upload_file(seg.path or seg.raw_bytes)
             return method(file_key)
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))

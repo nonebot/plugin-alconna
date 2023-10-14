@@ -47,7 +47,7 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
         return Entity.custom_emoji(seg.name, seg.id)  # type: ignore
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
         from nonebot.adapters.telegram.message import File as TgFile
 
         name = seg.__class__.__name__.lower()
@@ -56,26 +56,16 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
             "voice": TgFile.voice,
             "video": TgFile.video,
             "audio": TgFile.audio,
+            "file": TgFile.document,
         }[name]
         if seg.id or seg.url:
             return method(seg.id or seg.url)
         elif seg.path:
             return method(Path(seg.path).read_bytes())
         elif seg.raw:
-            return method(seg.raw)
+            return method(seg.raw_bytes)
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
-
-    @export
-    async def file(self, seg: File, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.telegram.message import File as TgFile
-
-        if seg.id:
-            return TgFile.document(seg.id)
-        elif seg.raw:
-            return TgFile.document(seg.raw)
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

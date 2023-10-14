@@ -52,7 +52,7 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         return ms.at_all(seg.here)
 
     @export
-    async def res(self, seg: Union[Image, Voice, Video, Audio], bot: Bot) -> "MessageSegment":
+    async def res(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
         name = seg.__class__.__name__.lower()
@@ -61,17 +61,15 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
             "voice": ms.audio,
             "video": ms.video,
             "audio": ms.audio,
+            "file": ms.file,
         }[name]
         if seg.id or seg.url:
-            return method(seg.id or seg.url)
+            return method(url=seg.id or seg.url)
+        if seg.path:
+            return method(path=seg.path)
+        if seg.raw and seg.raw.get("mimetype"):
+            return method(raw={"data": seg.raw["data"], "mime": seg.raw["mimetype"]})
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
-
-    @export
-    async def file(self, seg: File, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        if seg.id:
-            return ms.file(seg.id)
-        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

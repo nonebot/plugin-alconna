@@ -51,16 +51,16 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         return ms.custom_emoji(seg.name or "", seg.id)
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
         ms = self.segment_class
         name = seg.__class__.__name__.lower()
 
-        if seg.raw:
-            return ms.attachment(seg.id or seg.name, content=seg.raw)
+        if seg.raw and (seg.id or seg.name):
+            return ms.attachment(seg.id or seg.name, content=seg.raw_bytes)
         elif seg.path:
             path = Path(seg.path)
             return ms.attachment(path.name, content=path.read_bytes())
-        elif seg.url:
+        elif seg.url and (seg.id or seg.name):
             resp = await bot.adapter.request(Request("GET", seg.url))
             return ms.attachment(
                 seg.id or seg.name,
@@ -68,13 +68,6 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
             )
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
-
-    @export
-    async def file(self, seg: File, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        if not seg.raw:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
-        return ms.attachment(seg.name, content=seg.raw)  # type: ignore
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
