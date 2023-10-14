@@ -349,7 +349,6 @@ class _Image(UniPattern[Image]):
             if "uuid" in seg.data:  # red
                 return Image(
                     id=seg.data["uuid"],
-                    url=f"https://gchat.qpic.cn/gchatpic_new/0/0-0-{seg.data['md5'].upper()}/0",
                     path=seg.data["path"],
                     name=seg.data["md5"],
                 )

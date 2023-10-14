@@ -227,7 +227,7 @@ async def mask_h(matcher: AlconnaMatcher, img: Match[bytes] = AlconnaMatch("img"
 async def mask_g(img: bytes, default: Query[bool] = Query("default.value")):
     print(default)
     if default.result:
-        await mask_cmd.send(Image(raw=img), fallback=True)
+        await mask_cmd.send(Image(raw={"data": img}), fallback=True)
     else:
         await mask_cmd.send("ok")
 

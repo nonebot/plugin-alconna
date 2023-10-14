@@ -7,7 +7,7 @@ import importlib as imp
 from typing_extensions import Self
 from typing import Literal, TypeVar
 from abc import ABCMeta, abstractmethod
-
+from weakref import finalize
 from tarina import lang
 from nonebot.typing import T_State
 from arclet.alconna import Alconna, Arparma
@@ -89,6 +89,8 @@ class DefaultExtension(Extension):
         return "!default"
 
 
+_callbacks = set()
+
 class ExtensionExecutor:
     globals: list[type[Extension] | Extension] = [DefaultExtension()]
 
@@ -103,21 +105,29 @@ class ExtensionExecutor:
                 self.extensions.append(ext())
             else:
                 self.extensions.append(ext)
-        if extensions:
-            for ext in extensions:
-                if isinstance(ext, type):
-                    self.extensions.append(ext())
-                else:
-                    self.extensions.append(ext)
-        if excludes:
-            for ext in excludes:
-                if isinstance(ext, str):
-                    if ext.startswith("!"):
-                        raise ValueError(lang.require("nbp-alc", "error.extension_forbid_exclude"))
-                    self.extensions = [ext for ext in self.extensions if ext.id != ext]
-                else:
-                    self.extensions = [ext for ext in self.extensions if not isinstance(ext, ext)]
+        for ext in extensions or []:
+            if isinstance(ext, type):
+                self.extensions.append(ext())
+            else:
+                self.extensions.append(ext)
+        for exl in excludes or []:
+            if isinstance(exl, str) and exl.startswith("!"):
+                raise ValueError(lang.require("nbp-alc", "error.extension_forbid_exclude"))
+        self._excludes = set(excludes or [])
+        self.extensions = [ext for ext in self.extensions if ext.id not in self._excludes and ext.__class__ not in self._excludes]
         self.context: list[Extension] = []
+
+        _callbacks.add(self._callback)
+
+        finalize(self, _callbacks.remove, self._callback)
+
+    def _callback(self, *append_global_ext: type[Extension] | Extension):
+        for _ext in append_global_ext:
+            if isinstance(_ext, type):
+                _ext = _ext()
+            if _ext.id in self._excludes or _ext.__class__ in self._excludes:
+                continue
+            self.extensions.append(_ext)
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.context.clear()
@@ -181,6 +191,8 @@ class ExtensionExecutor:
 
 def add_global_extension(*ext: type[Extension] | Extension) -> None:
     ExtensionExecutor.globals.extend(ext)
+    for callback in _callbacks:
+        callback(*ext)
 
 
 pattern = re.compile(r"(?P<module>[\w.]+)\s*" r"(:\s*(?P<attr>[\w.]+)\s*)?" r"((?P<extras>\[.*\])\s*)?$")
