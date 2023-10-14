@@ -17,7 +17,7 @@ from tests.fake import fake_discord_interaction_event
 async def test_dc_ext(app: App):
     from nonebot_plugin_alconna import Match, on_alconna, load_from_path
 
-    load_from_path("~adapters.discord")
+
     # from nonebot_plugin_alconna.adapters.discord import DiscordSlashExtension
 
     alc = Alconna(
@@ -28,7 +28,7 @@ async def test_dc_ext(app: App):
         meta=CommandMeta(description="权限管理"),
     )
     matcher = on_alconna(alc)  # , extensions=[DiscordSlashExtension()])
-
+    load_from_path("~adapters.discord")
     @matcher.assign("add")
     async def add(plugin: Match[str], priority: Match[int]):
         await matcher.finish(f"added {plugin.result} with {priority.result if priority.available else 0}")

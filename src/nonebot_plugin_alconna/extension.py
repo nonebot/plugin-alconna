@@ -5,7 +5,7 @@ import asyncio
 import functools
 import importlib as imp
 from typing_extensions import Self
-from typing import Literal, TypeVar
+from typing import Literal, TypeVar, TYPE_CHECKING
 from abc import ABCMeta, abstractmethod
 from weakref import finalize
 from tarina import lang
@@ -17,6 +17,9 @@ from .uniseg import UniMessage, FallbackMessage
 
 OutputType = Literal["help", "shortcut", "completion"]
 TM = TypeVar("TM", str, Message, UniMessage)
+
+if TYPE_CHECKING:
+    from .rule import AlconnaRule
 
 
 class Extension(metaclass=ABCMeta):
@@ -93,6 +96,7 @@ _callbacks = set()
 
 class ExtensionExecutor:
     globals: list[type[Extension] | Extension] = [DefaultExtension()]
+    _rule: AlconnaRule
 
     def __init__(
         self,
@@ -128,6 +132,7 @@ class ExtensionExecutor:
             if _ext.id in self._excludes or _ext.__class__ in self._excludes:
                 continue
             self.extensions.append(_ext)
+            _ext.post_init(self._rule.command)
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.context.clear()
@@ -184,9 +189,10 @@ class ExtensionExecutor:
                 res = await ext.send_wrapper(bot, event, res)
         return res
 
-    def post_init(self, alc: Alconna) -> None:
+    def post_init(self, rule: AlconnaRule) -> None:
         for ext in self.extensions:
-            ext.post_init(alc)
+            ext.post_init(rule.command)
+        self._rule = rule
 
 
 def add_global_extension(*ext: type[Extension] | Extension) -> None:
