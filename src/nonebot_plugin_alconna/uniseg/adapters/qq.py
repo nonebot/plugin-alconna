@@ -59,7 +59,7 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         if seg.url:
             return ms.image(seg.url)
         elif seg.raw or seg.path:
-            return ms.file_image(seg.raw or Path(seg.path))
+            return ms.file_image(seg.raw_bytes or Path(seg.path))
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 

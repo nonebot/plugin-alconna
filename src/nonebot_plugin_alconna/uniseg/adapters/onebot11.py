@@ -57,7 +57,7 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
             "audio": ms.record,
         }[name]
         if seg.raw:
-            return method(seg.raw)
+            return method(seg.raw_bytes)
         elif seg.path:
             return method(Path(seg.path))
         elif seg.url:
