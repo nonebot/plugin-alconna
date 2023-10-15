@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:86f47a8a600a5db99112e3cf7da4e70374ff643686d298007822119a09401373"
+content_hash = "sha256:faee035d9ead63503b9bde265929cb4e0cd7f02c8744b452bd0c04231df3539d"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -35,7 +35,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.7.27"
+version = "1.7.28"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -44,8 +44,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.7.27-py3-none-any.whl", hash = "sha256:8d9004ec1e7df1331aa78d45a1b2bfc9096da8ce10619b65c05dfe62a1c4ea71"},
-    {file = "arclet_alconna-1.7.27.tar.gz", hash = "sha256:eaf32fafa1eb54d8a789a3f8641b65a85e0f23ca27ee493cd8b36fab484f8416"},
+    {file = "arclet_alconna-1.7.28-py3-none-any.whl", hash = "sha256:afe8d7a263c7f84bc99db0afddbe8274214ca2747f7f3f27898d792d479fc94e"},
+    {file = "arclet_alconna-1.7.28.tar.gz", hash = "sha256:20b73eda1af04298ae6ca145125022a2860a5302925994cd16506b41026b65cb"},
 ]
 
 [[package]]
@@ -886,15 +886,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-satori"
-version = "0.5.0"
+version = "0.5.1"
 requires_python = ">=3.8"
 summary = "Satori Protocol Adapter for Nonebot2"
 dependencies = [
     "nonebot2>=2.1.0",
 ]
 files = [
-    {file = "nonebot_adapter_satori-0.5.0-py3-none-any.whl", hash = "sha256:c87378d6fef0e6bd92578226077bb8e04250d3026dc502a0f511073ee68b1256"},
-    {file = "nonebot_adapter_satori-0.5.0.tar.gz", hash = "sha256:a322c7d55822524c38c742964c81a4156c3fb9c6cd08351461e63bcc66c00ab0"},
+    {file = "nonebot_adapter_satori-0.5.1-py3-none-any.whl", hash = "sha256:2c9b6cbee608023b2044cd2a1cab31f9f17042b3292693dab0254607b78b95e8"},
+    {file = "nonebot_adapter_satori-0.5.1.tar.gz", hash = "sha256:f74d9a021273c7758d851e04463be62cb1e5976f4a34dcd84b183f1fd7fc4f16"},
 ]
 
 [[package]]
