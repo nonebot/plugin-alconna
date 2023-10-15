@@ -35,7 +35,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.7.26"
+version = "1.7.27"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -44,8 +44,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.7.26-py3-none-any.whl", hash = "sha256:1a602010c248c66db3839eaceaa973df6d4886d3cf98a511ee312addd9d3dfce"},
-    {file = "arclet_alconna-1.7.26.tar.gz", hash = "sha256:a39d05efdd469bd09a61eaffe04ae35979d0cd54fc135fe6f9d659ba23f06961"},
+    {file = "arclet_alconna-1.7.27-py3-none-any.whl", hash = "sha256:8d9004ec1e7df1331aa78d45a1b2bfc9096da8ce10619b65c05dfe62a1c4ea71"},
+    {file = "arclet_alconna-1.7.27.tar.gz", hash = "sha256:eaf32fafa1eb54d8a789a3f8641b65a85e0f23ca27ee493cd8b36fab484f8416"},
 ]
 
 [[package]]

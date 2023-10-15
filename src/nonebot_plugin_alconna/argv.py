@@ -85,7 +85,6 @@ class MessageArgv(Argv[TM]):
         Returns:
             Self: 自身
         """
-        self.raw_data = self.bak_data.copy()
         for i, d in enumerate(data):
             if not d:
                 continue
@@ -102,7 +101,6 @@ class MessageArgv(Argv[TM]):
             else:
                 self.raw_data.append(text)
                 self.ndata += 1
-        self.current_index = 0
         self.bak_data = self.raw_data.copy()
         if self.message_cache:
             self.token = self.generate_token(self.raw_data)

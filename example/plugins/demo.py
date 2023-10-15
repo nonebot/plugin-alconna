@@ -363,3 +363,15 @@ async def demo_h(arp: Arparma):
         args.append(arp.header_match.result[4:])
     args.extend(arp.query[tuple[str, ...]]("rest"))
     await demo.finish(f"args: {args}")
+
+
+test1_cmd = on_alconna(Alconna("test1", Args["target", Union[int, At]]), comp_config={})
+
+
+@test1_cmd.handle()
+async def tt1_h(target: Match[Union[int, At]]):
+    res = target.result
+    if isinstance(res, At):
+        await test1_cmd.send(UniMessage(["ok\n", res]))
+    else:
+        await test1_cmd.send(UniMessage(f"ok {res}"))

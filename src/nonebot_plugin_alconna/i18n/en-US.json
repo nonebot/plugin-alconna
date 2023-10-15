@@ -1,8 +1,9 @@
 {
   "comp/nonebot": {
     "tab": "Send a {cmd} to toggle prompt",
-    "enter": "Send {cmd} [xxx] to confirm the input",
+    "enter": "Send {cmd} to confirm the prompt as the input",
     "exit": "Send {cmd} to exit the completion session",
+    "other": "Input which not in above will be confirmed as the input",
     "timeout": "Completion session timed out. Exited automatically",
     "exited": "Completion session exited"
   },
