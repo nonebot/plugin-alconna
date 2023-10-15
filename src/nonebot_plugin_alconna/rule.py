@@ -1,8 +1,9 @@
 import asyncio
-from typing import Dict, List, Type, Union, Literal, Optional
+from typing import List, Type, Union, Optional
 
 from nonebot import get_driver
 from nonebot.typing import T_State
+from nonebot.matcher import matchers
 from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
 from nonebot.internal.rule import Rule as Rule
@@ -10,7 +11,7 @@ from nonebot.permission import User, Permission
 from nonebot.adapters import Bot, Event, Message
 from tarina import lang, init_spec, is_awaitable
 from arclet.alconna.exceptions import SpecialOptionTriggered
-from arclet.alconna import Args, Alconna, Arparma, CommandMeta, CompSession, output_manager, command_manager
+from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
 
 from .config import Config
 from .uniseg import UniMessage
@@ -41,6 +42,9 @@ class AlconnaRule:
         "use_origin",
         "executor",
         "_session",
+        "_waiter",
+        "_future",
+        "_interface",
     )
 
     def __init__(
@@ -83,6 +87,65 @@ class AlconnaRule:
         self.executor = ExtensionExecutor(extensions, exclude_ext)
         self.executor.post_init(self)
         self._session = None
+        self._future: asyncio.Future = asyncio.Future()
+        self._interface = CompSession(self.command)
+        self._waiter = None
+        if self.comp_config is not None:
+            self.comp_config["tab"] = self.comp_config.get("tab", ".tab")
+            self.comp_config["enter"] = self.comp_config.get("enter", ".enter")
+            self.comp_config["exit"] = self.comp_config.get("exit", ".exit")
+            _waiter = on_message(
+                priority=self.comp_config.get("priority", 0),
+                block=True,
+                rule=Rule(lambda: self._session is not None),
+            )
+            _waiter.destroy()
+
+            @_waiter.handle()
+            async def _waiter_handle(_bot: Bot, _event: Event, content: Message = EventMessage()):
+                msg = str(content)
+                if msg.startswith(self.comp_config["exit"]):
+                    if msg == self.comp_config["exit"]:
+                        self._future.set_result(False)
+                        await _waiter.finish()
+                    else:
+                        self._future.set_result(None)
+                        await _waiter.pause(
+                            lang.require("analyser", "param_unmatched").format(
+                                target=msg.replace(self.comp_config["exit"], "", 1)
+                            )
+                        )
+                elif msg.startswith(self.comp_config["enter"]):
+                    if msg == self.comp_config["enter"]:
+                        self._future.set_result(True)
+                        await _waiter.finish()
+                    else:
+                        self._future.set_result(None)
+                        await _waiter.pause(
+                            lang.require("analyser", "param_unmatched").format(
+                                target=msg.replace(self.comp_config["enter"], "", 1)
+                            )
+                        )
+                elif msg.startswith(self.comp_config["tab"]):
+                    offset = msg.replace(self.comp_config["tab"], "", 1).lstrip() or 1
+                    try:
+                        offset = int(offset)
+                    except ValueError:
+                        self._future.set_result(None)
+                        await _waiter.pause(lang.require("analyser", "param_unmatched").format(target=offset))
+                    else:
+                        self._interface.tab(offset)
+                        if self.comp_config.get("lite", False):
+                            out = f"* {self._interface.current()}"
+                        else:
+                            out = "\n".join(self._interface.lines())
+                        self._future.set_result(None)
+                        await _waiter.pause(out)
+                else:
+                    self._future.set_result(content)
+                    await _waiter.finish()
+
+            self._waiter = _waiter
 
     def __repr__(self) -> str:
         return f"Alconna(command={self.command!r})"
@@ -94,30 +157,16 @@ class AlconnaRule:
         return hash(self.command.__hash__())
 
     async def handle(self, bot: Bot, event: Event, msg: Message):
-        interface = CompSession(self.command)
         if self.comp_config is None:
             return self.command.parse(msg)
         res = None
-        with interface:
+        with self._interface:
             res = self.command.parse(msg)
         if res:
             return res
         self._session = event.get_session_id()
-        meta = CommandMeta(compact=True, hide=True)
-        _tab = Alconna(self.comp_config.get("tab", ".tab"), Args["offset", int, 1], [], meta=meta)
-        _enter = Alconna(
-            self.comp_config.get("enter", ".enter"),
-            [],
-            meta=meta,
-        )
-        _exit = Alconna(self.comp_config.get("exit", ".exit"), [], meta=meta)
-
-        _waiter = on_message(
-            priority=self.comp_config.get("priority", 0),
-            block=True,
-            permission=Permission(User.from_event(event)),
-        )
-        _futures: Dict[str, asyncio.Future] = {}
+        self._waiter.permission = Permission(User.from_event(event))
+        matchers[self._waiter.priority].append(self._waiter)
         res = Arparma(
             self.command.path,
             msg,
@@ -125,77 +174,43 @@ class AlconnaRule:
             error_info=SpecialOptionTriggered("completion"),
         )
 
-        @_waiter.handle()
-        async def _waiter_handle(_bot: Bot, _event: Event, content: Message = EventMessage()):
-            mat = _exit.parse(content)
-            if mat.matched:
-                _futures["_"].set_result(False)
-                await _waiter.finish()
-            elif mat.head_matched:
-                await self._send(str(mat.error_info), _bot, _event, res)
-                await _waiter.pause()
-            mat = _tab.parse(content)
-            if mat.matched:
-                interface.tab(mat.query[int]("offset", 1))
-                if self.comp_config.get("lite", False):
-                    out = f"* {interface.current()}"
-                else:
-                    out = "\n".join(interface.lines())
-                await self._send(out, _bot, _event, res)
-                await _waiter.pause()
-            elif mat.head_matched:
-                await self._send(str(mat.error_info), _bot, _event, res)
-                await _waiter.pause()
-            mat = _enter.parse(content)
-            if mat.matched:
-                _futures["_"].set_result(None)
-                await _waiter.finish()
-            elif mat.head_matched:
-                await self._send(str(mat.error_info), _bot, _event, res)
-                await _waiter.pause()
-            _futures["_"].set_result(content)
-            await _waiter.finish()
-
-        def clear():
-            interface.clear()
-            _waiter.destroy()
-            _waiter.handlers.clear()
-            command_manager.delete(_tab)
-            command_manager.delete(_enter)
-            command_manager.delete(_exit)
-
         help_text = (
-            f"{lang.require('comp/nonebot', 'tab').format(cmd=_tab.command)}\n"
-            f"{lang.require('comp/nonebot', 'enter').format(cmd=_enter.command)}\n"
-            f"{lang.require('comp/nonebot', 'exit').format(cmd=_exit.command)}\n"
+            f"{lang.require('comp/nonebot', 'tab').format(cmd=self.comp_config['tab'])}\n"
+            f"{lang.require('comp/nonebot', 'enter').format(cmd=self.comp_config['enter'])}\n"
+            f"{lang.require('comp/nonebot', 'exit').format(cmd=self.comp_config['exit'])}\n"
             f"{lang.require('comp/nonebot', 'other')}\n"
         )
 
-        while interface.available:
-            await self._send(f"{str(interface)}\n\n{help_text}", bot, event, res)
-            _future = _futures.setdefault("_", asyncio.get_running_loop().create_future())
-            _future.add_done_callback(lambda x: _futures.pop("_"))
-            try:
-                await asyncio.wait_for(_future, timeout=self.comp_config.get("timeout", 60))
-            except asyncio.TimeoutError:
-                await self._send(lang.require("comp/nonebot", "timeout"), bot, event, res)
-                clear()
-                return res
-            ans: Union[Message, None, Literal[False]] = _future.result()
-            if ans is False:
-                await self._send(lang.require("comp/nonebot", "exited"), bot, event, res)
-                clear()
-                return res
-            if not ans or not ans[0]:
-                ans = None
-            _res = interface.enter(ans)
-            if _res.result:
-                res = _res.result
+        while self._interface.available:
+            await self._send(f"{str(self._interface)}\n\n{help_text}", bot, event, res)
+            while True:
+                self._future = asyncio.get_running_loop().create_future()
+                try:
+                    await asyncio.wait_for(self._future, timeout=self.comp_config.get("timeout", 60))
+                except asyncio.TimeoutError:
+                    await self._send(lang.require("comp/nonebot", "timeout"), bot, event, res)
+                    self._interface.exit()
+                    self._waiter.destroy()
+                    return res
+                finally:
+                    if not self._future.done():
+                        self._future.cancel()
+                ans: Union[Message, bool, None] = self._future.result()
+                if ans is False:
+                    await self._send(lang.require("comp/nonebot", "exited"), bot, event, res)
+                    self._interface.exit()
+                    self._waiter.destroy()
+                    return res
+                elif ans is None:
+                    continue
+                _res = self._interface.enter(None if ans is True else ans)
+                if _res.result:
+                    res = _res.result
+                elif _res.exception and not isinstance(_res.exception, SpecialOptionTriggered):
+                    await self._send(str(_res.exception), bot, event, res)
                 break
-            elif _res.exception and not isinstance(_res.exception, SpecialOptionTriggered):
-                # traceback.print_exc()
-                await self._send(str(_res.exception), bot, event, res)
-        clear()
+        self._interface.exit()
+        self._waiter.destroy()
         return res
 
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
