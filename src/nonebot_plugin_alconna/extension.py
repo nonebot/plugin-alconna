@@ -4,10 +4,11 @@ import re
 import asyncio
 import functools
 import importlib as imp
-from typing_extensions import Self
-from typing import Literal, TypeVar, TYPE_CHECKING
-from abc import ABCMeta, abstractmethod
 from weakref import finalize
+from typing_extensions import Self
+from abc import ABCMeta, abstractmethod
+from typing import TYPE_CHECKING, Literal, TypeVar
+
 from tarina import lang
 from nonebot.typing import T_State
 from arclet.alconna import Alconna, Arparma
@@ -94,6 +95,7 @@ class DefaultExtension(Extension):
 
 _callbacks = set()
 
+
 class ExtensionExecutor:
     globals: list[type[Extension] | Extension] = [DefaultExtension()]
     _rule: AlconnaRule
@@ -118,7 +120,11 @@ class ExtensionExecutor:
             if isinstance(exl, str) and exl.startswith("!"):
                 raise ValueError(lang.require("nbp-alc", "error.extension_forbid_exclude"))
         self._excludes = set(excludes or [])
-        self.extensions = [ext for ext in self.extensions if ext.id not in self._excludes and ext.__class__ not in self._excludes]
+        self.extensions = [
+            ext
+            for ext in self.extensions
+            if ext.id not in self._excludes and ext.__class__ not in self._excludes
+        ]
         self.context: list[Extension] = []
 
         _callbacks.add(self._callback)

@@ -1,6 +1,6 @@
 from nepattern.main import INTEGER
 from nonebot.adapters.red.message import MessageSegment
-from nepattern import URL, BasePattern, PatternModel, UnionPattern
+from nepattern import BasePattern, PatternModel, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 
