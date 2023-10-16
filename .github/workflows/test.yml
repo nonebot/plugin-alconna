@@ -24,9 +24,6 @@ jobs:
       - name: Install Package
         run: |
           pdm sync -G:all
-      - name: Ensure uvicorn
-        run: |
-          pdm add "fastapi<1.0.0,>=0.93.0" "uvicorn[standard]<1.0.0,>=0.20.0" --update-reuse --no-self
       - name: Test & Report
         run: |
           pdm run test

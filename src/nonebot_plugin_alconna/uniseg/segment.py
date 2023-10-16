@@ -19,7 +19,7 @@ from typing import (
     Callable,
     Iterable,
     Optional,
-    TypedDict,
+    TypedDict, overload,
 )
 
 from nonebot.internal.adapter import Message, MessageSegment
@@ -66,12 +66,36 @@ class Segment:
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
 
+    @overload
+    def __add__(self: TS, item: str) -> "UniMessage[Union[TS, Text]]":
+        ...
+
+    @overload
+    def __add__(self: TS, item: Union[TS, Iterable[TS]]) -> "UniMessage[TS]":
+        ...
+
+    @overload
     def __add__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
+        ...
+
+    def __add__(self: TS, item: Union[str, Union[TS, TS1], Iterable[Union[TS, TS1]]]) -> "UniMessage":
         from .message import UniMessage
 
         return UniMessage(self) + item
 
-    def __radd__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
+    @overload
+    def __radd__(self: TS, item: str) -> "UniMessage[Union[Text, TS]]":
+        ...
+
+    @overload
+    def __radd__(self: TS, item: Union[TS, Iterable[TS]]) -> "UniMessage[TS]":
+        ...
+
+    @overload
+    def __radd__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS1, TS]]":
+        ...
+
+    def __radd__(self: TS, item: Union[str, Union[TS, TS1], Iterable[Union[TS, TS1]]]) -> "UniMessage":
         from .message import UniMessage
 
         return UniMessage(item) + self

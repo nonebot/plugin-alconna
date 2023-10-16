@@ -7,7 +7,7 @@ import importlib as imp
 from weakref import finalize
 from typing_extensions import Self
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Literal, TypeVar
+from typing import TYPE_CHECKING, Union, Literal, TypeVar
 
 from tarina import lang
 from nonebot.typing import T_State
@@ -17,7 +17,7 @@ from nonebot.adapters import Bot, Event, Message
 from .uniseg import UniMessage, FallbackMessage
 
 OutputType = Literal["help", "shortcut", "completion"]
-TM = TypeVar("TM", str, Message, UniMessage)
+TM = TypeVar("TM", bound=Union[str, Message, UniMessage])
 
 if TYPE_CHECKING:
     from .rule import AlconnaRule
@@ -216,6 +216,8 @@ def load_from_path(path: str) -> None:
     elif path.startswith("~"):
         path = f"nonebot_plugin_alconna.{path[1:]}"
     match = pattern.match(path)
+    if not match:
+        raise ValueError(lang.require("nbp-alc", "error.extension_path_invalid").format(path=path))
     module = imp.import_module(match.group("module"))
     attrs = filter(None, (match.group("attr") or "__extension__").split("."))
     ext = functools.reduce(getattr, attrs, module)

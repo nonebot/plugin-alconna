@@ -17,6 +17,7 @@
     "error.discord_prefix": "The Alconna obj must have '/' prefix when use to translate to Discord slash-command",
     "error.extension_forbid_exclude": "Extension which id starts with '!' cannot be excluded",
     "error.extension_path_load": "Value of {path} is not a subclass of Extension",
+    "error.extension_path_invalid": "{path} is not a valid extension path",
     "error.matcher_got_path": "Path {path} not found in Alconna {cmd}"
   }
 }

@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Type, Union, Optional
+from typing import TYPE_CHECKING, List, Type, Union, Optional, cast
 
 from nonebot import get_driver
 from nonebot.typing import T_State
@@ -78,7 +78,7 @@ class AlconnaRule:
                 command.separators = tuple(global_config.command_sep)
                 command_manager.resolve(command).separators = tuple(global_config.command_sep)
             if config.alconna_auto_completion and not self.comp_config:
-                self.comp_config = {}
+                self.comp_config = cast(CompConfig, {})
             self.use_origin = use_origin or config.alconna_use_origin
         except ValueError:
             self.auto_send = auto_send_output
@@ -91,9 +91,9 @@ class AlconnaRule:
         self._interface = CompSession(self.command)
         self._waiter = None
         if self.comp_config is not None:
-            self.comp_config["tab"] = self.comp_config.get("tab", ".tab")
-            self.comp_config["enter"] = self.comp_config.get("enter", ".enter")
-            self.comp_config["exit"] = self.comp_config.get("exit", ".exit")
+            _tab = self.comp_config.get("tab", ".tab")
+            _enter = self.comp_config.get("enter", ".enter")
+            _exit = self.comp_config.get("exit", ".exit")
             _waiter = on_message(
                 priority=self.comp_config.get("priority", 0),
                 block=True,
@@ -104,30 +104,30 @@ class AlconnaRule:
             @_waiter.handle()
             async def _waiter_handle(_bot: Bot, _event: Event, content: Message = EventMessage()):
                 msg = str(content)
-                if msg.startswith(self.comp_config["exit"]):
-                    if msg == self.comp_config["exit"]:
+                if msg.startswith(_exit):
+                    if msg == _exit:
                         self._future.set_result(False)
                         await _waiter.finish()
                     else:
                         self._future.set_result(None)
                         await _waiter.pause(
                             lang.require("analyser", "param_unmatched").format(
-                                target=msg.replace(self.comp_config["exit"], "", 1)
+                                target=msg.replace(_exit, "", 1)
                             )
                         )
-                elif msg.startswith(self.comp_config["enter"]):
-                    if msg == self.comp_config["enter"]:
+                elif msg.startswith(_enter):
+                    if msg == _enter:
                         self._future.set_result(True)
                         await _waiter.finish()
                     else:
                         self._future.set_result(None)
                         await _waiter.pause(
                             lang.require("analyser", "param_unmatched").format(
-                                target=msg.replace(self.comp_config["enter"], "", 1)
+                                target=msg.replace(_enter, "", 1)
                             )
                         )
-                elif msg.startswith(self.comp_config["tab"]):
-                    offset = msg.replace(self.comp_config["tab"], "", 1).lstrip() or 1
+                elif msg.startswith(_tab):
+                    offset = msg.replace(_tab, "", 1).lstrip() or 1
                     try:
                         offset = int(offset)
                     except ValueError:
@@ -135,7 +135,7 @@ class AlconnaRule:
                         await _waiter.pause(lang.require("analyser", "param_unmatched").format(target=offset))
                     else:
                         self._interface.tab(offset)
-                        if self.comp_config.get("lite", False):
+                        if self.comp_config is not None and self.comp_config.get("lite", False):
                             out = f"* {self._interface.current()}"
                         else:
                             out = "\n".join(self._interface.lines())
@@ -165,6 +165,8 @@ class AlconnaRule:
         if res:
             return res
         self._session = event.get_session_id()
+        if TYPE_CHECKING:
+            assert self._waiter is not None
         self._waiter.permission = Permission(User.from_event(event))
         matchers[self._waiter.priority].append(self._waiter)
         res = Arparma(
@@ -175,9 +177,9 @@ class AlconnaRule:
         )
 
         help_text = (
-            f"{lang.require('comp/nonebot', 'tab').format(cmd=self.comp_config['tab'])}\n"
-            f"{lang.require('comp/nonebot', 'enter').format(cmd=self.comp_config['enter'])}\n"
-            f"{lang.require('comp/nonebot', 'exit').format(cmd=self.comp_config['exit'])}\n"
+            f"{lang.require('comp/nonebot', 'tab').format(cmd=self.comp_config.get('tab', '.tab'))}\n"
+            f"{lang.require('comp/nonebot', 'enter').format(cmd=self.comp_config.get('enter', '.enter'))}\n"
+            f"{lang.require('comp/nonebot', 'exit').format(cmd=self.comp_config.get('exit', '.exit'))}\n"
             f"{lang.require('comp/nonebot', 'other')}\n"
         )
 

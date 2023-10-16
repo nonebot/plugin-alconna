@@ -74,7 +74,7 @@ async def reply_handle(event: Event, bot: Bot):
         if event.reply:
             return Reply(
                 event.reply,
-                str(event.reply.data["id"]),
+                str(event.reply.data.get("id")),
                 event.reply.data.get("content"),
             )
     elif adapter_name == "mirai2":
@@ -171,18 +171,22 @@ class UniMessage(List[TS]):
         return UniMessageTemplate(format_string, cls)
 
     @overload
-    def __add__(self, other: Union[str, TS, Iterable[TS]]) -> "UniMessage[TS]":
+    def __add__(self, other: str) -> "UniMessage[Union[TS, Text]]":
         ...
 
     @overload
-    def __add__(self, other: Union[str, TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
+    def __add__(self, other: Union[TS, Iterable[TS]]) -> "UniMessage[TS]":
         ...
 
-    def __add__(self, other: Union[str, TS, TS1, Iterable[Union[TS, TS1]]]) -> "UniMessage[Union[TS, TS1]]":
-        result = self.copy()
+    @overload
+    def __add__(self, other: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
+        ...
+
+    def __add__(self, other: Union[str, TS, TS1, Iterable[Union[TS, TS1]]]) -> "UniMessage":
+        result: UniMessage = self.copy()
         if isinstance(other, str):
-            if result and isinstance(result[-1], Text):
-                result[-1] = Text(result[-1].text + other)
+            if result and isinstance(text := result[-1], Text):
+                text.text += other
             else:
                 result.append(Text(other))
         elif isinstance(other, Segment):
@@ -197,19 +201,31 @@ class UniMessage(List[TS]):
             raise TypeError(f"Unsupported type {type(other)!r}")
         return result
 
-    def __radd__(self, other: Union[str, TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
+    @overload
+    def __radd__(self, other: str) -> "UniMessage[Union[Text, TS]]":
+        ...
+
+    @overload
+    def __radd__(self, other: Union[TS, Iterable[TS]]) -> "UniMessage[TS]":
+        ...
+
+    @overload
+    def __radd__(self, other: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS1, TS]]":
+        ...
+
+    def __radd__(self, other: Union[str, TS1, Iterable[TS1]]) -> "UniMessage":
         result = UniMessage(other)
         return result + self
 
     def __iadd__(self, other: Union[str, TS, Iterable[TS]]) -> Self:
         if isinstance(other, str):
-            if self and isinstance(self[-1], Text):
-                self[-1] = Text(self[-1].text + other)
+            if self and isinstance(text := self[-1], Text):
+                text.text += other
             else:
-                self.append(Text(other))
+                self.append(Text(other))  # type: ignore
         elif isinstance(other, Segment):
-            if self and isinstance(self[-1], Text) and isinstance(other, Text):
-                self[-1] = Text(self[-1].text + other.text)
+            if self and isinstance(text := self[-1], Text) and isinstance(other, Text):
+                text.text += other.text
             else:
                 self.append(other)
         elif isinstance(other, Iterable):
