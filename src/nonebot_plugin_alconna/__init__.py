@@ -68,7 +68,6 @@ from .matcher import on_alconna as on_alconna
 from .tools import image_fetch as image_fetch
 from .params import match_value as match_value
 from .params import AlconnaMatch as AlconnaMatch
-from .params import AlconnaParam as AlconnaParam
 from .params import AlconnaQuery as AlconnaQuery
 from .model import CommandResult as CommandResult
 from .params import AlcExecResult as AlcExecResult
@@ -103,16 +102,9 @@ __plugin_meta__ = PluginMetadata(
     },
 )
 
-
-_use_param = True
-
 with contextlib.suppress(ValueError, LookupError):
     global_config = get_driver().config
     _config = Config.parse_obj(global_config)
-    _use_param = _config.alconna_use_param
     for path in _config.alconna_global_extensions:
         log("DEBUG", lang.require("nbp-alc", "log.load_global_extensions").format(path=path))
         load_from_path(path)
-
-if _use_param:
-    AlconnaMatcher.extend_param(AlconnaParam)

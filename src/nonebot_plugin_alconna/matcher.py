@@ -6,14 +6,15 @@ from datetime import datetime, timedelta
 from typing import Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol
 
 from nonebot.rule import Rule
+from nonebot import get_driver
 from nonebot.params import Depends
 from _weakref import _remove_dead_weakref
 from nonebot.permission import Permission
+from nonebot.dependencies import Dependent
 from nonebot.message import run_postprocessor
 from nepattern import STRING, AnyOne, AnyString
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
-from nonebot.dependencies import Param, Dependent
 from tarina import lang, is_awaitable, run_always_await
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
@@ -25,13 +26,24 @@ from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, Messag
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
 
 from .rule import alconna
+from .config import Config
 from .typings import MReturn
 from .model import CompConfig
 from .uniseg import Segment, UniMessage
 from .uniseg.template import UniMessageTemplate
 from .extension import Extension, ExtensionExecutor
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, log
-from .params import CHECK, MIDDLEWARE, Check, AlcExecResult, assign, _seminal, _Dispatch, merge_path
+from .params import (
+    CHECK,
+    MIDDLEWARE,
+    Check,
+    AlconnaParam,
+    AlcExecResult,
+    assign,
+    _seminal,
+    _Dispatch,
+    merge_path,
+)
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
 
@@ -75,15 +87,6 @@ class AlconnaMatcher(Matcher):
     command: ClassVar[Alconna]
     basepath: ClassVar[str]
     executor: ClassVar[ExtensionExecutor]
-
-    @classmethod
-    def extend_param(cls, *params: type[Param]):
-        """扩展 AlconnaMatcher 的 Param 种类"""
-        cls.HANDLER_PARAM_TYPES = (
-            *cls.HANDLER_PARAM_TYPES[:-1],
-            *params,
-            DefaultParam,
-        )
 
     @classmethod
     def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):
@@ -266,7 +269,7 @@ class AlconnaMatcher(Matcher):
         fn = _Dispatch(merge_path(path, cls.basepath), value, or_not, additional)
         cls.handle()(fn.set)
 
-        matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
+        matcher: type[AlconnaMatcher] = cls.new(
             "",
             rule & Rule(fn),
             Permission() | permission,
@@ -554,6 +557,14 @@ def on_alconna(
         use_cmd_start,
         use_cmd_sep,
     )
+    try:
+        global_config = get_driver().config
+        config = Config.parse_obj(global_config)
+        use_param = config.alconna_use_param
+    except ValueError:
+        use_param = True
+    if use_param:
+        AlconnaMatcher.HANDLER_PARAM_TYPES = Matcher.HANDLER_PARAM_TYPES[:-1] + (AlconnaParam, DefaultParam)
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "",
         rule & _rule,
