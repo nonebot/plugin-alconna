@@ -6,10 +6,11 @@ from typing import Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol
 from nonebot.rule import Rule
 from nonebot.params import Depends
 from nonebot.permission import Permission
-from nonebot.dependencies import Dependent
 from nonebot.message import run_postprocessor
 from nepattern import STRING, AnyOne, AnyString
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
+from nonebot.internal.params import DefaultParam
+from nonebot.dependencies import Param, Dependent
 from tarina import lang, is_awaitable, run_always_await
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
@@ -71,6 +72,15 @@ class AlconnaMatcher(Matcher):
     command: ClassVar[Alconna]
     basepath: ClassVar[str]
     executor: ClassVar[ExtensionExecutor]
+
+    @classmethod
+    def extend_param(cls, *params: type[Param]):
+        """扩展 AlconnaMatcher 的 Param 种类"""
+        cls.HANDLER_PARAM_TYPES = (
+            *cls.HANDLER_PARAM_TYPES[:-1],
+            *params,
+            DefaultParam,
+        )
 
     @classmethod
     def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):

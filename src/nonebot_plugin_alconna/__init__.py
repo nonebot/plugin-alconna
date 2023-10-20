@@ -17,7 +17,6 @@ from arclet.alconna import Alconna as Alconna
 from arclet.alconna import Arparma as Arparma
 from arclet.alconna import ArgsStub as ArgsStub
 from arclet.alconna import MultiVar as MultiVar
-from nonebot.internal.params import DefaultParam
 from arclet.alconna import Namespace as Namespace
 from arclet.alconna import namespace as namespace
 from arclet.alconna import KeyWordVar as KeyWordVar
@@ -87,7 +86,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.28.0"
+__version__ = "0.29.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",
@@ -116,8 +115,4 @@ with contextlib.suppress(ValueError, LookupError):
         load_from_path(path)
 
 if _use_param:
-    AlconnaMatcher.HANDLER_PARAM_TYPES = (
-        *AlconnaMatcher.HANDLER_PARAM_TYPES[:-1],
-        AlconnaParam,
-        DefaultParam,
-    )
+    AlconnaMatcher.extend_param(AlconnaParam)

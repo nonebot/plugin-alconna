@@ -19,7 +19,8 @@ from typing import (
     Callable,
     Iterable,
     Optional,
-    TypedDict, overload,
+    TypedDict,
+    overload,
 )
 
 from nonebot.internal.adapter import Message, MessageSegment
