@@ -18,6 +18,7 @@ from arclet.alconna import (
     SubcommandStub,
     namespace,
     store_true,
+    command_manager,
 )
 
 require("nonebot_plugin_alconna")
@@ -375,3 +376,13 @@ async def tt1_h(target: Match[Union[int, At]]):
         await test1_cmd.send(UniMessage(["ok\n", res]))
     else:
         await test1_cmd.send(UniMessage(f"ok {res}"))
+
+
+statis = on_alconna(Alconna("statis"))
+
+
+@statis.handle()
+async def statis_h():
+    cmds = command_manager.get_commands()
+    sources = [cmd.meta.extra["matcher.source"] for cmd in cmds]
+    await statis.finish(UniMessage(f"sources: {sources}"))

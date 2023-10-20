@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import weakref
+from weakref import ref
+from _weakref import _remove_dead_weakref
 from datetime import datetime, timedelta
 from typing import Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol
 
@@ -15,7 +18,7 @@ from tarina import lang, is_awaitable, run_always_await
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
-from nonebot.matcher import Matcher, current_bot, current_event, current_matcher
+from nonebot.matcher import Matcher, current_bot, current_event, current_matcher, matchers
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.exception import PausedException, FinishedException, RejectedException
 from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
@@ -568,6 +571,15 @@ def on_alconna(
     matcher.command = command
     matcher.basepath = ""
     matcher.executor = list(_rule.checkers)[0].call.executor  # type: ignore
+    command.meta.extra["matcher.source"] = matcher._source
+    command.meta.extra["matcher.position"] = (priority, len(matchers[priority]) - 1)
+
+    def remove(wr, selfref=ref(command.meta), _atomic_removal=_remove_dead_weakref):
+        self = selfref()
+        if self is not None:
+            _atomic_removal(self.extra, wr.key)
+
+    command.meta.extra["matcher"] = weakref.KeyedRef(matcher, remove, "matcher")
     return matcher
 
 
