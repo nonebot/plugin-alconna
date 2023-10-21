@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import weakref
 from weakref import ref
+from types import FunctionType
 from datetime import datetime, timedelta
-from typing import Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol, TYPE_CHECKING
-from functools import partial
+from typing import TYPE_CHECKING, Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol
 
 from nonebot.rule import Rule
 from nonebot import get_driver
@@ -85,13 +85,13 @@ def _validate(target: Arg[Any], arg: MessageSegment):
 
 
 class _method:
-    def __init__(self, func: Callable[..., Any]):
+    def __init__(self, func: FunctionType):
         self.__func__ = func
 
     def __get__(self, instance, owner):
         if instance is None:
-            return partial(self.__func__, owner)
-        return partial(self.__func__, instance)
+            return self.__func__.__get__(owner, owner)
+        return self.__func__.__get__(instance, owner)
 
 
 class AlconnaMatcher(Matcher):
@@ -137,6 +137,7 @@ class AlconnaMatcher(Matcher):
         return _decorator
 
     if TYPE_CHECKING:
+
         @classmethod
         def set_path_arg(cls_or_self, path: str, content: Any) -> None:
             ...
@@ -144,7 +145,9 @@ class AlconnaMatcher(Matcher):
         @classmethod
         def get_path_arg(self, path: str, default: Any) -> Any:
             ...
+
     else:
+
         @_method
         def set_path_arg(cls_or_self, path: str, content: Any) -> None:
             """设置一个 `got_path` 内容"""
@@ -680,7 +683,7 @@ def funcommand(
             if res := results.get(func.__name__):
                 if is_awaitable(res):
                     res = await res
-                if isinstance(res, (str, Message, MessageSegment, Segment, UniMessage)):
+                if isinstance(res, (str, Message, MessageSegment, Segment, UniMessage, UniMessageTemplate)):
                     await matcher.send(res, fallback=True)
 
         return matcher

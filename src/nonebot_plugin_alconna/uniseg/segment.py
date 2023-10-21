@@ -226,6 +226,16 @@ class Reply(Segment):
 
 
 @dataclass
+class Reference(Segment):
+    """Reference对象，表示一类引用消息。转发消息 (Forward) 也属于此类"""
+
+    origin: Any
+    id: Optional[str] = field(default=None)
+    """此处不一定是消息ID，可能是其他ID，如消息序号等"""
+    msg: Optional[Union[Message, str]] = field(default=None)
+
+
+@dataclass
 class Card(Segment):
     """Card对象，表示一类卡片消息"""
 
@@ -258,6 +268,14 @@ other = _Other()
 
 class _Text(UniPattern[Text]):
     def solve(self, seg: MessageSegment):
+        if seg.type == "markdown":  # qq, console
+            if "markup" in seg.data:  # console
+                return Text(seg.data["markup"], "markdown")
+            return Text(seg.data["content"], "markdown")
+        if seg.type == "markup":  # console
+            return Text(seg.data["markup"], "markup")
+        if seg.type == "kmarkdown":  # kook
+            return Text(seg.data["content"], "markdown")
         if seg.is_text():
             return Text(seg.data["text"], seg.type if seg.type != "text" else None)
 
@@ -278,24 +296,26 @@ class _At(UniPattern[At]):
                 return At("role", seg.data["role"], seg.data["name"])
         if seg.type == "sharp":  # satori
             return At("channel", seg.data["channel_id"], seg.data["name"])
-        if seg.type == "mention":  # ob12, tg
-            if "user_id" in seg.data:
+        if seg.type == "mention":
+            if "user_id" in seg.data:  # ob12
                 return At("user", str(seg.data["user_id"]))
-            if "text" in seg.data:
+            if "text" in seg.data:  # tg
                 return At("user", seg.data["text"])
-        if seg.type == "mention_user":  # qq, qqguild, discord, villa
-            if "user_id" in seg.data:
+        if seg.type == "text_mention":  # tg
+            return At("user", str(seg.data["user"].id), seg.data["text"])
+        if seg.type == "mention_user":
+            if "user_id" in seg.data:  # qq, qqguild, discord
                 return At("user", str(seg.data["user_id"]))
-            if "mention_user" in seg.data:
-                return At("user", str(seg.data["mention_user"].user_id))
+            if "mention_user" in seg.data:  # villa
+                return At("user", str(seg.data["mention_user"].user_id), seg.data["mention_user"].user_name)
         if seg.type == "mention_channel":  # discord, qq, qqguild
             return At("channel", str(seg.data["channel_id"]))
         if seg.type == "mention_role":  # discord
             return At("role", str(seg.data["role_id"]))
         if seg.type == "mention_robot":  # villa
-            return At("user", str(seg.data["mention_robot"].bot_id))
+            return At("user", str(seg.data["mention_robot"].bot_id), seg.data["mention_robot"].bot_name)
         if seg.type == "At":  # mirai
-            return At("user", str(seg.data["target"]))
+            return At("user", str(seg.data["target"]), seg.data["display"])
         if seg.type == "kmarkdown":  # kook
             content = seg.data["content"]
             if not content.startswith("(met)"):
@@ -307,6 +327,7 @@ class _At(UniPattern[At]):
             return At(
                 "channel",
                 f'{seg.data["room_link"].villa_id}:{seg.data["room_link"].room_id}',
+                seg.data["room_link"].room_name,
             )
 
 
@@ -353,7 +374,7 @@ class _Emoji(UniPattern[Emoji]):
                 return Emoji(seg.data["custom_emoji_id"], seg.data["text"])
             if "id" in seg.data:  # discord
                 return Emoji(seg.data["id"], seg.data["name"])
-        if seg.type == "kmarkdown":
+        if seg.type == "kmarkdown":  # kook
             content = seg.data["content"]
             if content.startswith("(emj)"):
                 mat = re.search(r"\(emj\)(?P<name>[^()\[\]]+)\(emj\)\[(?P<id>[^\[\]]+)\]", content)
@@ -402,7 +423,7 @@ class _Image(UniPattern[Image]):
                 return Image(id=seg.data["attachment"].filename)
         if seg.type == "Image":  # mirai
             return Image(url=seg.data["url"], id=seg.data["imageId"])
-        if seg.type == "img":
+        if seg.type == "img":  # satori
             src = seg.data["src"]
             if src.startswith("http"):
                 return Image(url=src)
@@ -436,7 +457,7 @@ class _Video(UniPattern[Video]):
                 return Video(url=seg.data["msgData"])
             if "file_path" in seg.data:  # ntchat
                 return Video(id=seg.data["file_path"], path=seg.data["file_path"])
-            if "src" in seg.data:
+            if "src" in seg.data:  # satori
                 src = seg.data["src"]
                 if src.startswith("http"):
                     return Video(url=src)
@@ -446,9 +467,9 @@ class _Video(UniPattern[Video]):
                     mime, b64 = src[5:].split(";", 1)
                     return Video(raw={"data": b64decode(b64[7:]), "mimetype": mime})
                 return Video(seg.data["src"])
-        if seg.type == "Video":
+        if seg.type == "Video":  # mirai
             return Video(url=seg.data["url"], id=seg.data["videoId"])
-        if seg.type == "animation":
+        if seg.type == "animation":  # telegram
             return Video(id=seg.data["file_id"])
         if seg.type == "media":  # feishu
             return Video(id=seg.data["file_key"], name=seg.data["file_name"])
@@ -472,9 +493,9 @@ class _Voice(UniPattern[Voice]):
                 return Voice(url=seg.data["file_key"])
             if "file_path" in seg.data:  # ntchat
                 return Voice(id=seg.data["file_path"], path=seg.data["file_path"])
-        if seg.type == "record":
+        if seg.type == "record":  # ob11
             return Voice(url=seg.data["url"])
-        if seg.type == "Voice":
+        if seg.type == "Voice":  # mirai
             return Voice(url=seg.data["url"], id=seg.data["voiceId"])
 
 
@@ -491,7 +512,7 @@ class _Audio(UniPattern[Audio]):
             return Audio(url=seg.data["file_key"])
         if "file_path" in seg.data:  # ntchat
             return Audio(id=seg.data["file_path"], path=seg.data["file_path"])
-        if "src" in seg.data:
+        if "src" in seg.data:  # satori
             src = seg.data["src"]
             if src.startswith("http"):
                 return Audio(url=src)
@@ -523,7 +544,7 @@ class _File(UniPattern[File]):
                 )
             if "file_path" in seg.data:  # ntchat
                 return File(id=seg.data["file_path"])
-            if "src" in seg.data:
+            if "src" in seg.data:  # satori
                 src = seg.data["src"]
                 if src.startswith("http"):
                     return File(url=src)
@@ -533,9 +554,9 @@ class _File(UniPattern[File]):
                     mime, b64 = src[5:].split(";", 1)
                     return File(raw={"data": b64decode(b64[7:]), "mimetype": mime})
                 return File(seg.data["src"])
-        if seg.type == "document":
+        if seg.type == "document":  # telegram
             return File(seg.data["file_id"], name=seg.data["file_name"])
-        if seg.type == "File":
+        if seg.type == "File":  # mirai
             return File(seg.data["id"], name=seg.data["name"])
 
 
@@ -548,7 +569,7 @@ class _Reply(UniPattern[Reply]):
             if "message_id" in seg.data:  # telegram
                 return Reply(seg, seg.data["message_id"])
             if "reference" in seg.data:  # discord, qq, qqguild
-                return Reply(seg, seg.data["reference"].message_id)
+                return Reply(seg.data["reference"], seg.data["reference"].message_id)
         if seg.type == "reply":
             if "id" in seg.data:  # ob11
                 return Reply(seg, seg.data["id"])
@@ -558,16 +579,33 @@ class _Reply(UniPattern[Reply]):
                 return Reply(seg.data["_origin"], seg.data["msg_seq"])
         if seg.type == "quote":
             if "id" in seg.data:  # satori
-                return Reply(seg, seg.data["id"], seg.data["content"])
+                return Reply(seg, seg.data["id"], seg.data.get("content"))
             if "msg_id" in seg.data:  # kook:
                 return Reply(seg, seg.data["msg_id"])
             if "quoted_message_id" in seg.data:  # villa
-                return Reply(seg, seg.data["quoted_message_id"])
+                return Reply(seg.data["quote"], seg.data["quote"].quoted_message_id)
         if seg.type == "Quote":  # mirai
-            return Reply(seg, str(seg.data["id"]), str(seg.data["origin"]))
+            return Reply(seg, str(seg.data["id"]), seg.data["origin"])
 
 
 reply = _Reply()
+
+
+class _Reference(UniPattern[Reference]):
+    def solve(self, seg: MessageSegment):
+        if seg.type == "post":  # villa
+            return Reference(seg.data["post"], seg.data["post"].post_id)
+        if seg.type == "message":  # satori
+            return Reference(seg, seg.data.get("id"), seg.data.get("content"))
+        if seg.type == "forward":
+            if "xml" in seg.data:  # red
+                return Reference(seg, seg.data["id"], seg.data["xml"])
+            return Reference(seg, seg.data["id"])  # ob11
+        if seg.type == "Forward":  # mirai
+            return Reference(seg, seg.data.get("messageId"), seg.data["nodeList"])
+
+
+reference = _Reference()
 
 
 class _Card(UniPattern[Card]):
@@ -592,7 +630,7 @@ class _Card(UniPattern[Card]):
 
 
 card = _Card()
-segments = [at_all, at, emoji, image, video, voice, audio, file, card, text, other]
+segments = [at_all, at, emoji, image, video, voice, audio, file, reference, card, text, other]
 env = create_local_patterns("nonebot")
 env.sets(segments)
 

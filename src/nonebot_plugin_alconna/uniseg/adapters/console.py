@@ -22,6 +22,12 @@ class ConsoleMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
+        if seg.style.startswith("markup"):
+            _style = seg.style.split(":", 1)[-1]
+            return ms.markup(seg.text, _style)
+        if seg.style.startswith("markdown"):
+            code_theme = seg.style.split(":", 1)[-1]
+            return ms.markdown(seg.text, code_theme)
         return ms.text(seg.text)
 
     @export

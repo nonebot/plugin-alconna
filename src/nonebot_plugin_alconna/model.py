@@ -57,7 +57,6 @@ class CommandResult:
 
 
 class CompConfig(TypedDict):
-    priority: NotRequired[int]
     tab: NotRequired[str]
     enter: NotRequired[str]
     exit: NotRequired[str]

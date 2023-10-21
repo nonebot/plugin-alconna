@@ -1,5 +1,5 @@
 import asyncio
-from typing import TYPE_CHECKING, List, Type, Union, Optional, cast
+from typing import List, Type, Union, Optional, cast
 
 from nonebot import get_driver
 from nonebot.typing import T_State
@@ -89,28 +89,27 @@ class AlconnaRule:
         self._session = None
         self._future: asyncio.Future = asyncio.Future()
         self._interface = CompSession(self.command)
-        self._waiter = None
+        self._waiter = on_message(
+            priority=0,
+            block=True,
+            rule=Rule(lambda: self._session is not None),
+        )
+        self._waiter.destroy()
         if self.comp_config is not None:
             _tab = self.comp_config.get("tab", ".tab")
             _enter = self.comp_config.get("enter", ".enter")
             _exit = self.comp_config.get("exit", ".exit")
-            _waiter = on_message(
-                priority=self.comp_config.get("priority", 0),
-                block=True,
-                rule=Rule(lambda: self._session is not None),
-            )
-            _waiter.destroy()
 
-            @_waiter.handle()
+            @self._waiter.handle()
             async def _waiter_handle(_bot: Bot, _event: Event, content: Message = EventMessage()):
                 msg = str(content)
                 if msg.startswith(_exit):
                     if msg == _exit:
                         self._future.set_result(False)
-                        await _waiter.finish()
+                        await self._waiter.finish()
                     else:
                         self._future.set_result(None)
-                        await _waiter.pause(
+                        await self._waiter.pause(
                             lang.require("analyser", "param_unmatched").format(
                                 target=msg.replace(_exit, "", 1)
                             )
@@ -118,10 +117,10 @@ class AlconnaRule:
                 elif msg.startswith(_enter):
                     if msg == _enter:
                         self._future.set_result(True)
-                        await _waiter.finish()
+                        await self._waiter.finish()
                     else:
                         self._future.set_result(None)
-                        await _waiter.pause(
+                        await self._waiter.pause(
                             lang.require("analyser", "param_unmatched").format(
                                 target=msg.replace(_enter, "", 1)
                             )
@@ -132,7 +131,9 @@ class AlconnaRule:
                         offset = int(offset)
                     except ValueError:
                         self._future.set_result(None)
-                        await _waiter.pause(lang.require("analyser", "param_unmatched").format(target=offset))
+                        await self._waiter.pause(
+                            lang.require("analyser", "param_unmatched").format(target=offset)
+                        )
                     else:
                         self._interface.tab(offset)
                         if self.comp_config is not None and self.comp_config.get("lite", False):
@@ -140,12 +141,10 @@ class AlconnaRule:
                         else:
                             out = "\n".join(self._interface.lines())
                         self._future.set_result(None)
-                        await _waiter.pause(out)
+                        await self._waiter.pause(out)
                 else:
                     self._future.set_result(content)
-                    await _waiter.finish()
-
-            self._waiter = _waiter
+                    await self._waiter.finish()
 
     def __repr__(self) -> str:
         return f"Alconna(command={self.command!r})"
@@ -165,8 +164,6 @@ class AlconnaRule:
         if res:
             return res
         self._session = event.get_session_id()
-        if TYPE_CHECKING:
-            assert self._waiter is not None
         self._waiter.permission = Permission(User.from_event(event))
         matchers[self._waiter.priority].append(self._waiter)
         res = Arparma(
@@ -248,9 +245,10 @@ class AlconnaRule:
         exec_result = self.command.exec_result
         for key, value in exec_result.items():
             if is_awaitable(value):
-                exec_result[key] = await value
-            elif isinstance(value, (str, Message)):
-                exec_result[key] = await bot.send(event, value)
+                value = await value
+            if isinstance(value, (str, Message)):
+                value = await bot.send(event, value)
+            exec_result[key] = value
         state[ALCONNA_EXEC_RESULT] = exec_result
         state[ALCONNA_EXTENSION] = self.executor.context
         return True

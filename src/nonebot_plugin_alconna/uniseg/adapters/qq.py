@@ -25,6 +25,8 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
+        if seg.style == "markdown":
+            return ms.markdown(seg.text)
         return ms.text(seg.text)
 
     @export
