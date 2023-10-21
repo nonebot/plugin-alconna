@@ -20,7 +20,7 @@ _✨ Alconna Usage For NoneBot2 ✨_
   <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="python">
 </p>
 
-该插件提供了 [Alconna](https://github.com/ArcletProject/Alconna) 的 [Nonebot2](https://github.com/nonebot/nonebot2) 适配版本与工具
+该插件提供了 [Alconna](https://github.com/ArcletProject/Alconna) 的 [NoneBot2](https://github.com/nonebot/nonebot2) 适配版本与工具
 
 ## 特性
 
@@ -39,7 +39,7 @@ QQ 交流群: [链接](https://jq.qq.com/?_wv=1027&k=PUPOnCSH)
 
 ## 使用方法
 
-Nonebot文档: [📖这里](https://nonebot.dev/docs/next/best-practice/alconna/alconna)
+NoneBot 文档: [📖这里](https://nonebot.dev/docs/next/best-practice/alconna/)
 仓库内介绍: [📦这里](/docs.md)
 
 ### 消息解析
