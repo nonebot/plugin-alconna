@@ -3,7 +3,8 @@ from __future__ import annotations
 import weakref
 from weakref import ref
 from datetime import datetime, timedelta
-from typing import Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol
+from typing import Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol, TYPE_CHECKING
+from functools import partial
 
 from nonebot.rule import Rule
 from nonebot import get_driver
@@ -83,6 +84,16 @@ def _validate(target: Arg[Any], arg: MessageSegment):
     return res._value  # noqa
 
 
+class _method:
+    def __init__(self, func: Callable[..., Any]):
+        self.__func__ = func
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return partial(self.__func__, owner)
+        return partial(self.__func__, instance)
+
+
 class AlconnaMatcher(Matcher):
     command: ClassVar[Alconna]
     basepath: ClassVar[str]
@@ -125,13 +136,32 @@ class AlconnaMatcher(Matcher):
 
         return _decorator
 
-    def set_path_arg(self, path: str, content: Any) -> None:
-        """设置一个 `got_path` 内容"""
-        self.state[ALCONNA_ARG_KEY.format(key=merge_path(path, self.basepath))] = content
+    if TYPE_CHECKING:
+        @classmethod
+        def set_path_arg(cls_or_self, path: str, content: Any) -> None:
+            ...
 
-    def get_path_arg(self, path: str, default: Any) -> Any:
-        """获取一个 `got_path` 内容"""
-        return self.state.get(ALCONNA_ARG_KEY.format(key=merge_path(path, self.basepath)), default)
+        @classmethod
+        def get_path_arg(self, path: str, default: Any) -> Any:
+            ...
+    else:
+        @_method
+        def set_path_arg(cls_or_self, path: str, content: Any) -> None:
+            """设置一个 `got_path` 内容"""
+            if isinstance(cls_or_self, AlconnaMatcher):
+                state = cls_or_self.state
+            else:
+                state = current_matcher.get().state
+            state[ALCONNA_ARG_KEY.format(key=merge_path(path, cls_or_self.basepath))] = content
+
+        @_method
+        def get_path_arg(cls_or_self, path: str, default: Any) -> Any:
+            """获取一个 `got_path` 内容"""
+            if isinstance(cls_or_self, AlconnaMatcher):
+                state = cls_or_self.state
+            else:
+                state = current_matcher.get().state
+            return state.get(ALCONNA_ARG_KEY.format(key=merge_path(path, cls_or_self.basepath)), default)
 
     @classmethod
     def got_path(

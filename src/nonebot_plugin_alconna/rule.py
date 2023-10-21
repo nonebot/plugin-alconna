@@ -184,13 +184,13 @@ class AlconnaRule:
         )
 
         while self._interface.available:
-            await self._send(f"{str(self._interface)}\n\n{help_text}", bot, event, res)
+            await self.send(f"{str(self._interface)}\n\n{help_text}", bot, event, res)
             while True:
                 self._future = asyncio.get_running_loop().create_future()
                 try:
                     await asyncio.wait_for(self._future, timeout=self.comp_config.get("timeout", 60))
                 except asyncio.TimeoutError:
-                    await self._send(lang.require("comp/nonebot", "timeout"), bot, event, res)
+                    await self.send(lang.require("comp/nonebot", "timeout"), bot, event, res)
                     self._interface.exit()
                     self._waiter.destroy()
                     return res
@@ -199,7 +199,7 @@ class AlconnaRule:
                         self._future.cancel()
                 ans: Union[Message, bool, None] = self._future.result()
                 if ans is False:
-                    await self._send(lang.require("comp/nonebot", "exited"), bot, event, res)
+                    await self.send(lang.require("comp/nonebot", "exited"), bot, event, res)
                     self._interface.exit()
                     self._waiter.destroy()
                     return res
@@ -209,7 +209,7 @@ class AlconnaRule:
                 if _res.result:
                     res = _res.result
                 elif _res.exception and not isinstance(_res.exception, SpecialOptionTriggered):
-                    await self._send(str(_res.exception), bot, event, res)
+                    await self.send(str(_res.exception), bot, event, res)
                 break
         self._interface.exit()
         self._waiter.destroy()
@@ -241,7 +241,7 @@ class AlconnaRule:
         if not may_help_text and arp.error_info:
             may_help_text = repr(arp.error_info)
         if self.auto_send and may_help_text:
-            await self._send(may_help_text, bot, event, arp)
+            await self.send(may_help_text, bot, event, arp)
             return False
         await self.executor.parse_wrapper(bot, state, event, arp)
         state[ALCONNA_RESULT] = CommandResult(self.command, arp, may_help_text)
@@ -255,7 +255,7 @@ class AlconnaRule:
         state[ALCONNA_EXTENSION] = self.executor.context
         return True
 
-    async def _send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Message:
+    async def send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Message:
         _t = str(arp.error_info) if isinstance(arp.error_info, SpecialOptionTriggered) else "help"
         try:
             msg = await self.executor.output_converter(_t, text)  # type: ignore

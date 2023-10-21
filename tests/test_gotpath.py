@@ -11,14 +11,14 @@ from tests.fake import fake_group_message_event_v11
 
 @pytest.mark.asyncio()
 async def test_got_path(app: App):
-    from nonebot_plugin_alconna import At, Match, UniMessage, AlconnaMatcher, on_alconna
+    from nonebot_plugin_alconna import At, Match, UniMessage, on_alconna
 
     test_cmd = on_alconna(Alconna("test", Args["target?", Union[str, At]]))
 
     @test_cmd.handle()
-    async def tt_h(matcher: AlconnaMatcher, target: Match[Union[str, At]]):
+    async def tt_h(target: Match[Union[str, At]]):
         if target.available:
-            matcher.set_path_arg("target", target.result)
+            test_cmd.set_path_arg("target", target.result)
 
     @test_cmd.got_path("target", prompt="请输入目标")
     async def tt(target: Union[str, At]):
