@@ -313,6 +313,11 @@ class Reply(Segment):
     id: str
     msg: Optional[Union[Message, str]]
 
+class Reference(Segment):
+    origin: Any
+    id: Optional[str]
+    msg: Optional[Union[Message, str]]
+    
 class Card(Segment):
     raw: str
     content: Optional[dict]
@@ -330,6 +335,8 @@ class Other(Segment):
 - `File`: 匹配 `File` 类型的 `MessageSegment`
 - `Video`: 匹配 `Video` 类型的 `MessageSegment`
 - `Emoji`: 匹配 `Emoji` 类型的 `MessageSegment`
+- `Reply`: 匹配 `Reply` 类型的 `MessageSegment`
+- `Reference`: 匹配 Reference 类型的 `MessageSegment`。转发消息 (Forward) 也属于此类
 - `Card`: 匹配 `Card` 类型的 `MessageSegment`，对应如 `qq` 中的小程序卡片
 - `Other`: 匹配除以上类型外的 `MessageSegment`
 
