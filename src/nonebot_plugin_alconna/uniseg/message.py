@@ -224,7 +224,7 @@ class UniMessage(List[TS]):
             else:
                 self.append(Text(other))  # type: ignore
         elif isinstance(other, Segment):
-            if self and isinstance(text := self[-1], Text) and isinstance(other, Text):
+            if self and (isinstance(text := self[-1], Text) and isinstance(other, Text)):
                 text.text += other.text
             else:
                 self.append(other)
@@ -491,10 +491,8 @@ class UniMessage(List[TS]):
         try:
             if fn := MAPPING.get(adapter_name):
                 return await fn(self, bot, fallback)
+            raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
         except SerializeFailed:
             if fallback:
                 return FallbackMessage(str(self))
             raise
-        if fallback:
-            return FallbackMessage(str(self))
-        raise SerializeFailed(lang.require("nbp-uniseg", "failed").format(target=self, adapter=adapter_name))

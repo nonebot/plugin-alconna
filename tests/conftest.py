@@ -1,6 +1,7 @@
 import pytest
 import nonebot
 from nonebug import NONEBOT_INIT_KWARGS
+from nonebot.adapters.satori import Adapter as SatoriAdapter
 
 # 导入适配器
 from nonebot.adapters.discord import Adapter as DiscordAdapter
@@ -20,6 +21,7 @@ def load_bot():
     driver = nonebot.get_driver()
     driver.register_adapter(DiscordAdapter)
     driver.register_adapter(Onebot11Adapter)
+    driver.register_adapter(SatoriAdapter)
 
     nonebot.require("nonebot_plugin_alconna")
     return None

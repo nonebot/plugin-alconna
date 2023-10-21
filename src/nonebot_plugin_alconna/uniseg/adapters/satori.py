@@ -18,7 +18,7 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
 
     @classmethod
     def get_adapter(cls) -> str:
-        return "Telegram"
+        return "Satori"
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":

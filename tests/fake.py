@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
+    from nonebot.adapters.satori.event import MessageEvent as SatoriMessageEvent
     from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
     from nonebot.adapters.onebot.v11 import GroupMessageEvent as GroupMessageEventV11
     from nonebot.adapters.onebot.v12 import GroupMessageEvent as GroupMessageEventV12
@@ -136,5 +137,32 @@ def fake_discord_interaction_event(**field) -> "ApplicationCommandInteractionEve
 
     class FakeEvent(_Fake):
         pass
+
+    return FakeEvent(**field)
+
+
+def fake_message_event_satori(**field) -> "SatoriMessageEvent":
+    from pydantic import create_model
+    from nonebot.adapters.satori import Message
+    from nonebot.adapters.satori.utils import Element
+    from nonebot.adapters.satori.event import MessageEvent
+    from nonebot.adapters.satori.models import User, Channel, ChannelType, InnerMessage
+
+    _Fake = create_model("_Fake", __base__=MessageEvent)
+
+    class FakeEvent(_Fake):
+        id: int = 1
+        type: str = "message-created"
+        self_id: str = "123456789"
+        platform: str = "satori"
+        timestamp: datetime = datetime.fromtimestamp(1000000)
+        channel: Channel = Channel(id="1", type=ChannelType.TEXT)
+        user: User = User(id="1", name="test")
+        message: InnerMessage = InnerMessage(id="1", content=[Element(type="text", attrs={"text": "test"})])
+        to_me: bool = False
+        _message = field.pop("message", Message("test"))
+
+        class Config:
+            extra = "forbid"
 
     return FakeEvent(**field)
