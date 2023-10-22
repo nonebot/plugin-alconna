@@ -225,6 +225,47 @@ class Reply(Segment):
     msg: Optional[Union[Message, str]] = field(default=None)
 
 
+#
+# @dataclass
+# class Node(Element):
+#     """表示转发消息的节点消息元素"""
+#
+#     mid: Selector | None = None
+#     name: str | None = None
+#     uid: str | None = None
+#     time: datetime = field(default_factory=datetime.now)
+#     content: MessageChain | None = None
+#
+#     def __str__(self) -> str:
+#         return f"[$Node:id={self.mid}]" if self.mid else f"[$Node:content={self.content}]"
+#
+#
+# @dataclass
+# class DisplayStrategy:
+#     title: str | None = None
+#     """卡片顶部标题"""
+#     brief: str | None = None
+#     """消息列表预览"""
+#     source: str | None = None
+#     """未知"""
+#     preview: list[str] | None = None
+#     """卡片消息预览 (只显示前 4 条)"""
+#     summary: str | None = None
+#     """卡片底部摘要"""
+#
+#
+# @dataclass
+# class Forward(Element):
+#     """表示转发消息的消息元素"""
+#
+#     id: Selector | None = None
+#     nodes: list[Node] = field(default_factory=list)
+#     strategy: DisplayStrategy | None = None
+#
+#     def __str__(self) -> str:
+#         return f"[$Forward:id={self.id}]"
+
+
 @dataclass
 class Reference(Segment):
     """Reference对象，表示一类引用消息。转发消息 (Forward) 也属于此类"""

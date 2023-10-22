@@ -45,6 +45,11 @@ class Extension(metaclass=ABCMeta):
         """插件 ID。"""
         raise NotImplementedError
 
+    @property
+    def namespace(self) -> str:
+        """插件所属命名空间"""
+        return ""
+
     def validate(self, bot: Bot, event: Event) -> bool:
         return True
 
@@ -102,6 +107,7 @@ class ExtensionExecutor:
 
     def __init__(
         self,
+        rule: AlconnaRule,
         extensions: list[type[Extension] | Extension] | None = None,
         excludes: list[str | type[Extension]] | None = None,
     ):
@@ -123,9 +129,12 @@ class ExtensionExecutor:
         self.extensions = [
             ext
             for ext in self.extensions
-            if ext.id not in self._excludes and ext.__class__ not in self._excludes
+            if ext.id not in self._excludes and ext.__class__ not in self._excludes and (
+                not (ns := ext.namespace) or ns == rule.command.namespace
+            )
         ]
         self.context: list[Extension] = []
+        self._rule = rule
 
         _callbacks.add(self._callback)
 
@@ -136,6 +145,8 @@ class ExtensionExecutor:
             if isinstance(_ext, type):
                 _ext = _ext()
             if _ext.id in self._excludes or _ext.__class__ in self._excludes:
+                continue
+            if (ns := _ext.namespace) and ns != self._rule.command.namespace:
                 continue
             self.extensions.append(_ext)
             _ext.post_init(self._rule.command)
@@ -195,10 +206,9 @@ class ExtensionExecutor:
                 res = await ext.send_wrapper(bot, event, res)
         return res
 
-    def post_init(self, rule: AlconnaRule) -> None:
+    def post_init(self) -> None:
         for ext in self.extensions:
-            ext.post_init(rule.command)
-        self._rule = rule
+            ext.post_init(self._rule.command)
 
 
 def add_global_extension(*ext: type[Extension] | Extension) -> None:

@@ -7,7 +7,9 @@ from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
 from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
 from arclet.alconna import (
+    Arg,
     Args,
+    Field,
     Option,
     Alconna,
     Arparma,
@@ -386,3 +388,16 @@ async def statis_h():
     cmds = command_manager.get_commands()
     sources = [cmd.meta.extra["matcher.source"] for cmd in cmds]
     await statis.finish(UniMessage(f"sources: {sources}"))
+
+alc = Alconna(
+    "添加教师",
+    Arg("name", str, Field(completion=lambda: "请输入姓名")),
+    Arg("phone", int, Field(completion=lambda: "请输入手机号"))
+)
+
+cmd = on_alconna(alc, comp_config={})
+
+
+@cmd.handle()
+async def handle(name: str, phone: int):
+    await cmd.finish(f"姓名：{name}\n手机号：{phone}")

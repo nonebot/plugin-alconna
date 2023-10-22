@@ -590,14 +590,7 @@ def on_alconna(
         use_cmd_start,
         use_cmd_sep,
     )
-    try:
-        global_config = get_driver().config
-        config = Config.parse_obj(global_config)
-        use_param = config.alconna_use_param
-    except ValueError:
-        use_param = True
-    if use_param:
-        AlconnaMatcher.HANDLER_PARAM_TYPES = Matcher.HANDLER_PARAM_TYPES[:-1] + (AlconnaParam, DefaultParam)
+    AlconnaMatcher.HANDLER_PARAM_TYPES = Matcher.HANDLER_PARAM_TYPES[:-1] + (AlconnaParam, DefaultParam)
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "",
         rule & _rule,
