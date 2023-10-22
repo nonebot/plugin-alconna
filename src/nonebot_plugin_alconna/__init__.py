@@ -54,13 +54,16 @@ from .uniseg import Voice as Voice
 from .params import assign as assign
 from .rule import alconna as alconna
 from .uniseg import UniMsg as UniMsg
+from .uniseg import RefNode as RefNode
 from .uniseg import Segment as Segment
 from .matcher import Command as Command
 from .params import AlcResult as AlcResult
+from .uniseg import Reference as Reference
 from .argv import MessageArgv as MessageArgv
 from .params import AlcMatches as AlcMatches
 from .params import AlconnaArg as AlconnaArg
 from .params import match_path as match_path
+from .uniseg import CustomNode as CustomNode
 from .uniseg import UniMessage as UniMessage
 from .extension import Extension as Extension
 from .extension import Interface as Interface
@@ -86,7 +89,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.29.0"
+__version__ = "0.30.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

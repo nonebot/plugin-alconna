@@ -64,7 +64,8 @@ class UniPattern(BasePattern[TS], Generic[TS]):
 class Segment:
     """基类标注"""
 
-    origin: MessageSegment = field(init=False, repr=False, compare=False)
+    if TYPE_CHECKING:
+        origin: MessageSegment = field(init=False, repr=False, compare=False)
 
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"

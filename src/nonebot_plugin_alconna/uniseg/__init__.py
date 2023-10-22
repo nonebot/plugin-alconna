@@ -13,15 +13,18 @@ from .segment import Video as Video
 from .segment import Voice as Voice
 from .const import log  # noqa: F401
 from .params import UniMsg as UniMsg
+from .segment import RefNode as RefNode
 from .segment import Segment as Segment
+from .segment import Reference as Reference
 from .message import UniMessage as UniMessage
+from .segment import CustomNode as CustomNode
 from .export import SerializeFailed as SerializeFailed
 from .fallback import FallbackMessage as FallbackMessage
 from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 
-__version__ = "0.29.0"
+__version__ = "0.30.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",
