@@ -5,9 +5,10 @@ import asyncio
 import functools
 import importlib as imp
 from weakref import finalize
+from dataclasses import dataclass
 from typing_extensions import Self
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Union, Literal, TypeVar, Any
+from typing import TYPE_CHECKING, Any, Union, Generic, Literal, TypeVar
 
 from tarina import lang
 from nonebot.typing import T_State
@@ -19,9 +20,19 @@ from .uniseg import UniMessage, FallbackMessage
 
 OutputType = Literal["help", "shortcut", "completion"]
 TM = TypeVar("TM", bound=Union[str, Message, UniMessage])
+TE = TypeVar("TE", bound=Event)
 
 if TYPE_CHECKING:
     from .rule import AlconnaRule
+
+
+@dataclass
+class Interface(Generic[TE]):
+    event: TE
+    state: T_State
+    name: str
+    annotation: Any
+    default: Any
 
 
 class Extension(metaclass=ABCMeta):
@@ -73,7 +84,7 @@ class Extension(metaclass=ABCMeta):
                 return None
         return msg
 
-    async def receive_wrapper(self, bot: Bot, event: Event, receive: TM) -> TM:
+    async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: TM) -> TM:
         """接收消息后的钩子函数。"""
         return receive
 
@@ -85,7 +96,7 @@ class Extension(metaclass=ABCMeta):
         """发送消息前的钩子函数。"""
         return send
 
-    async def catch(self, state: T_State, name: str, annotation: Any, default: Any, **kwargs: Any) -> Any:
+    async def catch(self, interface: Interface) -> Any:
         """自定义依赖注入处理函数。"""
         pass
 
@@ -135,9 +146,9 @@ class ExtensionExecutor:
         self.extensions = [
             ext
             for ext in self.extensions
-            if ext.id not in self._excludes and ext.__class__ not in self._excludes and (
-                not (ns := ext.namespace) or ns == rule.command.namespace
-            )
+            if ext.id not in self._excludes
+            and ext.__class__ not in self._excludes
+            and (not (ns := ext.namespace) or ns == rule.command.namespace)
         ]
         self.context: list[Extension] = []
         self._rule = rule
@@ -193,7 +204,7 @@ class ExtensionExecutor:
         res = receive
         for ext in self.context:
             if ext._overrides["receive_wrapper"]:
-                res = await ext.receive_wrapper(bot, event, res)
+                res = await ext.receive_wrapper(bot, event, self._rule.command, res)
         return res
 
     async def parse_wrapper(self, bot: Bot, state: T_State, event: Event, res: Arparma) -> None:
@@ -212,10 +223,10 @@ class ExtensionExecutor:
                 res = await ext.send_wrapper(bot, event, res)
         return res
 
-    async def catch(self, state: T_State, name: str, annotation: Any, default: Any, **kwargs: Any):
+    async def catch(self, event: Event, state: T_State, name: str, annotation: Any, default: Any):
         for ext in self.context:
             if ext._overrides["catch"]:
-                res = await ext.catch(state, name, annotation, default, **kwargs)
+                res = await ext.catch(Interface(event, state, name, annotation, default))
                 if res is None:
                     continue
                 return res

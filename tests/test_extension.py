@@ -1,7 +1,7 @@
 import pytest
 from nonebug import App
 from nonebot import get_adapter
-from arclet.alconna import Alconna, Args
+from arclet.alconna import Args, Alconna
 from nonebot.adapters.onebot.v11 import Bot, Adapter, Message
 
 from tests.fake import fake_group_message_event_v11
@@ -9,7 +9,9 @@ from tests.fake import fake_group_message_event_v11
 
 @pytest.mark.asyncio()
 async def test_extension(app: App):
-    from nonebot_plugin_alconna import Extension, on_alconna
+    from nonebot.adapters.onebot.v11 import MessageEvent
+
+    from nonebot_plugin_alconna import Extension, Interface, on_alconna
 
     class DemoExtension(Extension):
         @property
@@ -20,19 +22,14 @@ async def test_extension(app: App):
         def id(self) -> str:
             return "demo"
 
-        async def catch(self, state, name, annotation, default, **kwargs):
-            if annotation is str:
+        async def catch(self, interface: Interface[MessageEvent]):
+            if interface.annotation is str:
                 return {
                     "hello": "Hello!",
                     "world": "World!",
-                }.get(name, name)
+                }.get(interface.name, interface.name)
 
-    add = on_alconna(
-        Alconna(
-            "add", Args["a", float]["b", float]
-        ),
-        extensions=[DemoExtension]
-    )
+    add = on_alconna(Alconna("add", Args["a", float]["b", float]), extensions=[DemoExtension])
 
     @add.handle()
     async def h(a: float, b: float, hello: str, world: str, test: str):

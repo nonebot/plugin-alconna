@@ -1,6 +1,6 @@
 import inspect
 from typing_extensions import Annotated, get_args
-from typing import Any, Dict, Type, Tuple, Union, Literal, TypeVar, Optional, overload, ClassVar
+from typing import Any, Dict, Type, Tuple, Union, Literal, TypeVar, ClassVar, Optional, overload
 
 from nonebot.typing import T_State
 from tarina import run_always_await
@@ -14,9 +14,9 @@ from nonebot.internal.adapter import Bot, Event
 from arclet.alconna.builtin import generate_duplication
 from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
-from .extension import Extension, ExtensionExecutor
 from .typings import CHECK, MIDDLEWARE
 from .model import T, Match, Query, CommandResult
+from .extension import Extension, ExtensionExecutor
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
@@ -211,6 +211,7 @@ class AlconnaParam(Param):
 
     本注入解析事件响应器操作 `AlconnaMatcher` 的响应函数内所需参数。
     """
+
     executor: ClassVar[ExtensionExecutor]
 
     def __repr__(self) -> str:
@@ -249,10 +250,10 @@ class AlconnaParam(Param):
             return cls(param.default, type=Query)
         return cls(param.default, name=param.name, type=param.annotation, validate=True)
 
-    async def _solve(self, matcher: Matcher, state: T_State, **kwargs: Any) -> Any:
+    async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
         t = self.extra["type"]
         if ALCONNA_RESULT not in state:
-            ext_res = await self.executor.catch(state, self.extra["name"], t, self.default, **kwargs)
+            ext_res = await self.executor.catch(event, state, self.extra["name"], t, self.default)
             if ext_res is not Undefined:
                 return ext_res
             return self.default if self.default not in (..., Empty) else Undefined
@@ -288,7 +289,7 @@ class AlconnaParam(Param):
             return state[key]
         if self.extra["name"] in res.result.all_matched_args:
             return res.result.all_matched_args[self.extra["name"]]
-        ext_res = await self.executor.catch(state, self.extra["name"], t, self.default, **kwargs)
+        ext_res = await self.executor.catch(event, state, self.extra["name"], t, self.default)
         if ext_res is not Undefined:
             return ext_res
         return self.default if self.default not in (..., Empty) else Undefined

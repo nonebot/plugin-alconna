@@ -17,11 +17,11 @@ from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
 from tarina import lang, is_awaitable, run_always_await
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
+from nonebot.plugin.on import store_matcher, get_matcher_source
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.exception import PausedException, FinishedException, RejectedException
-from nonebot.plugin.on import store_matcher, get_matcher_source
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
 
@@ -588,7 +588,10 @@ def on_alconna(
         use_cmd_sep,
     )
     executor = cast(ExtensionExecutor, list(_rule.checkers)[0].call.executor)  # type: ignore
-    AlconnaMatcher.HANDLER_PARAM_TYPES = Matcher.HANDLER_PARAM_TYPES[:-1] + (AlconnaParam.new(executor), DefaultParam)
+    AlconnaMatcher.HANDLER_PARAM_TYPES = Matcher.HANDLER_PARAM_TYPES[:-1] + (
+        AlconnaParam.new(executor),
+        DefaultParam,
+    )
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "",
         rule & _rule,

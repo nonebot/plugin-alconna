@@ -389,10 +389,11 @@ async def statis_h():
     sources = [cmd.meta.extra["matcher.source"] for cmd in cmds]
     await statis.finish(UniMessage(f"sources: {sources}"))
 
+
 alc = Alconna(
     "添加教师",
     Arg("name", str, Field(completion=lambda: "请输入姓名")),
-    Arg("phone", int, Field(completion=lambda: "请输入手机号"))
+    Arg("phone", int, Field(completion=lambda: "请输入手机号")),
 )
 
 cmd = on_alconna(alc, comp_config={})
