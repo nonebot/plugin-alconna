@@ -9,7 +9,7 @@ from tests.fake import fake_group_message_event_v11
 
 
 @pytest.mark.asyncio()
-async def test_unimsg_template(app: App):
+async def test_funcommand(app: App):
     from nonebot_plugin_alconna import funcommand
 
     table = {

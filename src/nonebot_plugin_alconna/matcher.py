@@ -4,10 +4,9 @@ import weakref
 from weakref import ref
 from types import FunctionType
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol
+from typing import TYPE_CHECKING, Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol, cast
 
 from nonebot.rule import Rule
-from nonebot import get_driver
 from nonebot.params import Depends
 from _weakref import _remove_dead_weakref
 from nonebot.permission import Permission
@@ -22,12 +21,11 @@ from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.exception import PausedException, FinishedException, RejectedException
-from nonebot.plugin.on import store_matcher, get_matcher_module, get_matcher_plugin
+from nonebot.plugin.on import store_matcher, get_matcher_source
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
 
 from .rule import alconna
-from .config import Config
 from .typings import MReturn
 from .model import CompConfig
 from .uniseg import Segment, UniMessage
@@ -311,8 +309,7 @@ class AlconnaMatcher(Matcher):
             priority=cls.priority + priority,
             block=block,
             handlers=handlers,
-            plugin=get_matcher_plugin(_depth + 1),
-            module=get_matcher_module(_depth + 1),
+            source=get_matcher_source(_depth + 1),
             default_state=state,
         )
         store_matcher(matcher)
@@ -590,7 +587,8 @@ def on_alconna(
         use_cmd_start,
         use_cmd_sep,
     )
-    AlconnaMatcher.HANDLER_PARAM_TYPES = Matcher.HANDLER_PARAM_TYPES[:-1] + (AlconnaParam, DefaultParam)
+    executor = cast(ExtensionExecutor, list(_rule.checkers)[0].call.executor)  # type: ignore
+    AlconnaMatcher.HANDLER_PARAM_TYPES = Matcher.HANDLER_PARAM_TYPES[:-1] + (AlconnaParam.new(executor), DefaultParam)
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "",
         rule & _rule,
@@ -600,14 +598,13 @@ def on_alconna(
         priority=priority,
         block=block,
         handlers=handlers,
-        plugin=get_matcher_plugin(_depth + 1),
-        module=get_matcher_module(_depth + 1),
+        source=get_matcher_source(_depth + 1),
         default_state=state,
     )
     store_matcher(matcher)
     matcher.command = command
     matcher.basepath = ""
-    matcher.executor = list(_rule.checkers)[0].call.executor  # type: ignore
+    matcher.executor = executor
     command.meta.extra["matcher.source"] = matcher._source
     command.meta.extra["matcher.position"] = (priority, len(matchers[priority]) - 1)
 

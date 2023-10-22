@@ -84,8 +84,8 @@ class AlconnaRule:
             self.auto_send = auto_send_output
         self.command = command
         self.skip = skip_for_unmatch
-        self.executor = ExtensionExecutor(extensions, exclude_ext)
-        self.executor.post_init(self)
+        self.executor = ExtensionExecutor(self, extensions, exclude_ext)
+        self.executor.post_init()
         self._session = None
         self._future: asyncio.Future = asyncio.Future()
         self._interface = CompSession(self.command)

@@ -7,10 +7,11 @@ import importlib as imp
 from weakref import finalize
 from typing_extensions import Self
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Union, Literal, TypeVar
+from typing import TYPE_CHECKING, Union, Literal, TypeVar, Any
 
 from tarina import lang
 from nonebot.typing import T_State
+from pydantic.fields import Undefined
 from arclet.alconna import Alconna, Arparma
 from nonebot.adapters import Bot, Event, Message
 
@@ -28,9 +29,10 @@ class Extension(metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs):
         cls._overrides = {
-            "send_wrapper": cls.send_wrapper == Extension.send_wrapper,
-            "receive_wrapper": cls.receive_wrapper == Extension.receive_wrapper,
-            "parse_wrapper": cls.parse_wrapper == Extension.parse_wrapper,
+            "send_wrapper": cls.send_wrapper != Extension.send_wrapper,
+            "receive_wrapper": cls.receive_wrapper != Extension.receive_wrapper,
+            "parse_wrapper": cls.parse_wrapper != Extension.parse_wrapper,
+            "catch": cls.catch != Extension.catch,
         }
 
     @property
@@ -82,6 +84,10 @@ class Extension(metaclass=ABCMeta):
     async def send_wrapper(self, bot: Bot, event: Event, send: TM) -> TM:
         """发送消息前的钩子函数。"""
         return send
+
+    async def catch(self, state: T_State, name: str, annotation: Any, default: Any, **kwargs: Any) -> Any:
+        """自定义依赖注入处理函数。"""
+        pass
 
     def post_init(self, alc: Alconna) -> None:
         """Alconna 初始化后的钩子函数。"""
@@ -205,6 +211,15 @@ class ExtensionExecutor:
             if ext._overrides["send_wrapper"]:
                 res = await ext.send_wrapper(bot, event, res)
         return res
+
+    async def catch(self, state: T_State, name: str, annotation: Any, default: Any, **kwargs: Any):
+        for ext in self.context:
+            if ext._overrides["catch"]:
+                res = await ext.catch(state, name, annotation, default, **kwargs)
+                if res is None:
+                    continue
+                return res
+        return Undefined
 
     def post_init(self) -> None:
         for ext in self.extensions:

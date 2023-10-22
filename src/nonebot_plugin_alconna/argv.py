@@ -4,7 +4,7 @@ from typing_extensions import Self
 from typing import TypeVar, Callable, Iterable
 
 from tarina import lang
-from arclet.alconna import Namespace, NullMessage
+from arclet.alconna import NullMessage
 from nonebot.adapters import Message, MessageSegment
 from arclet.alconna.argv import Argv, set_default_argv_type
 
@@ -42,8 +42,8 @@ class MessageArgv(Argv[TM]):
             }
         )
 
-    def __post_init__(self, namespace: Namespace):
-        super().__post_init__(namespace)
+    def __post_init__(self):
+        super().__post_init__()
         self.is_text = lambda x: x.is_text()
 
     @staticmethod
