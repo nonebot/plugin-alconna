@@ -5,12 +5,14 @@ import contextlib
 from io import BytesIO
 from pathlib import Path
 from base64 import b64decode
+from datetime import datetime
 from typing_extensions import NotRequired
 from dataclasses import field, asdict, dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
+    List,
     Type,
     Union,
     Generic,
@@ -219,61 +221,37 @@ class File(Media):
 class Reply(Segment):
     """Reply对象，表示一类回复消息"""
 
-    origin: Any
     id: str
     """此处不一定是消息ID，可能是其他ID，如消息序号等"""
     msg: Optional[Union[Message, str]] = field(default=None)
+    origin: Optional[Any] = field(default=None)
 
 
-#
-# @dataclass
-# class Node(Element):
-#     """表示转发消息的节点消息元素"""
-#
-#     mid: Selector | None = None
-#     name: str | None = None
-#     uid: str | None = None
-#     time: datetime = field(default_factory=datetime.now)
-#     content: MessageChain | None = None
-#
-#     def __str__(self) -> str:
-#         return f"[$Node:id={self.mid}]" if self.mid else f"[$Node:content={self.content}]"
-#
-#
-# @dataclass
-# class DisplayStrategy:
-#     title: str | None = None
-#     """卡片顶部标题"""
-#     brief: str | None = None
-#     """消息列表预览"""
-#     source: str | None = None
-#     """未知"""
-#     preview: list[str] | None = None
-#     """卡片消息预览 (只显示前 4 条)"""
-#     summary: str | None = None
-#     """卡片底部摘要"""
-#
-#
-# @dataclass
-# class Forward(Element):
-#     """表示转发消息的消息元素"""
-#
-#     id: Selector | None = None
-#     nodes: list[Node] = field(default_factory=list)
-#     strategy: DisplayStrategy | None = None
-#
-#     def __str__(self) -> str:
-#         return f"[$Forward:id={self.id}]"
+@dataclass
+class RefNode:
+    """表示转发消息的引用消息元素"""
+
+    id: str
+    context: Optional[str] = None
+
+
+@dataclass
+class CustomNode:
+    """表示转发消息的自定义消息元素"""
+
+    uid: str
+    name: str
+    time: datetime
+    content: Union[str, list["Segment"], Message]
 
 
 @dataclass
 class Reference(Segment):
     """Reference对象，表示一类引用消息。转发消息 (Forward) 也属于此类"""
 
-    origin: Any
     id: Optional[str] = field(default=None)
     """此处不一定是消息ID，可能是其他ID，如消息序号等"""
-    msg: Optional[Union[Message, str]] = field(default=None)
+    content: Optional[Union[Message, str, List[Union[RefNode, CustomNode]]]] = field(default=None)
 
 
 @dataclass
@@ -608,25 +586,25 @@ class _Reply(UniPattern[Reply]):
     def solve(self, seg: MessageSegment):
         if seg.type == "reference":
             if "message_id" in seg.data:  # telegram
-                return Reply(seg, seg.data["message_id"])
+                return Reply(seg.data["message_id"], origin=seg)
             if "reference" in seg.data:  # discord, qq, qqguild
-                return Reply(seg.data["reference"], seg.data["reference"].message_id)
+                return Reply(seg.data["reference"].message_id, origin=seg.data["reference"])
         if seg.type == "reply":
             if "id" in seg.data:  # ob11
-                return Reply(seg, seg.data["id"])
+                return Reply(seg.data["id"], origin=seg)
             if "message_id" in seg.data:  # ob12
-                return Reply(seg, seg.data["message_id"])
+                return Reply(seg.data["message_id"], origin=seg)
             if "msg_id" in seg.data:  # red
-                return Reply(seg.data["_origin"], seg.data["msg_seq"])
+                return Reply(seg.data["msg_seq"], origin=seg.data["_origin"])
         if seg.type == "quote":
             if "id" in seg.data:  # satori
-                return Reply(seg, seg.data["id"], seg.data.get("content"))
+                return Reply(seg.data["id"], seg.data.get("content"), seg)
             if "msg_id" in seg.data:  # kook:
-                return Reply(seg, seg.data["msg_id"])
+                return Reply(seg.data["msg_id"], origin=seg)
             if "quoted_message_id" in seg.data:  # villa
-                return Reply(seg.data["quote"], seg.data["quote"].quoted_message_id)
+                return Reply(seg.data["quote"].quoted_message_id, origin=seg.data["quote"])
         if seg.type == "Quote":  # mirai
-            return Reply(seg, str(seg.data["id"]), seg.data["origin"])
+            return Reply(str(seg.data["id"]), seg.data["origin"], origin=seg)
 
 
 reply = _Reply()
@@ -635,15 +613,25 @@ reply = _Reply()
 class _Reference(UniPattern[Reference]):
     def solve(self, seg: MessageSegment):
         if seg.type == "post":  # villa
-            return Reference(seg.data["post"], seg.data["post"].post_id)
+            return Reference(seg.data["post"].post_id)
         if seg.type == "message":  # satori
-            return Reference(seg, seg.data.get("id"), seg.data.get("content"))
+            return Reference(seg.data.get("id"), seg.data.get("content"))
         if seg.type == "forward":
             if "xml" in seg.data:  # red
-                return Reference(seg, seg.data["id"], seg.data["xml"])
-            return Reference(seg, seg.data["id"])  # ob11
+                return Reference(seg.data["id"], seg.data["xml"])
+            return Reference(seg.data["id"])  # ob11
         if seg.type == "Forward":  # mirai
-            return Reference(seg, seg.data.get("messageId"), seg.data["nodeList"])
+            nodes = []
+            for node in seg.data["nodeList"]:
+                if "messageId" in node:
+                    nodes.append(RefNode(node["messageId"]))
+                elif "messageRef" in node:
+                    nodes.append(RefNode(node["messageRef"]["messageId"], node["messageRef"]["target"]))
+                else:
+                    nodes.append(
+                        CustomNode(node["senderId"], node["senderName"], node["time"], node["messageChain"])
+                    )
+            return Reference(seg.data.get("messageId"), nodes)
 
 
 reference = _Reference()
@@ -680,6 +668,7 @@ class _Segment(UniPattern[Segment]):
     def solve(self, seg: MessageSegment):
         for pat in segments:
             if (res := pat.validate(seg)).success:
+                res.value.origin = seg
                 return res.value
         return Other(seg)  # type: ignore
 

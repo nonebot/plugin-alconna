@@ -26,9 +26,9 @@ async def reply_handle(event: Event, bot: Bot):
             assert isinstance(event, MessageEvent)
         if event.reply_to_message:
             return Reply(
-                event.reply_to_message,
                 f"{event.reply_to_message.message_id}.{event.chat.id}",
                 event.reply_to_message.original_message,
+                event.reply_to_message,
             )
     elif adapter_name == "Feishu":
         if TYPE_CHECKING:
@@ -36,14 +36,14 @@ async def reply_handle(event: Event, bot: Bot):
 
             assert isinstance(event, MessageEvent)
         if event.reply:
-            return Reply(event.reply, event.reply.message_id, event.reply.body.content)
+            return Reply(event.reply.message_id, event.reply.body.content, event.reply)
     elif adapter_name == "ntchat":
         if TYPE_CHECKING:
             from nonebot.adapters.ntchat.event import QuoteMessageEvent
 
             assert isinstance(event, QuoteMessageEvent)
         if event.type == 11061:
-            return Reply(event, event.quote_message_id)
+            return Reply(event.quote_message_id, origin=event)
     elif adapter_name == "QQ Guild":
         if TYPE_CHECKING:
             from nonebot.adapters.qqguild.event import MessageEvent
@@ -51,9 +51,9 @@ async def reply_handle(event: Event, bot: Bot):
             assert isinstance(event, MessageEvent)
         if event.reply and event.reply.message:
             return Reply(
-                event.reply.message,
                 str(event.reply.message.id),
                 event.reply.message.content,
+                event.reply.message,
             )
     elif adapter_name == "QQ":
         if TYPE_CHECKING:
@@ -62,9 +62,9 @@ async def reply_handle(event: Event, bot: Bot):
             assert isinstance(event, MessageEvent)
         if event.reply:
             return Reply(
-                event.reply,
                 str(event.reply.id),
                 event.reply.content,
+                event.reply,
             )
     elif adapter_name == "Satori":
         if TYPE_CHECKING:
@@ -73,9 +73,9 @@ async def reply_handle(event: Event, bot: Bot):
             assert isinstance(event, MessageEvent)
         if event.reply:
             return Reply(
-                event.reply,
                 str(event.reply.data.get("id")),
                 event.reply.data.get("content"),
+                event.reply,
             )
     elif adapter_name == "mirai2":
         if TYPE_CHECKING:
@@ -83,7 +83,7 @@ async def reply_handle(event: Event, bot: Bot):
 
             assert isinstance(event, MessageEvent)
         if event.quote:
-            return Reply(event.quote, str(event.quote.id), event.quote.origin)
+            return Reply(str(event.quote.id), event.quote.origin, event.quote)
     elif adapter_name == "Kaiheila":
         if TYPE_CHECKING:
             from nonebot.adapters.kaiheila import Bot as KaiheilaBot
@@ -99,7 +99,7 @@ async def reply_handle(event: Event, bot: Bot):
             **({"chat_code": event.event.code} if event.__event__ == "message.private" else {}),
         )
         if message.quote:
-            return Reply(message.quote, message.quote.id_, None)
+            return Reply(message.quote.id_, origin=message.quote)
     elif adapter_name == "Discord":
         if TYPE_CHECKING:
             from nonebot.adapters.discord import MessageEvent
@@ -108,9 +108,8 @@ async def reply_handle(event: Event, bot: Bot):
 
         if hasattr(event, "message_reference") and hasattr(event.message_reference, "message_id"):
             return Reply(
-                event.message_reference,  # type: ignore
                 event.message_reference.message_id,  # type: ignore
-                None,
+                origin=event.message_reference,  # type: ignore
             )
     elif adapter_name == "RedProtocol":
         if TYPE_CHECKING:
@@ -120,12 +119,12 @@ async def reply_handle(event: Event, bot: Bot):
 
         if event.reply:
             return Reply(
-                event.reply,
                 event.reply.replayMsgSeq,
+                origin=event.reply,
             )
 
     elif _reply := getattr(event, "reply", None):
-        return Reply(_reply, str(_reply.message_id), getattr(_reply, "message", None))
+        return Reply(str(_reply.message_id), getattr(_reply, "message", None), _reply)
     return None
 
 
@@ -469,11 +468,13 @@ class UniMessage(List[TS]):
         if _reply := await reply_handle(event, bot):
             result.append(_reply)
         elif (res := reply.validate(msg[0])).success:
+            res.value.origin = msg[0]
             result.append(res.value)
             msg_copy.pop(0)
         for seg in msg_copy:
             for pat in segments:
                 if (res := pat.validate(seg)).success:
+                    res.value.origin = seg
                     result.append(res.value)
                     break
             else:

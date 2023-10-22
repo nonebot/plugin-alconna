@@ -4,7 +4,7 @@ from tarina import lang
 from nonebot.adapters import Bot
 
 from ..export import MessageExporter, SerializeFailed, export
-from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Voice
+from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Voice, RefNode, Reference
 
 if TYPE_CHECKING:
     from nonebot.adapters.mirai2.message import MessageSegment
@@ -74,3 +74,37 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
 
         ms = self.segment_class
         return ms(MessageType.QUOTE, id=seg.id)
+
+    @export
+    async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
+        from nonebot.adapters.mirai2.message import MessageType
+
+        ms = self.segment_class
+        if not seg.content or not isinstance(seg.content, list):
+            raise SerializeFailed(
+                lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg)
+            )
+        nodes = []
+        for node in seg.content:
+            if isinstance(node, RefNode):
+                if node.context:
+                    nodes.append({"messageRef": {"messageId": node.id, "target": node.context}})
+                else:
+                    nodes.append({"messageId": node.id})
+            else:
+                content = self.get_message_type()()
+                if isinstance(node.content, str):
+                    content.extend(self.get_message_type()(node.content))
+                elif isinstance(node.content, list):
+                    content.extend(await self.__call__(node.content, bot, True))  # type: ignore
+                else:
+                    content.extend(node.content)
+                nodes.append(
+                    {
+                        "senderId": node.uid,
+                        "senderName": node.name,
+                        "time": int(node.time.timestamp),
+                        "messageChain": content,
+                    }
+                )
+        return ms(MessageType.FORWARD, nodeList=nodes)

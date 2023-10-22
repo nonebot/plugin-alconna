@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 from tarina import lang
 from nonebot.adapters import Bot
 
-from ..segment import At, Text, AtAll, Image, Reply
 from ..export import MessageExporter, SerializeFailed, export
+from ..segment import At, Text, AtAll, Image, Reply, Reference
 
 if TYPE_CHECKING:
     from nonebot.adapters.villa.message import MessageSegment
@@ -57,3 +57,10 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms.quote(seg.id, int(datetime.now().timestamp()))
+
+    @export
+    async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
+        ms = self.segment_class
+        if not seg.id:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="post", seg=seg))
+        return ms.post(seg.id)
