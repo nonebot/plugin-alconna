@@ -243,7 +243,7 @@ class CustomNode:
     uid: str
     name: str
     time: datetime
-    content: Union[str, list["Segment"], Message]
+    content: Union[str, List[Segment], Message]
 
 
 @dataclass
