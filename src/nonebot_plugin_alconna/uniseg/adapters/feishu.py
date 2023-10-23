@@ -45,11 +45,11 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         elif seg.path:
             image = Path(seg.path).read_bytes()
         elif seg.raw:
-            image = seg.raw
+            image = seg.raw_bytes
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
         data = {"image_type": "message"}
-        files = {"image": ("file", image.raw_bytes)}
+        files = {"image": ("file", image)}
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/images", **params)
         file_key = result["image_key"]
