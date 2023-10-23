@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Type, Union, Optional, cast
+from typing import List, Type, Union, Literal, Optional, cast
 
 from nonebot import get_driver
 from nonebot.typing import T_State
@@ -155,7 +155,7 @@ class AlconnaRule:
     def __hash__(self) -> int:
         return hash(self.command.__hash__())
 
-    async def handle(self, bot: Bot, event: Event, msg: Message):
+    async def handle(self, bot: Bot, event: Event, msg: Message) -> Union[Arparma, Literal[False]]:
         if self.comp_config is None:
             return self.command.parse(msg)
         res = None
@@ -163,6 +163,8 @@ class AlconnaRule:
             res = self.command.parse(msg)
         if res:
             return res
+        if not await self.executor.permission_check(bot, event):
+            return False
         self._session = event.get_session_id()
         self._waiter.permission = Permission(User.from_event(event))
         matchers[self._waiter.priority].append(self._waiter)
@@ -226,6 +228,8 @@ class AlconnaRule:
             output_manager.set_action(lambda x: x, self.command.name)
             try:
                 arp = await self.handle(bot, event, msg)
+                if arp is False:
+                    return False
             except Exception as e:
                 arp = Arparma(self.command.path, msg, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
@@ -239,6 +243,8 @@ class AlconnaRule:
             may_help_text = repr(arp.error_info)
         if self.auto_send and may_help_text:
             await self.send(may_help_text, bot, event, arp)
+            return False
+        if not await self.executor.permission_check(bot, event):
             return False
         await self.executor.parse_wrapper(bot, state, event, arp)
         state[ALCONNA_RESULT] = CommandResult(self.command, arp, may_help_text)

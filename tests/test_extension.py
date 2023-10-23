@@ -22,6 +22,12 @@ async def test_extension(app: App):
         def id(self) -> str:
             return "demo"
 
+        async def permission_check(self, bot, event, command):
+            if event.get_user_id() != "123":
+                await bot.send(event, "权限不足！")
+                return False
+            return True
+
         async def catch(self, interface: Interface[MessageEvent]):
             if interface.annotation is str:
                 return {
@@ -29,7 +35,7 @@ async def test_extension(app: App):
                     "world": "World!",
                 }.get(interface.name, interface.name)
 
-    add = on_alconna(Alconna("add", Args["a", float]["b", float]), extensions=[DemoExtension])
+    add = on_alconna(Alconna("add", Args["a", float]["b", float]), extensions=[DemoExtension], comp_config={})
 
     @add.handle()
     async def h(a: float, b: float, hello: str, world: str, test: str):
@@ -42,3 +48,7 @@ async def test_extension(app: App):
         event = fake_group_message_event_v11(message=Message("add 1.3 2.4"), user_id=123)
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, "1.3 + 2.4 = 3.7\nHello! World! test!")
+
+        event = fake_group_message_event_v11(message=Message("add 1.3 2.4"), user_id=456)
+        ctx.receive_event(bot, event)
+        ctx.should_call_send(event, "权限不足！")
