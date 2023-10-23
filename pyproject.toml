@@ -96,7 +96,7 @@ pythonPlatform = "All"
 typeCheckingMode = "basic"
 
 [tool.pdm.scripts]
-test = "pytest -v -s -W ignore"
+test = "pytest -v -n auto -W ignore"
 format = { composite = ["isort ./src/ ./example/ ./tests/","black ./src/ ./example/ ./tests/","ruff ./src/ ./example/ ./tests/"] }
 
 [tool.pytest.ini_options]
