@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Union, Callable, ClassVar, Iterable, NoRe
 
 from nonebot.rule import Rule
 from nonebot.params import Depends
+from nonebot.utils import escape_tag
 from _weakref import _remove_dead_weakref
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
@@ -197,11 +198,13 @@ class AlconnaMatcher(Matcher):
                 ms = event.get_message()[-1]
                 if ms.is_text() and not ms.data["text"].strip() and len(event.get_message()) > 1:
                     ms = event.get_message()[-2]
-                log("DEBUG", lang.require("nbp-alc", "log.got_path/ms").format(path=path, ms=ms))
+                log("DEBUG", escape_tag(lang.require("nbp-alc", "log.got_path/ms").format(path=path, ms=ms)))
                 if (res := _validate(arg, ms)) is None:  # type: ignore
                     log(
                         "TRACE",
-                        lang.require("nbp-alc", "log.got_path/validate").format(path=path, validate=res),
+                        escape_tag(
+                            lang.require("nbp-alc", "log.got_path/validate").format(path=path, validate=res)
+                        ),
                     )
                     await matcher.reject(prompt, fallback=True)
                     return

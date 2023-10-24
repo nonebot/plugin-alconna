@@ -4,6 +4,7 @@ from typing import List, Type, Union, Literal, Optional, cast
 from nonebot import get_driver
 from nonebot.typing import T_State
 from nonebot.matcher import matchers
+from nonebot.utils import escape_tag
 from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
 from nonebot.internal.rule import Rule as Rule
@@ -235,10 +236,20 @@ class AlconnaRule:
             may_help_text: Optional[str] = cap.get("output", None)
         self._session = None
         if not arp.matched and not may_help_text and self.skip:
-            log("TRACE", lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp))
+            log(
+                "TRACE",
+                escape_tag(
+                    lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp)
+                ),
+            )
             return False
         if arp.head_matched:
-            log("DEBUG", lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp))
+            log(
+                "DEBUG",
+                escape_tag(
+                    lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp)
+                ),
+            )
         if not may_help_text and arp.error_info:
             may_help_text = repr(arp.error_info)
         if self.auto_send and may_help_text:
