@@ -7,7 +7,6 @@ from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
 from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
 from arclet.alconna import (
-    Arg,
     Args,
     Field,
     Option,
@@ -392,8 +391,9 @@ async def statis_h():
 
 alc = Alconna(
     "添加教师",
-    Arg("name", str, Field(completion=lambda: "请输入姓名")),
-    Arg("phone", int, Field(completion=lambda: "请输入手机号")),
+    Args["name", str, Field(completion=lambda: "请输入姓名")],
+    Args["phone", int, Field(completion=lambda: "请输入手机号")],
+    Args["at", [str, At], Field(completion=lambda: "请输入教师号")],
 )
 
 cmd = on_alconna(alc, comp_config={"disables": {"tab"}})

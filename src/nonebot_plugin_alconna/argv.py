@@ -96,6 +96,8 @@ class MessageArgv(Argv[TM]):
                 self.raw_data.append(d)
                 self.ndata += 1
                 continue
+            if not text.strip("\xa0").strip():
+                continue
             if i > 0 and isinstance(self.raw_data[-1], str):
                 self.raw_data[-1] += f"{self.separators[0]}{text}"
             else:
