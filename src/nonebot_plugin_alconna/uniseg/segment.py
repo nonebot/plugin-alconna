@@ -6,7 +6,7 @@ from io import BytesIO
 from pathlib import Path
 from base64 import b64decode
 from datetime import datetime
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, TypedDict
 from dataclasses import field, asdict, dataclass
 from typing import (
     TYPE_CHECKING,
@@ -21,7 +21,6 @@ from typing import (
     Callable,
     Iterable,
     Optional,
-    TypedDict,
     overload,
 )
 
@@ -60,15 +59,18 @@ class UniPattern(BasePattern[TS], Generic[TS]):
         raise NotImplementedError
 
 
-@dataclass
 class Segment:
     """基类标注"""
 
     if TYPE_CHECKING:
-        origin: MessageSegment = field(init=False, repr=False, compare=False)
+        origin: MessageSegment # = field(init=False, repr=False, compare=False)
 
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
+
+    def __repr__(self):
+        attrs = ", ".join(f"{k}={v!r}" for k, v in self.data.items())
+        return f"{self.__class__.__name__}({attrs})"
 
     @overload
     def __add__(self: TS, item: str) -> "UniMessage[Union[TS, Text]]":
@@ -113,7 +115,10 @@ class Segment:
 
     @property
     def data(self) -> Dict[str, Any]:
-        return asdict(self)
+        try:
+            return asdict(self)  # type: ignore
+        except TypeError:
+            return vars(self)
 
 
 @dataclass

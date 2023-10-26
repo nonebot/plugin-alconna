@@ -104,12 +104,14 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
         user: User = User(id="1", name="test")
         message: InnerMessage = InnerMessage(id="1", content=[Element(type="text", attrs={"text": "test"})])
         to_me: bool = False
-        _message = field.pop("message", Message("test"))
 
         class Config:
-            extra = "forbid"
+            extra = "allow"
 
-    return FakeEvent(**field)
+    _message = field.pop("message", Message("test"))
+    event = FakeEvent(**field)
+    event._message = _message
+    return event
 
 
 def fake_message_event_guild(**field) -> "MessageCreateEvent":
