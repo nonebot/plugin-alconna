@@ -6,8 +6,8 @@ from io import BytesIO
 from pathlib import Path
 from base64 import b64decode
 from datetime import datetime
-from typing_extensions import NotRequired, TypedDict
 from dataclasses import field, asdict, dataclass
+from typing_extensions import TypedDict, NotRequired
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -63,7 +63,7 @@ class Segment:
     """基类标注"""
 
     if TYPE_CHECKING:
-        origin: MessageSegment # = field(init=False, repr=False, compare=False)
+        origin: MessageSegment  # = field(init=False, repr=False, compare=False)
 
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
