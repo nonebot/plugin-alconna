@@ -46,6 +46,7 @@ class AlconnaRule:
         "_waiter",
         "_future",
         "_interface",
+        "_comp_help",
     )
 
     def __init__(
@@ -96,15 +97,36 @@ class AlconnaRule:
             rule=Rule(lambda: self._session is not None),
         )
         self._waiter.destroy()
+        self._comp_help = ""
         if self.comp_config is not None:
-            _tab = self.comp_config.get("tab", ".tab")
-            _enter = self.comp_config.get("enter", ".enter")
-            _exit = self.comp_config.get("exit", ".exit")
+            _tab = self.comp_config.get("tab") or ".tab"
+            _enter = self.comp_config.get("enter") or ".enter"
+            _exit = self.comp_config.get("exit") or ".exit"
+            disables = self.comp_config.get("disables", set())
+            hides = self.comp_config.get("hides", set())
+            hide_tabs = self.comp_config.get("hide_tabs", False)
+            if self.comp_config.get("lite", False):
+                hide_tabs = True
+                hides = {"tab", "enter", "exit"}
+            hides |= disables
+            if len(hides) < 3:
+                template = f"\n\n{{}}{{}}{{}}{lang.require('comp/nonebot', 'other')}\n"
+                self._comp_help = template.format(
+                    (lang.require("comp/nonebot", "tab").format(cmd=_tab) + "\n")
+                    if "tab" not in hides
+                    else "",
+                    (lang.require("comp/nonebot", "enter").format(cmd=_enter) + "\n")
+                    if "enter" not in hides
+                    else "",
+                    (lang.require("comp/nonebot", "exit").format(cmd=_exit) + "\n")
+                    if "exit" not in hides
+                    else "",
+                )
 
             @self._waiter.handle()
             async def _waiter_handle(_bot: Bot, _event: Event, content: Message = EventMessage()):
                 msg = str(content)
-                if msg.startswith(_exit):
+                if msg.startswith(_exit) and "exit" not in disables:
                     if msg == _exit:
                         self._future.set_result(False)
                         await self._waiter.finish()
@@ -115,7 +137,7 @@ class AlconnaRule:
                                 target=msg.replace(_exit, "", 1)
                             )
                         )
-                elif msg.startswith(_enter):
+                elif msg.startswith(_enter) and "enter" not in disables:
                     if msg == _enter:
                         self._future.set_result(True)
                         await self._waiter.finish()
@@ -126,7 +148,7 @@ class AlconnaRule:
                                 target=msg.replace(_enter, "", 1)
                             )
                         )
-                elif msg.startswith(_tab):
+                elif msg.startswith(_tab) and "tab" not in disables:
                     offset = msg.replace(_tab, "", 1).lstrip() or 1
                     try:
                         offset = int(offset)
@@ -137,12 +159,11 @@ class AlconnaRule:
                         )
                     else:
                         self._interface.tab(offset)
-                        if self.comp_config is not None and self.comp_config.get("lite", False):
-                            out = f"* {self._interface.current()}"
-                        else:
-                            out = "\n".join(self._interface.lines())
-                        self._future.set_result(None)
-                        await self._waiter.pause(out)
+                        await self._waiter.pause(
+                            f"* {self._interface.current()}"
+                            if hide_tabs
+                            else "\n".join(self._interface.lines())
+                        )
                 else:
                     self._future.set_result(content)
                     await self._waiter.finish()
@@ -176,15 +197,8 @@ class AlconnaRule:
             error_info=SpecialOptionTriggered("completion"),
         )
 
-        help_text = (
-            f"{lang.require('comp/nonebot', 'tab').format(cmd=self.comp_config.get('tab', '.tab'))}\n"
-            f"{lang.require('comp/nonebot', 'enter').format(cmd=self.comp_config.get('enter', '.enter'))}\n"
-            f"{lang.require('comp/nonebot', 'exit').format(cmd=self.comp_config.get('exit', '.exit'))}\n"
-            f"{lang.require('comp/nonebot', 'other')}\n"
-        )
-
         while self._interface.available:
-            await self.send(f"{str(self._interface)}\n\n{help_text}", bot, event, res)
+            await self.send(f"{str(self._interface)}{self._comp_help}", bot, event, res)
             while True:
                 self._future = asyncio.get_running_loop().create_future()
                 try:

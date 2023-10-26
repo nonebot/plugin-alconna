@@ -1,6 +1,6 @@
 from dataclasses import field, dataclass
 from typing_extensions import NotRequired
-from typing import Type, Union, Generic, TypeVar, Optional, TypedDict
+from typing import Set, Type, Union, Generic, Literal, TypeVar, Optional, TypedDict
 
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
@@ -61,4 +61,7 @@ class CompConfig(TypedDict):
     enter: NotRequired[str]
     exit: NotRequired[str]
     timeout: NotRequired[int]
+    hide_tabs: NotRequired[bool]
+    hides: NotRequired[Set[Literal["tab", "enter", "exit"]]]
+    disables: NotRequired[Set[Literal["tab", "enter", "exit"]]]
     lite: NotRequired[bool]

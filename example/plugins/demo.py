@@ -396,7 +396,7 @@ alc = Alconna(
     Arg("phone", int, Field(completion=lambda: "请输入手机号")),
 )
 
-cmd = on_alconna(alc, comp_config={})
+cmd = on_alconna(alc, comp_config={"disables": {"tab"}})
 
 
 @cmd.handle()
