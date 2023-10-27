@@ -40,6 +40,7 @@ class Extension(metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs):
         cls._overrides = {
+            "output_converter": cls.output_converter != Extension.output_converter,
             "send_wrapper": cls.send_wrapper != Extension.send_wrapper,
             "receive_wrapper": cls.receive_wrapper != Extension.receive_wrapper,
             "permission_check": cls.permission_check != Extension.permission_check,
@@ -184,10 +185,14 @@ class ExtensionExecutor:
     async def output_converter(self, output_type: OutputType, content: str) -> Message | UniMessage:
         exc = None
         for ext in self.context:
+            if not ext._overrides["output_converter"]:
+                continue
             try:
                 return await ext.output_converter(output_type, content)
             except Exception as e:
                 exc = e
+        if not exc:
+            return FallbackMessage()
         raise exc  # type: ignore
 
     async def message_provider(

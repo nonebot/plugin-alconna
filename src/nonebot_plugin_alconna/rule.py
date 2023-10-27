@@ -249,6 +249,8 @@ class AlconnaRule:
                 arp = Arparma(self.command.path, msg, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
         self._session = None
+        if not arp.head_matched:
+            return False
         if not arp.matched and not may_help_text and self.skip:
             log(
                 "TRACE",
@@ -288,6 +290,8 @@ class AlconnaRule:
         _t = str(arp.error_info) if isinstance(arp.error_info, SpecialOptionTriggered) else "help"
         try:
             msg = await self.executor.output_converter(_t, text)  # type: ignore
+            if not msg:
+                return await bot.send(event, text)
             if isinstance(msg, UniMessage):
                 msg = await msg.export(bot, fallback=True)
             return await bot.send(event, msg)  # type: ignore
