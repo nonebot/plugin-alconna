@@ -1,5 +1,6 @@
+import random
 from base64 import b64decode
-from typing import TYPE_CHECKING, List, Type, Union, Optional, overload
+from typing import TYPE_CHECKING, List, Type, Union, Literal, Optional, overload
 
 from yarl import URL
 from nonebot import get_bots
@@ -65,7 +66,12 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image):
 
 
 @overload
-def get_bot(*, adapter: Union[Type[Adapter], str]) -> List[Bot]:
+def get_bot(*, index: int) -> Bot:
+    ...
+
+
+@overload
+def get_bot(*, rand: Literal[True]) -> Bot:
     ...
 
 
@@ -75,14 +81,37 @@ def get_bot(*, bot_id: str) -> Bot:
 
 
 @overload
+def get_bot(*, adapter: Union[Type[Adapter], str]) -> List[Bot]:
+    ...
+
+
+@overload
+def get_bot(*, adapter: Union[Type[Adapter], str], index: int) -> Bot:
+    ...
+
+
+@overload
+def get_bot(*, adapter: Union[Type[Adapter], str], rand: Literal[True]) -> Bot:
+    ...
+
+
+@overload
 def get_bot(*, adapter: Union[Type[Adapter], str], bot_id: str) -> Bot:
     ...
 
 
 def get_bot(
-    *, adapter: Union[Type[Adapter], str, None] = None, bot_id: Optional[str] = None
+    *,
+    adapter: Union[Type[Adapter], str, None] = None,
+    bot_id: Optional[str] = None,
+    index: Optional[int] = None,
+    rand: bool = False,
 ) -> Union[List[Bot], Bot]:
     if not adapter:
+        if rand:
+            return random.choice(list(get_bots().values()))
+        if index is not None:
+            return list(get_bots().values())[index]
         return _get_bot(bot_id)
     bots = []
     for bot in get_bots().values():
@@ -93,5 +122,9 @@ def get_bot(
         elif isinstance(_adapter, adapter):
             bots.append(bot)
     if not bot_id:
+        if rand:
+            return random.choice(bots)
+        if index is not None:
+            return bots[index]
         return bots
     return next(bot for bot in bots if bot.self_id == bot_id)
