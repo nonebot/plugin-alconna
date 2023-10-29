@@ -18,13 +18,14 @@ from .segment import Segment as Segment
 from .segment import Reference as Reference
 from .message import UniMessage as UniMessage
 from .segment import CustomNode as CustomNode
+from .tools import image_fetch as image_fetch
 from .export import SerializeFailed as SerializeFailed
 from .fallback import FallbackMessage as FallbackMessage
 from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 
-__version__ = "0.30.7"
+__version__ = "0.30.8"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",

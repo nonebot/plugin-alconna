@@ -2,10 +2,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
 from ..segment import At, Text, AtAll, Emoji, Image, Reply
-from ..export import MessageExporter, SerializeFailed, export
+from ..export import Target, MessageExporter, SerializeFailed, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.qq.message import MessageSegment
@@ -70,3 +70,37 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms.reference(seg.id)
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.qq.bot import Bot as QQBot
+
+        assert isinstance(bot, QQBot)
+
+        if target.channel:
+            if target.private:
+                if not target.parent_id:
+                    raise NotImplementedError
+                dms = await bot.post_dms(target.id, target.parent_id)
+                # 私信需要使用 post_dms_messages
+                # https://bot.q.qq.com/wiki/develop/api/openapi/dms/post_dms_messages.html#%E5%8F%91%E9%80%81%E7%A7%81%E4%BF%A1
+                return await bot.send_to_dms(
+                    guild_id=dms.guild_id,
+                    message=message,
+                    msg_id=target.source,
+                )
+            return await bot.send_to_channel(
+                channel_id=target.id,
+                message=message,
+                msg_id=target.source,
+            )
+        if target.private:
+            return await bot.send_to_c2c(
+                user_id=target.id,
+                message=message,
+                msg_id=target.source,
+            )
+        return await bot.send_to_group(
+            group_id=target.id,
+            message=message,
+            msg_id=target.source,
+        )

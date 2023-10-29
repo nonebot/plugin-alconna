@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
-from ..export import MessageExporter, SerializeFailed, export
+from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice, RefNode, Reference
 
 if TYPE_CHECKING:
@@ -93,10 +93,20 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
                     if isinstance(node.content, str):
                         _content.extend(self.get_message_type()(node.content))
                     elif isinstance(node.content, list):
-                        _content.extend(await self.__call__(node.content, bot, True))  # type: ignore
+                        _content.extend(await self.export(node.content, bot, True))  # type: ignore
                     else:
                         _content.extend(node.content)
                     content.append(ms.message(content=_content))
         else:
             content = seg.content
         return ms.message(seg.id, bool(seg.content), content)
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.satori.bot import Bot as SatoriBot
+
+        assert isinstance(bot, SatoriBot)
+
+        if target.private:
+            return await bot.send_private_message(target.id, message)
+        else:
+            return await bot.send_message(target.id, message)

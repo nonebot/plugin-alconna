@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
-from ..export import MessageExporter, export
 from ..segment import At, Text, AtAll, Image
+from ..export import Target, MessageExporter, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.ding.message import MessageSegment
@@ -42,3 +42,6 @@ class DingMessageExporter(MessageExporter["MessageSegment"]):
 
         assert seg.url, "ding image segment must have url"
         return ms.image(seg.url)
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        raise NotImplementedError

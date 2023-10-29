@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
-from ..export import MessageExporter, SerializeFailed, export
+from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
@@ -90,3 +90,12 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms.quote(seg.id)
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.kaiheila.bot import Bot as KBot
+
+        assert isinstance(bot, KBot)
+        if target.private:
+            return await bot.send_msg(message_type="private", user_id=target.id, message=message)
+        else:
+            return await bot.send_msg(message_type="channel", channel_id=target.id, message=message)

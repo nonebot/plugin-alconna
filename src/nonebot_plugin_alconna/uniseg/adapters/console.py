@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
 from ..segment import Text, Emoji
-from ..export import MessageExporter, export
+from ..export import Target, MessageExporter, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.console.message import MessageSegment
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class ConsoleMessageExporter(MessageExporter["MessageSegment"]):
     def get_message_type(self):
-        from nonebot.adapters.onebot.v11.message import Message
+        from nonebot.adapters.console.message import Message
 
         return Message
 
@@ -35,3 +35,10 @@ class ConsoleMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms.emoji(seg.name or seg.id)
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.console import Bot as ConsoleBot
+
+        assert isinstance(bot, ConsoleBot)
+
+        return await bot.send_msg(user_id=target.id, message=message)

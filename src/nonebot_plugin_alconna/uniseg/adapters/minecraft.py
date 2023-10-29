@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
 from ..segment import Text, Image, Video
-from ..export import MessageExporter, SerializeFailed, export
+from ..export import Target, MessageExporter, SerializeFailed, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.minecraft.message import MessageSegment
@@ -38,3 +38,10 @@ class MinecraftMessageExporter(MessageExporter["MessageSegment"]):
             return method(seg.id or seg.url)  # type: ignore
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.minecraft.bot import Bot as MinecraftBot
+
+        assert isinstance(bot, MinecraftBot)
+
+        return await bot.send_msg(message=message)

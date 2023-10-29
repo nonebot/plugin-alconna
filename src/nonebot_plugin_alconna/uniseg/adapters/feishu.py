@@ -2,11 +2,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 from nonebot.internal.driver import Request
 
-from ..export import MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, Audio, Image, Reply, Voice
+from ..export import Target, MessageExporter, SerializeFailed, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.feishu.message import MessageSegment
@@ -88,3 +88,28 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms("reply", {"message_id": seg.id})  # type: ignore
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.feishu.bot import Bot as FeishuBot
+        from nonebot.adapters.feishu.message import MessageSerializer
+
+        assert isinstance(bot, FeishuBot)
+
+        if target.private:
+            receive_id, receive_id_type = target.id, "open_id"
+        else:
+            receive_id, receive_id_type = target.id, "chat_id"
+
+        msg_type, content = MessageSerializer(message).serialize()
+
+        params = {
+            "method": "POST",
+            "query": {"receive_id_type": receive_id_type},
+            "body": {
+                "receive_id": receive_id,
+                "content": content,
+                "msg_type": msg_type,
+            },
+        }
+
+        return await bot.call_api("im/v1/messages", **params)

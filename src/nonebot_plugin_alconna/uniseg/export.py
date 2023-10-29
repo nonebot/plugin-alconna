@@ -1,4 +1,5 @@
 import inspect
+from dataclasses import dataclass
 from abc import ABCMeta, abstractmethod
 from typing import (
     TYPE_CHECKING,
@@ -25,6 +26,18 @@ if TYPE_CHECKING:
 
 TS = TypeVar("TS", bound=Segment)
 TMS = TypeVar("TMS", bound=MessageSegment)
+
+
+@dataclass
+class Target:
+    id: str
+    parent_id: str = ""
+    channel: bool = False
+    """是否为频道，仅当目标平台同时支持群聊和频道时有效"""
+    private: bool = False
+    """是否为私聊"""
+    source: str = ""
+    """可能的事件id"""
 
 
 class SerializeFailed(Exception):
@@ -62,13 +75,17 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
                 else:
                     self._mapping[target] = method
 
-    async def __call__(self, source: "UniMessage", bot: Bot, fallback: bool):
+    async def export(self, source: "UniMessage", bot: Bot, fallback: bool):
         message = self.get_message_type()()
         self.segment_class = self.get_message_type().get_segment_class()
         for seg in source:
             seg_type = seg.__class__
             if seg_type in self._mapping:
-                message.append(await self._mapping[seg_type](seg, bot))
+                res = await self._mapping[seg_type](seg, bot)
+                if isinstance(res, list):
+                    message.extend(res)
+                    break
+                message.append(res)
             elif isinstance(seg, Other):
                 message.append(seg.origin)  # type: ignore
             elif fallback:
@@ -78,3 +95,7 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
                     lang.require("nbp-uniseg", "failed").format(target=seg, adapter=bot.adapter.get_name())
                 )
         return message
+
+    @abstractmethod
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        raise NotImplementedError

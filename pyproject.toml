@@ -60,6 +60,7 @@ dev = [
     "nonebot2[httpx,websockets]>=2.1.1",
     "fastapi>=0.103.2",
     "uvicorn[standard]>=0.23.2",
+    "nonebot-adapter-bilibili>=0.0.6",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

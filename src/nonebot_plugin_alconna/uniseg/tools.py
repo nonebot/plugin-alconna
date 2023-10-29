@@ -1,12 +1,14 @@
 from base64 import b64decode
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Type, Union, Optional, overload
 
 from yarl import URL
+from nonebot import get_bots
 from nonebot.typing import T_State
-from nonebot.internal.adapter import Bot, Event
+from nonebot import get_bot as _get_bot
 from nonebot.internal.driver.model import Request
+from nonebot.internal.adapter import Bot, Event, Adapter
 
-from .uniseg import Image
+from .segment import Image
 
 
 async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image):
@@ -60,3 +62,36 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image):
         return resp.content
     if adapter_name == "ntchat":
         raise NotImplementedError("ntchat image fetch not implemented")
+
+
+@overload
+def get_bot(*, adapter: Union[Type[Adapter], str]) -> List[Bot]:
+    ...
+
+
+@overload
+def get_bot(*, bot_id: str) -> Bot:
+    ...
+
+
+@overload
+def get_bot(*, adapter: Union[Type[Adapter], str], bot_id: str) -> Bot:
+    ...
+
+
+def get_bot(
+    *, adapter: Union[Type[Adapter], str, None] = None, bot_id: Optional[str] = None
+) -> Union[List[Bot], Bot]:
+    if not adapter:
+        return _get_bot(bot_id)
+    bots = []
+    for bot in get_bots().values():
+        _adapter = bot.adapter
+        if isinstance(adapter, str):
+            if _adapter.get_name() == adapter:
+                bots.append(bot)
+        elif isinstance(_adapter, adapter):
+            bots.append(bot)
+    if not bot_id:
+        return bots
+    return next(bot for bot in bots if bot.self_id == bot_id)

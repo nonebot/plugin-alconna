@@ -2,9 +2,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
-from ..export import MessageExporter, SerializeFailed, export
+from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, Audio, Emoji, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
@@ -72,3 +72,10 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms("reply", {"message_id": seg.id})  # type: ignore
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.telegram.bot import Bot as TgBot
+
+        assert isinstance(bot, TgBot)
+
+        return await bot.send_to(target.id, message)

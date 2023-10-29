@@ -8,7 +8,7 @@ from .message import TS, UniMessage
 
 
 async def _uni_msg(bot: Bot, event: Event) -> UniMessage:
-    return await UniMessage.generate(event, bot)
+    return await UniMessage.generate(event=event, bot=bot)
 
 
 def UniversalMessage() -> UniMessage:
@@ -17,7 +17,7 @@ def UniversalMessage() -> UniMessage:
 
 def UniversalSegment(t: Type[TS], index: int = 0) -> TS:
     async def _uni_seg(bot: Bot, event: Event) -> TS:
-        return (await UniMessage.generate(event, bot))[t, index]
+        return (await UniMessage.generate(event=event, bot=bot))[t, index]
 
     return Depends(_uni_seg, use_cache=True)
 

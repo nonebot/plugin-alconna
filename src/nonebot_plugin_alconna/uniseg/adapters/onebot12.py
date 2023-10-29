@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
-from ..export import MessageExporter, SerializeFailed, export
+from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
@@ -68,3 +68,17 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms.reply(seg.id)
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
+
+        assert isinstance(bot, OnebotBot)
+
+        if target.private:
+            return await bot.send_message(message_type="private", user_id=target.id, message=message)
+        elif target.channel:
+            return await bot.send_message(
+                message_type="channel", channel_id=target.id, guild_id=target.parent_id, message=message
+            )
+        else:
+            return await bot.send_message(message_type="group", group_id=target.id, message=message)

@@ -69,8 +69,8 @@ from .extension import Extension as Extension
 from .extension import Interface as Interface
 from .matcher import funcommand as funcommand
 from .matcher import on_alconna as on_alconna
-from .tools import image_fetch as image_fetch
 from .params import match_value as match_value
+from .uniseg import image_fetch as image_fetch
 from .params import AlconnaMatch as AlconnaMatch
 from .params import AlconnaQuery as AlconnaQuery
 from .model import CommandResult as CommandResult
@@ -89,7 +89,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.30.7"
+__version__ = "0.30.8"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

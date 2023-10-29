@@ -2,10 +2,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 from nonebot.internal.driver import Request
 
-from ..export import MessageExporter, SerializeFailed, export
+from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
@@ -74,3 +74,10 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms.reference(seg.origin or int(seg.id))
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.discord import Bot as DiscordBot
+
+        assert isinstance(bot, DiscordBot)
+
+        return await bot.send_to(channel_id=int(target.id), message=message)

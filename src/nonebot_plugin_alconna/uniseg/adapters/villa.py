@@ -2,10 +2,10 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
-from ..export import MessageExporter, SerializeFailed, export
 from ..segment import At, Text, AtAll, Image, Reply, Reference
+from ..export import Target, MessageExporter, SerializeFailed, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.villa.message import MessageSegment
@@ -64,3 +64,23 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         if not seg.id:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="post", seg=seg))
         return ms.post(seg.id)
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.villa.bot import Bot as VillaBot
+        from nonebot.adapters.villa.api.models import PostMessageContent, ImageMessageContent
+
+        assert isinstance(bot, VillaBot)
+
+        content_info = await bot.parse_message_content(message)
+        if isinstance(content_info.content, PostMessageContent):
+            object_name = "MHY:Post"
+        elif isinstance(content_info.content, ImageMessageContent):
+            object_name = "MHY:Image"
+        else:
+            object_name = "MHY:Text"
+        return await bot.send_message(
+            villa_id=target.id,
+            room_id=target.parent_id,
+            object_name=object_name,
+            msg_content=content_info.json(by_alias=True, exclude_none=True),
+        )

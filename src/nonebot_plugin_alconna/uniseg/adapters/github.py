@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
 from ..segment import At, Text, Image
-from ..export import MessageExporter, export
+from ..export import Target, MessageExporter, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.github.message import MessageSegment  # type: ignore
@@ -37,3 +37,6 @@ class GithubMessageExporter(MessageExporter["MessageSegment"]):
 
         assert seg.url, "github image segment must have url"
         return ms.text(f"![]({seg.url})")
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        raise NotImplementedError

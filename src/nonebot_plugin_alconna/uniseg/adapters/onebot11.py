@@ -2,11 +2,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 from nonebot.internal.driver import Request
 
-from ..export import MessageExporter, SerializeFailed, export
-from ..segment import At, Card, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
+from ..export import Target, MessageExporter, SerializeFailed, export
+from ..segment import At, Card, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice, RefNode, Reference
 
 if TYPE_CHECKING:
     from nonebot.adapters.onebot.v11.message import MessageSegment
@@ -79,3 +79,40 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms.reply(int(seg.id))
+
+    @export
+    async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
+        ms = self.segment_class
+
+        if seg.id:
+            return ms.forward(seg.id)
+
+        if not seg.content or not isinstance(seg.content, list):
+            raise SerializeFailed(
+                lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg)
+            )
+
+        nodes = []
+        for node in seg.content:
+            if isinstance(node, RefNode):
+                nodes.append(ms.node(int(node.id)))
+            else:
+                content = self.get_message_type()()
+                if isinstance(node.content, str):
+                    content.extend(self.get_message_type()(node.content))
+                elif isinstance(node.content, list):
+                    content.extend(await self.export(node.content, bot, True))  # type: ignore
+                else:
+                    content.extend(node.content)
+                nodes.append(ms.node_custom(user_id=node.uid, nickname=node.name, content=content))
+        return nodes  # type: ignore
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.onebot.v11.bot import Bot as OnebotBot
+
+        assert isinstance(bot, OnebotBot)
+
+        if target.private:
+            return await bot.send_msg(message_type="private", user_id=int(target.id), message=message)
+        else:
+            return await bot.send_msg(message_type="group", group_id=int(target.id), message=message)

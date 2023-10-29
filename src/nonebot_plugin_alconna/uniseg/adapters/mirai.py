@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 
-from ..export import MessageExporter, SerializeFailed, export
+from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Voice, RefNode, Reference
 
 if TYPE_CHECKING:
@@ -96,7 +96,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
                 if isinstance(node.content, str):
                     content.extend(self.get_message_type()(node.content))
                 elif isinstance(node.content, list):
-                    content.extend(await self.__call__(node.content, bot, True))  # type: ignore
+                    content.extend(await self.export(node.content, bot, True))  # type: ignore
                 else:
                     content.extend(node.content)
                 nodes.append(
@@ -108,3 +108,17 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
                     }
                 )
         return ms(MessageType.FORWARD, nodeList=nodes)
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.mirai2.bot import Bot as MiraiBot
+
+        assert isinstance(bot, MiraiBot)
+
+        if message.has("Quote"):
+            quote = message.pop(message.index("Quote")).data["id"]
+        else:
+            quote = None
+        if target.private:
+            return await bot.send_friend_message(target=target.id, message_chain=message, quote=quote)
+        else:
+            return await bot.send_group_message(group=target.id, message_chain=message, quote=quote)

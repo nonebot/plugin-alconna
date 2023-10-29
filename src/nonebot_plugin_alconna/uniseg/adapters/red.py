@@ -2,11 +2,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 from nonebot.internal.driver import Request
 
-from ..export import MessageExporter, SerializeFailed, export
-from ..segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
+from ..export import Target, MessageExporter, SerializeFailed, export
+from ..segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice, Reference, CustomNode
 
 if TYPE_CHECKING:
     from nonebot.adapters.red.message import MessageSegment
@@ -72,3 +72,38 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         return ms.reply(seg.id)
+
+    @export
+    async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
+        from nonebot.adapters.red.message import ForwardNode
+
+        ms = self.segment_class
+        if not seg.content or not isinstance(seg.content, list):
+            raise SerializeFailed(
+                lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg)
+            )
+        nodes = []
+        for node in seg.content:
+            if not isinstance(node, CustomNode):
+                raise SerializeFailed(
+                    lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg)
+                )
+            content = self.get_message_type()()
+            if isinstance(node.content, str):
+                content.extend(self.get_message_type()(node.content))
+            elif isinstance(node.content, list):
+                content.extend(await self.export(node.content, bot, True))  # type: ignore
+            else:
+                content.extend(node.content)
+            nodes.append(ForwardNode(uin=node.uid, name=node.name, time=node.time, message=content))
+        return ms.forward(nodes)
+
+    async def send_to(self, target: Target, bot: Bot, message: Message):
+        from nonebot.adapters.red.bot import Bot as RedBot
+
+        assert isinstance(bot, RedBot)
+
+        if target.private:
+            return await bot.send_friend_message(target=target.id, message=message)
+        else:
+            return await bot.send_group_message(target=target.id, message=message)
