@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Voice, RefNode, Reference
@@ -122,3 +122,10 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
             return await bot.send_friend_message(target=target.id, message_chain=message, quote=quote)
         else:
             return await bot.send_group_message(group=target.id, message_chain=message, quote=quote)
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.mirai2.bot import Bot as MiraiBot
+
+        assert isinstance(bot, MiraiBot)
+        await bot.recall(target=mid["messageId"])
+        return

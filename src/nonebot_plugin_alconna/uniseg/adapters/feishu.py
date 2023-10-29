@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
 from nonebot.internal.driver import Request
+from nonebot.adapters import Bot, Event, Message
 
 from ..segment import At, File, Text, Audio, Image, Reply, Voice
 from ..export import Target, MessageExporter, SerializeFailed, export
@@ -113,3 +113,27 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         }
 
         return await bot.call_api("im/v1/messages", **params)
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.feishu.bot import Bot as FeishuBot
+
+        assert isinstance(bot, FeishuBot)
+
+        params = {"method": "DELETE"}
+        return await bot.call_api(f"im/v1/messages/{mid['message_id']}", **params)
+
+    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.feishu.bot import Bot as FeishuBot
+        from nonebot.adapters.feishu.message import MessageSerializer
+
+        assert isinstance(bot, FeishuBot)
+        msg_type, content = MessageSerializer(new).serialize()
+        params = {
+            "method": "PUT",
+            "body": {
+                "content": content,
+                "msg_type": msg_type,
+            },
+        }
+
+        return await bot.call_api(f"im/v1/messages/{mid['message_id']}", **params)

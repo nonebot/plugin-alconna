@@ -6,11 +6,12 @@ from tarina import lang
 from nonebot.internal.matcher import current_bot
 from nonebot.internal.adapter import Bot, Event, Message
 
+from .receipt import Receipt
 from .adapters import MAPPING
 from .fallback import FallbackMessage
 from .template import UniMessageTemplate
 from .export import Target, SerializeFailed
-from .segment import Text, Other, Reply, Segment, reply, segments, At
+from .segment import At, Text, Other, Reply, Segment, reply, segments
 
 TS = TypeVar("TS", bound=Segment)
 TS1 = TypeVar("TS1", bound=Segment)
@@ -509,7 +510,7 @@ class UniMessage(List[TS]):
         fallback: bool = True,
         at_sender: Union[str, bool] = False,
         reply_to: Optional[str] = None,
-    ):
+    ) -> Receipt:
         if not bot:
             try:
                 bot = current_bot.get()
@@ -525,10 +526,12 @@ class UniMessage(List[TS]):
         if reply_to:
             self.insert(0, Reply(reply_to))
         msg = await self.export(bot, fallback)
-        if isinstance(target, Event):
-            return await bot.send(target, await self.export(bot, fallback))
         adapter = bot.adapter
         adapter_name = adapter.get_name()
         if not (fn := MAPPING.get(adapter_name)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
-        return await fn.send_to(target, bot, msg)
+        if isinstance(target, Event):
+            res = await bot.send(target, msg)
+        else:
+            res = await fn.send_to(target, bot, msg)
+        return Receipt(bot, target, fn, res if isinstance(res, list) else [res])

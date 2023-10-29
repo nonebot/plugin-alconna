@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union, cast
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
@@ -99,3 +99,42 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
             return await bot.send_msg(message_type="private", user_id=target.id, message=message)
         else:
             return await bot.send_msg(message_type="channel", channel_id=target.id, message=message)
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.kaiheila.bot import Bot as KBot
+        from nonebot.adapters.kaiheila.event import PrivateMessageEvent
+        from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
+
+        mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+
+        assert isinstance(bot, KBot)
+        if isinstance(context, Target):
+            if context.private:
+                await bot.directMessage_delete(msg_id=mid.msg_id)
+            else:
+                await bot.message_delete(msg_id=mid.msg_id)
+        elif isinstance(context, PrivateMessageEvent):
+            await bot.directMessage_delete(msg_id=mid.msg_id)
+        else:
+            await bot.message_delete(msg_id=mid.msg_id)
+        return
+
+    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.kaiheila.bot import Bot as KBot
+        from nonebot.adapters.kaiheila.event import PrivateMessageEvent
+        from nonebot.adapters.kaiheila.message import MessageSerializer
+        from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
+
+        mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+        _, text = MessageSerializer(new).serialize()
+        assert isinstance(bot, KBot)
+        if isinstance(context, Target):
+            if context.private:
+                await bot.directMessage_update(context=text, msg_id=mid.msg_id)
+            else:
+                await bot.message_update(context=text, msg_id=mid.msg_id)
+        elif isinstance(context, PrivateMessageEvent):
+            await bot.directMessage_update(context=text, msg_id=mid.msg_id)
+        else:
+            await bot.message_update(context=text, msg_id=mid.msg_id)
+        return

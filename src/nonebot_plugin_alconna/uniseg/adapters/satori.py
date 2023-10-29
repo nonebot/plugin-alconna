@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union, cast
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice, RefNode, Reference
@@ -110,3 +110,34 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
             return await bot.send_private_message(target.id, message)
         else:
             return await bot.send_message(target.id, message)
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.satori.models import InnerMessage
+        from nonebot.adapters.satori.bot import Bot as SatoriBot
+
+        assert isinstance(bot, SatoriBot)
+        mid: InnerMessage = cast(InnerMessage, mid)
+        if isinstance(context, Target):
+            if context.private:
+                channel = await bot.user_channel_create(user_id=context.id)
+                await bot.message_delete(channel.id, mid.id)
+            else:
+                await bot.message_delete(context.id, mid.id)
+        else:
+            channel = mid.channel or context.channel  # type: ignore
+            await bot.message_delete(channel.id, mid.id)
+        return
+
+    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.satori.models import InnerMessage
+        from nonebot.adapters.satori.bot import Bot as SatoriBot
+
+        assert isinstance(bot, SatoriBot)
+        mid: InnerMessage = cast(InnerMessage, mid)
+        if isinstance(context, Target):
+            if context.private:
+                channel = await bot.user_channel_create(user_id=context.id)
+                return await bot.update_message(channel.id, mid.id, new)
+            return await bot.update_message(context.id, mid.id, new)
+        channel = mid.channel or context.channel  # type: ignore
+        return await bot.update_message(channel.id, mid.id)

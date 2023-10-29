@@ -51,9 +51,9 @@ from .uniseg import Other as Other
 from .uniseg import Reply as Reply
 from .uniseg import Video as Video
 from .uniseg import Voice as Voice
-from .uniseg import Target as Target
 from .params import assign as assign
 from .rule import alconna as alconna
+from .uniseg import Target as Target
 from .uniseg import UniMsg as UniMsg
 from .uniseg import RefNode as RefNode
 from .uniseg import Segment as Segment

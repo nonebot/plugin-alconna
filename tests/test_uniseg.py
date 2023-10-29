@@ -2,7 +2,7 @@ import pytest
 from nonebug import App
 from nonebot import get_adapter
 from arclet.alconna import Alconna
-from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment, Event
+from nonebot.adapters.onebot.v11 import Bot, Event, Adapter, Message, MessageSegment
 
 from tests.fake import fake_group_message_event_v11
 
@@ -59,13 +59,15 @@ async def test_unimsg_template(app: App):
 
 @pytest.mark.asyncio()
 async def test_unimsg_send(app: App):
-    from nonebot_plugin_alconna import At, Target, UniMessage, on_alconna
+    from nonebot_plugin_alconna import UniMessage, on_alconna
 
     matcher = on_alconna(Alconna("test_unimsg_send"))
 
     @matcher.handle()
     async def handle(_bot: Bot, _event: Event):
-        await UniMessage("hello!").send(_event, _bot, at_sender=True)
+        receipt = await UniMessage("hello!").send(_event, _bot, at_sender=True)
+        receipt.msg_ids[0] = {"message_id": 2}
+        await receipt.recall(1)
 
     async with app.test_matcher(matcher) as ctx:
         adapter = get_adapter(Adapter)
@@ -73,3 +75,4 @@ async def test_unimsg_send(app: App):
         event = fake_group_message_event_v11(message=Message("test_unimsg_send"), user_id=123)
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, MessageSegment.at(123) + MessageSegment.text("hello!"))
+        ctx.should_call_api("delete_msg", {"message_id": 2})

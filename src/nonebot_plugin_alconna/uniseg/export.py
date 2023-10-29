@@ -16,7 +16,7 @@ from typing import (
 )
 
 from tarina import lang
-from nonebot.adapters import Bot, Message, MessageSegment
+from nonebot.adapters import Bot, Event, Message, MessageSegment
 
 from .segment import Other, Segment
 
@@ -98,4 +98,10 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
 
     @abstractmethod
     async def send_to(self, target: Target, bot: Bot, message: Message):
+        raise NotImplementedError
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        raise NotImplementedError
+
+    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         raise NotImplementedError

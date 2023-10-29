@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
 from nonebot.internal.driver import Request
+from nonebot.adapters import Bot, Event, Message
 
 from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, Card, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice, RefNode, Reference
@@ -116,3 +116,10 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
             return await bot.send_msg(message_type="private", user_id=int(target.id), message=message)
         else:
             return await bot.send_msg(message_type="group", group_id=int(target.id), message=message)
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.onebot.v11.bot import Bot as OnebotBot
+
+        assert isinstance(bot, OnebotBot)
+        await bot.delete_msg(message_id=mid["message_id"])
+        return

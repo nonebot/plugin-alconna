@@ -1,8 +1,8 @@
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..segment import At, Text, AtAll, Emoji, Image, Reply
 from ..export import Target, MessageExporter, SerializeFailed, export
@@ -104,3 +104,33 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
             message=message,
             msg_id=target.source,
         )
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.qq.bot import Bot as QQBot
+        from nonebot.adapters.qq.event import DirectMessageCreateEvent
+        from nonebot.adapters.qq.models.guild import Message as GuildMessage
+
+        assert isinstance(bot, QQBot)
+        if isinstance(mid, GuildMessage):
+            if isinstance(context, Target):
+                if context.private:
+                    await bot.delete_dms_message(
+                        guild_id=mid.guild_id,
+                        message_id=mid.id,
+                    )
+                else:
+                    await bot.delete_message(
+                        channel_id=mid.channel_id,
+                        message_id=mid.id,
+                    )
+            elif isinstance(context, DirectMessageCreateEvent):
+                await bot.delete_dms_message(
+                    guild_id=mid.guild_id,
+                    message_id=mid.id,
+                )
+            else:
+                await bot.delete_message(
+                    channel_id=mid.channel_id,
+                    message_id=mid.id,
+                )
+        return

@@ -1,8 +1,8 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union, cast
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, Audio, Emoji, Image, Reply, Video, Voice
@@ -79,3 +79,36 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
         assert isinstance(bot, TgBot)
 
         return await bot.send_to(target.id, message)
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.telegram.bot import Bot as TgBot
+        from nonebot.adapters.telegram.event import EventWithChat
+        from nonebot.adapters.telegram.model import Message as MessageModel
+
+        assert isinstance(bot, TgBot)
+        mid: MessageModel = cast(MessageModel, mid)
+        if isinstance(context, Target):
+            await bot.delete_message(chat_id=context.id, message_id=mid.message_id)
+            return
+        if not isinstance(context, EventWithChat):
+            raise NotImplementedError
+        await bot.delete_message(chat_id=context.chat.id, message_id=mid.message_id)
+
+    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.telegram.bot import Bot as TgBot
+        from nonebot.adapters.telegram.event import EventWithChat
+        from nonebot.adapters.telegram.model import Message as MessageModel
+
+        assert isinstance(bot, TgBot)
+        mid: MessageModel = cast(MessageModel, mid)
+        text = new.extract_plain_text()
+        if isinstance(context, Target):
+            res = await bot.edit_message_text(text=text, chat_id=context.id, message_id=mid.message_id)
+            if isinstance(res, MessageModel):
+                return res
+            return
+        if not isinstance(context, EventWithChat):
+            raise NotImplementedError
+        res = await bot.edit_message_text(text=text, chat_id=context.chat.id, message_id=mid.message_id)
+        if isinstance(res, MessageModel):
+            return res

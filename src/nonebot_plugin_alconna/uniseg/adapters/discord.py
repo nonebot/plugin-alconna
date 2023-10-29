@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union, cast
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
 from nonebot.internal.driver import Request
+from nonebot.adapters import Bot, Event, Message
 
 from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
@@ -81,3 +81,24 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         assert isinstance(bot, DiscordBot)
 
         return await bot.send_to(channel_id=int(target.id), message=message)
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.discord.api.model import MessageGet
+        from nonebot.adapters.discord.bot import Bot as DiscordBot
+
+        mid: MessageGet = cast(MessageGet, mid)
+
+        assert isinstance(bot, DiscordBot)
+
+        return await bot.delete_message(channel_id=mid.channel_id, message_id=mid.id)
+
+    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.discord.api.model import MessageGet
+        from nonebot.adapters.discord.bot import Bot as DiscordBot
+        from nonebot.adapters.discord.message import parse_message
+
+        mid: MessageGet = cast(MessageGet, mid)
+
+        assert isinstance(bot, DiscordBot)
+
+        return await bot.edit_message(channel_id=mid.channel_id, message_id=mid.id, **parse_message(new))

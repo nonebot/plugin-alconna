@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
@@ -82,3 +82,11 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
             )
         else:
             return await bot.send_message(message_type="group", group_id=target.id, message=message)
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
+
+        assert isinstance(bot, OnebotBot)
+
+        await bot.delete_message(message_id=mid["message_id"])
+        return

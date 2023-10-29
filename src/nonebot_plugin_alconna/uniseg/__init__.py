@@ -12,6 +12,7 @@ from .segment import Reply as Reply
 from .segment import Video as Video
 from .segment import Voice as Voice
 from .const import log  # noqa: F401
+from .export import Target as Target
 from .params import UniMsg as UniMsg
 from .segment import RefNode as RefNode
 from .segment import Segment as Segment
@@ -20,7 +21,6 @@ from .message import UniMessage as UniMessage
 from .segment import CustomNode as CustomNode
 from .tools import image_fetch as image_fetch
 from .export import SerializeFailed as SerializeFailed
-from .export import Target as Target
 from .fallback import FallbackMessage as FallbackMessage
 from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
