@@ -2,7 +2,7 @@ import pytest
 from nonebug import App
 from nonebot import get_adapter
 from arclet.alconna import Alconna
-from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment
+from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment, Event
 
 from tests.fake import fake_group_message_event_v11
 
@@ -55,3 +55,21 @@ async def test_unimsg_template(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, Message(MessageSegment.at(123)))
         ctx.should_finished(matcher)
+
+
+@pytest.mark.asyncio()
+async def test_unimsg_send(app: App):
+    from nonebot_plugin_alconna import At, Target, UniMessage, on_alconna
+
+    matcher = on_alconna(Alconna("test_unimsg_send"))
+
+    @matcher.handle()
+    async def handle(_bot: Bot, _event: Event):
+        await UniMessage("hello!").send(_event, _bot, at_sender=True)
+
+    async with app.test_matcher(matcher) as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(base=Bot, adapter=adapter)
+        event = fake_group_message_event_v11(message=Message("test_unimsg_send"), user_id=123)
+        ctx.receive_event(bot, event)
+        ctx.should_call_send(event, MessageSegment.at(123) + MessageSegment.text("hello!"))

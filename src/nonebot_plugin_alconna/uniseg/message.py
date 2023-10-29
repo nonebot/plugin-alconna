@@ -10,7 +10,7 @@ from .adapters import MAPPING
 from .fallback import FallbackMessage
 from .template import UniMessageTemplate
 from .export import Target, SerializeFailed
-from .segment import Text, Other, Reply, Segment, reply, segments
+from .segment import Text, Other, Reply, Segment, reply, segments, At
 
 TS = TypeVar("TS", bound=Segment)
 TS1 = TypeVar("TS1", bound=Segment)
@@ -502,12 +502,28 @@ class UniMessage(List[TS]):
                 return FallbackMessage(str(self))
             raise
 
-    async def send(self, target: Union[Event, Target], bot: Optional[Bot] = None, fallback: bool = True):
+    async def send(
+        self,
+        target: Union[Event, Target],
+        bot: Optional[Bot] = None,
+        fallback: bool = True,
+        at_sender: Union[str, bool] = False,
+        reply_to: Optional[str] = None,
+    ):
         if not bot:
             try:
                 bot = current_bot.get()
             except LookupError as e:
                 raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+        if at_sender:
+            if isinstance(at_sender, str):
+                self.insert(0, At("user", at_sender))
+            elif isinstance(target, Event):
+                self.insert(0, At("user", target.get_user_id()))
+            else:
+                raise TypeError("at_sender must be str when target is not Event")
+        if reply_to:
+            self.insert(0, Reply(reply_to))
         msg = await self.export(bot, fallback)
         if isinstance(target, Event):
             return await bot.send(target, await self.export(bot, fallback))
