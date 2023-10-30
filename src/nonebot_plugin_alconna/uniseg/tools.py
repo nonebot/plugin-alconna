@@ -1,6 +1,8 @@
 import random
 from base64 import b64decode
 from typing import TYPE_CHECKING, List, Type, Union, Literal, Optional, overload
+import anyio
+from nonebot.exception import ActionFailed
 
 from yarl import URL
 from nonebot import get_bots
@@ -57,7 +59,12 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
             from nonebot.adapters.telegram.bot import Bot
 
             assert isinstance(bot, Bot)
-        url = URL(bot.bot_config.api_server) / "file" / f"bot{bot.bot_config.token}" / img.id
+        res = await bot.get_file(file_id=img.id)
+        if not res.file_path:
+            raise ActionFailed("Telegram", "get file failed")
+        if await (p := anyio.Path(res.file_path)).exists():  # telegram api local mode
+            return await p.read_bytes()
+        url = URL(bot.bot_config.api_server) / "file" / f"bot{bot.bot_config.token}" / res.file_path
         req = Request("GET", url, **kwargs)
         resp = await bot.adapter.request(req)
         return resp.content
