@@ -95,7 +95,8 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.kaiheila.bot import Bot as KBot
 
         assert isinstance(bot, KBot)
-        assert isinstance(message, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(message, self.get_message_type())
         if target.private:
             return await bot.send_msg(message_type="private", user_id=target.id, message=message)
         else:
@@ -128,7 +129,8 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.kaiheila.message import MessageSerializer
         from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
 
-        assert isinstance(new, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(new, self.get_message_type())
 
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
         assert _mid.msg_id

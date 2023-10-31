@@ -70,7 +70,8 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.villa.api.models import PostMessageContent, ImageMessageContent
 
         assert isinstance(bot, VillaBot)
-        assert isinstance(message, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(message, self.get_message_type())
 
         content_info = await bot.parse_message_content(message)
         if isinstance(content_info.content, PostMessageContent):

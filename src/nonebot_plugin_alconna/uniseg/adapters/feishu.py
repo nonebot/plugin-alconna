@@ -99,7 +99,8 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.feishu.bot import Bot as FeishuBot
 
         assert isinstance(bot, FeishuBot)
-        assert isinstance(message, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(message, self.get_message_type())
 
         if target.private:
             receive_id, receive_id_type = target.id, "open_id"
@@ -132,7 +133,8 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.feishu.bot import Bot as FeishuBot
 
         assert isinstance(bot, FeishuBot)
-        assert isinstance(new, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(new, self.get_message_type())
 
         msg_type, content = new.serialize()
         params = {

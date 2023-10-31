@@ -313,7 +313,7 @@ class _At(UniPattern[At]):
         if seg.type == "at":  # ob11, feishu, red, satori
             if "qq" in seg.data and seg.data["qq"] != "all":
                 return At("user", str(seg.data["qq"]))
-            if "user_id" in seg.data:
+            if "user_id" in seg.data and seg.data["user_id"] != "all":
                 return At("user", str(seg.data["user_id"]))
             if "id" in seg.data:
                 return At("user", seg.data["id"], seg.data["name"])
@@ -363,6 +363,8 @@ class _AtAll(UniPattern[AtAll]):
     def solve(self, seg: MessageSegment):
         if seg.type == "at":
             if "qq" in seg.data and seg.data["qq"] == "all":  # ob11
+                return AtAll()
+            if "user_id" in seg.data and seg.data["user_id"] == "all":  # feishu
                 return AtAll()
             if "type" in seg.data and seg.data["type"] in ("all", "here"):
                 return AtAll(here=seg.data["type"] == "here")

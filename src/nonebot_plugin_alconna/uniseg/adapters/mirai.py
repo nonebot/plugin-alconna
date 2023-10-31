@@ -113,7 +113,8 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.mirai2.bot import Bot as MiraiBot
 
         assert isinstance(bot, MiraiBot)
-        assert isinstance(message, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(message, self.get_message_type())
 
         if message.has("Quote"):
             quote = message.pop(message.index("Quote")).data["id"]

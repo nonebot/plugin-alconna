@@ -79,8 +79,8 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.discord import Bot as DiscordBot
 
         assert isinstance(bot, DiscordBot)
-        assert isinstance(message, self.get_message_type())
-
+        if TYPE_CHECKING:
+            assert isinstance(message, self.get_message_type())
         return await bot.send_to(channel_id=int(target.id), message=message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
@@ -101,6 +101,7 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         _mid: MessageGet = cast(MessageGet, mid)
 
         assert isinstance(bot, DiscordBot)
-        assert isinstance(new, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(new, self.get_message_type())
 
         return await bot.edit_message(channel_id=mid.channel_id, message_id=_mid.id, **parse_message(new))

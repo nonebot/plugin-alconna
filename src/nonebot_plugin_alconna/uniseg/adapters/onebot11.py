@@ -111,7 +111,8 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.onebot.v11.bot import Bot as OnebotBot
 
         assert isinstance(bot, OnebotBot)
-        assert isinstance(message, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(message, self.get_message_type())
 
         if target.private:
             return await bot.send_msg(message_type="private", user_id=int(target.id), message=message)

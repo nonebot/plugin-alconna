@@ -38,8 +38,8 @@ from .params import (
     MIDDLEWARE,
     Check,
     AlconnaParam,
-    ExtensionParam,
     AlcExecResult,
+    ExtensionParam,
     assign,
     _seminal,
     _Dispatch,
@@ -593,10 +593,12 @@ def on_alconna(
     )
     executor = cast(ExtensionExecutor, list(_rule.checkers)[0].call.executor)  # type: ignore
     AlconnaMatcher.HANDLER_PARAM_TYPES = (
-        ExtensionParam.new(executor),
-    ) + Matcher.HANDLER_PARAM_TYPES[:-1] + (
-        AlconnaParam,
-        DefaultParam,
+        (ExtensionParam.new(executor),)
+        + Matcher.HANDLER_PARAM_TYPES[:-1]
+        + (
+            AlconnaParam,
+            DefaultParam,
+        )
     )
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
         "",

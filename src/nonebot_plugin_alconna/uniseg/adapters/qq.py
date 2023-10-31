@@ -33,9 +33,9 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
-        if seg.target == "channel":
+        if seg.flag == "channel":
             return ms.mention_channel(seg.target)
-        elif seg.target == "user":
+        elif seg.flag == "user":
             return ms.mention_user(seg.target)
         else:
             raise SerializeFailed(
@@ -75,7 +75,8 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.qq.bot import Bot as QQBot
 
         assert isinstance(bot, QQBot)
-        assert isinstance(message, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(message, self.get_message_type())
 
         if target.channel:
             if target.private:

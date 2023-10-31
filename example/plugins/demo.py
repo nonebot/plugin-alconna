@@ -363,7 +363,7 @@ async def demo_h(arp: Arparma):
     args = []
     if isinstance(arp.header_match.result, str) and not arp.header_match.result.endswith("trig"):
         args.append(arp.header_match.result[4:])
-    args.extend(arp.query[tuple[str, ...]]("rest"))
+    args.extend(arp.query[tuple]("rest", ()))
     await demo.finish(f"args: {args}")
 
 
@@ -396,9 +396,9 @@ alc = Alconna(
     Args["at", [str, At], Field(completion=lambda: "请输入教师号")],
 )
 
-cmd = on_alconna(alc, comp_config={"disables": {"tab"}})
+cmd = on_alconna(alc, comp_config={"lite": True}, skip_for_unmatch=False)
 
 
 @cmd.handle()
-async def handle(name: str, phone: int):
-    await cmd.finish(f"姓名：{name}\n手机号：{phone}")
+async def handle(name: str, phone: int, at: Union[str, At]):
+    await cmd.finish(f"姓名：{name}\n手机号：{phone}\n教师号：{at!r}")

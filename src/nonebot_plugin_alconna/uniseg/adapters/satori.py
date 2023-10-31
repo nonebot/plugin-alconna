@@ -105,7 +105,8 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.satori.bot import Bot as SatoriBot
 
         assert isinstance(bot, SatoriBot)
-        assert isinstance(message, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(message, self.get_message_type())
 
         if target.private:
             return await bot.send_private_message(target.id, message)
@@ -134,7 +135,8 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.satori.bot import Bot as SatoriBot
 
         assert isinstance(bot, SatoriBot)
-        assert isinstance(new, self.get_message_type())
+        if TYPE_CHECKING:
+            assert isinstance(new, self.get_message_type())
 
         _mid: InnerMessage = cast(InnerMessage, mid)
         if isinstance(context, Target):

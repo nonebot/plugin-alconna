@@ -40,6 +40,6 @@ class ConsoleMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.console import Bot as ConsoleBot
 
         assert isinstance(bot, ConsoleBot)
-        assert isinstance(message, self.get_message_type())
-
+        if TYPE_CHECKING:
+            assert isinstance(message, self.get_message_type())
         return await bot.send_msg(user_id=target.id, message=message)
