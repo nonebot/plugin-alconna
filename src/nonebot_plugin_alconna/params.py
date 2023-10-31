@@ -206,24 +206,44 @@ def AlconnaExtension(target: Type[T_Extension]) -> T_Extension:
     return Depends(_alconna_extension, use_cache=False)
 
 
+class ExtensionParam(Param):
+    """Extension 自定义注入参数"""
+
+    executor: ClassVar[ExtensionExecutor]
+
+    def __repr__(self) -> str:
+        return f"ExtensionParam(name={self.extra['name']}, type={self.extra['type']!r})"
+
+    @classmethod
+    def new(cls, executor: ExtensionExecutor):
+        return type(
+            f"ExtensionParam_{executor._rule.command.name}",
+            (cls,),
+            {"executor": executor},
+        )
+
+    @classmethod
+    def _check_param(
+        cls, param: inspect.Parameter, allow_types: Tuple[Type[Param], ...]
+    ) -> Optional["ExtensionParam"]:
+        if cls.executor.before_catch(param.name, param.annotation, param.default):
+            return cls(param.default, name=param.name, type=param.annotation, validate=True)
+
+    async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
+        res = await self.executor.catch(event, state, self.extra["name"], self.extra["type"], self.default)
+        if res is not Undefined:
+            return res
+        return self.default
+
+
 class AlconnaParam(Param):
     """Alconna 相关注入参数
 
     本注入解析事件响应器操作 `AlconnaMatcher` 的响应函数内所需参数。
     """
 
-    executor: ClassVar[ExtensionExecutor]
-
     def __repr__(self) -> str:
         return f"AlconnaParam(type={self.extra['type']!r})"
-
-    @classmethod
-    def new(cls, executor: ExtensionExecutor):
-        return type(
-            f"AlconnaParam_{executor._rule.command.name}",
-            (cls,),
-            {"executor": executor},
-        )
 
     @classmethod
     def _check_param(
@@ -253,9 +273,6 @@ class AlconnaParam(Param):
     async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
         t = self.extra["type"]
         if ALCONNA_RESULT not in state:
-            ext_res = await self.executor.catch(event, state, self.extra["name"], t, self.default)
-            if ext_res is not Undefined:
-                return ext_res
             return self.default if self.default not in (..., Empty) else Undefined
         res: CommandResult = state[ALCONNA_RESULT]
         if t is CommandResult:
@@ -289,9 +306,6 @@ class AlconnaParam(Param):
             return state[key]
         if self.extra["name"] in res.result.all_matched_args:
             return res.result.all_matched_args[self.extra["name"]]
-        ext_res = await self.executor.catch(event, state, self.extra["name"], t, self.default)
-        if ext_res is not Undefined:
-            return ext_res
         return self.default if self.default not in (..., Empty) else Undefined
 
     async def _check(self, state: T_State, **kwargs: Any) -> Any:

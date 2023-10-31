@@ -45,7 +45,7 @@ class Extension(metaclass=ABCMeta):
             "receive_wrapper": cls.receive_wrapper != Extension.receive_wrapper,
             "permission_check": cls.permission_check != Extension.permission_check,
             "parse_wrapper": cls.parse_wrapper != Extension.parse_wrapper,
-            "catch": cls.catch != Extension.catch,
+            "catch": cls.catch != Extension.catch and cls.before_catch != Extension.before_catch,
         }
 
     @property
@@ -96,19 +96,23 @@ class Extension(metaclass=ABCMeta):
 
     async def parse_wrapper(self, bot: Bot, state: T_State, event: Event, res: Arparma) -> None:
         """解析消息后的钩子函数。"""
-        pass
+        ...
 
     async def send_wrapper(self, bot: Bot, event: Event, send: TM) -> TM:
         """发送消息前的钩子函数。"""
         return send
 
+    def before_catch(self, name: str, annotation: Any, default: Any) -> bool:
+        """依赖注入的绑定确认函数。"""
+        ...
+
     async def catch(self, interface: Interface) -> Any:
         """自定义依赖注入处理函数。"""
-        pass
+        ...
 
     def post_init(self, alc: Alconna) -> None:
         """Alconna 初始化后的钩子函数。"""
-        pass
+        ...
 
 
 class DefaultExtension(Extension):
@@ -241,8 +245,16 @@ class ExtensionExecutor:
                 res = await ext.send_wrapper(bot, event, res)
         return res
 
+    def before_catch(self, name: str, annotation: Any, default: Any) -> bool:
+        for ext in self.extensions:
+            if ext._overrides["catch"]:
+                if ext.before_catch(name, annotation, default):
+                    return True
+                continue
+        return False
+
     async def catch(self, event: Event, state: T_State, name: str, annotation: Any, default: Any):
-        for ext in self.context:
+        for ext in self.extensions:
             if ext._overrides["catch"]:
                 res = await ext.catch(Interface(event, state, name, annotation, default))
                 if res is None:

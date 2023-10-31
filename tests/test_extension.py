@@ -1,3 +1,4 @@
+from typing import Any
 import pytest
 from nonebug import App
 from nonebot import get_adapter
@@ -27,6 +28,11 @@ async def test_extension(app: App):
                 await bot.send(event, "权限不足！")
                 return False
             return True
+        
+        def before_catch(self, name: str, annotation: Any, default: Any) -> bool:
+            if annotation is str:
+                return True
+            return False
 
         async def catch(self, interface: Interface[MessageEvent]):
             if interface.annotation is str:

@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any, Union, Callable, ClassVar, Iterable, NoRe
 from nonebot.rule import Rule
 from nonebot.params import Depends
 from nonebot.utils import escape_tag
-from _weakref import _remove_dead_weakref
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from nonebot.message import run_postprocessor
@@ -17,6 +16,7 @@ from nepattern import STRING, AnyOne, AnyString
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
 from tarina import lang, is_awaitable, run_always_await
+from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from nonebot.plugin.on import store_matcher, get_matcher_source
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
@@ -38,6 +38,7 @@ from .params import (
     MIDDLEWARE,
     Check,
     AlconnaParam,
+    ExtensionParam,
     AlcExecResult,
     assign,
     _seminal,
@@ -591,8 +592,10 @@ def on_alconna(
         use_cmd_sep,
     )
     executor = cast(ExtensionExecutor, list(_rule.checkers)[0].call.executor)  # type: ignore
-    AlconnaMatcher.HANDLER_PARAM_TYPES = Matcher.HANDLER_PARAM_TYPES[:-1] + (
-        AlconnaParam.new(executor),
+    AlconnaMatcher.HANDLER_PARAM_TYPES = (
+        ExtensionParam.new(executor),
+    ) + Matcher.HANDLER_PARAM_TYPES[:-1] + (
+        AlconnaParam,
         DefaultParam,
     )
     matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
