@@ -5,8 +5,8 @@ from tarina import lang
 from nonebot.internal.driver import Request
 from nonebot.adapters import Bot, Event, Message
 
-from ..segment import At, File, Text, Audio, Image, Reply, Voice
 from ..export import Target, MessageExporter, SerializeFailed, export
+from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Voice
 
 if TYPE_CHECKING:
     from nonebot.adapters.feishu.message import MessageSegment
@@ -29,9 +29,15 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
+        from nonebot.adapters.feishu.message import At as FeishuAt
 
-        return ms.at(seg.target)
+        return FeishuAt("at", {"user_id": seg.target})
+
+    @export
+    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+        from nonebot.adapters.feishu.message import AtAll as FeishuAtAll
+
+        return FeishuAtAll("at", {"user_id": "all"})
 
     @export
     async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
@@ -91,16 +97,16 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
 
     async def send_to(self, target: Target, bot: Bot, message: Message):
         from nonebot.adapters.feishu.bot import Bot as FeishuBot
-        from nonebot.adapters.feishu.message import MessageSerializer
 
         assert isinstance(bot, FeishuBot)
+        assert isinstance(message, self.get_message_type())
 
         if target.private:
             receive_id, receive_id_type = target.id, "open_id"
         else:
             receive_id, receive_id_type = target.id, "chat_id"
 
-        msg_type, content = MessageSerializer(message).serialize()
+        msg_type, content = message.serialize()
 
         params = {
             "method": "POST",
@@ -124,10 +130,11 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.feishu.bot import Bot as FeishuBot
-        from nonebot.adapters.feishu.message import MessageSerializer
 
         assert isinstance(bot, FeishuBot)
-        msg_type, content = MessageSerializer(new).serialize()
+        assert isinstance(new, self.get_message_type())
+
+        msg_type, content = new.serialize()
         params = {
             "method": "PUT",
             "body": {

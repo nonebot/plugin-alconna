@@ -34,9 +34,9 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
 
         if seg.target == "channel":
-            return ms.mention_channel(int(seg.target))
+            return ms.mention_channel(seg.target)
         elif seg.target == "user":
-            return ms.mention_user(int(seg.target))
+            return ms.mention_user(seg.target)
         else:
             raise SerializeFailed(
                 lang.require("nbp-uniseg", "failed_segment").format(adapter="qq", seg=seg, target="mention")
@@ -61,7 +61,7 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         if seg.url:
             return ms.image(seg.url)
         elif seg.raw or seg.path:
-            return ms.file_image(seg.raw_bytes or Path(seg.path))
+            return ms.file_image(seg.raw_bytes or Path(seg.path))  # type: ignore
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
@@ -75,16 +75,17 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.qq.bot import Bot as QQBot
 
         assert isinstance(bot, QQBot)
+        assert isinstance(message, self.get_message_type())
 
         if target.channel:
             if target.private:
                 if not target.parent_id:
                     raise NotImplementedError
-                dms = await bot.post_dms(target.id, target.parent_id)
+                dms = await bot.post_dms(recipient_id=target.id, source_guild_id=target.parent_id)
                 # 私信需要使用 post_dms_messages
                 # https://bot.q.qq.com/wiki/develop/api/openapi/dms/post_dms_messages.html#%E5%8F%91%E9%80%81%E7%A7%81%E4%BF%A1
                 return await bot.send_to_dms(
-                    guild_id=dms.guild_id,
+                    guild_id=dms.guild_id,  # type: ignore
                     message=message,
                     msg_id=target.source,
                 )

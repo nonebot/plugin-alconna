@@ -67,8 +67,8 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
             return method(url=seg.id or seg.url)
         if seg.path:
             return method(path=seg.path)
-        if seg.raw and seg.raw.get("mimetype"):
-            return method(raw={"data": seg.raw["data"], "mime": seg.raw["mimetype"]})
+        if seg.raw and (mime := seg.raw.get("mimetype")):
+            return method(raw={"data": seg.raw["data"], "mime": mime})
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
@@ -105,6 +105,7 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.satori.bot import Bot as SatoriBot
 
         assert isinstance(bot, SatoriBot)
+        assert isinstance(message, self.get_message_type())
 
         if target.private:
             return await bot.send_private_message(target.id, message)
@@ -116,16 +117,16 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.satori.bot import Bot as SatoriBot
 
         assert isinstance(bot, SatoriBot)
-        mid: InnerMessage = cast(InnerMessage, mid)
+        _mid: InnerMessage = cast(InnerMessage, mid)
         if isinstance(context, Target):
             if context.private:
                 channel = await bot.user_channel_create(user_id=context.id)
-                await bot.message_delete(channel.id, mid.id)
+                await bot.message_delete(channel_id=channel.id, message_id=_mid.id)
             else:
-                await bot.message_delete(context.id, mid.id)
+                await bot.message_delete(channel_id=context.id, message_id=_mid.id)
         else:
-            channel = mid.channel or context.channel  # type: ignore
-            await bot.message_delete(channel.id, mid.id)
+            channel = _mid.channel or context.channel  # type: ignore
+            await bot.message_delete(channel_id=channel.id, message_id=_mid.id)
         return
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
@@ -133,11 +134,13 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.satori.bot import Bot as SatoriBot
 
         assert isinstance(bot, SatoriBot)
-        mid: InnerMessage = cast(InnerMessage, mid)
+        assert isinstance(new, self.get_message_type())
+
+        _mid: InnerMessage = cast(InnerMessage, mid)
         if isinstance(context, Target):
             if context.private:
                 channel = await bot.user_channel_create(user_id=context.id)
-                return await bot.update_message(channel.id, mid.id, new)
-            return await bot.update_message(context.id, mid.id, new)
+                return await bot.update_message(channel.id, _mid.id, new)
+            return await bot.update_message(context.id, _mid.id, new)
         channel = mid.channel or context.channel  # type: ignore
-        return await bot.update_message(channel.id, mid.id)
+        return await bot.update_message(channel.id, _mid.id, new)

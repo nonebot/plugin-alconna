@@ -102,6 +102,7 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.red.bot import Bot as RedBot
 
         assert isinstance(bot, RedBot)
+        assert isinstance(message, self.get_message_type())
 
         if target.private:
             return await bot.send_friend_message(target=target.id, message=message)
@@ -113,6 +114,6 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.red.api.model import Message as MessageModel
 
         assert isinstance(bot, RedBot)
-        mid: MessageModel = cast(MessageModel, mid)
-        await bot.recall_message(mid.chatType, mid.peerUin, mid.msgId)
+        _mid: MessageModel = cast(MessageModel, mid)
+        await bot.recall_message(_mid.chatType, _mid.peerUin, _mid.msgId)
         return

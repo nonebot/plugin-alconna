@@ -78,7 +78,7 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
 
         assert isinstance(bot, TgBot)
 
-        return await bot.send_to(target.id, message)
+        return await bot.send_to(target.id, message)  # type: ignore
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.telegram.bot import Bot as TgBot
@@ -86,13 +86,13 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.telegram.model import Message as MessageModel
 
         assert isinstance(bot, TgBot)
-        mid: MessageModel = cast(MessageModel, mid)
+        _mid: MessageModel = cast(MessageModel, mid)
         if isinstance(context, Target):
-            await bot.delete_message(chat_id=context.id, message_id=mid.message_id)
+            await bot.delete_message(chat_id=context.id, message_id=_mid.message_id)
             return
         if not isinstance(context, EventWithChat):
             raise NotImplementedError
-        await bot.delete_message(chat_id=context.chat.id, message_id=mid.message_id)
+        await bot.delete_message(chat_id=context.chat.id, message_id=_mid.message_id)
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.telegram.bot import Bot as TgBot
@@ -100,15 +100,15 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.telegram.model import Message as MessageModel
 
         assert isinstance(bot, TgBot)
-        mid: MessageModel = cast(MessageModel, mid)
+        _mid: MessageModel = cast(MessageModel, mid)
         text = new.extract_plain_text()
         if isinstance(context, Target):
-            res = await bot.edit_message_text(text=text, chat_id=context.id, message_id=mid.message_id)
+            res = await bot.edit_message_text(text=text, chat_id=context.id, message_id=_mid.message_id)
             if isinstance(res, MessageModel):
                 return res
             return
         if not isinstance(context, EventWithChat):
             raise NotImplementedError
-        res = await bot.edit_message_text(text=text, chat_id=context.chat.id, message_id=mid.message_id)
+        res = await bot.edit_message_text(text=text, chat_id=context.chat.id, message_id=_mid.message_id)
         if isinstance(res, MessageModel):
             return res

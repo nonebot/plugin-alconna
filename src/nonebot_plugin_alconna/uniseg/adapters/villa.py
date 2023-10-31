@@ -70,6 +70,7 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.villa.api.models import PostMessageContent, ImageMessageContent
 
         assert isinstance(bot, VillaBot)
+        assert isinstance(message, self.get_message_type())
 
         content_info = await bot.parse_message_content(message)
         if isinstance(content_info.content, PostMessageContent):
@@ -79,8 +80,8 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         else:
             object_name = "MHY:Text"
         return await bot.send_message(
-            villa_id=target.id,
-            room_id=target.parent_id,
+            villa_id=int(target.id),
+            room_id=int(target.parent_id),
             object_name=object_name,
             msg_content=content_info.json(by_alias=True, exclude_none=True),
         )

@@ -61,7 +61,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def file(self, seg: File, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
-        return ms.file(seg.id, seg.name, 0)
+        return ms.file(seg.id, seg.name, 0)  # type: ignore
 
     @export
     async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
@@ -92,7 +92,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
                 else:
                     nodes.append({"messageId": node.id})
             else:
-                content = self.get_message_type()()
+                content = self.get_message_type()([])
                 if isinstance(node.content, str):
                     content.extend(self.get_message_type()(node.content))
                 elif isinstance(node.content, list):
@@ -103,7 +103,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
                     {
                         "senderId": node.uid,
                         "senderName": node.name,
-                        "time": int(node.time.timestamp),
+                        "time": int(node.time.timestamp()),
                         "messageChain": content,
                     }
                 )
@@ -113,15 +113,16 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.mirai2.bot import Bot as MiraiBot
 
         assert isinstance(bot, MiraiBot)
+        assert isinstance(message, self.get_message_type())
 
         if message.has("Quote"):
             quote = message.pop(message.index("Quote")).data["id"]
         else:
             quote = None
         if target.private:
-            return await bot.send_friend_message(target=target.id, message_chain=message, quote=quote)
+            return await bot.send_friend_message(target=int(target.id), message_chain=message, quote=quote)
         else:
-            return await bot.send_group_message(group=target.id, message_chain=message, quote=quote)
+            return await bot.send_group_message(target=int(target.id), message_chain=message, quote=quote)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.mirai2.bot import Bot as MiraiBot

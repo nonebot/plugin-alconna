@@ -79,6 +79,7 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.discord import Bot as DiscordBot
 
         assert isinstance(bot, DiscordBot)
+        assert isinstance(message, self.get_message_type())
 
         return await bot.send_to(channel_id=int(target.id), message=message)
 
@@ -86,19 +87,20 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.discord.api.model import MessageGet
         from nonebot.adapters.discord.bot import Bot as DiscordBot
 
-        mid: MessageGet = cast(MessageGet, mid)
+        _mid: MessageGet = cast(MessageGet, mid)
 
         assert isinstance(bot, DiscordBot)
 
-        return await bot.delete_message(channel_id=mid.channel_id, message_id=mid.id)
+        return await bot.delete_message(channel_id=mid.channel_id, message_id=_mid.id)
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.discord.api.model import MessageGet
         from nonebot.adapters.discord.bot import Bot as DiscordBot
         from nonebot.adapters.discord.message import parse_message
 
-        mid: MessageGet = cast(MessageGet, mid)
+        _mid: MessageGet = cast(MessageGet, mid)
 
         assert isinstance(bot, DiscordBot)
+        assert isinstance(new, self.get_message_type())
 
-        return await bot.edit_message(channel_id=mid.channel_id, message_id=mid.id, **parse_message(new))
+        return await bot.edit_message(channel_id=mid.channel_id, message_id=_mid.id, **parse_message(new))

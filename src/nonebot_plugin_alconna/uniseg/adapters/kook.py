@@ -23,7 +23,7 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
-        if "markdown" in seg.style:
+        if seg.style and "markdown" in seg.style:
             return ms.KMarkdown(seg.text)
         return ms.text(seg.text)
 
@@ -95,6 +95,7 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.kaiheila.bot import Bot as KBot
 
         assert isinstance(bot, KBot)
+        assert isinstance(message, self.get_message_type())
         if target.private:
             return await bot.send_msg(message_type="private", user_id=target.id, message=message)
         else:
@@ -105,18 +106,20 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.kaiheila.event import PrivateMessageEvent
         from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
 
-        mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+        _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+
+        assert _mid.msg_id
 
         assert isinstance(bot, KBot)
         if isinstance(context, Target):
             if context.private:
-                await bot.directMessage_delete(msg_id=mid.msg_id)
+                await bot.directMessage_delete(msg_id=_mid.msg_id)
             else:
-                await bot.message_delete(msg_id=mid.msg_id)
+                await bot.message_delete(msg_id=_mid.msg_id)
         elif isinstance(context, PrivateMessageEvent):
-            await bot.directMessage_delete(msg_id=mid.msg_id)
+            await bot.directMessage_delete(msg_id=_mid.msg_id)
         else:
-            await bot.message_delete(msg_id=mid.msg_id)
+            await bot.message_delete(msg_id=_mid.msg_id)
         return
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
@@ -125,16 +128,19 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.kaiheila.message import MessageSerializer
         from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
 
-        mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+        assert isinstance(new, self.get_message_type())
+
+        _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+        assert _mid.msg_id
         _, text = MessageSerializer(new).serialize()
         assert isinstance(bot, KBot)
         if isinstance(context, Target):
             if context.private:
-                await bot.directMessage_update(context=text, msg_id=mid.msg_id)
+                await bot.directMessage_update(content=text, msg_id=_mid.msg_id)
             else:
-                await bot.message_update(context=text, msg_id=mid.msg_id)
+                await bot.message_update(content=text, msg_id=_mid.msg_id)
         elif isinstance(context, PrivateMessageEvent):
-            await bot.directMessage_update(context=text, msg_id=mid.msg_id)
+            await bot.directMessage_update(content=text, msg_id=_mid.msg_id)
         else:
-            await bot.message_update(context=text, msg_id=mid.msg_id)
+            await bot.message_update(content=text, msg_id=_mid.msg_id)
         return

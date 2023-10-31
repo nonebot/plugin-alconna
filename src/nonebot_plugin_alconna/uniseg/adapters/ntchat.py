@@ -41,7 +41,7 @@ class NTChatMessageExporter(MessageExporter["MessageSegment"]):
         elif seg.raw:
             return method(seg.raw_bytes)
         elif seg.url or seg.id:
-            return method(seg.url or seg.id)
+            return method(seg.url or seg.id)  # type: ignore
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 

@@ -73,15 +73,16 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
 
         assert isinstance(bot, OnebotBot)
+        assert isinstance(message, self.get_message_type())
 
         if target.private:
-            return await bot.send_message(message_type="private", user_id=target.id, message=message)
+            return await bot.send_message(detail_type="private", user_id=target.id, message=message)
         elif target.channel:
             return await bot.send_message(
-                message_type="channel", channel_id=target.id, guild_id=target.parent_id, message=message
+                detail_type="channel", channel_id=target.id, guild_id=target.parent_id, message=message
             )
         else:
-            return await bot.send_message(message_type="group", group_id=target.id, message=message)
+            return await bot.send_message(detail_type="group", group_id=target.id, message=message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
