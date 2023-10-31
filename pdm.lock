@@ -3,9 +3,10 @@
 
 [metadata]
 groups = ["default", "dev"]
-strategy = ["cross_platform"]
-lock_version = "4.4"
-content_hash = "sha256:baa2ea0adc06dde27082ed595014d4efb9e750726ea96475262d73d57b349cb3"
+cross_platform = true
+static_urls = false
+lock_version = "4.3"
+content_hash = "sha256:090adb9d44f72675b929b755c7773ba4a8e75b077423de30f03015b67477c8b8"
 
 [[package]]
 name = "aio-mc-rcon"
