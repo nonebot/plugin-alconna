@@ -1,6 +1,6 @@
 import random
-from base64 import b64decode
 from pathlib import Path
+from base64 import b64decode
 from typing import TYPE_CHECKING, List, Type, Union, Literal, Optional, overload
 
 from yarl import URL
