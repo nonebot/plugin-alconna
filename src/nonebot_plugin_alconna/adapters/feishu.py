@@ -1,14 +1,14 @@
 from nepattern.main import INTEGER
-from nonebot.adapters.feishu.message import At as _At
 from nonebot.adapters.feishu.message import MessageSegment
-from nonebot.adapters.feishu.message import AtAll as _AtAll
 from nepattern import BasePattern, PatternModel, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 
 Text = str
-At = SegmentPattern("at", MessageSegment, _At)
-AtAll = SegmentPattern("at_all", MessageSegment, _AtAll)
+At = SegmentPattern("at", MessageSegment, MessageSegment.at, additional=lambda x: x.data["user_id"] != "all")
+AtAll = SegmentPattern(
+    "at", MessageSegment, lambda: MessageSegment.at("all"), additional=lambda x: x.data["user_id"] == "all"
+)
 Post = SegmentPattern("post", MessageSegment, MessageSegment.post)
 Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
 Interactive = SegmentPattern("interactive", MessageSegment, MessageSegment.interactive)

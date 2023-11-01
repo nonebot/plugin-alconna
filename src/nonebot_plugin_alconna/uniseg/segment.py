@@ -366,7 +366,7 @@ class _AtAll(UniPattern[AtAll]):
                 return AtAll()
             if "user_id" in seg.data and seg.data["user_id"] == "all":  # feishu
                 return AtAll()
-            if "type" in seg.data and seg.data["type"] in ("all", "here"):
+            if "type" in seg.data and seg.data["type"] in ("all", "here"):  # satori
                 return AtAll(here=seg.data["type"] == "here")
         if seg.type in {"at_all", "AtAll", "mention_everyone", "mention_all"}:
             return AtAll()

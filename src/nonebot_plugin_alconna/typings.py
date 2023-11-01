@@ -23,7 +23,7 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         name: str,
         origin: type[TMS],
         call: Callable[P, TMS],
-        additional: Callable[..., bool] | None = None,
+        additional: Callable[[TMS], bool] | None = None,
     ):
         super().__init__(
             model=MatchMode.TYPE_CONVERT,

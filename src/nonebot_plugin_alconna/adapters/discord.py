@@ -389,7 +389,7 @@ class DiscordSlashExtension(Extension):
             return False
         if not event.data.guild_id and self.application_command.guild_ids is None:
             return True
-        return (
+        return bool(
             event.data.guild_id
             and self.application_command.guild_ids
             and event.data.guild_id in self.application_command.guild_ids
@@ -459,9 +459,9 @@ class DiscordSlashExtension(Extension):
             raise ValueError("Invalid event or bot")
         _message = await matcher.executor.send_wrapper(bot, event, matcher.convert(message))
         if isinstance(_message, UniMessage):
-            message_data = parse_message(await _message.export(bot, fallback))
+            message_data = parse_message(await _message.export(bot, fallback))  # type: ignore
         else:
-            message_data = parse_message(_message)
+            message_data = parse_message(_message)  # type: ignore
         await bot.edit_origin_interaction_response(
             application_id=bot.application_id,
             interaction_token=event.token,
@@ -492,9 +492,9 @@ class DiscordSlashExtension(Extension):
             raise ValueError("Invalid event or bot")
         _message = await matcher.executor.send_wrapper(bot, event, matcher.convert(message))
         if isinstance(_message, UniMessage):
-            message_data = parse_message(await _message.export(bot, fallback))
+            message_data = parse_message(await _message.export(bot, fallback))  # type: ignore
         else:
-            message_data = parse_message(_message)
+            message_data = parse_message(_message)  # type: ignore
         if flags:
             message_data["flags"] = int(flags)
         return await bot.create_followup_message(
@@ -528,9 +528,9 @@ class DiscordSlashExtension(Extension):
             raise ValueError("Invalid event or bot")
         _message = await matcher.executor.send_wrapper(bot, event, matcher.convert(message))
         if isinstance(_message, UniMessage):
-            message_data = parse_message(await _message.export(bot, fallback))
+            message_data = parse_message(await _message.export(bot, fallback))  # type: ignore
         else:
-            message_data = parse_message(_message)
+            message_data = parse_message(_message)  # type: ignore
         return await bot.edit_followup_message(
             application_id=bot.application_id,
             interaction_token=event.token,

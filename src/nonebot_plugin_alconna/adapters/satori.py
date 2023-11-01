@@ -26,9 +26,9 @@ from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
 Text = str
-At = SegmentPattern("at", _At, MessageSegment.at)
-AtRole = SegmentPattern("at", _At, MessageSegment.at_role)
-AtAll = SegmentPattern("at", _At, MessageSegment.at_all)
+At = SegmentPattern("at", _At, MessageSegment.at, lambda x: "id" in x.data)
+AtRole = SegmentPattern("at", _At, MessageSegment.at_role, lambda x: "role" in x.data)
+AtAll = SegmentPattern("at", _At, MessageSegment.at_all, lambda x: x.data.get("type") in ("all", "here"))
 Sharp = SegmentPattern("sharp", _Sharp, MessageSegment.sharp)
 Link = SegmentPattern("link", _Link, MessageSegment.link)
 Image = SegmentPattern("img", _Image, MessageSegment.image)

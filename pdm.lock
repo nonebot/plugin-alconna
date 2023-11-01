@@ -768,18 +768,17 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-feishu"
-version = "2.2.1"
+version = "2.3.0"
 requires_python = ">=3.8,<4.0"
 summary = "feishu(larksuite) adapter for nonebot2"
 dependencies = [
     "cashews<7.0.0,>=6.0.0",
-    "httpx<1.0.0,>=0.20.0",
     "nonebot2<3.0.0,>=2.1.0",
     "pycryptodome<4.0.0,>=3.18.0",
 ]
 files = [
-    {file = "nonebot_adapter_feishu-2.2.1-py3-none-any.whl", hash = "sha256:6751855f76f573d66ea345dcc3c78dfa8082b7bc8dd6e32e5eacb3457e6bcdeb"},
-    {file = "nonebot_adapter_feishu-2.2.1.tar.gz", hash = "sha256:cc41e60a1e71ecf55501d7a505686471a0cde9207feda9fa7f009ea18921e8c7"},
+    {file = "nonebot_adapter_feishu-2.3.0-py3-none-any.whl", hash = "sha256:5ad65ba734ce2a5427b82fc7e4b058197cbd0e9cb7e98a380849c2f2e5e47684"},
+    {file = "nonebot_adapter_feishu-2.3.0.tar.gz", hash = "sha256:dc2dd9c70d0393512dcab5bc6028fefe0c9409c5aa996fb6d3c88dd82c4c6f9a"},
 ]
 
 [[package]]
@@ -1329,15 +1328,15 @@ files = [
 
 [[package]]
 name = "pytest-asyncio"
-version = "0.22.0"
-requires_python = ">=3.8"
+version = "0.21.1"
+requires_python = ">=3.7"
 summary = "Pytest support for asyncio"
 dependencies = [
     "pytest>=7.0.0",
 ]
 files = [
-    {file = "pytest-asyncio-0.22.0.tar.gz", hash = "sha256:01da1bf94ff0b969cc8d760104f7c1011903d0d658bdaef0bbae769660a7fbc4"},
-    {file = "pytest_asyncio-0.22.0-py3-none-any.whl", hash = "sha256:c09905acb3b79827aace4c67fe15097daea1b363c00c8236875395414914bad3"},
+    {file = "pytest-asyncio-0.21.1.tar.gz", hash = "sha256:40a7eae6dded22c7b604986855ea48400ab15b069ae38116e8c01238e9eeb64d"},
+    {file = "pytest_asyncio-0.21.1-py3-none-any.whl", hash = "sha256:8666c1c8ac02631d7c51ba282e0c69a8a452b211ffedf2599099845da5c5c37b"},
 ]
 
 [[package]]

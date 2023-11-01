@@ -29,15 +29,13 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.feishu.message import At as FeishuAt
-
-        return FeishuAt("at", {"user_id": seg.target})
+        ms = self.segment_class
+        return ms.at(seg.target)
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.feishu.message import AtAll as FeishuAtAll
-
-        return FeishuAtAll("at", {"user_id": "all"})
+        ms = self.segment_class
+        return ms.at("all")
 
     @export
     async def image(self, seg: Image, bot: Bot) -> "MessageSegment":

@@ -6,7 +6,10 @@ from nonebot_plugin_alconna.typings import SegmentPattern
 
 Anonymous = SegmentPattern("anonymous", MessageSegment, MessageSegment.anonymous)
 Text = str
-At = SegmentPattern("at", MessageSegment, MessageSegment.at)
+At = SegmentPattern("at", MessageSegment, MessageSegment.at, additional=lambda x: x.data["qq"] != "all")
+AtAll = SegmentPattern(
+    "at", MessageSegment, lambda: MessageSegment.at("all"), additional=lambda x: x.data["qq"] == "all"
+)
 Contact = SegmentPattern("contact", MessageSegment, MessageSegment.contact)
 Dice = SegmentPattern("dice", MessageSegment, MessageSegment.dice)
 Face = SegmentPattern("face", MessageSegment, MessageSegment.face)
