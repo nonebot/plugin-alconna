@@ -20,6 +20,12 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "OneBot V12"
 
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.onebot.v12.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(event.message_id)
+
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class

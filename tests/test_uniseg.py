@@ -59,13 +59,13 @@ async def test_unimsg_template(app: App):
 
 @pytest.mark.asyncio()
 async def test_unimsg_send(app: App):
-    from nonebot_plugin_alconna import UniMessage, on_alconna
+    from nonebot_plugin_alconna import MsgId, UniMessage, on_alconna
 
     matcher = on_alconna(Alconna("test_unimsg_send"))
 
     @matcher.handle()
-    async def handle(_bot: Bot, _event: Event):
-        receipt = await UniMessage("hello!").send(_event, _bot, at_sender=True)
+    async def handle(_bot: Bot, _event: Event, msg: MsgId):
+        receipt = await UniMessage("hello!").send(_event, _bot, at_sender=True, reply_to=msg)
         receipt.msg_ids[0] = {"message_id": 2}
         await receipt.recall(1)
 
@@ -74,5 +74,7 @@ async def test_unimsg_send(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         event = fake_group_message_event_v11(message=Message("test_unimsg_send"), user_id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, MessageSegment.at(123) + MessageSegment.text("hello!"))
+        ctx.should_call_send(
+            event, MessageSegment.reply(1) + MessageSegment.at(123) + MessageSegment.text("hello!")
+        )
         ctx.should_call_api("delete_msg", {"message_id": 2})

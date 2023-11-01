@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..segment import Card, File, Text, Image, Video
 from ..export import Target, MessageExporter, SerializeFailed, export
@@ -19,6 +19,12 @@ class NTChatMessageExporter(MessageExporter["MessageSegment"]):
     @classmethod
     def get_adapter(cls) -> str:
         return "ntchat"
+
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.ntchat.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(event.msgid)
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":

@@ -47,6 +47,7 @@ from .uniseg import AtAll as AtAll
 from .uniseg import Audio as Audio
 from .uniseg import Emoji as Emoji
 from .uniseg import Image as Image
+from .uniseg import MsgId as MsgId
 from .uniseg import Other as Other
 from .uniseg import Reply as Reply
 from .uniseg import Video as Video
@@ -60,6 +61,7 @@ from .uniseg import Segment as Segment
 from .uniseg import get_bot as get_bot
 from .matcher import Command as Command
 from .params import AlcResult as AlcResult
+from .uniseg import MessageId as MessageId
 from .uniseg import Reference as Reference
 from .argv import MessageArgv as MessageArgv
 from .params import AlcMatches as AlcMatches
@@ -91,7 +93,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.31.2"
+__version__ = "0.31.3"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

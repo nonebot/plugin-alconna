@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..segment import Text, Image, Video
 from ..export import Target, MessageExporter, SerializeFailed, export
@@ -19,6 +19,12 @@ class MinecraftMessageExporter(MessageExporter["MessageSegment"]):
     @classmethod
     def get_adapter(cls) -> str:
         return "Minecraft"
+
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.minecraft.event.base import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(id(event))
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":

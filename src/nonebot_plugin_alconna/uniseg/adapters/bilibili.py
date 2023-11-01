@@ -1,6 +1,6 @@
 from typing import cast
 
-from nonebot.adapters import Bot, Message, MessageSegment
+from nonebot.adapters import Bot, Event, Message, MessageSegment
 
 from ..segment import Text
 from ..export import Target, MessageExporter, export
@@ -15,6 +15,12 @@ class BilibiliMessageExporter(MessageExporter):
     @classmethod
     def get_adapter(cls) -> str:
         return "BilibiliLive"
+
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.bilibili.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(event.session_id)
 
     @export
     async def text(self, seg: Text, bot: Bot) -> MessageSegment:

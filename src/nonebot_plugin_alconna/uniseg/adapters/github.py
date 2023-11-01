@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..segment import At, Text, Image
 from ..export import Target, MessageExporter, export
@@ -18,6 +18,12 @@ class GithubMessageExporter(MessageExporter["MessageSegment"]):
     @classmethod
     def get_adapter(cls) -> str:
         return "GitHub"
+
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.github.event import MessageEvent  # type: ignore
+
+        assert isinstance(event, MessageEvent)
+        return str(event.id)  # type: ignore
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":

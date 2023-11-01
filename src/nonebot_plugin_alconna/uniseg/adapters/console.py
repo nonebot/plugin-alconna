@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..segment import Text, Emoji
 from ..export import Target, MessageExporter, export
@@ -18,6 +18,12 @@ class ConsoleMessageExporter(MessageExporter["MessageSegment"]):
     @classmethod
     def get_adapter(cls) -> str:
         return "Console"
+
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.console.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(event.self_id)
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":

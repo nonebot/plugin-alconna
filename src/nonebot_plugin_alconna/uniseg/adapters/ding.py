@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..segment import At, Text, AtAll, Image
 from ..export import Target, MessageExporter, export
@@ -18,6 +18,12 @@ class DingMessageExporter(MessageExporter["MessageSegment"]):
     @classmethod
     def get_adapter(cls) -> str:
         return "Ding"
+
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.ding.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(event.msgId)
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":

@@ -27,7 +27,7 @@ async def reply_handle(event: Event, bot: Bot):
             assert isinstance(event, MessageEvent)
         if event.reply_to_message:
             return Reply(
-                f"{event.reply_to_message.message_id}.{event.chat.id}",
+                f"{event.reply_to_message.message_id}",
                 event.reply_to_message.original_message,
                 event.reply_to_message,
             )
@@ -120,10 +120,22 @@ async def reply_handle(event: Event, bot: Bot):
 
         if event.reply:
             return Reply(
-                event.reply.replayMsgSeq,
+                f"{event.reply.sourceMsgIdInRecords}#{event.reply.replayMsgSeq}",
+                event.reply.sourceMsgTextElems,
                 origin=event.reply,
             )
+    elif adapter_name == "Villa":
+        if TYPE_CHECKING:
+            from nonebot.adapters.villa.event import SendMessageEvent
 
+            assert isinstance(event, SendMessageEvent)
+
+        if event.quote_msg:
+            return Reply(
+                f"{event.quote_msg.msg_uid}@{event.quote_msg.send_at}",
+                msg=event.quote_msg.content,
+                origin=event.quote_msg,
+            )
     elif _reply := getattr(event, "reply", None):
         return Reply(str(_reply.message_id), getattr(_reply, "message", None), _reply)
     return None
@@ -465,7 +477,7 @@ class UniMessage(List[TS]):
         if message is None and not event:
             raise ValueError("No message or event given")
         try:
-            msg = event.get_message() if message is None else message
+            msg = event.get_message() if message is None else message  # type: ignore
         except Exception:
             return UniMessage()
         result = UniMessage()
@@ -485,6 +497,19 @@ class UniMessage(List[TS]):
             else:
                 result.append(Other(seg))
         return result
+
+    @staticmethod
+    def get_message_id(event: Event, bot: Optional[Bot] = None) -> str:
+        if not bot:
+            try:
+                bot = current_bot.get()
+            except LookupError as e:
+                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+        adapter = bot.adapter
+        adapter_name = adapter.get_name()
+        if fn := MAPPING.get(adapter_name):
+            return fn.get_message_id(event)
+        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
 
     async def export(self, bot: Optional[Bot] = None, fallback: bool = True) -> Message:
         if not bot:
@@ -518,13 +543,13 @@ class UniMessage(List[TS]):
                 raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
         if at_sender:
             if isinstance(at_sender, str):
-                self.insert(0, At("user", at_sender))
+                self.insert(0, At("user", at_sender))  # type: ignore
             elif isinstance(target, Event):
-                self.insert(0, At("user", target.get_user_id()))
+                self.insert(0, At("user", target.get_user_id()))  # type: ignore
             else:
                 raise TypeError("at_sender must be str when target is not Event")
         if reply_to:
-            self.insert(0, Reply(reply_to))
+            self.insert(0, Reply(reply_to))  # type: ignore
         msg = await self.export(bot, fallback)
         adapter = bot.adapter
         adapter_name = adapter.get_name()

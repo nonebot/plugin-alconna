@@ -22,6 +22,12 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "Feishu"
 
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.feishu.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(event.message_id)
+
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
@@ -91,7 +97,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
-        return ms("reply", {"message_id": seg.id})  # type: ignore
+        return ms("$reply", {"message_id": seg.id})  # type: ignore
 
     async def send_to(self, target: Target, bot: Bot, message: Message):
         from nonebot.adapters.feishu.bot import Bot as FeishuBot
@@ -104,20 +110,13 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
             receive_id, receive_id_type = target.id, "open_id"
         else:
             receive_id, receive_id_type = target.id, "chat_id"
-
+        if message.has("$reply"):
+            reply = message["$reply", 0]
+            message = message.exclude("$reply")
+            msg_type, content = message.serialize()
+            return await bot.reply_msg(reply.data["message_id"], content, msg_type)
         msg_type, content = message.serialize()
-
-        params = {
-            "method": "POST",
-            "query": {"receive_id_type": receive_id_type},
-            "body": {
-                "receive_id": receive_id,
-                "content": content,
-                "msg_type": msg_type,
-            },
-        }
-
-        return await bot.call_api("im/v1/messages", **params)
+        return await bot.send_msg(receive_id_type, receive_id, content, msg_type)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.feishu.bot import Bot as FeishuBot

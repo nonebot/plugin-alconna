@@ -63,6 +63,10 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
     def get_message_type(self) -> Type[Message]:
         ...
 
+    @abstractmethod
+    def get_message_id(self, event: Event) -> str:
+        ...
+
     def __init__(self):
         self._mapping = {}
         for attr in self.__class__.__dict__.values():

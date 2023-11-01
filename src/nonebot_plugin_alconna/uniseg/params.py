@@ -11,8 +11,16 @@ async def _uni_msg(bot: Bot, event: Event) -> UniMessage:
     return await UniMessage.generate(event=event, bot=bot)
 
 
+def _msg_id(bot: Bot, event: Event) -> str:
+    return UniMessage.get_message_id(event=event, bot=bot)
+
+
 def UniversalMessage() -> UniMessage:
     return Depends(_uni_msg, use_cache=True)
+
+
+def MessageId() -> str:
+    return Depends(_msg_id, use_cache=True)
 
 
 def UniversalSegment(t: Type[TS], index: int = 0) -> TS:
@@ -23,3 +31,4 @@ def UniversalSegment(t: Type[TS], index: int = 0) -> TS:
 
 
 UniMsg = Annotated[UniMessage, UniversalMessage()]
+MsgId = Annotated[str, MessageId()]

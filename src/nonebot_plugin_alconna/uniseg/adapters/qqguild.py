@@ -21,6 +21,12 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
 
         return Message
 
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.qqguild.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(event.id)
+
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class

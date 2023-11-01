@@ -21,6 +21,12 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "Telegram"
 
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.telegram.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return f"{event.message_id}"
+
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         from nonebot.adapters.telegram.message import Entity
@@ -71,44 +77,34 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
-        return ms("reply", {"message_id": seg.id})  # type: ignore
+        return ms("$reply", {"message_id": seg.id})  # type: ignore
 
     async def send_to(self, target: Target, bot: Bot, message: Message):
         from nonebot.adapters.telegram.bot import Bot as TgBot
 
         assert isinstance(bot, TgBot)
-
-        return await bot.send_to(target.id, message)  # type: ignore
+        reply_message_id = None
+        if message.has("$reply"):
+            reply = message["$reply", 0]
+            reply_message_id = int(reply.data["message_id"])
+            message = message.exclude("$reply")
+        return await bot.send_to(target.id, message, reply_message_id=reply_message_id)  # type: ignore
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.telegram.bot import Bot as TgBot
-        from nonebot.adapters.telegram.event import EventWithChat
         from nonebot.adapters.telegram.model import Message as MessageModel
 
         assert isinstance(bot, TgBot)
         _mid: MessageModel = cast(MessageModel, mid)
-        if isinstance(context, Target):
-            await bot.delete_message(chat_id=context.id, message_id=_mid.message_id)
-            return
-        if not isinstance(context, EventWithChat):
-            raise NotImplementedError
-        await bot.delete_message(chat_id=context.chat.id, message_id=_mid.message_id)
+        await bot.delete_message(chat_id=_mid.chat.id, message_id=_mid.message_id)
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.telegram.bot import Bot as TgBot
-        from nonebot.adapters.telegram.event import EventWithChat
         from nonebot.adapters.telegram.model import Message as MessageModel
 
         assert isinstance(bot, TgBot)
         _mid: MessageModel = cast(MessageModel, mid)
         text = new.extract_plain_text()
-        if isinstance(context, Target):
-            res = await bot.edit_message_text(text=text, chat_id=context.id, message_id=_mid.message_id)
-            if isinstance(res, MessageModel):
-                return res
-            return
-        if not isinstance(context, EventWithChat):
-            raise NotImplementedError
-        res = await bot.edit_message_text(text=text, chat_id=context.chat.id, message_id=_mid.message_id)
+        res = await bot.edit_message_text(text=text, chat_id=_mid.chat.id, message_id=_mid.message_id)
         if isinstance(res, MessageModel):
             return res

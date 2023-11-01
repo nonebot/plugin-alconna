@@ -22,6 +22,12 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "Discord"
 
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.discord.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(event.message_id)
+
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
@@ -73,7 +79,7 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
-        return ms.reference(seg.origin or int(seg.id))
+        return ms.reference(seg.origin or int(seg.id), fail_if_not_exists=False)
 
     async def send_to(self, target: Target, bot: Bot, message: Message):
         from nonebot.adapters.discord import Bot as DiscordBot

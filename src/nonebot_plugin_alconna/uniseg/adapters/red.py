@@ -22,6 +22,12 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "RedProtocol"
 
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.red.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return f"{event.msgId}#{event.msgSeq}"
+
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
@@ -70,7 +76,9 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
-
+        if "#" in seg.id:
+            _id, _seq = seg.id.split("#", 1)
+            return ms.reply(_seq, _id)
         return ms.reply(seg.id)
 
     @export

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from tarina import lang
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot, Event, Message
 
 from ..segment import At, Text, AtAll, Image, Reply, Reference
 from ..export import Target, MessageExporter, SerializeFailed, export
@@ -20,6 +20,12 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.villa.message import Message
 
         return Message
+
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.villa.event import SendMessageEvent
+
+        assert isinstance(event, SendMessageEvent)
+        return f"{event.message_id}@{int(event.time.timestamp())}"
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
@@ -55,7 +61,9 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
-
+        if "@" in seg.id:
+            msg_id, msg_time = seg.id.split("@", 1)
+            return ms.quote(msg_id, int(msg_time))
         return ms.quote(seg.id, int(datetime.now().timestamp()))
 
     @export

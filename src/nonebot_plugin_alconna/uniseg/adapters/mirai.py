@@ -20,6 +20,12 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
 
         return MessageChain
 
+    def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.mirai2.event import MessageEvent
+
+        assert isinstance(event, MessageEvent)
+        return str(event.source and event.source.id)
+
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
@@ -70,10 +76,8 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.mirai2.message import MessageType
-
         ms = self.segment_class
-        return ms(MessageType.QUOTE, id=seg.id)
+        return ms("$reply", {"message_id": seg.id})  # type: ignore
 
     @export
     async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
