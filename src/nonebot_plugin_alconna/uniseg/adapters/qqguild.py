@@ -21,6 +21,34 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
 
         return Message
 
+    def get_target(self, event: Event) -> Target:
+        from nonebot.adapters.qqguild.event import (
+            ChannelEvent,
+            MessageEvent,
+            GuildEvent,
+            GuildMemberEvent,
+            MessageAuditEvent,
+            MessageReactionEvent,
+            ForumEvent,
+        )
+        if isinstance(event, MessageEvent):
+            if event.__type__.value.startswith("DIRECT"):
+                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id))  # type: ignore
+            return Target(str(event.channel_id), str(event.guild_id), channel=True, source=str(event.id))
+        elif isinstance(event, GuildEvent):
+            return Target(str(event.id), channel=True)
+        elif isinstance(event, GuildMemberEvent):
+            return Target(str(event.user.id), str(event.guild_id), channel=True)  # type: ignore
+        elif isinstance(event, ChannelEvent):
+            return Target(str(event.id), str(event.guild_id), channel=True)
+        elif isinstance(event, MessageAuditEvent):
+            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+        elif isinstance(event, MessageReactionEvent):
+            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+        elif isinstance(event, ForumEvent):
+            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+        raise NotImplementedError
+
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.qqguild.event import MessageEvent
 
@@ -66,8 +94,10 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
 
         if seg.url:
             return ms.image(seg.url)
-        elif seg.raw or seg.path:
-            return ms.file_image(seg.raw_bytes or Path(seg.path))  # type: ignore
+        elif seg.raw:
+            return ms.file_image(seg.raw_bytes)
+        elif seg.path:
+            return ms.file_image(Path(seg.path))
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 

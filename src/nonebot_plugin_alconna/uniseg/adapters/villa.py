@@ -21,6 +21,12 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
 
         return Message
 
+    def get_target(self, event: Event) -> Target:
+        from nonebot.adapters.villa.event import AddQuickEmoticonEvent, SendMessageEvent
+
+        assert isinstance(event, (AddQuickEmoticonEvent, SendMessageEvent))
+        return Target(str(event.room_id), str(event.villa_id), channel=True)
+
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.villa.event import SendMessageEvent
 
@@ -89,8 +95,8 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         else:
             object_name = "MHY:Text"
         return await bot.send_message(
-            villa_id=int(target.id),
-            room_id=int(target.parent_id),
+            villa_id=int(target.parent_id),
+            room_id=int(target.id),
             object_name=object_name,
             msg_content=content_info.json(by_alias=True, exclude_none=True),
         )

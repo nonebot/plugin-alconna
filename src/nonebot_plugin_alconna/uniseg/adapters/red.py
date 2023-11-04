@@ -22,6 +22,12 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "RedProtocol"
 
+    def get_target(self, event: Event) -> Target:
+        from nonebot.adapters.red.api.model import ChatType, Message as MessageModel
+
+        assert isinstance(event, MessageModel)
+        return Target(str(event.peerUin or event.peerUid), private=event.chatType == ChatType.FRIEND)
+
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.red.event import MessageEvent
 

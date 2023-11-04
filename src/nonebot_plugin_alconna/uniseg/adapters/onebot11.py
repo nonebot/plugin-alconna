@@ -22,6 +22,13 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "OneBot V11"
 
+    def get_target(self, event: Event) -> Target:
+        if group_id := getattr(event, "group_id", None):
+            return Target(str(group_id))
+        if user_id := getattr(event, "user_id", None):
+            return Target(str(user_id), private=True)
+        raise NotImplementedError
+
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.onebot.v11.event import MessageEvent
 

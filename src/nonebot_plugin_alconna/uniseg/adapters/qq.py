@@ -21,14 +21,63 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
         return Message
 
+    def get_target(self, event: Event) -> Target:
+        from nonebot.adapters.qq.event import (
+            ChannelEvent,
+            GuildMessageEvent,
+            C2CMessageCreateEvent,
+            GroupAtMessageCreateEvent,
+            InteractionCreateEvent,
+            FriendRobotEvent,
+            GroupRobotEvent,
+            GuildEvent,
+            GuildMemberEvent,
+            MessageAuditEvent,
+            MessageReactionEvent,
+            ForumEvent,
+        )
+        if isinstance(event, GuildMessageEvent):
+            if event.__type__.value.startswith("DIRECT"):
+                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id))  # type: ignore
+            return Target(str(event.channel_id), str(event.guild_id), channel=True, source=str(event.id))
+        if isinstance(event, GuildEvent):
+            return Target(str(event.id), channel=True)
+        if isinstance(event, GuildMemberEvent):
+            return Target(str(event.user.id), str(event.guild_id), channel=True)  # type: ignore
+        if isinstance(event, ChannelEvent):
+            return Target(str(event.id), str(event.guild_id), channel=True)
+        if isinstance(event, MessageAuditEvent):
+            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+        if isinstance(event, MessageReactionEvent):
+            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+        if isinstance(event, ForumEvent):
+            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+        if isinstance(event, C2CMessageCreateEvent):
+            return Target(str(event.author.id), private=True, source=str(event.id))  # type: ignore
+        if isinstance(event, GroupAtMessageCreateEvent):
+            return Target(event.group_id, source=str(event.id))  # type: ignore
+        if isinstance(event, InteractionCreateEvent):
+            if event.group_open_id:
+                return Target(event.group_open_id, source=str(event.id))
+            elif event.channel_id:
+                return Target(event.channel_id, event.guild_id, channel=True, source=str(event.id))
+            else:
+                return Target(event.get_user_id(), private=True, source=str(event.id))
+        if isinstance(event, FriendRobotEvent):
+            return Target(event.open_id, private=True)
+        if isinstance(event, GroupRobotEvent):
+            return Target(event.group_openid)
+        raise NotImplementedError
+
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.qq.event import (
             GuildMessageEvent,
             C2CMessageCreateEvent,
             GroupAtMessageCreateEvent,
+            InteractionCreateEvent,
         )
 
-        assert isinstance(event, (GuildMessageEvent, C2CMessageCreateEvent, GroupAtMessageCreateEvent))
+        assert isinstance(event, (InteractionCreateEvent, GuildMessageEvent, C2CMessageCreateEvent, GroupAtMessageCreateEvent))
         return str(event.id)
 
     @export
@@ -70,8 +119,10 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
         if seg.url:
             return ms.image(seg.url)
-        elif seg.raw or seg.path:
-            return ms.file_image(seg.raw_bytes or Path(seg.path))  # type: ignore
+        elif seg.raw:
+            return ms.file_image(seg.raw_bytes)
+        elif seg.path:
+            return ms.file_image(Path(seg.path))
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 

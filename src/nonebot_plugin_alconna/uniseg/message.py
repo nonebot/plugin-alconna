@@ -534,7 +534,7 @@ class UniMessage(List[TS]):
         bot: Optional[Bot] = None,
         fallback: bool = True,
         at_sender: Union[str, bool] = False,
-        reply_to: Optional[str] = None,
+        reply_to: Union[str, bool] = False,
     ) -> Receipt:
         if not bot:
             try:
@@ -549,6 +549,11 @@ class UniMessage(List[TS]):
             else:
                 raise TypeError("at_sender must be str when target is not Event")
         if reply_to:
+            if isinstance(reply_to, bool):
+                if isinstance(target, Event):
+                    reply_to = target.get_user_id()
+                else:
+                    raise TypeError("reply_to must be str when target is not Event")
             self.insert(0, Reply(reply_to))  # type: ignore
         msg = await self.export(bot, fallback)
         adapter = bot.adapter
@@ -556,7 +561,11 @@ class UniMessage(List[TS]):
         if not (fn := MAPPING.get(adapter_name)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
         if isinstance(target, Event):
-            res = await bot.send(target, msg)
+            _target = fn.get_target(target)
+            try:
+                res = await fn.send_to(_target, bot, msg)
+            except NotImplementedError:
+                res = await bot.send(target, msg)
         else:
             res = await fn.send_to(target, bot, msg)
         return Receipt(bot, target, fn, res if isinstance(res, list) else [res])

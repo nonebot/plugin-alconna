@@ -31,7 +31,9 @@ TMS = TypeVar("TMS", bound=MessageSegment)
 @dataclass
 class Target:
     id: str
+    """目标id；若为群聊则为group_id或者channel_id，若为私聊则为user_id"""
     parent_id: str = ""
+    """父级id；若为频道则为guild_id，其他情况为空字符串"""
     channel: bool = False
     """是否为频道，仅当目标平台同时支持群聊和频道时有效"""
     private: bool = False
@@ -66,6 +68,9 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
     @abstractmethod
     def get_message_id(self, event: Event) -> str:
         ...
+
+    def get_target(self, event: Event) -> Target:
+        return Target(event.get_user_id())
 
     def __init__(self):
         self._mapping = {}

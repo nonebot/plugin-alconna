@@ -20,6 +20,16 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "Satori"
 
+    def get_target(self, event: Event) -> Target:
+        from nonebot.adapters.satori.event import MessageEvent, NoticeEvent
+
+        if isinstance(event, (MessageEvent, NoticeEvent)):
+            if event.channel:
+                return Target(event.channel.id, event.guild.id if event.guild else event.channel.parent_id)
+            elif event.user:
+                return Target(event.user.id, private=True)
+        raise NotImplementedError
+
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.satori.event import MessageEvent
 

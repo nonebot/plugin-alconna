@@ -28,6 +28,15 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         assert isinstance(event, MessageEvent)
         return str(event.message_id)
 
+    def get_target(self, event: Event) -> Target:
+        from nonebot.adapters.feishu.event import GroupMessageEvent, PrivateMessageEvent
+
+        if isinstance(event, GroupMessageEvent):
+            return Target(event.event.message.chat_id)
+        elif isinstance(event, PrivateMessageEvent):
+            return Target(event.get_user_id(), private=True)
+        raise NotImplementedError
+
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class

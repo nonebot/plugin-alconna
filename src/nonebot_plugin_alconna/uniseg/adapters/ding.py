@@ -19,6 +19,15 @@ class DingMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "Ding"
 
+    def get_target(self, event: Event) -> Target:
+        from nonebot.adapters.ding.event import MessageEvent, ConversationType
+
+        if isinstance(event, MessageEvent):
+            if event.conversationType == ConversationType.private:
+                return Target(event.senderId, private=True)
+            return Target(event.conversationId)
+        raise NotImplementedError
+
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.ding.event import MessageEvent
 

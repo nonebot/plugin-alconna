@@ -21,6 +21,12 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "Telegram"
 
+    def get_target(self, event: Event) -> Target:
+        from nonebot.adapters.telegram.event import EventWithChat
+
+        assert isinstance(event, EventWithChat)
+        return Target(str(event.chat.id))
+
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.telegram.event import MessageEvent
 

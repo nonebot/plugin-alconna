@@ -20,6 +20,49 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
 
         return MessageChain
 
+    def get_target(self, event: Event) -> Target:
+        from nonebot.adapters.mirai2.event import (
+            FriendMessage,
+            GroupMessage,
+            BotMuteEvent,
+            BotUnmuteEvent,
+            MemberMuteEvent,
+            MemberUnmuteEvent,
+            BotJoinGroupEvent,
+            BotLeaveEventActive,
+            BotLeaveEventKick,
+            MemberJoinEvent,
+            MemberLeaveEventKick,
+            MemberLeaveEventQuit,
+            MemberStateChangeEvent,
+            GroupStateChangeEvent,
+            FriendRecallEvent,
+            GroupRecallEvent,
+
+        )
+
+        if isinstance(event, FriendMessage):
+            return Target(str(event.sender.id), private=True)
+        elif isinstance(event, GroupMessage):
+            return Target(str(event.sender.group.id))
+        elif isinstance(event, (BotMuteEvent, BotUnmuteEvent)):
+            return Target(str(event.operator.group.id))
+        elif isinstance(event, (MemberMuteEvent, MemberUnmuteEvent)):
+            return Target(str(event.member.group.id))
+        elif isinstance(event, (BotJoinGroupEvent, BotLeaveEventActive, BotLeaveEventKick)):
+            return Target(str(event.group.id))
+        elif isinstance(event, (MemberJoinEvent, MemberLeaveEventKick, MemberLeaveEventQuit)):
+            return Target(str(event.member.group.id))
+        elif isinstance(event, MemberStateChangeEvent):
+            return Target(str(event.operator.group.id))
+        elif isinstance(event, GroupStateChangeEvent):
+            return Target(str(event.operator.group.id))
+        elif isinstance(event, FriendRecallEvent):
+            return Target(str(event.author_id), private=True)
+        elif isinstance(event, GroupRecallEvent):
+            return Target(str(event.operator.group.id))
+        raise NotImplementedError
+
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.mirai2.event import MessageEvent
 

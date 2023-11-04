@@ -26,6 +26,13 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         assert isinstance(event, MessageEvent)
         return str(event.msg_id)
 
+    def get_target(self, event: Event) -> Target:
+        if group_id := getattr(event, "group_id", None):
+            return Target(str(group_id))
+        if user_id := getattr(event, "user_id", None):
+            return Target(str(user_id), private=True)
+        raise NotImplementedError
+
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
@@ -75,8 +82,11 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         }[name]
         if seg.id or seg.url:
             return method(seg.id or seg.url)
-        elif seg.path or seg.raw:
-            file_key = await bot.upload_file(seg.path or seg.raw_bytes)
+        elif seg.raw:
+            file_key = await bot.upload_file(seg.raw_bytes)
+            return method(file_key)
+        elif seg.path:
+            file_key = await bot.upload_file(seg.path)
             return method(file_key)
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
