@@ -174,7 +174,7 @@ class UniMessageTemplate(Formatter):
     def format_field(self, value: Any, format_spec: str) -> Any:
         formatter: Optional[FormatSpecFunc] = self.format_specs.get(format_spec)
         if formatter is None and format_spec in _MAPPING:
-            formatter = _MAPPING[format_spec]
+            formatter = _MAPPING[format_spec]  # type: ignore
         return super().format_field(value, format_spec) if formatter is None else formatter(value)
 
     def _add(self, a: Any, b: Any) -> Any:

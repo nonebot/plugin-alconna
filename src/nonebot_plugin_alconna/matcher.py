@@ -139,11 +139,11 @@ class AlconnaMatcher(Matcher):
     if TYPE_CHECKING:
 
         @classmethod
-        def set_path_arg(cls_or_self, path: str, content: Any) -> None:
+        def set_path_arg(cls_or_self, path: str, content: Any) -> None:  # type: ignore
             ...
 
         @classmethod
-        def get_path_arg(self, path: str, default: Any) -> Any:
+        def get_path_arg(cls_or_self, path: str, default: Any) -> Any:  # type: ignore
             ...
 
     else:
@@ -376,11 +376,17 @@ class AlconnaMatcher(Matcher):
         event = current_event.get()
         state = current_matcher.get().state
         if isinstance(message, MessageTemplate):
-            return message.format(**state, **state[ALCONNA_RESULT].result.all_matched_args)
+            return message.format(**state[ALCONNA_RESULT].result.all_matched_args, **state)
         if isinstance(message, UniMessageTemplate):
-            return message.format(
-                **state, **state[ALCONNA_RESULT].result.all_matched_args, **{"$event": event, "$bot": bot}
-            )
+            extra = {"$event": event, "$bot": bot}
+            extra["$target"] = UniMessage.get_target(event, bot)
+            try:
+                msg_id = UniMessage.get_message_id(event, bot)
+            except Exception:
+                pass
+            else:
+                extra["$message_id"] = msg_id
+            return message.format(**state[ALCONNA_RESULT].result.all_matched_args, **state, **extra)
         if isinstance(message, Segment):
             return UniMessage(message)
         if isinstance(message, MessageSegment):
