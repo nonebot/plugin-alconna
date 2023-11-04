@@ -38,6 +38,7 @@ from arclet.alconna import SubcommandResult as SubcommandResult
 from .consts import log
 from .config import Config
 from .uniseg import At as At
+from .uniseg import Card as Card
 from .uniseg import File as File
 from .uniseg import Text as Text
 from .model import Match as Match
@@ -62,6 +63,7 @@ from .uniseg import get_bot as get_bot
 from .matcher import Command as Command
 from .params import AlcResult as AlcResult
 from .uniseg import MessageId as MessageId
+from .uniseg import MsgTarget as MsgTarget
 from .uniseg import Reference as Reference
 from .argv import MessageArgv as MessageArgv
 from .params import AlcMatches as AlcMatches
@@ -80,6 +82,7 @@ from .params import AlconnaQuery as AlconnaQuery
 from .model import CommandResult as CommandResult
 from .params import AlcExecResult as AlcExecResult
 from .params import AlconnaResult as AlconnaResult
+from .uniseg import MessageTarget as MessageTarget
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
 from .params import AlconnaMatches as AlconnaMatches
 from .matcher import AlconnaMatcher as AlconnaMatcher
@@ -93,7 +96,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.31.3"
+__version__ = "0.31.4"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

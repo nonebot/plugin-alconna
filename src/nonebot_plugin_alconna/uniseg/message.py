@@ -511,6 +511,19 @@ class UniMessage(List[TS]):
             return fn.get_message_id(event)
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
 
+    @staticmethod
+    def get_target(event: Event, bot: Optional[Bot] = None) -> Target:
+        if not bot:
+            try:
+                bot = current_bot.get()
+            except LookupError as e:
+                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+        adapter = bot.adapter
+        adapter_name = adapter.get_name()
+        if fn := MAPPING.get(adapter_name):
+            return fn.get_target(event)
+        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
+
     async def export(self, bot: Optional[Bot] = None, fallback: bool = True) -> Message:
         if not bot:
             try:
