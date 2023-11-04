@@ -564,7 +564,7 @@ class UniMessage(List[TS]):
         if reply_to:
             if isinstance(reply_to, bool):
                 if isinstance(target, Event):
-                    reply_to = target.get_user_id()
+                    reply_to = self.get_message_id(target, bot)
                 else:
                     raise TypeError("reply_to must be str when target is not Event")
             self.insert(0, Reply(reply_to))  # type: ignore
@@ -577,7 +577,7 @@ class UniMessage(List[TS]):
             _target = fn.get_target(target)
             try:
                 res = await fn.send_to(_target, bot, msg)
-            except NotImplementedError:
+            except (AssertionError, NotImplementedError):
                 res = await bot.send(target, msg)
         else:
             res = await fn.send_to(target, bot, msg)
