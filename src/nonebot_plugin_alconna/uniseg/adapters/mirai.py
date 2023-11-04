@@ -22,23 +22,22 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
 
     def get_target(self, event: Event) -> Target:
         from nonebot.adapters.mirai2.event import (
-            FriendMessage,
-            GroupMessage,
             BotMuteEvent,
+            GroupMessage,
+            FriendMessage,
             BotUnmuteEvent,
-            MemberMuteEvent,
-            MemberUnmuteEvent,
-            BotJoinGroupEvent,
-            BotLeaveEventActive,
-            BotLeaveEventKick,
             MemberJoinEvent,
+            MemberMuteEvent,
+            GroupRecallEvent,
+            BotJoinGroupEvent,
+            BotLeaveEventKick,
+            FriendRecallEvent,
+            MemberUnmuteEvent,
+            BotLeaveEventActive,
             MemberLeaveEventKick,
             MemberLeaveEventQuit,
-            MemberStateChangeEvent,
             GroupStateChangeEvent,
-            FriendRecallEvent,
-            GroupRecallEvent,
-
+            MemberStateChangeEvent,
         )
 
         if isinstance(event, FriendMessage):

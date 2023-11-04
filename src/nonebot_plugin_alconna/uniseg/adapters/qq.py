@@ -23,22 +23,23 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
     def get_target(self, event: Event) -> Target:
         from nonebot.adapters.qq.event import (
-            ChannelEvent,
-            GuildMessageEvent,
-            C2CMessageCreateEvent,
-            GroupAtMessageCreateEvent,
-            InteractionCreateEvent,
-            FriendRobotEvent,
-            GroupRobotEvent,
+            ForumEvent,
             GuildEvent,
+            ChannelEvent,
+            GroupRobotEvent,
+            FriendRobotEvent,
             GuildMemberEvent,
+            GuildMessageEvent,
             MessageAuditEvent,
             MessageReactionEvent,
-            ForumEvent,
+            C2CMessageCreateEvent,
+            InteractionCreateEvent,
+            GroupAtMessageCreateEvent,
         )
+
         if isinstance(event, GuildMessageEvent):
             if event.__type__.value.startswith("DIRECT"):
-                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id))  # type: ignore
+                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id))  # type: ignore  # noqa: E501
             return Target(str(event.channel_id), str(event.guild_id), channel=True, source=str(event.id))
         if isinstance(event, GuildEvent):
             return Target(str(event.id), channel=True)
@@ -73,11 +74,14 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.qq.event import (
             GuildMessageEvent,
             C2CMessageCreateEvent,
-            GroupAtMessageCreateEvent,
             InteractionCreateEvent,
+            GroupAtMessageCreateEvent,
         )
 
-        assert isinstance(event, (InteractionCreateEvent, GuildMessageEvent, C2CMessageCreateEvent, GroupAtMessageCreateEvent))
+        assert isinstance(
+            event,
+            (InteractionCreateEvent, GuildMessageEvent, C2CMessageCreateEvent, GroupAtMessageCreateEvent),
+        )
         return str(event.id)
 
     @export

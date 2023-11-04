@@ -23,17 +23,18 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
 
     def get_target(self, event: Event) -> Target:
         from nonebot.adapters.qqguild.event import (
+            ForumEvent,
+            GuildEvent,
             ChannelEvent,
             MessageEvent,
-            GuildEvent,
             GuildMemberEvent,
             MessageAuditEvent,
             MessageReactionEvent,
-            ForumEvent,
         )
+
         if isinstance(event, MessageEvent):
             if event.__type__.value.startswith("DIRECT"):
-                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id))  # type: ignore
+                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id))  # type: ignore  # noqa: E501
             return Target(str(event.channel_id), str(event.guild_id), channel=True, source=str(event.id))
         elif isinstance(event, GuildEvent):
             return Target(str(event.id), channel=True)

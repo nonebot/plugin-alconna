@@ -29,15 +29,13 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         return str(event.message_id)
 
     def get_target(self, event: Event) -> Target:
-        from nonebot.adapters.discord.event import (
-            GuildMessageCreateEvent,
-            MessageEvent,
-        )
         from nonebot.adapters.discord.api.model import Channel
+        from nonebot.adapters.discord.event import MessageEvent, GuildMessageCreateEvent
+
         if isinstance(event, MessageEvent):
             if isinstance(event, GuildMessageCreateEvent):
                 return Target(str(event.channel_id), str(event.guild_id), channel=True)
-            return Target(str(event.channel_id),  channel=True)
+            return Target(str(event.channel_id), channel=True)
         elif isinstance(event, Channel):
             return Target(str(event.id), channel=True)
         raise NotImplementedError

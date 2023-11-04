@@ -21,7 +21,7 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         return "Satori"
 
     def get_target(self, event: Event) -> Target:
-        from nonebot.adapters.satori.event import MessageEvent, NoticeEvent
+        from nonebot.adapters.satori.event import NoticeEvent, MessageEvent
 
         if isinstance(event, (MessageEvent, NoticeEvent)):
             if event.channel:

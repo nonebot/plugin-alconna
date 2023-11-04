@@ -22,7 +22,7 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     def get_target(self, event: Event) -> Target:
-        from nonebot.adapters.villa.event import AddQuickEmoticonEvent, SendMessageEvent
+        from nonebot.adapters.villa.event import SendMessageEvent, AddQuickEmoticonEvent
 
         assert isinstance(event, (AddQuickEmoticonEvent, SendMessageEvent))
         return Target(str(event.room_id), str(event.villa_id), channel=True)
