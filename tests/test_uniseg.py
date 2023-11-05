@@ -68,8 +68,8 @@ async def test_unimsg_send(app: App):
     matcher = on_alconna(Alconna("test_unimsg_send"))
 
     @matcher.handle()
-    async def handle(_bot: Bot, _event: Event, msg: MsgId):
-        receipt = await UniMessage("hello!").send(_event, _bot, at_sender=True, reply_to=msg)
+    async def handle(msg: MsgId):
+        receipt = await UniMessage("hello!").send(at_sender=True, reply_to=msg)
         receipt.msg_ids[0] = {"message_id": 2}
         await receipt.recall(1)
 

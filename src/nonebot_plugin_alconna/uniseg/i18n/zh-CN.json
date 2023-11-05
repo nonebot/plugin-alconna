@@ -4,6 +4,7 @@
     "failed_segment": "无法将 {seg!r} 序列化为适配器 {adapter} 下的 {target} 消息段",
     "failed": "无法将 {target!r} 序列化为适配器 {adapter} 下的消息",
     "bot_missing": "在没有机器人实例的情况下无法将通用消息转为对应的适配器消息",
+    "event_missing": "在没有事件实例的情况下无法将通用消息转为对应的适配器消息",
     "unsupported": "未找到适配器 {adapter} 下的消息转换器"
   }
 }

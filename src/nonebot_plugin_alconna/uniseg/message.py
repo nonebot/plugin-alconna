@@ -5,8 +5,8 @@ from typing_extensions import Self, SupportsIndex
 from typing import TYPE_CHECKING, List, Type, Tuple, Union, Literal, TypeVar, Iterable, Optional, overload
 
 from tarina import lang
-from nonebot.internal.matcher import current_bot
 from nonebot.internal.adapter import Bot, Event, Message
+from nonebot.internal.matcher import current_bot, current_event
 
 from .receipt import Receipt
 from .adapters import MAPPING
@@ -740,18 +740,22 @@ class UniMessage(List[TS]):
     async def generate(
         *, message: Optional[Message] = None, event: Optional[Event] = None, bot: Optional[Bot] = None
     ):
-        if message is None and not event:
-            raise ValueError("No message or event given")
-        try:
-            msg = event.get_message() if message is None else message  # type: ignore
-        except Exception:
-            return UniMessage()
+        if not message:
+            if not event:
+                try:
+                    event = current_event.get()
+                except LookupError as e:
+                    raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
+            try:
+                message = event.get_message()
+            except Exception:
+                return UniMessage()
         result = UniMessage()
-        msg_copy = msg.copy()
+        msg_copy = message.copy()
         if (event and bot) and (_reply := await reply_handle(event, bot)):
             result.append(_reply)
-        elif (res := reply.validate(msg[0])).success:
-            res.value.origin = msg[0]
+        elif (res := reply.validate(message[0])).success:
+            res.value.origin = message[0]
             result.append(res.value)
             msg_copy.pop(0)
         for seg in msg_copy:
@@ -765,30 +769,46 @@ class UniMessage(List[TS]):
         return result
 
     @staticmethod
-    def get_message_id(event: Event, bot: Optional[Bot] = None) -> str:
-        if not bot:
+    def get_message_id(
+        event: Optional[Event] = None, bot: Optional[Bot] = None, adapter: Optional[str] = None
+    ) -> str:
+        if not event:
             try:
-                bot = current_bot.get()
+                event = current_event.get()
             except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-        adapter = bot.adapter
-        adapter_name = adapter.get_name()
-        if fn := MAPPING.get(adapter_name):
+                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
+        if not adapter:
+            if not bot:
+                try:
+                    bot = current_bot.get()
+                except LookupError as e:
+                    raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+            _adapter = bot.adapter
+            adapter = _adapter.get_name()
+        if fn := MAPPING.get(adapter):
             return fn.get_message_id(event)
-        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
+        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
     @staticmethod
-    def get_target(event: Event, bot: Optional[Bot] = None) -> Target:
-        if not bot:
+    def get_target(
+        event: Optional[Event] = None, bot: Optional[Bot] = None, adapter: Optional[str] = None
+    ) -> Target:
+        if not event:
             try:
-                bot = current_bot.get()
+                event = current_event.get()
             except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-        adapter = bot.adapter
-        adapter_name = adapter.get_name()
-        if fn := MAPPING.get(adapter_name):
+                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
+        if not adapter:
+            if not bot:
+                try:
+                    bot = current_bot.get()
+                except LookupError as e:
+                    raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+            _adapter = bot.adapter
+            adapter = _adapter.get_name()
+        if fn := MAPPING.get(adapter):
             return fn.get_target(event)
-        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
+        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
     async def export(self, bot: Optional[Bot] = None, fallback: bool = True) -> Message:
         if not bot:
@@ -809,7 +829,7 @@ class UniMessage(List[TS]):
 
     async def send(
         self,
-        target: Union[Event, Target],
+        target: Union[Event, Target, None] = None,
         bot: Optional[Bot] = None,
         fallback: bool = True,
         at_sender: Union[str, bool] = False,
@@ -820,6 +840,11 @@ class UniMessage(List[TS]):
                 bot = current_bot.get()
             except LookupError as e:
                 raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+        if not target:
+            try:
+                target = current_event.get()
+            except LookupError as e:
+                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
         if at_sender:
             if isinstance(at_sender, str):
                 self.insert(0, At("user", at_sender))  # type: ignore

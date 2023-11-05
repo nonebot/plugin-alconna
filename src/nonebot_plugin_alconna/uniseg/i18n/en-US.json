@@ -4,6 +4,7 @@
     "failed_segment": "Cannot serialize {seg!r} to {target} segment of adatper {adapter}",
     "failed": "Cannot serialize {target!r} to message of adapter {adapter}",
     "bot_missing": "Can not export message without bot instance",
+    "event_missing": "Can not export message without event instance",
     "unsupported": "Message Exporter not found under adapter {adapter}"
   }
 }
