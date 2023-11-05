@@ -313,15 +313,15 @@ async def echo(msg: str):
 ## 跨平台消息
 
 ```python
-from nonebot_plugin_alconna import Image, UniMessage, on_alconna
+from nonebot_plugin_alconna import UniMessage, on_alconna
 
 test = on_alconna("test")
 
 @test.handle()
 async def handle_test():
-    await test.send(UniMessage(Image(path="path/to/img")))
+    await test.send(UniMessage.image(path="path/to/img"))
 
-@test.got("foo", prompt=UniMessage.template("{:At(user, $event.get_user_id())}\n请输入图片"))
+@test.got("foo", prompt=UniMessage.template("{:Reply($message_id)}请输入图片"))
 async def handle_foo():
     await test.send("图片已收到")
 ```
