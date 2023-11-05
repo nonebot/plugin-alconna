@@ -26,6 +26,10 @@ def test_unimsg():
         repr(msg)
         == "[Other(origin=FallbackSegment(type='text', data={'text': '123'})), Segment(), Text(text='123', style=None)]"  # noqa: E501
     )
+    assert (
+        repr(UniMessage.text("123") + Other(FallbackSegment.text("123")))
+        == "[Text(text='123', style=None), Other(origin=FallbackSegment(type='text', data={'text': '123'}))]"
+    )
 
 
 @pytest.mark.asyncio()

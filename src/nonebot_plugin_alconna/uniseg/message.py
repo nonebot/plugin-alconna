@@ -1,6 +1,8 @@
+from pathlib import Path
 from copy import deepcopy
+from types import FunctionType
 from typing_extensions import Self, SupportsIndex
-from typing import TYPE_CHECKING, List, Type, Tuple, Union, TypeVar, Iterable, Optional, overload
+from typing import TYPE_CHECKING, List, Type, Tuple, Union, Literal, TypeVar, Iterable, Optional, overload
 
 from tarina import lang
 from nonebot.internal.matcher import current_bot
@@ -11,134 +13,39 @@ from .adapters import MAPPING
 from .fallback import FallbackMessage
 from .template import UniMessageTemplate
 from .export import Target, SerializeFailed
-from .segment import At, Text, Other, Reply, Segment, reply, segments
+from .segment import (
+    At,
+    Card,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Emoji,
+    Image,
+    Other,
+    Reply,
+    Video,
+    Voice,
+    RawData,
+    Segment,
+    reply,
+    segments,
+    reply_handle,
+)
 
+T = TypeVar("T")
 TS = TypeVar("TS", bound=Segment)
 TS1 = TypeVar("TS1", bound=Segment)
 
 
-async def reply_handle(event: Event, bot: Bot):
-    adapter = bot.adapter
-    adapter_name = adapter.get_name()
-    if adapter_name == "Telegram":
-        if TYPE_CHECKING:
-            from nonebot.adapters.telegram.event import MessageEvent
+class _method:
+    def __init__(self, func: FunctionType):
+        self.__func__ = func
 
-            assert isinstance(event, MessageEvent)
-        if event.reply_to_message:
-            return Reply(
-                f"{event.reply_to_message.message_id}",
-                event.reply_to_message.original_message,
-                event.reply_to_message,
-            )
-    elif adapter_name == "Feishu":
-        if TYPE_CHECKING:
-            from nonebot.adapters.feishu.event import MessageEvent
-
-            assert isinstance(event, MessageEvent)
-        if event.reply:
-            return Reply(event.reply.message_id, event.reply.body.content, event.reply)
-    elif adapter_name == "ntchat":
-        if TYPE_CHECKING:
-            from nonebot.adapters.ntchat.event import QuoteMessageEvent
-
-            assert isinstance(event, QuoteMessageEvent)
-        if event.type == 11061:
-            return Reply(event.quote_message_id, origin=event)
-    elif adapter_name == "QQ Guild":
-        if TYPE_CHECKING:
-            from nonebot.adapters.qqguild.event import MessageEvent
-
-            assert isinstance(event, MessageEvent)
-        if event.reply and event.reply.message:
-            return Reply(
-                str(event.reply.message.id),
-                event.reply.message.content,
-                event.reply.message,
-            )
-    elif adapter_name == "QQ":
-        if TYPE_CHECKING:
-            from nonebot.adapters.qq.event import MessageEvent
-
-            assert isinstance(event, MessageEvent)
-        if event.reply:
-            return Reply(
-                str(event.reply.id),
-                event.reply.content,
-                event.reply,
-            )
-    elif adapter_name == "Satori":
-        if TYPE_CHECKING:
-            from nonebot.adapters.satori.event import MessageEvent
-
-            assert isinstance(event, MessageEvent)
-        if event.reply:
-            return Reply(
-                str(event.reply.data.get("id")),
-                event.reply.data.get("content"),
-                event.reply,
-            )
-    elif adapter_name == "mirai2":
-        if TYPE_CHECKING:
-            from nonebot.adapters.mirai2.event import MessageEvent
-
-            assert isinstance(event, MessageEvent)
-        if event.quote:
-            return Reply(str(event.quote.id), event.quote.origin, event.quote)
-    elif adapter_name == "Kaiheila":
-        if TYPE_CHECKING:
-            from nonebot.adapters.kaiheila import Bot as KaiheilaBot
-            from nonebot.adapters.kaiheila.event import MessageEvent
-
-            assert isinstance(event, MessageEvent)
-            assert isinstance(bot, KaiheilaBot)
-
-        api = "directMessage_view" if event.__event__ == "message.private" else "message_view"
-        message = await bot.call_api(
-            api,
-            msg_id=event.msg_id,
-            **({"chat_code": event.event.code} if event.__event__ == "message.private" else {}),
-        )
-        if message.quote:
-            return Reply(message.quote.id_, origin=message.quote)
-    elif adapter_name == "Discord":
-        if TYPE_CHECKING:
-            from nonebot.adapters.discord import MessageEvent
-
-            assert isinstance(event, MessageEvent)
-
-        if hasattr(event, "message_reference") and hasattr(event.message_reference, "message_id"):
-            return Reply(
-                event.message_reference.message_id,  # type: ignore
-                origin=event.message_reference,  # type: ignore
-            )
-    elif adapter_name == "RedProtocol":
-        if TYPE_CHECKING:
-            from nonebot.adapters.red.event import MessageEvent
-
-            assert isinstance(event, MessageEvent)
-
-        if event.reply:
-            return Reply(
-                f"{event.reply.sourceMsgIdInRecords}#{event.reply.replayMsgSeq}",
-                event.reply.sourceMsgTextElems,
-                origin=event.reply,
-            )
-    elif adapter_name == "Villa":
-        if TYPE_CHECKING:
-            from nonebot.adapters.villa.event import SendMessageEvent
-
-            assert isinstance(event, SendMessageEvent)
-
-        if event.quote_msg:
-            return Reply(
-                f"{event.quote_msg.msg_uid}@{event.quote_msg.send_at}",
-                msg=event.quote_msg.content,
-                origin=event.quote_msg,
-            )
-    elif _reply := getattr(event, "reply", None):
-        return Reply(str(_reply.message_id), getattr(_reply, "message", None), _reply)
-    return None
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self.__func__.__get__(owner, owner)
+        return self.__func__.__get__(instance, owner)
 
 
 class UniMessage(List[TS]):
@@ -147,6 +54,365 @@ class UniMessage(List[TS]):
     参数:
         message: 消息内容
     """
+
+    if TYPE_CHECKING:
+
+        @classmethod
+        def text(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], text: str  # type: ignore
+        ) -> "UniMessage[Union[TS1, Text]]":
+            """创建纯文本消息
+
+            参数:
+                text: 文本内容
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def at(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], user_id: str  # type: ignore
+        ) -> "UniMessage[Union[TS1, At]]":
+            """创建 @用户 消息
+
+            参数:
+                user_id: 要 @ 的用户 ID
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def at_role(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], role_id: str  # type: ignore
+        ) -> "UniMessage[Union[TS1, At]]":
+            """创建 @角色组 消息
+
+            参数:
+                role_id: 要 @ 的角色 ID
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def at_channel(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], channel_id: str  # type: ignore
+        ) -> "UniMessage[Union[TS1, At]]":
+            """创建 #频道 消息
+
+            参数:
+                channel_id: 要 @ 的频道 ID
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def at_all(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            online: bool = False,
+        ) -> "UniMessage[Union[TS1, AtAll]]":
+            """创建 @全体成员 消息
+
+            参数:
+                online: 是否只 @ 在线成员
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def emoji(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            id: str,
+            name: Optional[str] = None,
+        ) -> "UniMessage[Union[TS1, Emoji]]":
+            """创建 emoji 消息
+
+            参数:
+                id: emoji ID
+                name: emoji 名称
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def image(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "image.png",
+        ) -> "UniMessage[Union[TS1, Image]]":
+            """创建图片消息
+
+            参数:
+                id: 图片 ID
+                url: 图片链接
+                path: 图片路径
+                raw: 图片原始数据
+                name: 图片名称
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def video(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "video.mp4",
+        ) -> "UniMessage[Union[TS1, Video]]":
+            """创建视频消息
+
+            参数:
+                id: 视频 ID
+                url: 视频链接
+                path: 视频路径
+                raw: 视频原始数据
+                name: 视频名称
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def voice(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "voice.wav",
+        ) -> "UniMessage[Union[TS1, Voice]]":
+            """创建语音消息
+
+            参数:
+                id: 语音 ID
+                url: 语音链接
+                path: 语音路径
+                raw: 语音原始数据
+                name: 语音名称
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def audio(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "audio.mp3",
+        ) -> "UniMessage[Union[TS1, Audio]]":
+            """创建音频消息
+
+            参数:
+                id: 音频 ID
+                url: 音频链接
+                path: 音频路径
+                raw: 音频原始数据
+                name: 音频名称
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def file(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "file.bin",
+        ) -> "UniMessage[Union[TS1, File]]":
+            """创建文件消息
+
+            参数:
+                id: 文件 ID
+                url: 文件链接
+                path: 文件路径
+                raw: 文件原始数据
+                name: 文件名称
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def reply(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], id: str  # type: ignore
+        ) -> "UniMessage[Union[TS1, Reply]]":
+            """创建回复消息
+
+            参数:
+                id: 回复消息 ID
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def card(
+            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            flag: Literal["xml", "json"],
+            content: str,
+        ) -> "UniMessage[Union[TS1, Card]]":
+            """创建卡片消息
+
+            参数:
+                flag: 卡片类型
+                content: 卡片内容
+
+            返回:
+                构建的消息
+            """
+            ...
+
+    else:
+
+        @_method
+        def text(cls_or_self, text: str) -> "UniMessage[Union[TS1, Text]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += Text(text)
+                return cls_or_self
+            return UniMessage(Text(text))
+
+        @_method
+        def at(cls_or_self, user_id: str) -> "UniMessage[Union[TS1, At]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += At("user", user_id)
+                return cls_or_self
+            return UniMessage(At("user", user_id))
+
+        @_method
+        def at_role(cls_or_self, role_id: str) -> "UniMessage[Union[TS1, At]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += At("role", role_id)
+                return cls_or_self
+            return UniMessage(At("role", role_id))
+
+        @_method
+        def at_channel(cls_or_self, channel_id: str) -> "UniMessage[Union[TS1, At]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += At("channel", channel_id)
+                return cls_or_self
+            return UniMessage(At("channel", channel_id))
+
+        @_method
+        def at_all(cls_or_self, online: bool = False) -> "UniMessage[Union[TS1, AtAll]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += AtAll(online)
+                return cls_or_self
+            return UniMessage(AtAll(online))
+
+        @_method
+        def emoji(cls_or_self, id: str, name: Optional[str] = None) -> "UniMessage[Union[TS1, Emoji]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += Emoji(id, name)
+                return cls_or_self
+            return UniMessage(Emoji(id, name))
+
+        @_method
+        def image(
+            cls_or_self,
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "image.png",
+        ) -> "UniMessage[Union[TS1, Image]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += Image(id, url, path, raw, name)
+                return cls_or_self
+            return UniMessage(Image(id, url, path, raw, name))
+
+        @_method
+        def video(
+            cls_or_self,
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "video.mp4",
+        ) -> "UniMessage[Union[TS1, Video]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += Video(id, url, path, raw, name)
+                return cls_or_self
+            return UniMessage(Video(id, url, path, raw, name))
+
+        @_method
+        def voice(
+            cls_or_self,
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "voice.wav",
+        ) -> "UniMessage[Union[TS1, Voice]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += Voice(id, url, path, raw, name)
+                return cls_or_self
+            return UniMessage(Voice(id, url, path, raw, name))
+
+        @_method
+        def audio(
+            cls_or_self,
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "audio.mp3",
+        ) -> "UniMessage[Union[TS1, Audio]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += Audio(id, url, path, raw, name)
+                return cls_or_self
+            return UniMessage(Audio(id, url, path, raw, name))
+
+        @_method
+        def file(
+            cls_or_self,
+            id: Optional[str] = None,
+            url: Optional[str] = None,
+            path: Optional[Union[str, Path]] = None,
+            raw: Optional[RawData] = None,
+            name: str = "file.bin",
+        ) -> "UniMessage[Union[TS1, File]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += File(id, url, path, raw, name)
+                return cls_or_self
+            return UniMessage(File(id, url, path, raw, name))
+
+        @_method
+        def reply(cls_or_self, id: str) -> "UniMessage[Union[TS1, Reply]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += Reply(id)
+                return cls_or_self
+            return UniMessage(Reply(id))
+
+        @_method
+        def card(cls_or_self, flag: Literal["xml", "json"], content: str) -> "UniMessage[Union[TS1, Card]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self += Card(flag, content)
+                return cls_or_self
+            return UniMessage(Card(flag, content))
 
     def __init__(
         self: "UniMessage[Segment]",

@@ -24,8 +24,8 @@ from typing import (
     overload,
 )
 
-from nonebot.internal.adapter import Message, MessageSegment
 from nepattern import MatchMode, BasePattern, create_local_patterns
+from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
 
 if TYPE_CHECKING:
     from .message import UniMessage
@@ -682,3 +682,127 @@ class _Segment(UniPattern[Segment]):
 
 
 env[Segment] = _Segment()
+
+
+async def reply_handle(event: Event, bot: Bot):
+    adapter = bot.adapter
+    adapter_name = adapter.get_name()
+    if adapter_name == "Telegram":
+        if TYPE_CHECKING:
+            from nonebot.adapters.telegram.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+        if event.reply_to_message:
+            return Reply(
+                f"{event.reply_to_message.message_id}",
+                event.reply_to_message.original_message,
+                event.reply_to_message,
+            )
+    elif adapter_name == "Feishu":
+        if TYPE_CHECKING:
+            from nonebot.adapters.feishu.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+        if event.reply:
+            return Reply(event.reply.message_id, event.reply.body.content, event.reply)
+    elif adapter_name == "ntchat":
+        if TYPE_CHECKING:
+            from nonebot.adapters.ntchat.event import QuoteMessageEvent
+
+            assert isinstance(event, QuoteMessageEvent)
+        if event.type == 11061:
+            return Reply(event.quote_message_id, origin=event)
+    elif adapter_name == "QQ Guild":
+        if TYPE_CHECKING:
+            from nonebot.adapters.qqguild.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+        if event.reply and event.reply.message:
+            return Reply(
+                str(event.reply.message.id),
+                event.reply.message.content,
+                event.reply.message,
+            )
+    elif adapter_name == "QQ":
+        if TYPE_CHECKING:
+            from nonebot.adapters.qq.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+        if event.reply:
+            return Reply(
+                str(event.reply.id),
+                event.reply.content,
+                event.reply,
+            )
+    elif adapter_name == "Satori":
+        if TYPE_CHECKING:
+            from nonebot.adapters.satori.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+        if event.reply:
+            return Reply(
+                str(event.reply.data.get("id")),
+                event.reply.data.get("content"),
+                event.reply,
+            )
+    elif adapter_name == "mirai2":
+        if TYPE_CHECKING:
+            from nonebot.adapters.mirai2.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+        if event.quote:
+            return Reply(str(event.quote.id), event.quote.origin, event.quote)
+    elif adapter_name == "Kaiheila":
+        if TYPE_CHECKING:
+            from nonebot.adapters.kaiheila import Bot as KaiheilaBot
+            from nonebot.adapters.kaiheila.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+            assert isinstance(bot, KaiheilaBot)
+
+        api = "directMessage_view" if event.__event__ == "message.private" else "message_view"
+        message = await bot.call_api(
+            api,
+            msg_id=event.msg_id,
+            **({"chat_code": event.event.code} if event.__event__ == "message.private" else {}),
+        )
+        if message.quote:
+            return Reply(message.quote.id_, origin=message.quote)
+    elif adapter_name == "Discord":
+        if TYPE_CHECKING:
+            from nonebot.adapters.discord import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+
+        if hasattr(event, "message_reference") and hasattr(event.message_reference, "message_id"):
+            return Reply(
+                event.message_reference.message_id,  # type: ignore
+                origin=event.message_reference,  # type: ignore
+            )
+    elif adapter_name == "RedProtocol":
+        if TYPE_CHECKING:
+            from nonebot.adapters.red.event import MessageEvent
+
+            assert isinstance(event, MessageEvent)
+
+        if event.reply:
+            return Reply(
+                f"{event.reply.sourceMsgIdInRecords}#{event.reply.replayMsgSeq}",
+                event.reply.sourceMsgTextElems,
+                origin=event.reply,
+            )
+    elif adapter_name == "Villa":
+        if TYPE_CHECKING:
+            from nonebot.adapters.villa.event import SendMessageEvent
+
+            assert isinstance(event, SendMessageEvent)
+
+        if event.quote_msg:
+            return Reply(
+                f"{event.quote_msg.msg_uid}@{event.quote_msg.send_at}",
+                msg=event.quote_msg.content,
+                origin=event.quote_msg,
+            )
+    elif _reply := getattr(event, "reply", None):
+        return Reply(str(_reply.message_id), getattr(_reply, "message", None), _reply)
+    return None
