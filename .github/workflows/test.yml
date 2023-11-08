@@ -23,7 +23,7 @@ jobs:
           python3 -m pip install pdm
       - name: Install Package
         run: |
-          pdm sync -G:all
+          pdm sync -G:all -v
       - name: Test & Report
         run: |
           pdm run test
