@@ -761,7 +761,7 @@ def on_alconna(
 
 def referent(cmd: str | Alconna) -> type[AlconnaMatcher]:
     """获取 Alconna 对应的 Matcher
-    
+
     若不存在则返回一个新的 Matcher
     """
     if isinstance(cmd, str):
