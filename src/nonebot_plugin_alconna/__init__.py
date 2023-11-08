@@ -61,6 +61,7 @@ from .uniseg import RefNode as RefNode
 from .uniseg import Segment as Segment
 from .uniseg import get_bot as get_bot
 from .matcher import Command as Command
+from .matcher import referent as referent
 from .params import AlcResult as AlcResult
 from .uniseg import MessageId as MessageId
 from .uniseg import MsgTarget as MsgTarget
@@ -96,7 +97,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.31.7"
+__version__ = "0.32.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

@@ -4,7 +4,7 @@ import weakref
 from weakref import ref
 from types import FunctionType
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Union, Callable, ClassVar, Iterable, NoReturn, Protocol, cast
+from typing import TYPE_CHECKING, Any, Union, Literal, Callable, ClassVar, Iterable, NoReturn, Protocol, cast
 
 from nonebot.rule import Rule
 from nonebot.params import Depends
@@ -103,6 +103,36 @@ class AlconnaMatcher(Matcher):
     def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):
         return cls.command.shortcut(key, args, delete)
 
+    if TYPE_CHECKING:
+
+        @classmethod
+        def set_path_arg(cls_or_self, path: str, content: Any) -> None:  # type: ignore
+            ...
+
+        @classmethod
+        def get_path_arg(cls_or_self, path: str, default: Any) -> Any:  # type: ignore
+            ...
+
+    else:
+
+        @_method
+        def set_path_arg(cls_or_self, path: str, content: Any) -> None:
+            """设置一个 `got_path` 内容"""
+            if isinstance(cls_or_self, AlconnaMatcher):
+                state = cls_or_self.state
+            else:
+                state = current_matcher.get().state
+            state[ALCONNA_ARG_KEY.format(key=merge_path(path, cls_or_self.basepath))] = content
+
+        @_method
+        def get_path_arg(cls_or_self, path: str, default: Any) -> Any:
+            """获取一个 `got_path` 内容"""
+            if isinstance(cls_or_self, AlconnaMatcher):
+                state = cls_or_self.state
+            else:
+                state = current_matcher.get().state
+            return state.get(ALCONNA_ARG_KEY.format(key=merge_path(path, cls_or_self.basepath)), default)
+
     @classmethod
     def assign(
         cls,
@@ -135,133 +165,6 @@ class AlconnaMatcher(Matcher):
             return func
 
         return _decorator
-
-    if TYPE_CHECKING:
-
-        @classmethod
-        def set_path_arg(cls_or_self, path: str, content: Any) -> None:  # type: ignore
-            ...
-
-        @classmethod
-        def get_path_arg(cls_or_self, path: str, default: Any) -> Any:  # type: ignore
-            ...
-
-    else:
-
-        @_method
-        def set_path_arg(cls_or_self, path: str, content: Any) -> None:
-            """设置一个 `got_path` 内容"""
-            if isinstance(cls_or_self, AlconnaMatcher):
-                state = cls_or_self.state
-            else:
-                state = current_matcher.get().state
-            state[ALCONNA_ARG_KEY.format(key=merge_path(path, cls_or_self.basepath))] = content
-
-        @_method
-        def get_path_arg(cls_or_self, path: str, default: Any) -> Any:
-            """获取一个 `got_path` 内容"""
-            if isinstance(cls_or_self, AlconnaMatcher):
-                state = cls_or_self.state
-            else:
-                state = current_matcher.get().state
-            return state.get(ALCONNA_ARG_KEY.format(key=merge_path(path, cls_or_self.basepath)), default)
-
-    @classmethod
-    def got_path(
-        cls,
-        path: str,
-        prompt: _M | None = None,
-        middleware: MIDDLEWARE | None = None,
-        parameterless: Iterable[Any] | None = None,
-    ) -> Callable[[T_Handler], T_Handler]:
-        """装饰一个函数来指示 NoneBot 获取一个路径下的参数 `path`
-
-        当要获取的 `path` 不存在时接收用户新的一条消息再运行该函数
-
-        如果 `path` 已存在则直接继续运行
-
-        本插件会获取消息的最后一个消息段并转为 path 对应的类型
-
-        参数:
-            path: 参数路径名; "~XX" 时会把 "~" 替换为父级 assign 的 path
-            prompt: 在参数不存在时向用户发送的消息，支持 `UniMessage`
-            parameterless: 非参数类型依赖列表
-        """
-        path = merge_path(path, cls.basepath)
-        if not (arg := extract_arg(path, cls.command)):
-            raise ValueError(
-                lang.require("nbp-alc", "error.matcher_got_path").format(path=path, cmd=cls.command.path)
-            )
-
-        async def _key_getter(event: Event, bot: Bot, matcher: AlconnaMatcher):
-            matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
-            if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
-                ms = event.get_message()[-1]
-                if ms.is_text() and not ms.data["text"].strip() and len(event.get_message()) > 1:
-                    ms = event.get_message()[-2]
-                log("DEBUG", escape_tag(lang.require("nbp-alc", "log.got_path/ms").format(path=path, ms=ms)))
-                if (res := _validate(arg, ms)) is None:  # type: ignore
-                    log(
-                        "TRACE",
-                        escape_tag(
-                            lang.require("nbp-alc", "log.got_path/validate").format(path=path, validate=res)
-                        ),
-                    )
-                    await matcher.reject(prompt, fallback=True)
-                    return
-                if middleware:
-                    res = await run_always_await(middleware, event, bot, matcher.state, res)
-                matcher.set_path_arg(path, res)
-                return
-            if matcher.state.get(ALCONNA_ARG_KEY.format(key=path), ...) is not ...:
-                return
-            await matcher.reject(prompt, fallback=True)
-
-        _parameterless = (*(parameterless or ()), Depends(_key_getter))
-
-        def _decorator(func: T_Handler) -> T_Handler:
-            if cls.handlers and cls.handlers[-1].call is func:
-                func_handler = cls.handlers[-1]
-                new_handler = Dependent(
-                    call=func_handler.call,
-                    params=func_handler.params,
-                    parameterless=Dependent.parse_parameterless(
-                        tuple(_parameterless), cls.HANDLER_PARAM_TYPES
-                    )
-                    + func_handler.parameterless,
-                )
-                cls.handlers[-1] = new_handler
-            else:
-                cls.append_handler(func, parameterless=_parameterless)
-
-            return func
-
-        return _decorator
-
-    @classmethod
-    async def reject_path(
-        cls,
-        path: str,
-        prompt: _M | None = None,
-        fallback: bool = False,
-        **kwargs,
-    ) -> NoReturn:
-        """最近使用 `got_path` 接收的消息不符合预期，
-        发送一条消息给当前交互用户并将当前事件处理流程中断在当前位置，在接收用户新的一条消息后从头开始执行当前处理函数
-
-        参数:
-            path: 参数路径名; "~XX" 时会把 "~" 替换为父级 assign 的 path
-            prompt: 消息内容, 支持 `UniMessage`
-            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
-                是否转为字符串
-            kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
-                请参考对应 adapter 的 bot 对象 api
-        """
-        matcher = current_matcher.get()
-        matcher.set_target(ALCONNA_ARG_KEY.format(key=merge_path(path, cls.basepath)))
-        if prompt is not None:
-            await cls.send(prompt, fallback=fallback, **kwargs)
-        raise RejectedException
 
     @classmethod
     def dispatch(
@@ -323,11 +226,104 @@ class AlconnaMatcher(Matcher):
         return matcher
 
     @classmethod
+    def handle(
+        cls,
+        parameterless: Iterable[Any] | None = None,
+        override: tuple[Literal["insert", "replace"], int] | None = None,
+    ) -> Callable[[T_Handler], T_Handler]:
+        """装饰一个函数来向事件响应器直接添加一个处理函数
+
+        参数:
+            parameterless: 非参数类型依赖列表
+            override: 是否定制优先级
+        """
+
+        def _decorator(func: T_Handler) -> T_Handler:
+            if override is None:
+                cls.append_handler(func, parameterless=parameterless)
+            else:
+                handler_ = Dependent[Any].parse(
+                    call=func,
+                    parameterless=parameterless,
+                    allow_types=cls.HANDLER_PARAM_TYPES,
+                )
+                if override[0] == "insert":
+                    cls.handlers.insert(override[1], handler_)
+                else:
+                    cls.handlers[override[1]] = handler_
+            return func
+
+        return _decorator
+
+    @classmethod
+    def receive(
+        cls,
+        id: str = "",
+        parameterless: Iterable[Any] | None = None,
+        override: tuple[Literal["insert", "replace"], int] | None = None,
+    ) -> Callable[[T_Handler], T_Handler]:
+        """装饰一个函数来指示 NoneBot 在接收用户新的一条消息后继续运行该函数
+
+        参数:
+            id: 消息 ID，若不指定则使用当前消息 ID
+            parameterless: 非参数类型依赖列表
+            override: 是否定制优先级
+        """
+
+        async def _receive(event: Event, matcher: Matcher) -> None | NoReturn:
+            nonlocal id
+            if not id:
+                try:
+                    id = UniMessage.get_message_id(event, current_bot.get())
+                except Exception:
+                    pass
+            matcher.set_target(RECEIVE_KEY.format(id=id))
+            if matcher.get_target() == RECEIVE_KEY.format(id=id):
+                matcher.set_receive(id, event)
+                return
+            if matcher.get_receive(id, ...) is not ...:
+                return
+            await matcher.reject()
+
+        _parameterless = (Depends(_receive), *(parameterless or ()))
+
+        def _decorator(func: T_Handler) -> T_Handler:
+            if cls.handlers and cls.handlers[-1].call is func:
+                func_handler = cls.handlers[-1]
+                new_handler = Dependent(
+                    call=func_handler.call,
+                    params=func_handler.params,
+                    parameterless=Dependent.parse_parameterless(
+                        tuple(_parameterless), cls.HANDLER_PARAM_TYPES
+                    )
+                    + func_handler.parameterless,
+                )
+                cls.handlers[-1] = new_handler
+            elif override is None:
+                cls.append_handler(func, parameterless=_parameterless)
+            else:
+                handler_ = Dependent[Any].parse(
+                    call=func,
+                    parameterless=_parameterless,
+                    allow_types=cls.HANDLER_PARAM_TYPES,
+                )
+                mode, index = override
+                if mode == "insert":
+                    cls.handlers.insert(index, handler_)
+                else:
+                    cls.handlers[index] = handler_
+
+            return func
+
+        return _decorator
+
+    @classmethod
     def got(
         cls,
         key: str,
         prompt: _M | None = None,
         parameterless: Iterable[Any] | None = None,
+        override: tuple[Literal["insert", "replace"], int] | None = None,
     ) -> Callable[[T_Handler], T_Handler]:
         """装饰一个函数来指示 NoneBot 获取一个参数 `key`
 
@@ -338,12 +334,18 @@ class AlconnaMatcher(Matcher):
             key: 参数名
             prompt: 在参数不存在时向用户发送的消息, 支持 `UniMessage`
             parameterless: 非参数类型依赖列表
+            override: 是否定制优先级
         """
 
-        async def _key_getter(event: Event, matcher: AlconnaMatcher):
+        async def _key_getter(event: Event, matcher: AlconnaMatcher, bot: Bot, state: T_State):
             matcher.set_target(ARG_KEY.format(key=key))
             if matcher.get_target() == ARG_KEY.format(key=key):
-                matcher.set_arg(key, event.get_message())
+                msg = await cls.executor.select(bot, event).message_provider(event, state, bot)
+                if not msg:
+                    await matcher.reject(prompt, fallback=True)
+                if isinstance(msg, UniMessage):
+                    msg = await msg.export(bot, True)
+                matcher.set_arg(key, msg)
                 return
             if matcher.get_arg(key, ...) is not ...:
                 return
@@ -363,8 +365,107 @@ class AlconnaMatcher(Matcher):
                     + func_handler.parameterless,
                 )
                 cls.handlers[-1] = new_handler
-            else:
+            elif override is None:
                 cls.append_handler(func, parameterless=_parameterless)
+            else:
+                handler_ = Dependent[Any].parse(
+                    call=func,
+                    parameterless=_parameterless,
+                    allow_types=cls.HANDLER_PARAM_TYPES,
+                )
+                mode, index = override
+                if mode == "insert":
+                    cls.handlers.insert(index, handler_)
+                else:
+                    cls.handlers[index] = handler_
+            return func
+
+        return _decorator
+
+    @classmethod
+    def got_path(
+        cls,
+        path: str,
+        prompt: _M | None = None,
+        middleware: MIDDLEWARE | None = None,
+        parameterless: Iterable[Any] | None = None,
+        override: tuple[Literal["insert", "replace"], int] | None = None,
+    ) -> Callable[[T_Handler], T_Handler]:
+        """装饰一个函数来指示 NoneBot 获取一个路径下的参数 `path`
+
+        当要获取的 `path` 不存在时接收用户新的一条消息再运行该函数
+
+        如果 `path` 已存在则直接继续运行
+
+        本插件会获取消息的最后一个消息段并转为 path 对应的类型
+
+        参数:
+            path: 参数路径名; "~XX" 时会把 "~" 替换为父级 assign 的 path
+            prompt: 在参数不存在时向用户发送的消息，支持 `UniMessage`
+            parameterless: 非参数类型依赖列表
+            override: 是否定制优先级
+        """
+        path = merge_path(path, cls.basepath)
+        if not (arg := extract_arg(path, cls.command)):
+            raise ValueError(
+                lang.require("nbp-alc", "error.matcher_got_path").format(path=path, cmd=cls.command.path)
+            )
+
+        async def _key_getter(event: Event, bot: Bot, matcher: AlconnaMatcher, state: T_State):
+            matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
+            if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
+                msg = await cls.executor.select(bot, event).message_provider(event, state, bot)
+                if not msg:
+                    await matcher.reject(prompt, fallback=True)
+                if isinstance(msg, UniMessage):
+                    msg = await msg.export(bot, True)
+                ms = msg[0]
+                if ms.is_text() and not ms.data["text"].strip():
+                    await matcher.reject(prompt, fallback=True)
+                log("DEBUG", escape_tag(lang.require("nbp-alc", "log.got_path/ms").format(path=path, ms=ms)))
+                if (res := _validate(arg, ms)) is None:  # type: ignore
+                    log(
+                        "TRACE",
+                        escape_tag(
+                            lang.require("nbp-alc", "log.got_path/validate").format(path=path, validate=res)
+                        ),
+                    )
+                    await matcher.reject(prompt, fallback=True)
+                if middleware:
+                    res = await run_always_await(middleware, event, bot, matcher.state, res)
+                matcher.set_path_arg(path, res)
+                return
+            if matcher.state.get(ALCONNA_ARG_KEY.format(key=path), ...) is not ...:
+                return
+            await matcher.reject(prompt, fallback=True)
+
+        _parameterless = (*(parameterless or ()), Depends(_key_getter))
+
+        def _decorator(func: T_Handler) -> T_Handler:
+            if cls.handlers and cls.handlers[-1].call is func:
+                func_handler = cls.handlers[-1]
+                new_handler = Dependent(
+                    call=func_handler.call,
+                    params=func_handler.params,
+                    parameterless=Dependent.parse_parameterless(
+                        tuple(_parameterless), cls.HANDLER_PARAM_TYPES
+                    )
+                    + func_handler.parameterless,
+                )
+                cls.handlers[-1] = new_handler
+            elif override is None:
+                cls.append_handler(func, parameterless=_parameterless)
+            else:
+                handler_ = Dependent[Any].parse(
+                    call=func,
+                    parameterless=_parameterless,
+                    allow_types=cls.HANDLER_PARAM_TYPES,
+                )
+                mode, index = override
+                if mode == "insert":
+                    cls.handlers.insert(index, handler_)
+                else:
+                    cls.handlers[index] = handler_
 
             return func
 
@@ -378,8 +479,7 @@ class AlconnaMatcher(Matcher):
         if isinstance(message, MessageTemplate):
             return message.format(**state[ALCONNA_RESULT].result.all_matched_args, **state)
         if isinstance(message, UniMessageTemplate):
-            extra = {"$event": event, "$bot": bot}
-            extra["$target"] = UniMessage.get_target(event, bot)
+            extra = {"$event": event, "$bot": bot, "$target": UniMessage.get_target(event, bot)}
             try:
                 msg_id = UniMessage.get_message_id(event, bot)
             except Exception:
@@ -477,6 +577,31 @@ class AlconnaMatcher(Matcher):
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
                 请参考对应 adapter 的 bot 对象 api
         """
+        if prompt is not None:
+            await cls.send(prompt, fallback=fallback, **kwargs)
+        raise RejectedException
+
+    @classmethod
+    async def reject_path(
+        cls,
+        path: str,
+        prompt: _M | None = None,
+        fallback: bool = False,
+        **kwargs,
+    ) -> NoReturn:
+        """最近使用 `got_path` 接收的消息不符合预期，
+        发送一条消息给当前交互用户并将当前事件处理流程中断在当前位置，在接收用户新的一条消息后从头开始执行当前处理函数
+
+        参数:
+            path: 参数路径名; "~XX" 时会把 "~" 替换为父级 assign 的 path
+            prompt: 消息内容, 支持 `UniMessage`
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
+                是否转为字符串
+            kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
+                请参考对应 adapter 的 bot 对象 api
+        """
+        matcher = current_matcher.get()
+        matcher.set_target(ALCONNA_ARG_KEY.format(key=merge_path(path, cls.basepath)))
         if prompt is not None:
             await cls.send(prompt, fallback=fallback, **kwargs)
         raise RejectedException
@@ -632,6 +757,21 @@ def on_alconna(
 
     command.meta.extra["matcher"] = weakref.KeyedRef(matcher, remove, "matcher")
     return matcher
+
+
+def referent(cmd: str | Alconna) -> type[AlconnaMatcher]:
+    """获取 Alconna 对应的 Matcher
+    
+    若不存在则返回一个新的 Matcher
+    """
+    if isinstance(cmd, str):
+        try:
+            cmd = command_manager.get_command(cmd)
+        except ValueError:
+            return on_alconna(cmd)
+    if "matcher" in cmd.meta.extra:
+        return cmd.meta.extra["matcher"]()
+    return on_alconna(cmd)
 
 
 def funcommand(

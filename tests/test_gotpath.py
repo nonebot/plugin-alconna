@@ -41,7 +41,7 @@ async def test_got_path(app: App):
         ctx.should_rejected(test_cmd)
         event = fake_group_message_event_v11(message=Message(MessageSegment.at(1234)), user_id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, Message(["ok\n", MessageSegment.at(1234)]))
+        ctx.should_call_send(event, Message([MessageSegment.text("ok\n"), MessageSegment.at(1234)]))
 
         event = fake_group_message_event_v11(message=Message("test 1234"), user_id=123)
         ctx.receive_event(bot, event)
