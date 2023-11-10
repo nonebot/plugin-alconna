@@ -61,7 +61,7 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
             if event.group_open_id:
                 return Target(event.group_open_id, source=str(event.id))
             elif event.channel_id:
-                return Target(event.channel_id, event.guild_id, channel=True, source=str(event.id))
+                return Target(event.channel_id, event.guild_id or "", channel=True, source=str(event.id))
             else:
                 return Target(event.get_user_id(), private=True, source=str(event.id))
         if isinstance(event, FriendRobotEvent):

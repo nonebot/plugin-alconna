@@ -25,7 +25,9 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
 
         if isinstance(event, (MessageEvent, NoticeEvent)):
             if event.channel:
-                return Target(event.channel.id, event.guild.id if event.guild else event.channel.parent_id)
+                return Target(
+                    event.channel.id, event.guild.id if event.guild else event.channel.parent_id or ""
+                )
             elif event.user:
                 return Target(event.user.id, private=True)
         raise NotImplementedError

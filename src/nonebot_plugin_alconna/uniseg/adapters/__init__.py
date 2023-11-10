@@ -4,6 +4,7 @@ from ..export import MessageExporter
 from .qq import QQMessageExporter  # noqa: F401
 from .red import RedMessageExporter  # noqa: F401
 from .ding import DingMessageExporter  # noqa: F401
+from .dodo import DoDoMessageExporter  # noqa: F401
 from .kook import KookMessageExporter  # noqa: F401
 from .mirai import MiraiMessageExporter  # noqa: F401
 from .villa import VillaMessageExporter  # noqa: F401

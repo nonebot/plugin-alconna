@@ -180,7 +180,7 @@ class Media(Segment):
             self.name = Path(self.path).name
 
     @property
-    def raw_bytes(self):
+    def raw_bytes(self) -> bytes:
         if not self.raw:
             raise ValueError(f"{self} has no raw data")
         if isinstance(self.raw["data"], BytesIO):
@@ -319,6 +319,12 @@ class _At(UniPattern[At]):
                 return At("user", seg.data["id"], seg.data["name"])
             if "role" in seg.data:
                 return At("role", seg.data["role"], seg.data["name"])
+        if seg.type == "at_user":  # dodo
+            return At("user", seg.data["dodo_id"])
+        if seg.type == "at_role":  # dodo
+            return At("role", seg.data["role_id"])
+        if seg.type == "channel_link":  # dodo
+            return At("channel", seg.data["channel_id"])
         if seg.type == "sharp":  # satori
             return At("channel", seg.data["channel_id"], seg.data["name"])
         if seg.type == "mention":
@@ -448,6 +454,8 @@ class _Image(UniPattern[Image]):
                 return Image(url=seg.data["url"])
             if "attachment" in seg.data:  # discord
                 return Image(id=seg.data["attachment"].filename)
+        if seg.type == "picture":  # dodo
+            return Image(url=seg.data["picture"].url)
         if seg.type == "Image":  # mirai
             return Image(url=seg.data["url"], id=seg.data["imageId"])
         if seg.type == "img":  # satori
@@ -474,6 +482,8 @@ class _Video(UniPattern[Video]):
                     path=seg.data["filePath"],
                     name=seg.data["fileName"],
                 )
+            if "video" in seg.data:  # dodo
+                return Video(url=seg.data["video"].url)
             if "file_id" in seg.data:  # ob12, telegram
                 return Video(id=seg.data["file_id"])
             if "file" in seg.data:  # ob11
@@ -562,6 +572,8 @@ class _File(UniPattern[File]):
                     id=seg.data["md5"],
                     name=seg.data["name"],
                 )
+            if "file" in seg.data:  # dodo
+                return File(url=seg.data["file"].url)
             if "file_id" in seg.data:  # ob12
                 return File(id=seg.data["file_id"])
             if "file_key" in seg.data:  # feishu, kook
@@ -593,7 +605,7 @@ file = _File()
 class _Reply(UniPattern[Reply]):
     def solve(self, seg: MessageSegment):
         if seg.type == "reference":
-            if "message_id" in seg.data:  # telegram
+            if "message_id" in seg.data:  # telegram, dodo
                 return Reply(seg.data["message_id"], origin=seg)
             if "reference" in seg.data:  # discord, qq, qqguild
                 return Reply(seg.data["reference"].message_id, origin=seg.data["reference"])
