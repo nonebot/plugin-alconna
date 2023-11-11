@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
@@ -73,10 +74,10 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
             resp = await bot.upload_file(type="url", name=seg.name, url=seg.url)
             return method(resp["file_id"])
         elif seg.path:
-            resp = await bot.upload_file(type="path", name=seg.name, path=str(seg.path))
+            resp = await bot.upload_file(type="path", path=str(seg.path), name=Path(seg.path).name)
             return method(resp["file_id"])
         elif seg.raw:
-            resp = await bot.upload_file(type="data", name=seg.name, data=seg.raw_bytes)
+            resp = await bot.upload_file(type="data", data=seg.raw_bytes, name=seg.name)
             return method(resp["file_id"])
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))

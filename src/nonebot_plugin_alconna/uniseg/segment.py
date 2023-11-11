@@ -174,20 +174,18 @@ class Media(Segment):
     def __post_init__(self):
         if self.path:
             self.name = Path(self.path).name
-        if self.raw and not self.mimetype:
-            header = self.raw[:128]
-            info = fleep.get(header)
-            self.mimetype = info.mime[0] if info.mime else None
-            if info.type and info.extension:
-                self.name = f"{info.type[0]}.{info.extension[0]}"
 
     @property
     def raw_bytes(self) -> bytes:
         if not self.raw:
             raise ValueError(f"{self} has no raw data")
-        if isinstance(self.raw, BytesIO):
-            return self.raw.getvalue()
-        return self.raw
+        raw = self.raw.getvalue() if isinstance(self.raw, BytesIO) else self.raw
+        header = raw[:128]
+        info = fleep.get(header)
+        self.mimetype = info.mime[0] if info.mime else self.mimetype
+        if info.type and info.extension:
+            self.name = f"{info.type[0]}.{info.extension[0]}"
+        return raw
 
 
 @dataclass

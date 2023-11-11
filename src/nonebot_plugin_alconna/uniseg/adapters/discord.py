@@ -74,7 +74,8 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         name = seg.__class__.__name__.lower()
 
         if seg.raw and (seg.id or seg.name):
-            return ms.attachment(seg.id or seg.name, content=seg.raw_bytes)
+            content = seg.raw_bytes
+            return ms.attachment(seg.id or seg.name, content=content)
         elif seg.path:
             path = Path(seg.path)
             return ms.attachment(path.name, content=path.read_bytes())
