@@ -1,3 +1,4 @@
+from io import BytesIO
 from pathlib import Path
 from copy import deepcopy
 from types import FunctionType
@@ -26,7 +27,6 @@ from .segment import (
     Reply,
     Video,
     Voice,
-    RawData,
     Segment,
     reply,
     segments,
@@ -151,7 +151,8 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "image.png",
         ) -> "UniMessage[Union[TS1, Image]]":
             """创建图片消息
@@ -161,6 +162,7 @@ class UniMessage(List[TS]):
                 url: 图片链接
                 path: 图片路径
                 raw: 图片原始数据
+                mimetype: 图片 MIME 类型
                 name: 图片名称
             返回:
                 构建的消息
@@ -173,7 +175,8 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "video.mp4",
         ) -> "UniMessage[Union[TS1, Video]]":
             """创建视频消息
@@ -183,6 +186,7 @@ class UniMessage(List[TS]):
                 url: 视频链接
                 path: 视频路径
                 raw: 视频原始数据
+                mimetype: 视频 MIME 类型
                 name: 视频名称
             返回:
                 构建的消息
@@ -195,7 +199,8 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "voice.wav",
         ) -> "UniMessage[Union[TS1, Voice]]":
             """创建语音消息
@@ -205,6 +210,7 @@ class UniMessage(List[TS]):
                 url: 语音链接
                 path: 语音路径
                 raw: 语音原始数据
+                mimetype: 语音 MIME 类型
                 name: 语音名称
             返回:
                 构建的消息
@@ -217,7 +223,8 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "audio.mp3",
         ) -> "UniMessage[Union[TS1, Audio]]":
             """创建音频消息
@@ -227,6 +234,7 @@ class UniMessage(List[TS]):
                 url: 音频链接
                 path: 音频路径
                 raw: 音频原始数据
+                mimetype: 音频 MIME 类型
                 name: 音频名称
             返回:
                 构建的消息
@@ -239,7 +247,8 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "file.bin",
         ) -> "UniMessage[Union[TS1, File]]":
             """创建文件消息
@@ -249,6 +258,7 @@ class UniMessage(List[TS]):
                 url: 文件链接
                 path: 文件路径
                 raw: 文件原始数据
+                mimetype: 文件 MIME 类型
                 name: 文件名称
             返回:
                 构建的消息
@@ -336,13 +346,14 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "image.png",
         ) -> "UniMessage[Union[TS1, Image]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Image(id, url, path, raw, name))
+                cls_or_self.append(Image(id, url, path, raw, mimetype, name))
                 return cls_or_self
-            return UniMessage(Image(id, url, path, raw, name))
+            return UniMessage(Image(id, url, path, raw, mimetype, name))
 
         @_method
         def video(
@@ -350,13 +361,14 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "video.mp4",
         ) -> "UniMessage[Union[TS1, Video]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Video(id, url, path, raw, name))
+                cls_or_self.append(Video(id, url, path, raw, mimetype, name))
                 return cls_or_self
-            return UniMessage(Video(id, url, path, raw, name))
+            return UniMessage(Video(id, url, path, raw, mimetype, name))
 
         @_method
         def voice(
@@ -364,13 +376,14 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "voice.wav",
         ) -> "UniMessage[Union[TS1, Voice]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Voice(id, url, path, raw, name))
+                cls_or_self.append(Voice(id, url, path, raw, mimetype, name))
                 return cls_or_self
-            return UniMessage(Voice(id, url, path, raw, name))
+            return UniMessage(Voice(id, url, path, raw, mimetype, name))
 
         @_method
         def audio(
@@ -378,13 +391,14 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "audio.mp3",
         ) -> "UniMessage[Union[TS1, Audio]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Audio(id, url, path, raw, name))
+                cls_or_self.append(Audio(id, url, path, raw, mimetype, name))
                 return cls_or_self
-            return UniMessage(Audio(id, url, path, raw, name))
+            return UniMessage(Audio(id, url, path, raw, mimetype, name))
 
         @_method
         def file(
@@ -392,13 +406,14 @@ class UniMessage(List[TS]):
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
-            raw: Optional[RawData] = None,
+            raw: Optional[Union[bytes, BytesIO]] = None,
+            mimetype: Optional[str] = None,
             name: str = "file.bin",
         ) -> "UniMessage[Union[TS1, File]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(File(id, url, path, raw, name))
+                cls_or_self.append(File(id, url, path, raw, mimetype, name))
                 return cls_or_self
-            return UniMessage(File(id, url, path, raw, name))
+            return UniMessage(File(id, url, path, raw, mimetype, name))
 
         @_method
         def reply(cls_or_self, id: str) -> "UniMessage[Union[TS1, Reply]]":

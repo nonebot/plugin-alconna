@@ -64,7 +64,7 @@ class DoDoMessageExporter(MessageExporter["MessageSegment"]):
 
             assert isinstance(bot, DoDoBot)
         if seg.raw:
-            data = seg.raw["data"]
+            data = seg.raw_bytes
         elif seg.path:
             data = Path(seg.path)
         elif seg.url:

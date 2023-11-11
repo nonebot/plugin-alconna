@@ -7,7 +7,6 @@ from pathlib import Path
 from base64 import b64decode
 from datetime import datetime
 from dataclasses import field, asdict, dataclass
-from typing_extensions import TypedDict, NotRequired
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -24,6 +23,7 @@ from typing import (
     overload,
 )
 
+import fleep
 from nepattern import MatchMode, BasePattern, create_local_patterns
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
 
@@ -162,30 +162,32 @@ class Emoji(Segment):
     name: Optional[str] = field(default=None)
 
 
-class RawData(TypedDict):
-    data: Union[bytes, BytesIO]
-    mimetype: NotRequired[str]
-
-
 @dataclass
 class Media(Segment):
     id: Optional[str] = field(default=None)
     url: Optional[str] = field(default=None)
     path: Optional[Union[str, Path]] = field(default=None)
-    raw: Optional[RawData] = field(default=None)
+    raw: Optional[Union[bytes, BytesIO]] = field(default=None)
+    mimetype: Optional[str] = field(default=None)
     name: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if self.path:
             self.name = Path(self.path).name
+        if self.raw and not self.mimetype:
+            header = self.raw[:128]
+            info = fleep.get(header)
+            self.mimetype = info.mime[0] if info.mime else None
+            if info.type and info.extension:
+                self.name = f"{info.type[0]}.{info.extension[0]}"
 
     @property
     def raw_bytes(self) -> bytes:
         if not self.raw:
             raise ValueError(f"{self} has no raw data")
-        if isinstance(self.raw["data"], BytesIO):
-            return self.raw["data"].getvalue()
-        return self.raw["data"]
+        if isinstance(self.raw, BytesIO):
+            return self.raw.getvalue()
+        return self.raw
 
 
 @dataclass
@@ -470,7 +472,7 @@ class _Image(UniPattern[Image]):
                 return Image(path=Path(src[7:]))
             if src.startswith("data:"):
                 mime, b64 = src[5:].split(";", 1)
-                return Image(raw={"data": b64decode(b64[7:]), "mimetype": mime})
+                return Image(raw=b64decode(b64[7:]), mimetype=mime)
             return Image(seg.data["src"])
 
 
@@ -506,7 +508,7 @@ class _Video(UniPattern[Video]):
                     return Video(path=Path(src[7:]))
                 if src.startswith("data:"):
                     mime, b64 = src[5:].split(";", 1)
-                    return Video(raw={"data": b64decode(b64[7:]), "mimetype": mime})
+                    return Video(raw=b64decode(b64[7:]), mimetype=mime)
                 return Video(seg.data["src"])
         if seg.type == "Video":  # mirai
             return Video(url=seg.data["url"], id=seg.data["videoId"])
@@ -561,7 +563,7 @@ class _Audio(UniPattern[Audio]):
                 return Audio(path=Path(src[7:]))
             if src.startswith("data:"):
                 mime, b64 = src[5:].split(";", 1)
-                return Audio(raw={"data": b64decode(b64[7:]), "mimetype": mime})
+                return Audio(raw=b64decode(b64[7:]), mimetype=mime)
             return Audio(seg.data["src"])
 
 
@@ -595,7 +597,7 @@ class _File(UniPattern[File]):
                     return File(path=Path(src[7:]))
                 if src.startswith("data:"):
                     mime, b64 = src[5:].split(";", 1)
-                    return File(raw={"data": b64decode(b64[7:]), "mimetype": mime})
+                    return File(raw=b64decode(b64[7:]), mimetype=mime)
                 return File(seg.data["src"])
         if seg.type == "document":  # telegram
             return File(seg.data["file_id"], name=seg.data["file_name"])

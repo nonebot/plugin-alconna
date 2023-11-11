@@ -85,8 +85,8 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
             return method(url=seg.id or seg.url)
         if seg.path:
             return method(path=seg.path)
-        if seg.raw and (mime := seg.raw.get("mimetype")):
-            return method(raw={"data": seg.raw["data"], "mime": mime})
+        if seg.raw and seg.mimetype:
+            return method(raw={"data": seg.raw_bytes, "mime": seg.mimetype})
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
