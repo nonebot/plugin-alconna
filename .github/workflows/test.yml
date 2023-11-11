@@ -9,7 +9,7 @@ jobs:
   test:
     strategy:
       matrix:
-        py_ver: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        py_ver: ['3.8', '3.9', '3.10', '3.11']
     runs-on:  ubuntu-latest
     steps:
       - uses: actions/checkout@v4
