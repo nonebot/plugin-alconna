@@ -392,6 +392,7 @@ async def _(msg: UniMsg):
 | [Discord](https://github.com/nonebot/adapter-discord)               | adapters.discord                     |
 | [Red 协议](https://github.com/nonebot/adapter-red)                    | adapters.red                         |
 | [Satori](https://github.com/nonebot/adapter-satori)                 | adapters.satori                      |
+| [Dodo IM](https://github.com/nonebot/adapter-dodo)                  | adapters.dodo                        |
 
 
 ### 示例
