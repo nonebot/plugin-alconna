@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:62eab9f205a39e877bd628c3987e189b966623485ab08d710d2b08992320292e"
+content_hash = "sha256:a1bd1e9f1ce0eac7ef536558add8852965b4e365d6e8a0d5b9b13f85f0f97b83"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -796,6 +796,19 @@ dependencies = [
 files = [
     {file = "nonebot_adapter_discord-0.1.0b4-py3-none-any.whl", hash = "sha256:c67f089cf6d3cb559a803b8e910e23c2acbf992e624b6a384b3570f1b2f2279e"},
     {file = "nonebot_adapter_discord-0.1.0b4.tar.gz", hash = "sha256:010eff96531e46a1aa82b684ab657a357edfe83b7b81068da3661fa6e85e741e"},
+]
+
+[[package]]
+name = "nonebot-adapter-dodo"
+version = "0.1.0"
+requires_python = ">=3.8,<4.0"
+summary = "Dodo adapter for nonebot2"
+dependencies = [
+    "nonebot2<3.0.0,>=2.0.0",
+]
+files = [
+    {file = "nonebot_adapter_dodo-0.1.0-py3-none-any.whl", hash = "sha256:98bbc544c8bd4cbca6cdc03aefb1868fb428cc535752db7a508bc417db46ee55"},
+    {file = "nonebot_adapter_dodo-0.1.0.tar.gz", hash = "sha256:ac278809c06133b1183d57f8385c473c6f403655791ccc280a8e2f61d50209ae"},
 ]
 
 [[package]]

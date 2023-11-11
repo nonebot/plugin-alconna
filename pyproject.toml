@@ -61,6 +61,7 @@ dev = [
     "pytest-asyncio>=0.21.1",
     "fastapi>=0.103.2",
     "uvicorn[standard]>=0.23.2",
+    "nonebot-adapter-dodo>=0.1.0",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

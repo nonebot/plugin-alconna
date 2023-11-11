@@ -24,6 +24,7 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         origin: type[TMS],
         call: Callable[P, TMS],
         additional: Callable[[TMS], bool] | None = None,
+        handle: Callable[[TMS], TMS | None] | None = None,
     ):
         super().__init__(
             model=MatchMode.TYPE_CONVERT,
@@ -34,11 +35,16 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         )
         self.pattern = name
         self.call = call
+        self.handle = handle
 
     def match(self, input_: Any) -> TMS:
         if not isinstance(input_, self.origin):
             raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
         if input_.type != self.pattern:
+            raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
+        if self.handle:
+            if res := self.handle(input_):
+                return res
             raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
         return input_
 

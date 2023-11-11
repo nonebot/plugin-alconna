@@ -310,10 +310,10 @@ text = _Text()
 
 class _At(UniPattern[At]):
     def solve(self, seg: MessageSegment):
-        if seg.type == "at":  # ob11, feishu, red, satori
+        if seg.type == "at":  # ob11, feishu, red, satori, kook(edited)
             if "qq" in seg.data and seg.data["qq"] != "all":
                 return At("user", str(seg.data["qq"]))
-            if "user_id" in seg.data and seg.data["user_id"] != "all":
+            if "user_id" in seg.data and seg.data["user_id"] not in ("all", "here"):
                 return At("user", str(seg.data["user_id"]))
             if "id" in seg.data:
                 return At("user", seg.data["id"], seg.data["name"])
@@ -321,8 +321,10 @@ class _At(UniPattern[At]):
                 return At("role", seg.data["role"], seg.data["name"])
         if seg.type == "at_user":  # dodo
             return At("user", seg.data["dodo_id"])
-        if seg.type == "at_role":  # dodo
+        if seg.type == "at_role":  # dodo, kook(edited)
             return At("role", seg.data["role_id"])
+        if seg.type == "at_channel":  # kook(edited)
+            return At("channel", seg.data["channel_id"])
         if seg.type == "channel_link":  # dodo
             return At("channel", seg.data["channel_id"])
         if seg.type == "sharp":  # satori
@@ -370,7 +372,7 @@ class _AtAll(UniPattern[AtAll]):
         if seg.type == "at":
             if "qq" in seg.data and seg.data["qq"] == "all":  # ob11
                 return AtAll()
-            if "user_id" in seg.data and seg.data["user_id"] == "all":  # feishu
+            if "user_id" in seg.data and seg.data["user_id"] in ("all", "here"):  # feishu, kook(edited)
                 return AtAll()
             if "type" in seg.data and seg.data["type"] in ("all", "here"):  # satori
                 return AtAll(here=seg.data["type"] == "here")
@@ -392,6 +394,8 @@ class _Emoji(UniPattern[Emoji]):
     def solve(self, seg: MessageSegment):
         if seg.type == "emoji":
             if "id" in seg.data:
+                if "name" in seg.data:
+                    return Emoji(seg.data["id"], seg.data["name"])
                 return Emoji(seg.data["id"])
             if "name" in seg.data:
                 return Emoji(seg.data["name"])

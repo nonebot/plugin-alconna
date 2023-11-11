@@ -1,4 +1,5 @@
 import asyncio
+import importlib
 from typing import List, Type, Union, Literal, Optional, cast
 
 from nonebot import get_driver
@@ -15,10 +16,13 @@ from arclet.alconna.exceptions import SpecialOptionTriggered
 from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
 
 from .config import Config
+from .adapters import MAPPING
 from .uniseg import UniMessage
 from .model import CompConfig, CommandResult
 from .extension import Extension, ExtensionExecutor
 from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT, log
+
+_modules = set()
 
 
 class AlconnaRule:
@@ -239,6 +243,9 @@ class AlconnaRule:
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
         if self._session and self._session != event.get_session_id():
             return False
+        adapter_name = bot.adapter.get_name()
+        if adapter_name in MAPPING and MAPPING[adapter_name] not in _modules:
+            importlib.import_module(f"nonebot_plugin_alconna.adapters.{MAPPING[adapter_name]}")
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
             try:

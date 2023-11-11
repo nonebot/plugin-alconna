@@ -58,7 +58,7 @@ def clean_style():
     styles["index"] = 0
 
 
-MessageArgv.custom_build(Message, is_text=is_text, builder=builder, cleanup=clean_style)
+MessageArgv.custom_build(Message, is_text=is_text, builder=builder, cleanup=clean_style)  # type: ignore
 
 
 def locator(x: str, t: str):
