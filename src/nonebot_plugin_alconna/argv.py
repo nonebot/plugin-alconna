@@ -61,7 +61,7 @@ class MessageArgv(Argv[TM]):
         """
         self.reset()
         if not isinstance(data, (Message, UniMessage)):
-            data = FallbackMessage(data)
+            data = FallbackMessage(data)  # type: ignore
         cache = self.__class__._cache.get(data.__class__, {})
         if "cleanup" in cache:
             cache["cleanup"]()
@@ -90,13 +90,13 @@ class MessageArgv(Argv[TM]):
                 continue
             if d.__class__ is str:
                 text = d
-            elif self.is_text(d):
-                text = d.data["text"]
+            elif self.is_text(d):  # type: ignore
+                text = d.data["text"]  # type: ignore
             else:
                 self.raw_data.append(d)
                 self.ndata += 1
                 continue
-            if not text.strip("\xa0").strip():
+            if not text.strip("\xa0").strip():  # type: ignore
                 continue
             if i > 0 and isinstance(self.raw_data[-1], str):
                 self.raw_data[-1] += f"{self.separators[0]}{text}"

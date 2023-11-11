@@ -291,42 +291,42 @@ class UniMessage(List[TS]):
         @_method
         def text(cls_or_self, text: str) -> "UniMessage[Union[TS1, Text]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += Text(text)
+                cls_or_self.append(Text(text))
                 return cls_or_self
             return UniMessage(Text(text))
 
         @_method
         def at(cls_or_self, user_id: str) -> "UniMessage[Union[TS1, At]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += At("user", user_id)
+                cls_or_self.append(At("user", user_id))
                 return cls_or_self
             return UniMessage(At("user", user_id))
 
         @_method
         def at_role(cls_or_self, role_id: str) -> "UniMessage[Union[TS1, At]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += At("role", role_id)
+                cls_or_self.append(At("role", role_id))
                 return cls_or_self
             return UniMessage(At("role", role_id))
 
         @_method
         def at_channel(cls_or_self, channel_id: str) -> "UniMessage[Union[TS1, At]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += At("channel", channel_id)
+                cls_or_self.append(At("channel", channel_id))
                 return cls_or_self
             return UniMessage(At("channel", channel_id))
 
         @_method
         def at_all(cls_or_self, online: bool = False) -> "UniMessage[Union[TS1, AtAll]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += AtAll(online)
+                cls_or_self.append(AtAll(online))
                 return cls_or_self
             return UniMessage(AtAll(online))
 
         @_method
         def emoji(cls_or_self, id: str, name: Optional[str] = None) -> "UniMessage[Union[TS1, Emoji]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += Emoji(id, name)
+                cls_or_self.append(Emoji(id, name))
                 return cls_or_self
             return UniMessage(Emoji(id, name))
 
@@ -340,7 +340,7 @@ class UniMessage(List[TS]):
             name: str = "image.png",
         ) -> "UniMessage[Union[TS1, Image]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += Image(id, url, path, raw, name)
+                cls_or_self.append(Image(id, url, path, raw, name))
                 return cls_or_self
             return UniMessage(Image(id, url, path, raw, name))
 
@@ -354,7 +354,7 @@ class UniMessage(List[TS]):
             name: str = "video.mp4",
         ) -> "UniMessage[Union[TS1, Video]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += Video(id, url, path, raw, name)
+                cls_or_self.append(Video(id, url, path, raw, name))
                 return cls_or_self
             return UniMessage(Video(id, url, path, raw, name))
 
@@ -368,7 +368,7 @@ class UniMessage(List[TS]):
             name: str = "voice.wav",
         ) -> "UniMessage[Union[TS1, Voice]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += Voice(id, url, path, raw, name)
+                cls_or_self.append(Voice(id, url, path, raw, name))
                 return cls_or_self
             return UniMessage(Voice(id, url, path, raw, name))
 
@@ -382,7 +382,7 @@ class UniMessage(List[TS]):
             name: str = "audio.mp3",
         ) -> "UniMessage[Union[TS1, Audio]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += Audio(id, url, path, raw, name)
+                cls_or_self.append(Audio(id, url, path, raw, name))
                 return cls_or_self
             return UniMessage(Audio(id, url, path, raw, name))
 
@@ -396,21 +396,21 @@ class UniMessage(List[TS]):
             name: str = "file.bin",
         ) -> "UniMessage[Union[TS1, File]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += File(id, url, path, raw, name)
+                cls_or_self.append(File(id, url, path, raw, name))
                 return cls_or_self
             return UniMessage(File(id, url, path, raw, name))
 
         @_method
         def reply(cls_or_self, id: str) -> "UniMessage[Union[TS1, Reply]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += Reply(id)
+                cls_or_self.append(Reply(id))
                 return cls_or_self
             return UniMessage(Reply(id))
 
         @_method
         def card(cls_or_self, flag: Literal["xml", "json"], content: str) -> "UniMessage[Union[TS1, Card]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self += Card(flag, content)
+                cls_or_self.append(Card(flag, content))
                 return cls_or_self
             return UniMessage(Card(flag, content))
 

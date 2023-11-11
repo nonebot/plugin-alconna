@@ -72,7 +72,7 @@ class DoDoMessageExporter(MessageExporter["MessageSegment"]):
             data = cast(bytes, resp.content)
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
-        res = await bot.set_resouce_picture_upload(data)
+        res = await bot.set_resouce_picture_upload(file=data)
 
         return ms.picture(res.url, res.width, res.height)
 
@@ -107,9 +107,9 @@ class DoDoMessageExporter(MessageExporter["MessageSegment"]):
 
         assert isinstance(bot, DodoBot)
         if isinstance(context, Target) and not context.private:
-            return await bot.set_channel_message_withdraw(mid)
+            return await bot.set_channel_message_withdraw(message_id=mid)
         elif hasattr(context, "channel_id"):
-            return await bot.set_channel_message_withdraw(mid)
+            return await bot.set_channel_message_withdraw(message_id=mid)
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.dodo.bot import Bot as DodoBot
@@ -118,6 +118,6 @@ class DoDoMessageExporter(MessageExporter["MessageSegment"]):
         if TYPE_CHECKING:
             assert isinstance(new, self.get_message_type())
         if isinstance(context, Target) and not context.private:
-            return await bot.set_channel_message_edit(mid, new.to_message_body()[0])
+            return await bot.set_channel_message_edit(message_id=mid, message_body=new.to_message_body()[0])
         elif hasattr(context, "channel_id"):
-            return await bot.set_channel_message_edit(mid, new.to_message_body()[0])
+            return await bot.set_channel_message_edit(message_id=mid, message_body=new.to_message_body()[0])
