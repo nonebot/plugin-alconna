@@ -93,7 +93,7 @@ class AlconnaRule:
         self.executor = ExtensionExecutor(self, extensions, exclude_ext)
         self.executor.post_init()
         self._session = None
-        self._future: asyncio.Future = asyncio.Future()
+        self._future: asyncio.Future  # type: ignore
         self._interface = CompSession(self.command)
         self._waiter = on_message(
             priority=0,
@@ -193,6 +193,7 @@ class AlconnaRule:
             return False
         self._session = event.get_session_id()
         self._waiter.permission = Permission(User.from_event(event))
+        self._future = asyncio.get_running_loop().create_future()
         matchers[self._waiter.priority].append(self._waiter)
         res = Arparma(
             self.command.path,
@@ -204,7 +205,6 @@ class AlconnaRule:
         while self._interface.available:
             await self.send(f"{str(self._interface)}{self._comp_help}", bot, event, res)
             while True:
-                self._future = asyncio.get_running_loop().create_future()
                 try:
                     await asyncio.wait_for(self._future, timeout=self.comp_config.get("timeout", 60))
                 except asyncio.TimeoutError:
@@ -216,6 +216,7 @@ class AlconnaRule:
                     if not self._future.done():
                         self._future.cancel()
                 ans: Union[Message, bool, None] = self._future.result()
+                self._future = asyncio.get_running_loop().create_future()
                 if ans is False:
                     await self.send(lang.require("comp/nonebot", "exited"), bot, event, res)
                     self._interface.exit()
