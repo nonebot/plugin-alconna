@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tarina import lang
@@ -61,6 +62,16 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
         if seg.url:
             return ms.image(seg.url)
+        elif image := seg.raw_bytes or (seg.path and Path(seg.path)):
+            try:
+                from nonebot.adapters.villa.bot import Bot
+
+                assert isinstance(bot, Bot)
+                return ms.image((await bot.upload_image(image=image)).url)
+            except Exception as e:
+                raise SerializeFailed(
+                    lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg)
+                ) from e
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
@@ -81,7 +92,14 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
 
     async def send_to(self, target: Target, bot: Bot, message: Message):
         from nonebot.adapters.villa.bot import Bot as VillaBot
-        from nonebot.adapters.villa.api.models import PostMessageContent, ImageMessageContent
+
+        try:
+            from nonebot.adapters.villa.models import ImageMessageContent, PostMessageContent
+        except ImportError:
+            from nonebot.adapters.villa.api.models import (  # type: ignore
+                ImageMessageContent,
+                PostMessageContent,
+            )
 
         assert isinstance(bot, VillaBot)
         if TYPE_CHECKING:
