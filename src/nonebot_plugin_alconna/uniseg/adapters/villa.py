@@ -1,5 +1,5 @@
-from datetime import datetime
 from pathlib import Path
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from tarina import lang
@@ -94,11 +94,11 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         from nonebot.adapters.villa.bot import Bot as VillaBot
 
         try:
-            from nonebot.adapters.villa.models import ImageMessageContent, PostMessageContent
+            from nonebot.adapters.villa.models import PostMessageContent, ImageMessageContent
         except ImportError:
             from nonebot.adapters.villa.api.models import (  # type: ignore
-                ImageMessageContent,
                 PostMessageContent,
+                ImageMessageContent,
             )
 
         assert isinstance(bot, VillaBot)
