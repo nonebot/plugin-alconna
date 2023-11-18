@@ -18,6 +18,8 @@ from typing import (
     cast,
 )
 
+from tarina.tools import gen_subclass
+
 from .segment import Segment
 
 if TYPE_CHECKING:
@@ -26,7 +28,7 @@ if TYPE_CHECKING:
 FormatSpecFunc: TypeAlias = Callable[[Any], str]
 FormatSpecFunc_T = TypeVar("FormatSpecFunc_T", bound=FormatSpecFunc)
 
-_MAPPING = {cls.__name__: cls for cls in Segment.__subclasses__()}
+_MAPPING = {cls.__name__: cls for cls in gen_subclass(Segment)}
 _PATTERN = re.compile("(" + "|".join(_MAPPING.keys()) + r")\((.*)\)$")
 
 

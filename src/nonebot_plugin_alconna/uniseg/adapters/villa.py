@@ -81,7 +81,7 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
 
     async def send_to(self, target: Target, bot: Bot, message: Message):
         from nonebot.adapters.villa.bot import Bot as VillaBot
-        from nonebot.adapters.villa.api.models import PostMessageContent, ImageMessageContent
+        from nonebot.adapters.villa.models import PostMessageContent, ImageMessageContent
 
         assert isinstance(bot, VillaBot)
         if TYPE_CHECKING:

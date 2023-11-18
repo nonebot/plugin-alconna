@@ -129,7 +129,7 @@ class AlconnaRule:
 
             @self._waiter.handle()
             async def _waiter_handle(_bot: Bot, _event: Event, content: Message = EventMessage()):
-                msg = str(content)
+                msg = str(content).lstrip()
                 if msg.startswith(_exit) and "exit" not in disables:
                     if msg == _exit:
                         self._future.set_result(False)

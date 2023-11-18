@@ -24,7 +24,7 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
     def get_target(self, event: Event) -> Target:
         if channel_id := getattr(event, "channel_id", None):
             guild_id = getattr(event, "guild_id", None)
-            return Target(str(channel_id), str(guild_id) if guild_id else None, channel=True)
+            return Target(str(channel_id), str(guild_id) if guild_id else "", channel=True)
         if guild_id := getattr(event, "guild_id", None):
             return Target(str(guild_id), channel=True)
         if group_id := getattr(event, "group_id", None):

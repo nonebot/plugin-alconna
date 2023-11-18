@@ -22,7 +22,7 @@ class NTChatMessageExporter(MessageExporter["MessageSegment"]):
 
     def get_target(self, event: Event) -> Target:
         from_wxid = getattr(event, "from_wxid", None)
-        room_wxid = getattr(event, "room_wxid", None)
+        room_wxid = getattr(event, "room_wxid", "")
         if from_wxid:
             return Target(from_wxid, room_wxid)
         raise NotImplementedError
