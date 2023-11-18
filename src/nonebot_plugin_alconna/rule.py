@@ -1,6 +1,6 @@
 import asyncio
 import importlib
-from typing import List, Type, Union, Literal, Optional, cast
+from typing import Dict, List, Type, Union, Literal, Optional, cast
 
 from nonebot import get_driver
 from nonebot.typing import T_State
@@ -48,7 +48,7 @@ class AlconnaRule:
         "executor",
         "_session",
         "_waiter",
-        "_future",
+        "_futures",
         "_interface",
         "_comp_help",
     )
@@ -93,8 +93,9 @@ class AlconnaRule:
         self.executor = ExtensionExecutor(self, extensions, exclude_ext)
         self.executor.post_init()
         self._session = None
-        self._future: asyncio.Future  # type: ignore
+        self._futures: Dict[str, asyncio.Future] = {}
         self._interface = CompSession(self.command)
+
         self._waiter = on_message(
             priority=0,
             block=True,
@@ -130,12 +131,15 @@ class AlconnaRule:
             @self._waiter.handle()
             async def _waiter_handle(_bot: Bot, _event: Event, content: Message = EventMessage()):
                 msg = str(content).lstrip()
+                if _bot.self_id not in self._futures:
+                    await self._waiter.skip()
+                _future = self._futures[_bot.self_id]
                 if msg.startswith(_exit) and "exit" not in disables:
                     if msg == _exit:
-                        self._future.set_result(False)
+                        _future.set_result(False)
                         await self._waiter.finish()
                     else:
-                        self._future.set_result(None)
+                        _future.set_result(None)
                         await self._waiter.pause(
                             lang.require("analyser", "param_unmatched").format(
                                 target=msg.replace(_exit, "", 1)
@@ -143,10 +147,10 @@ class AlconnaRule:
                         )
                 elif msg.startswith(_enter) and "enter" not in disables:
                     if msg == _enter:
-                        self._future.set_result(True)
+                        _future.set_result(True)
                         await self._waiter.finish()
                     else:
-                        self._future.set_result(None)
+                        _future.set_result(None)
                         await self._waiter.pause(
                             lang.require("analyser", "param_unmatched").format(
                                 target=msg.replace(_enter, "", 1)
@@ -157,7 +161,7 @@ class AlconnaRule:
                     try:
                         offset = int(offset)
                     except ValueError:
-                        self._future.set_result(None)
+                        _future.set_result(None)
                         await self._waiter.pause(
                             lang.require("analyser", "param_unmatched").format(target=offset)
                         )
@@ -169,7 +173,7 @@ class AlconnaRule:
                             else "\n".join(self._interface.lines())
                         )
                 else:
-                    self._future.set_result(content)
+                    _future.set_result(content)
                     await self._waiter.finish()
 
     def __repr__(self) -> str:
@@ -193,7 +197,7 @@ class AlconnaRule:
             return False
         self._session = event.get_session_id()
         self._waiter.permission = Permission(User.from_event(event))
-        self._future = asyncio.get_running_loop().create_future()
+        self._futures[bot.self_id] = asyncio.get_running_loop().create_future()
         matchers[self._waiter.priority].append(self._waiter)
         res = Arparma(
             self.command.path,
@@ -206,17 +210,19 @@ class AlconnaRule:
             await self.send(f"{str(self._interface)}{self._comp_help}", bot, event, res)
             while True:
                 try:
-                    await asyncio.wait_for(self._future, timeout=self.comp_config.get("timeout", 60))
+                    await asyncio.wait_for(
+                        self._futures[bot.self_id], timeout=self.comp_config.get("timeout", 60)
+                    )
                 except asyncio.TimeoutError:
                     await self.send(lang.require("comp/nonebot", "timeout"), bot, event, res)
                     self._interface.exit()
                     self._waiter.destroy()
                     return res
                 finally:
-                    if not self._future.done():
-                        self._future.cancel()
-                ans: Union[Message, bool, None] = self._future.result()
-                self._future = asyncio.get_running_loop().create_future()
+                    if not self._futures[bot.self_id].done():
+                        self._futures[bot.self_id].cancel()
+                ans: Union[Message, bool, None] = self._futures[bot.self_id].result()
+                self._futures[bot.self_id] = asyncio.get_running_loop().create_future()
                 if ans is False:
                     await self.send(lang.require("comp/nonebot", "exited"), bot, event, res)
                     self._interface.exit()

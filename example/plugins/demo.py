@@ -2,7 +2,6 @@ from typing import Union, Literal
 
 from tarina import lang
 from nonebot import require
-from nepattern import parser
 from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
 from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
@@ -12,9 +11,7 @@ from arclet.alconna import (
     Option,
     Alconna,
     Arparma,
-    MultiVar,
     Subcommand,
-    CommandMeta,
     Duplication,
     SubcommandStub,
     namespace,
@@ -229,7 +226,7 @@ async def mask_h(matcher: AlconnaMatcher, img: Match[bytes] = AlconnaMatch("img"
 async def mask_g(img: bytes, default: Query[bool] = Query("default.value")):
     print(default)
     if default.result:
-        await mask_cmd.send(Image(raw={"data": img}), fallback=True)
+        await mask_cmd.send(Image(raw=img), fallback=True)
     else:
         await mask_cmd.send("ok")
 
@@ -351,20 +348,6 @@ async def group_remove(group_id: int):
 @group.assign("list")
 async def group_list():
     await group.finish("list")
-
-
-demo = on_alconna(
-    Alconna(parser([At, "trig"]), Args["rest", MultiVar("any_str"), []], meta=CommandMeta(compact=True)),
-)
-
-
-@demo.handle()
-async def demo_h(arp: Arparma):
-    args = []
-    if isinstance(arp.header_match.result, str) and not arp.header_match.result.endswith("trig"):
-        args.append(arp.header_match.result[4:])
-    args.extend(arp.query[tuple]("rest", ()))
-    await demo.finish(f"args: {args}")
 
 
 test1_cmd = on_alconna(Alconna("test1", Args["target", Union[int, At]]), comp_config={})
