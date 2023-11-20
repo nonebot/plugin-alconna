@@ -4,7 +4,19 @@ import weakref
 from weakref import ref
 from types import FunctionType
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Union, Literal, Callable, ClassVar, Iterable, NoReturn, Protocol, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Union,
+    Literal,
+    Callable,
+    ClassVar,
+    Iterable,
+    NoReturn,
+    Protocol,
+    cast,
+    overload,
+)
 
 from nonebot.rule import Rule
 from nonebot.params import Depends
@@ -15,6 +27,7 @@ from nonebot.message import run_postprocessor
 from nepattern import STRING, AnyOne, AnyString
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
+from arclet.alconna.typing import ShortcutRegWrapper
 from tarina import lang, is_awaitable, run_always_await
 from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
@@ -100,8 +113,90 @@ class AlconnaMatcher(Matcher):
     executor: ClassVar[ExtensionExecutor]
 
     @classmethod
-    def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False):
-        return cls.command.shortcut(key, args, delete)
+    @overload
+    def shortcut(cls, key: str, args: ShortcutArgs | None = None) -> str:
+        """操作快捷命令
+
+        Args:
+            key (str): 快捷命令名
+            args (ShortcutArgs[TDC]): 快捷命令参数, 不传入时则尝试使用最近一次使用的命令
+
+        Returns:
+            str: 操作结果
+
+        Raises:
+            ValueError: 快捷命令操作失败时抛出
+        """
+        ...
+
+    @classmethod
+    @overload
+    def shortcut(
+        cls,
+        key: str,
+        *,
+        command: str | None = None,
+        arguments: list[Any] | None = None,
+        fuzzy: bool = True,
+        prefix: bool = False,
+        wrapper: ShortcutRegWrapper | None = None,
+    ) -> str:
+        """操作快捷命令
+
+        Args:
+            key (str): 快捷命令名
+            command (TDC): 快捷命令指向的命令
+            arguments (list[Any] | None, optional): 快捷命令参数, 默认为 `None`
+            fuzzy (bool, optional): 是否允许命令后随参数, 默认为 `True`
+            prefix (bool, optional): 是否调用时保留指令前缀, 默认为 `False`
+            wrapper (ShortcutRegWrapper, optional): 快捷指令的正则匹配结果的额外处理函数, 默认为 `None`
+
+        Returns:
+            str: 操作结果
+
+        Raises:
+            ValueError: 快捷命令操作失败时抛出
+        """
+        ...
+
+    @classmethod
+    @overload
+    def shortcut(cls, key: str, *, delete: Literal[True]) -> str:
+        """操作快捷命令
+
+        Args:
+            key (str): 快捷命令名
+            delete (bool): 是否删除快捷命令
+
+        Returns:
+            str: 操作结果
+
+        Raises:
+            ValueError: 快捷命令操作失败时抛出
+        """
+        ...
+
+    @classmethod
+    def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False, **kwargs):
+        """操作快捷命令
+
+        Args:
+            key (str): 快捷命令名
+            args (ShortcutArgs[TDC] | None, optional): 快捷命令参数, 不传入时则尝试使用最近一次使用的命令
+            delete (bool, optional): 是否删除快捷命令, 默认为 `False`
+            command (TDC, optional): 快捷命令指向的命令
+            arguments (list[Any] | None, optional): 快捷命令参数, 默认为 `None`
+            fuzzy (bool, optional): 是否允许命令后随参数, 默认为 `True`
+            prefix (bool, optional): 是否调用时保留指令前缀, 默认为 `False`
+            wrapper (ShortcutRegWrapper, optional): 快捷指令的正则匹配结果的额外处理函数, 默认为 `None`
+
+        Returns:
+            str: 操作结果
+
+        Raises:
+            ValueError: 快捷命令操作失败时抛出
+        """
+        return cls.command.shortcut(key, args, delete, **kwargs)  # type: ignore
 
     if TYPE_CHECKING:
 
@@ -676,7 +771,7 @@ def on_alconna(
     expire_time: datetime | timedelta | None = None,
     priority: int = 1,
     block: bool = False,
-    state: T_State | None = None,
+    default_state: T_State | None = None,
     _depth: int = 0,
 ) -> type[AlconnaMatcher]:
     """注册一个事件响应器，并且当消息由指定 Alconna 解析并传出有效结果时响应。
@@ -723,7 +818,7 @@ def on_alconna(
         use_cmd_sep,
     )
     executor = cast(ExtensionExecutor, list(_rule.checkers)[0].call.executor)  # type: ignore
-    AlconnaMatcher.HANDLER_PARAM_TYPES = (
+    params = (
         (ExtensionParam.new(executor),)
         + Matcher.HANDLER_PARAM_TYPES[:-1]
         + (
@@ -731,18 +826,40 @@ def on_alconna(
             DefaultParam,
         )
     )
-    matcher: type[AlconnaMatcher] = AlconnaMatcher.new(
-        "",
-        rule & _rule,
-        Permission() | permission,
-        temp=temp,
-        expire_time=expire_time,
-        priority=priority,
-        block=block,
-        handlers=handlers,
-        source=get_matcher_source(_depth + 1),
-        default_state=state,
+    source = get_matcher_source(_depth)
+    NewMatcher = type(
+        AlconnaMatcher.__name__,
+        (AlconnaMatcher,),
+        {
+            "_source": source,
+            "type": "",
+            "rule": rule & _rule,
+            "permission": Permission() | permission,
+            "handlers": [
+                handler
+                if isinstance(handler, Dependent)
+                else Dependent[Any].parse(call=handler, allow_types=params)
+                for handler in handlers
+            ]
+            if handlers
+            else [],
+            "temp": temp,
+            "expire_time": (
+                expire_time
+                and (expire_time if isinstance(expire_time, datetime) else datetime.now() + expire_time)
+            ),
+            "priority": priority,
+            "block": block,
+            "_default_state": default_state or {},
+            "_default_type_updater": None,
+            "_default_permission_updater": None,
+        },
     )
+    matcher: type[AlconnaMatcher] = cast("type[AlconnaMatcher]", NewMatcher)
+    matcher.HANDLER_PARAM_TYPES = params
+    log("TRACE", f"Define new matcher {NewMatcher}")
+
+    matchers[priority].append(NewMatcher)
     store_matcher(matcher)
     matcher.command = command
     matcher.basepath = ""
@@ -793,7 +910,7 @@ def funcommand(
     expire_time: datetime | timedelta | None = None,
     priority: int = 1,
     block: bool = False,
-    state: T_State | None = None,
+    default_state: T_State | None = None,
     _depth: int = 0,
 ) -> Callable[[Callable[..., MReturn]], type[AlconnaMatcher]]:
     _config: MountConfig = {"raise_exception": False}
@@ -821,7 +938,7 @@ def funcommand(
             expire_time=expire_time,
             priority=priority,
             block=block,
-            state=state,
+            default_state=default_state,
             _depth=_depth + 1,
         )
 
@@ -858,7 +975,7 @@ class Command(AlconnaString):
         expire_time: datetime | timedelta | None = None,
         priority: int = 1,
         block: bool = False,
-        state: T_State | None = None,
+        default_state: T_State | None = None,
         _depth: int = 0,
     ):
         params = locals().copy()

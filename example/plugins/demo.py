@@ -160,7 +160,7 @@ async def calc(op: Literal["add", "sub", "mul", "div"], a: float, b: float):
 
 
 @funcommand()
-async def test(
+async def func(
     a: int,
     b: bool,
     *args: str,

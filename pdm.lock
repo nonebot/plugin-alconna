@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:55d46440098b0f412f8d41ca25fc1ec47c43ed6f216c9bd4af9aa0e80ff81a52"
+content_hash = "sha256:941736eab41b6dfcaee3f6d7513c9ac8817a50e4b906b0851919e8bda0627c64"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -34,7 +34,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.7.35"
+version = "1.7.37"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -43,8 +43,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.7.35-py3-none-any.whl", hash = "sha256:1b3c5ae6419a86d46a9636222fd8dd15425d57edff6e2ae5cb70386715657ae0"},
-    {file = "arclet_alconna-1.7.35.tar.gz", hash = "sha256:cb12104133e49786d664910efea59e2999dc9ec33e70b7bed253fc7b76ebbab5"},
+    {file = "arclet_alconna-1.7.37-py3-none-any.whl", hash = "sha256:2a680acefdb63b3995c53ab0fdf70fa82d3a410705ff3993740554b73f5ce67f"},
+    {file = "arclet_alconna-1.7.37.tar.gz", hash = "sha256:ad54c297c1c76f4fe5741303ddcf0c2a7c9ecb3a14465103f42f1da4b23e6081"},
 ]
 
 [[package]]
@@ -905,7 +905,7 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-qq"
-version = "1.1.1"
+version = "1.1.2"
 requires_python = ">=3.8,<4.0"
 summary = "QQ adapter for nonebot2"
 dependencies = [
@@ -915,8 +915,8 @@ dependencies = [
     "yarl<2.0.0,>=1.9.0",
 ]
 files = [
-    {file = "nonebot_adapter_qq-1.1.1-py3-none-any.whl", hash = "sha256:45014d435ee56cd2a0885bcbdec12b00fd2a2267205d5452de4e9cbcfb584edb"},
-    {file = "nonebot_adapter_qq-1.1.1.tar.gz", hash = "sha256:d452d5a7046c4021e18bbdc6a27fb0880e3911844d0bfba3e2bd08042ae5c671"},
+    {file = "nonebot_adapter_qq-1.1.2-py3-none-any.whl", hash = "sha256:39e6ab0fffce12476e89713faf598f15d703c12970ebf908d285b756eb481258"},
+    {file = "nonebot_adapter_qq-1.1.2.tar.gz", hash = "sha256:7780158228000d44d462009653ef71f2486474b416e92f51487f26d7b952bd61"},
 ]
 
 [[package]]
