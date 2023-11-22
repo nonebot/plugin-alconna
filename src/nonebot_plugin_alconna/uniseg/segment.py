@@ -6,6 +6,7 @@ from io import BytesIO
 from pathlib import Path
 from base64 import b64decode
 from datetime import datetime
+from urllib.parse import urlparse
 from dataclasses import field, asdict, dataclass
 from typing import (
     TYPE_CHECKING,
@@ -22,7 +23,6 @@ from typing import (
     Optional,
     overload,
 )
-from urllib.parse import urlparse
 
 import fleep
 from nepattern import MatchMode, BasePattern, create_local_patterns
