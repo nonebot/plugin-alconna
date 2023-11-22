@@ -175,7 +175,7 @@ class Media(Segment):
     def __post_init__(self):
         if self.path:
             self.name = Path(self.path).name
-        if not urlparse(self.url).hostname:
+        if self.url and not urlparse(self.url).hostname:
             self.url = f"https://{self.url}"
 
     @property
