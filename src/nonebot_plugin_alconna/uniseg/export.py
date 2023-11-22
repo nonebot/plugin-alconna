@@ -35,7 +35,7 @@ class Target:
     parent_id: str = ""
     """父级id；若为频道则为guild_id，其他情况为空字符串"""
     channel: bool = False
-    """是否为频道，仅当目标平台同时支持群聊和频道时有效"""
+    """是否为频道，仅当目标平台符合频道概念时"""
     private: bool = False
     """是否为私聊"""
     source: str = ""
