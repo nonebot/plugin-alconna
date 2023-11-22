@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Any, Union
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message
 
-from ..segment import At, Text, AtAll, Emoji, Image, Reply
 from ..export import Target, MessageExporter, SerializeFailed, export
+from ..segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
     from nonebot.adapters.qq.message import MessageSegment
@@ -118,15 +118,32 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         return ms.emoji(seg.id)
 
     @export
-    async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
+        name = seg.__class__.__name__.lower()
+        method = {
+            "image": ms.image,
+            "voice": ms.audio,
+            "video": ms.video,
+            "audio": ms.audio,
+            "file": ms.file,
+        }[name]
+
+        file_method = {
+            "image": ms.file_image,
+            "voice": ms.file_audio,
+            "video": ms.file_video,
+            "audio": ms.file_audio,
+            "file": ms.file_file,
+        }[name]
+
         if seg.url:
-            return ms.image(seg.url)
+            return method(seg.url)
         elif seg.raw:
-            return ms.file_image(seg.raw_bytes)
+            return file_method(seg.raw_bytes)
         elif seg.path:
-            return ms.file_image(Path(seg.path))
+            return file_method(Path(seg.path))
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 

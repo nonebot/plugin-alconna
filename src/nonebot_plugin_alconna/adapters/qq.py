@@ -8,9 +8,9 @@ from nonebot.adapters.qq.message import Keyboard as _Keyboard
 from nonebot.adapters.qq.message import Markdown as _Markdown
 from nonebot.adapters.qq.message import Reference as _Reference
 from nonebot.adapters.qq.message import Attachment as _Attachment
-from nonebot.adapters.qq.message import LocalImage as _LocalImage
 from nonebot.adapters.qq.message import MentionUser as _MentionUser
 from nonebot.adapters.qq.message import MentionChannel as _MentionChannel
+from nonebot.adapters.qq.message import LocalAttachment as _LocalAttachment
 from nonebot.adapters.qq.message import MentionEveryone as _MentionEveryone
 
 from nonebot_plugin_alconna.typings import SegmentPattern
@@ -19,8 +19,14 @@ Text = str
 Ark = SegmentPattern("ark", _Ark, MessageSegment.ark)
 Embed = SegmentPattern("embed", _Embed, MessageSegment.embed)
 Emoji = SegmentPattern("emoji", _Emoji, MessageSegment.emoji)
-Image = SegmentPattern("attachment", _Attachment, MessageSegment.image)
-FileImage = SegmentPattern("file_image", _LocalImage, MessageSegment.file_image)
+Image = SegmentPattern("image", _Attachment, MessageSegment.image)
+FileImage = SegmentPattern("file_image", _LocalAttachment, MessageSegment.file_image)
+Audio = SegmentPattern("audio", _Attachment, MessageSegment.audio)
+FileAudio = SegmentPattern("file_audio", _LocalAttachment, MessageSegment.file_audio)
+Video = SegmentPattern("video", _Attachment, MessageSegment.video)
+FileVideo = SegmentPattern("file_video", _LocalAttachment, MessageSegment.file_video)
+File = SegmentPattern("file", _Attachment, MessageSegment.file)
+FileFile = SegmentPattern("file_file", _LocalAttachment, MessageSegment.file_file)
 Keyboard = SegmentPattern("keyboard", _Keyboard, MessageSegment.keyboard)
 Markdown = SegmentPattern("markdown", _Markdown, MessageSegment.markdown)
 MentionUser = SegmentPattern("mention_user", _MentionUser, MessageSegment.mention_user)

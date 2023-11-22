@@ -22,6 +22,7 @@ from typing import (
     Optional,
     overload,
 )
+from urllib.parse import urlparse
 
 import fleep
 from nepattern import MatchMode, BasePattern, create_local_patterns
@@ -174,6 +175,8 @@ class Media(Segment):
     def __post_init__(self):
         if self.path:
             self.name = Path(self.path).name
+        if not urlparse(self.url).hostname:
+            self.url = f"https://{self.url}"
 
     @property
     def raw_bytes(self) -> bytes:
@@ -443,8 +446,17 @@ class _Image(UniPattern[Image]):
                 return Image(id=seg.data["image_key"])
             if "file_key" in seg.data:  # kook
                 return Image(url=seg.data["file_key"])
-            if "url" in seg.data:  # ob11
-                return Image(url=seg.data["url"], id=seg.data["file"])
+            if "url" in seg.data:  # ob11, qq
+                if "filename" in seg.data:
+                    return Image(
+                        url=seg.data["url"],
+                        id=seg.data["filename"],
+                        mimetype=seg.data["content_type"],
+                        name=seg.data["filename"],
+                    )
+                if "file" in seg.data:
+                    return Image(url=seg.data["url"], id=seg.data["file"])
+                return Image(url=seg.data["url"])
             if "msgData" in seg.data:  # minecraft
                 return Image(url=seg.data["msgData"])
             if "file_path" in seg.data:  # ntchat
@@ -454,7 +466,7 @@ class _Image(UniPattern[Image]):
         if seg.type == "photo":  # tg
             return Image(id=seg.data["file"])
         if seg.type == "attachment":
-            if "url" in seg.data:  # qq, qqguild
+            if "url" in seg.data:  # qqguild
                 return Image(url=seg.data["url"])
             if "attachment" in seg.data:  # discord
                 return Image(id=seg.data["attachment"].filename)
@@ -492,6 +504,15 @@ class _Video(UniPattern[Video]):
                 return Video(id=seg.data["file_id"])
             if "file" in seg.data:  # ob11
                 return Video(url=seg.data["file"])
+            if "url" in seg.data:  # qq
+                if "filename" in seg.data:
+                    return Video(
+                        url=seg.data["url"],
+                        id=seg.data["filename"],
+                        mimetype=seg.data["content_type"],
+                        name=seg.data["filename"],
+                    )
+                return Video(url=seg.data["url"])
             if "file_key" in seg.data:  # kook
                 return Video(url=seg.data["file_key"])
             if "msgData" in seg.data:  # minecraft
@@ -547,6 +568,15 @@ class _Audio(UniPattern[Audio]):
     def solve(self, seg: MessageSegment):
         if seg.type != "audio":
             return
+        if "url" in seg.data:  # qq
+            if "filename" in seg.data:
+                return Audio(
+                    url=seg.data["url"],
+                    id=seg.data["filename"],
+                    mimetype=seg.data["content_type"],
+                    name=seg.data["filename"],
+                )
+            return Audio(url=seg.data["url"])
         if "file_id" in seg.data:  # ob12, telegram
             return Audio(id=seg.data["file_id"])
         if "file_key" in seg.data:  # kook, feishu
@@ -576,6 +606,15 @@ class _File(UniPattern[File]):
                     id=seg.data["md5"],
                     name=seg.data["name"],
                 )
+            if "url" in seg.data:  # qq
+                if "filename" in seg.data:
+                    return File(
+                        url=seg.data["url"],
+                        id=seg.data["filename"],
+                        mimetype=seg.data["content_type"],
+                        name=seg.data["filename"],
+                    )
+                return File(url=seg.data["url"])
             if "file" in seg.data:  # dodo
                 return File(url=seg.data["file"].url)
             if "file_id" in seg.data:  # ob12
@@ -741,10 +780,10 @@ async def reply_handle(event: Event, bot: Bot):
             )
     elif adapter_name == "QQ":
         if TYPE_CHECKING:
-            from nonebot.adapters.qq.event import MessageEvent
+            from nonebot.adapters.qq.event import GuildMessageEvent
 
-            assert isinstance(event, MessageEvent)
-        if event.reply:
+            assert isinstance(event, GuildMessageEvent)
+        if hasattr(event, "reply") and event.reply:
             return Reply(
                 str(event.reply.id),
                 event.reply.content,
