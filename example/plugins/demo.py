@@ -231,6 +231,35 @@ async def mask_g(img: bytes, default: Query[bool] = Query("default.value")):
         await mask_cmd.send("ok")
 
 
+mask_cmd1 = on_alconna(
+    Alconna(
+        "设置词云形状1",
+        Args["img?", Image],
+        Option("--default", action=store_true, default=False),
+    ),
+)
+
+mask_cmd1.shortcut(
+    "设置默认词云形状1",
+    {"command": "设置词云形状1", "args": ["--default"]},
+)
+
+
+@mask_cmd1.handle()
+async def mask1_h(matcher: AlconnaMatcher, img: Match[Image]):
+    if img.available:
+        matcher.set_path_arg("img", img.result)
+
+
+@mask_cmd1.got_path("img", prompt="请输入图片")
+async def mask1_g(img: Image, default: Query[bool] = Query("default.value")):
+    print(default)
+    if default.result:
+        await mask_cmd.send(img, fallback=True)
+    else:
+        await mask_cmd.send("ok")
+
+
 book = (
     Command("book", "测试")
     .option("writer", "-w <id:int>")

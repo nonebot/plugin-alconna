@@ -4,12 +4,11 @@ from typing import Dict, List, Type, Union, Literal, Optional, cast
 
 from nonebot import get_driver
 from nonebot.typing import T_State
-from nonebot.matcher import matchers
+from nonebot.matcher import Matcher
 from nonebot.utils import escape_tag
 from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
 from nonebot.internal.rule import Rule as Rule
-from nonebot.permission import User, Permission
 from nonebot.adapters import Bot, Event, Message
 from tarina import lang, init_spec, is_awaitable
 from arclet.alconna.exceptions import SpecialOptionTriggered
@@ -46,10 +45,10 @@ class AlconnaRule:
         "comp_config",
         "use_origin",
         "executor",
-        "_session",
         "_waiter",
+        "_matchers",
         "_futures",
-        "_interface",
+        "_interfaces",
         "_comp_help",
     )
 
@@ -92,16 +91,10 @@ class AlconnaRule:
         self.skip = skip_for_unmatch
         self.executor = ExtensionExecutor(self, extensions, exclude_ext)
         self.executor.post_init()
-        self._session = None
-        self._futures: Dict[str, asyncio.Future] = {}
-        self._interface = CompSession(self.command)
+        self._futures: Dict[str, Dict[str, asyncio.Future]] = {}
+        self._matchers: Dict[str, Type[Matcher]] = {}
+        self._interfaces: Dict[str, CompSession] = {}
 
-        self._waiter = on_message(
-            priority=0,
-            block=True,
-            rule=Rule(lambda: self._session is not None),
-        )
-        self._waiter.destroy()
         self._comp_help = ""
         if self.comp_config is not None:
             _tab = self.comp_config.get("tab") or ".tab"
@@ -128,19 +121,19 @@ class AlconnaRule:
                     else "",
                 )
 
-            @self._waiter.handle()
-            async def _waiter_handle(_bot: Bot, _event: Event, content: Message = EventMessage()):
+            async def _waiter_handle(
+                _bot: Bot, _event: Event, _matcher: Matcher, content: Message = EventMessage()
+            ):
                 msg = str(content).lstrip()
-                if _bot.self_id not in self._futures:
-                    await self._waiter.skip()
-                _future = self._futures[_bot.self_id]
+                _future = self._futures[_bot.self_id][_event.get_session_id()]
+                _interface = self._interfaces[_event.get_session_id()]
                 if msg.startswith(_exit) and "exit" not in disables:
                     if msg == _exit:
                         _future.set_result(False)
-                        await self._waiter.finish()
+                        await _matcher.finish()
                     else:
                         _future.set_result(None)
-                        await self._waiter.pause(
+                        await _matcher.pause(
                             lang.require("analyser", "param_unmatched").format(
                                 target=msg.replace(_exit, "", 1)
                             )
@@ -148,10 +141,10 @@ class AlconnaRule:
                 elif msg.startswith(_enter) and "enter" not in disables:
                     if msg == _enter:
                         _future.set_result(True)
-                        await self._waiter.finish()
+                        await _matcher.finish()
                     else:
                         _future.set_result(None)
-                        await self._waiter.pause(
+                        await _matcher.pause(
                             lang.require("analyser", "param_unmatched").format(
                                 target=msg.replace(_enter, "", 1)
                             )
@@ -162,19 +155,19 @@ class AlconnaRule:
                         offset = int(offset)
                     except ValueError:
                         _future.set_result(None)
-                        await self._waiter.pause(
+                        await _matcher.pause(
                             lang.require("analyser", "param_unmatched").format(target=offset)
                         )
                     else:
-                        self._interface.tab(offset)
-                        await self._waiter.pause(
-                            f"* {self._interface.current()}"
-                            if hide_tabs
-                            else "\n".join(self._interface.lines())
+                        _interface.tab(offset)
+                        await _matcher.pause(
+                            f"* {_interface.current()}" if hide_tabs else "\n".join(_interface.lines())
                         )
                 else:
                     _future.set_result(content)
-                    await self._waiter.finish()
+                    await _matcher.finish()
+
+            self._waiter = _waiter_handle
 
     def __repr__(self) -> str:
         return f"Alconna(command={self.command!r})"
@@ -189,55 +182,71 @@ class AlconnaRule:
         if self.comp_config is None:
             return self.command.parse(msg)
         res = None
-        with self._interface:
+        session_id = event.get_session_id()
+        if session_id not in self._interfaces:
+            self._interfaces[session_id] = CompSession(self.command)
+        with self._interfaces[session_id]:
             res = self.command.parse(msg)
         if res:
+            self._interfaces[session_id].exit()
+            del self._interfaces[session_id]
             return res
         if not await self.executor.permission_check(bot, event):
             return False
-        self._session = event.get_session_id()
-        self._waiter.permission = Permission(User.from_event(event))
-        self._futures[bot.self_id] = asyncio.get_running_loop().create_future()
-        matchers[self._waiter.priority].append(self._waiter)
+
+        def _checker(_event: Event):
+            return session_id == _event.get_session_id()
+
+        self._matchers[session_id] = on_message(
+            priority=0, block=True, rule=Rule(_checker), handlers=[self._waiter]
+        )
         res = Arparma(
             self.command.path,
             msg,
             False,
             error_info=SpecialOptionTriggered("completion"),
         )
-
-        while self._interface.available:
-            await self.send(f"{str(self._interface)}{self._comp_help}", bot, event, res)
+        _futures = self._futures.setdefault(bot.self_id, {})
+        _futures[session_id] = asyncio.get_running_loop().create_future()
+        while self._interfaces[session_id].available:
+            await self.send(f"{str(self._interfaces[session_id])}{self._comp_help}", bot, event, res)
             while True:
                 try:
-                    await asyncio.wait_for(
-                        self._futures[bot.self_id], timeout=self.comp_config.get("timeout", 60)
-                    )
+                    await asyncio.wait_for(_futures[session_id], timeout=self.comp_config.get("timeout", 60))
                 except asyncio.TimeoutError:
                     await self.send(lang.require("comp/nonebot", "timeout"), bot, event, res)
-                    self._interface.exit()
-                    self._waiter.destroy()
+                    self._interfaces[session_id].exit()
+                    self._matchers[session_id].destroy()
+                    del _futures[session_id]
+                    del self._matchers[session_id]
+                    del self._interfaces[session_id]
                     return res
                 finally:
-                    if not self._futures[bot.self_id].done():
-                        self._futures[bot.self_id].cancel()
-                ans: Union[Message, bool, None] = self._futures[bot.self_id].result()
-                self._futures[bot.self_id] = asyncio.get_running_loop().create_future()
+                    if not _futures[session_id].done():
+                        _futures[session_id].cancel()
+                ans: Union[Message, bool, None] = _futures[session_id].result()
+                _futures[session_id] = asyncio.get_running_loop().create_future()
                 if ans is False:
                     await self.send(lang.require("comp/nonebot", "exited"), bot, event, res)
-                    self._interface.exit()
-                    self._waiter.destroy()
+                    self._interfaces[session_id].exit()
+                    self._matchers[session_id].destroy()
+                    del _futures[session_id]
+                    del self._matchers[session_id]
+                    del self._interfaces[session_id]
                     return res
                 elif ans is None:
                     continue
-                _res = self._interface.enter(None if ans is True else ans)
+                _res = self._interfaces[session_id].enter(None if ans is True else ans)
                 if _res.result:
                     res = _res.result
                 elif _res.exception and not isinstance(_res.exception, SpecialOptionTriggered):
                     await self.send(str(_res.exception), bot, event, res)
                 break
-        self._interface.exit()
-        self._waiter.destroy()
+        self._interfaces[session_id].exit()
+        self._matchers[session_id].destroy()
+        del _futures[session_id]
+        del self._matchers[session_id]
+        del self._interfaces[session_id]
         return res
 
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
@@ -248,8 +257,6 @@ class AlconnaRule:
         if isinstance(msg, UniMessage):
             msg = await msg.export(bot, fallback=True)
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
-        if self._session and self._session != event.get_session_id():
-            return False
         adapter_name = bot.adapter.get_name()
         if adapter_name in MAPPING and MAPPING[adapter_name] not in _modules:
             importlib.import_module(f"nonebot_plugin_alconna.adapters.{MAPPING[adapter_name]}")
@@ -262,7 +269,6 @@ class AlconnaRule:
             except Exception as e:
                 arp = Arparma(self.command.path, msg, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
-        self._session = None
         if not arp.head_matched:
             return False
         if not arp.matched and not may_help_text and self.skip:

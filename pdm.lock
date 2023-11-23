@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:941736eab41b6dfcaee3f6d7513c9ac8817a50e4b906b0851919e8bda0627c64"
+content_hash = "sha256:bd34f5642da0c04b6910e5e4dc9f185d5d74d2048ebf2e13410e133347b79a37"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -34,7 +34,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.7.37"
+version = "1.7.38"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -43,8 +43,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.7.37-py3-none-any.whl", hash = "sha256:2a680acefdb63b3995c53ab0fdf70fa82d3a410705ff3993740554b73f5ce67f"},
-    {file = "arclet_alconna-1.7.37.tar.gz", hash = "sha256:ad54c297c1c76f4fe5741303ddcf0c2a7c9ecb3a14465103f42f1da4b23e6081"},
+    {file = "arclet_alconna-1.7.38-py3-none-any.whl", hash = "sha256:e2248605bb7425c69a9cbe1e5f797d50945f30f054aaa9af73a237d8307d3432"},
+    {file = "arclet_alconna-1.7.38.tar.gz", hash = "sha256:90af6498993e7bc21223259758a021d811329b341a9add7868b9497705af050b"},
 ]
 
 [[package]]
@@ -84,6 +84,19 @@ dependencies = [
 ]
 files = [
     {file = "async-asgi-testclient-1.4.11.tar.gz", hash = "sha256:4449ac85d512d661998ec61f91c9ae01851639611d748d81ae7f816736551792"},
+]
+
+[[package]]
+name = "betterproto"
+version = "1.2.5"
+requires_python = ">=3.6"
+summary = "A better Protobuf / gRPC generator & library"
+dependencies = [
+    "grpclib",
+    "stringcase",
+]
+files = [
+    {file = "betterproto-1.2.5.tar.gz", hash = "sha256:74a3ab34646054f674d236d1229ba8182dc2eae86feb249b8590ef496ce9803d"},
 ]
 
 [[package]]
@@ -335,6 +348,19 @@ requires_python = ">=3.1"
 summary = "File format determination library"
 files = [
     {file = "fleep-1.0.1.tar.gz", hash = "sha256:c8f62b258ee5364d7f6c1ed1f3f278e99020fc3f0a60a24ad1e10846e31d104c"},
+]
+
+[[package]]
+name = "grpclib"
+version = "0.4.6"
+requires_python = ">=3.7"
+summary = "Pure-Python gRPC implementation for asyncio"
+dependencies = [
+    "h2<5,>=3.1.0",
+    "multidict",
+]
+files = [
+    {file = "grpclib-0.4.6.tar.gz", hash = "sha256:595d05236ca8b8f8e433f5bf6095e6354c1d8777d003ddaf5288efa9611e3fd6"},
 ]
 
 [[package]]
@@ -942,7 +968,7 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-qq"
-version = "1.2.0"
+version = "1.3.0"
 requires_python = ">=3.8,<4.0"
 summary = "QQ adapter for nonebot2"
 dependencies = [
@@ -952,8 +978,8 @@ dependencies = [
     "yarl<2.0.0,>=1.9.0",
 ]
 files = [
-    {file = "nonebot_adapter_qq-1.2.0-py3-none-any.whl", hash = "sha256:19f9535df19672ccc9cc2c4903cec25a882041202f27b653fe50a38055843fb0"},
-    {file = "nonebot_adapter_qq-1.2.0.tar.gz", hash = "sha256:caac94eef843a337a8ddd7e24577727aaac6e0f131b27a30514aae9633f7eac5"},
+    {file = "nonebot_adapter_qq-1.3.0-py3-none-any.whl", hash = "sha256:f2e5117fc2451f4054699a797b6df7eae19e8b105b277f5b87bc1a0c4e189cab"},
+    {file = "nonebot_adapter_qq-1.3.0.tar.gz", hash = "sha256:625009e440cda7a994df71ac946f748dc620a6f79f6435e1c66bc0d0dca13029"},
 ]
 
 [[package]]
@@ -1014,16 +1040,17 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-villa"
-version = "1.2.1"
+version = "1.2.2"
 requires_python = ">=3.8,<4.0"
 summary = "NoneBot2 米游社大别野 Bot 适配器。MiHoYo Villa Bot adapter for nonebot2."
 dependencies = [
+    "betterproto<2.0.0,>=1.2.5",
     "nonebot2<3.0.0,>=2.1.2",
     "rsa<5.0,>=4.9",
 ]
 files = [
-    {file = "nonebot_adapter_villa-1.2.1-py3-none-any.whl", hash = "sha256:3e89f9cc3e8f7613138bf783d4f5298fa99672d3529fe644f15d3ea13e953ec1"},
-    {file = "nonebot_adapter_villa-1.2.1.tar.gz", hash = "sha256:2ee15389f03276c7ff062898e0b286c6ae0275964f593d20a16170d48c99b335"},
+    {file = "nonebot_adapter_villa-1.2.2-py3-none-any.whl", hash = "sha256:993a89d978471dfa2a59030ac4ffd9fb043b0a8ee3576b4461dfbf1ae26a244f"},
+    {file = "nonebot_adapter_villa-1.2.2.tar.gz", hash = "sha256:a10841c3ea02ea75152dfee4cd6cdc1b67c6ff0aa1f0b04a51f5b77ee68e206b"},
 ]
 
 [[package]]
@@ -1666,6 +1693,14 @@ dependencies = [
 files = [
     {file = "starlette-0.27.0-py3-none-any.whl", hash = "sha256:918416370e846586541235ccd38a474c08b80443ed31c578a418e2209b3eef91"},
     {file = "starlette-0.27.0.tar.gz", hash = "sha256:6a6b0d042acb8d469a01eba54e9cda6cbd24ac602c4cd016723117d6a7e73b75"},
+]
+
+[[package]]
+name = "stringcase"
+version = "1.2.0"
+summary = "String case converter."
+files = [
+    {file = "stringcase-1.2.0.tar.gz", hash = "sha256:48a06980661908efe8d9d34eab2b6c13aefa2163b3ced26972902e3bdfd87008"},
 ]
 
 [[package]]

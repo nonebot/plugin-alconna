@@ -96,10 +96,8 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
         try:
             from nonebot.adapters.villa.models import PostMessageContent, ImageMessageContent
         except ImportError:
-            from nonebot.adapters.villa.api.models import (  # type: ignore
-                PostMessageContent,
-                ImageMessageContent,
-            )
+            from nonebot.adapters.villa.api.models import PostMessageContent  # noqa: F401
+            from nonebot.adapters.villa.api.models import ImageMessageContent  # noqa: F401
 
         assert isinstance(bot, VillaBot)
         if TYPE_CHECKING:
