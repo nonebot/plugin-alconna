@@ -19,13 +19,13 @@ repos:
       - id: isort
         stages: [commit]
 
-  - repo: https://ghproxy.com/github.com/psf/black
+  - repo: https://github.com/psf/black
     rev: 23.11.0
     hooks:
       - id: black
         stages: [commit]
 
-  - repo: https://ghproxy.com/github.com/nonebot/nonemoji
+  - repo: https://github.com/nonebot/nonemoji
     rev: v0.1.4
     hooks:
       - id: nonemoji
