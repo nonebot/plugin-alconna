@@ -39,7 +39,13 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
         if isinstance(event, GuildMessageEvent):
             if event.__type__.value.startswith("DIRECT"):
-                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id))  # noqa: E501
+                return Target(
+                    str(event.author.id),
+                    str(event.guild_id),
+                    channel=True,
+                    private=True,
+                    source=str(event.id),
+                )  # noqa: E501
             return Target(str(event.channel_id), str(event.guild_id), channel=True, source=str(event.id))
         if isinstance(event, GuildEvent):
             return Target(str(event.id), channel=True)
