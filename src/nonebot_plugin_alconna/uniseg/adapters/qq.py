@@ -39,7 +39,13 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
         if isinstance(event, GuildMessageEvent):
             if event.__type__.value.startswith("DIRECT"):
-                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id))  # type: ignore  # noqa: E501
+                return Target(
+                    str(event.author.id),
+                    str(event.guild_id),
+                    channel=True,
+                    private=True,
+                    source=str(event.id),
+                )  # noqa: E501
             return Target(str(event.channel_id), str(event.guild_id), channel=True, source=str(event.id))
         if isinstance(event, GuildEvent):
             return Target(str(event.id), channel=True)
@@ -54,9 +60,9 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         if isinstance(event, ForumEvent):
             return Target(str(event.channel_id), str(event.guild_id), channel=True)
         if isinstance(event, C2CMessageCreateEvent):
-            return Target(str(event.author.id), private=True, source=str(event.id))  # type: ignore
+            return Target(str(event.author.id), private=True, source=str(event.id))
         if isinstance(event, GroupAtMessageCreateEvent):
-            return Target(event.group_id, source=str(event.id))  # type: ignore
+            return Target(event.group_openid, source=str(event.id))
         if isinstance(event, InteractionCreateEvent):
             if event.group_open_id:
                 return Target(event.group_open_id, source=str(event.id))
@@ -65,7 +71,7 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
             else:
                 return Target(event.get_user_id(), private=True, source=str(event.id))
         if isinstance(event, FriendRobotEvent):
-            return Target(event.open_id, private=True)
+            return Target(event.openid, private=True)
         if isinstance(event, GroupRobotEvent):
             return Target(event.group_openid)
         raise NotImplementedError
@@ -179,12 +185,12 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
             )
         if target.private:
             return await bot.send_to_c2c(
-                user_id=target.id,
+                openid=target.id,
                 message=message,
                 msg_id=target.source,
             )
         return await bot.send_to_group(
-            group_id=target.id,
+            group_openid=target.id,
             message=message,
             msg_id=target.source,
         )
