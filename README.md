@@ -321,7 +321,9 @@ test = on_alconna("test")
 
 @test.handle()
 async def handle_test():
-    await test.send(UniMessage.image(path="path/to/img"))
+    r = await UniMessage.image(path="path/to/img").send()
+    await r.reply("图片已发送，10秒后撤回")
+    await r.recall(delay=10, index=0)
 
 @test.got("foo", prompt=UniMessage.template("{:Reply($message_id)}请输入图片"))
 async def handle_foo():

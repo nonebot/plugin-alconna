@@ -17,6 +17,7 @@ from .const import log  # noqa: F401
 from .export import Target as Target
 from .params import UniMsg as UniMsg
 from .tools import get_bot as get_bot
+from .message import Receipt as Receipt
 from .segment import RefNode as RefNode
 from .segment import Segment as Segment
 from .params import MessageId as MessageId
@@ -32,7 +33,7 @@ from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 
-__version__ = "0.33.9"
+__version__ = "0.34.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",

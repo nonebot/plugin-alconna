@@ -1,19 +1,32 @@
+import asyncio
 from io import BytesIO
 from pathlib import Path
 from copy import deepcopy
 from types import FunctionType
+from dataclasses import dataclass
 from typing_extensions import Self, SupportsIndex
-from typing import TYPE_CHECKING, List, Type, Tuple, Union, Literal, TypeVar, Iterable, Optional, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    List,
+    Type,
+    Tuple,
+    Union,
+    Literal,
+    TypeVar,
+    Iterable,
+    Optional,
+    overload,
+)
 
 from tarina import lang
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
 
-from .receipt import Receipt
 from .adapters import MAPPING
 from .fallback import FallbackMessage
 from .template import UniMessageTemplate
-from .export import Target, SerializeFailed
+from .export import Target, MessageExporter, SerializeFailed
 from .segment import (
     At,
     Card,
@@ -849,7 +862,7 @@ class UniMessage(List[TS]):
         fallback: bool = True,
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
-    ) -> Receipt:
+    ) -> "Receipt":
         if not bot:
             try:
                 bot = current_bot.get()
@@ -891,3 +904,122 @@ class UniMessage(List[TS]):
         else:
             res = await fn.send_to(target, bot, msg)
         return Receipt(bot, target, fn, res if isinstance(res, list) else [res])
+
+
+@dataclass
+class Receipt:
+    bot: Bot
+    context: Union[Event, Target]
+    exporter: MessageExporter
+    msg_ids: List[Any]
+
+    def get_reply(self, index: int = -1) -> Union[Reply, None]:
+        if not self.msg_ids:
+            return
+        try:
+            msg_id = self.msg_ids[index]
+        except IndexError:
+            msg_id = self.msg_ids[0]
+        if not msg_id:
+            return
+        try:
+            return self.exporter.get_reply(msg_id)
+        except NotImplementedError:
+            return
+
+    async def recall(self, delay: float = 0, index: int = -1):
+        if not self.msg_ids:
+            return
+        if delay > 1e-4:
+            await asyncio.sleep(delay)
+        try:
+            msg_id = self.msg_ids[index]
+        except IndexError:
+            msg_id = self.msg_ids[0]
+        if not msg_id:
+            return
+        try:
+            await self.exporter.recall(msg_id, self.bot, self.context)
+            self.msg_ids.remove(msg_id)
+        except NotImplementedError:
+            return
+
+    async def edit(
+        self,
+        message: Union[UniMessage, str, Iterable[Union[str, Segment]], Segment],
+        delay: float = 0,
+        index: int = -1,
+    ):
+        if not self.msg_ids:
+            return self
+        if delay > 1e-4:
+            await asyncio.sleep(delay)
+        message = UniMessage(message)
+        msg = await self.exporter.export(message, self.bot, True)
+        try:
+            msg_id = self.msg_ids[index]
+        except IndexError:
+            msg_id = self.msg_ids[0]
+        if not msg_id:
+            return self
+        try:
+            res = await self.exporter.edit(msg, msg_id, self.bot, self.context)
+            if res:
+                if isinstance(res, list):
+                    self.msg_ids.remove(msg_id)
+                    self.msg_ids.extend(res)
+                else:
+                    self.msg_ids[index] = res
+            return self
+        except NotImplementedError:
+            return self
+
+    async def send(
+        self,
+        message: Union[UniMessage, str, Iterable[Union[str, Segment]], Segment],
+        fallback: bool = True,
+        at_sender: Union[str, bool] = False,
+        reply_to: Union[str, bool, Reply, None] = False,
+        delay: float = 0,
+    ):
+        if delay > 1e-4:
+            await asyncio.sleep(delay)
+        message = UniMessage(message)
+        if at_sender:
+            if isinstance(at_sender, str):
+                message.insert(0, At("user", at_sender))  # type: ignore
+            elif isinstance(self.context, Event):
+                message.insert(0, At("user", self.context.get_user_id()))  # type: ignore
+            else:
+                raise TypeError("at_sender must be str when target is not Event")
+        if reply_to:
+            if isinstance(reply_to, Reply):
+                message.insert(0, reply_to)  # type: ignore
+            else:
+                if isinstance(reply_to, bool):
+                    if isinstance(self.context, Event):
+                        reply_to = self.exporter.get_message_id(self.context)
+                    else:
+                        raise TypeError("reply_to must be str when target is not Event")
+                self.insert(0, Reply(reply_to))  # type: ignore
+        msg = await self.exporter.export(message, self.bot, fallback)
+        if isinstance(self.context, Event):
+            _target = self.exporter.get_target(self.context)
+            try:
+                res = await self.exporter.send_to(_target, self.bot, msg)
+            except (AssertionError, NotImplementedError):
+                res = await self.bot.send(self.context, msg)
+        else:
+            res = await self.exporter.send_to(self.context, self.bot, msg)
+        self.msg_ids.extend(res if isinstance(res, list) else [res])
+        return self
+
+    async def reply(
+        self,
+        message: Union[UniMessage, str, Iterable[Union[str, Segment]], Segment],
+        fallback: bool = True,
+        at_sender: Union[str, bool] = False,
+        index: int = -1,
+        delay: float = 0,
+    ):
+        return await self.send(message, fallback, at_sender, self.get_reply(index), delay)

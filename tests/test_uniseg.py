@@ -71,6 +71,7 @@ async def test_unimsg_send(app: App):
     async def handle(msg: MsgId):
         receipt = await UniMessage("hello!").send(at_sender=True, reply_to=msg)
         receipt.msg_ids[0] = {"message_id": 2}
+        await UniMessage("world!").send(at_sender=True, reply_to=receipt.get_reply())
         await receipt.recall(1)
 
     async with app.test_matcher(matcher) as ctx:
@@ -84,6 +85,14 @@ async def test_unimsg_send(app: App):
                 "message_type": "group",
                 "group_id": 456,
                 "message": MessageSegment.reply(1) + MessageSegment.at(123) + MessageSegment.text("hello!"),
+            },
+        )
+        ctx.should_call_api(
+            "send_msg",
+            {
+                "message_type": "group",
+                "group_id": 456,
+                "message": MessageSegment.reply(2) + MessageSegment.at(123) + MessageSegment.text("world!"),
             },
         )
         ctx.should_call_api("delete_msg", {"message_id": 2})

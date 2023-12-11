@@ -413,4 +413,7 @@ cmd = on_alconna(alc, comp_config={"lite": True}, skip_for_unmatch=False)
 
 @cmd.handle()
 async def handle(name: str, phone: int, at: Union[str, At]):
-    await cmd.finish(f"姓名：{name}\n手机号：{phone}\n教师号：{at!r}")
+    r = await UniMessage(f"姓名：{name}").send(reply_to=True)
+    await r.reply(f"手机号：{phone}")
+    await r.reply(f"教师号：{at!r}")
+    await r.recall(delay=5)
