@@ -138,3 +138,6 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
         assert isinstance(bot, OnebotBot)
         await bot.delete_msg(message_id=mid["message_id"])
         return
+
+    def get_reply(self, mid: Any):
+        return Reply(str(mid["message_id"]))

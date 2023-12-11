@@ -111,3 +111,6 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
 
         await bot.delete_message(message_id=mid["message_id"])
         return
+
+    def get_reply(self, mid: Any):
+        return Reply(mid["message_id"])

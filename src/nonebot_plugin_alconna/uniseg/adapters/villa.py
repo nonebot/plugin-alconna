@@ -1,6 +1,6 @@
 from pathlib import Path
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message
@@ -111,3 +111,6 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
             object_name=object_name,
             msg_content=content_info.json(by_alias=True, exclude_none=True),
         )
+
+    def get_reply(self, mid: Any):
+        return Reply(f"{mid}@{int(datetime.now().timestamp())}")

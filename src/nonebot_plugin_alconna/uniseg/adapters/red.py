@@ -133,3 +133,9 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
         _mid: MessageModel = cast(MessageModel, mid)
         await bot.recall_message(_mid.chatType, _mid.peerUin, _mid.msgId)
         return
+
+    def get_reply(self, mid: Any):
+        from nonebot.adapters.red.api.model import Message as MessageModel
+
+        _mid: MessageModel = cast(MessageModel, mid)
+        return Reply(f"{_mid.msgId}#{_mid.msgSeq}")

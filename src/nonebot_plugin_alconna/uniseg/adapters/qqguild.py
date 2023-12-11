@@ -133,9 +133,9 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
         )
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.qq.bot import Bot as QQBot
-        from nonebot.adapters.qq.event import DirectMessageCreateEvent
-        from nonebot.adapters.qq.models.guild import Message as GuildMessage
+        from nonebot.adapters.qqguild.bot import Bot as QQBot
+        from nonebot.adapters.qqguild.event import DirectMessageCreateEvent
+        from nonebot.adapters.qqguild.api.model import Message as GuildMessage
 
         assert isinstance(bot, QQBot)
         if isinstance(mid, GuildMessage):
@@ -147,8 +147,8 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
                     )
                 else:
                     await bot.delete_message(
-                        channel_id=mid.channel_id,
-                        message_id=mid.id,
+                        channel_id=mid.channel_id,  # type: ignore
+                        message_id=mid.id,  # type: ignore
                     )
             elif isinstance(context, DirectMessageCreateEvent):
                 await bot.delete_dms_message(
@@ -157,7 +157,14 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
                 )
             else:
                 await bot.delete_message(
-                    channel_id=mid.channel_id,
-                    message_id=mid.id,
+                    channel_id=mid.channel_id,  # type: ignore
+                    message_id=mid.id,  # type: ignore
                 )
         return
+
+    def get_reply(self, mid: Any):
+        from nonebot.adapters.qqguild.api.model import Message as GuildMessage
+
+        if isinstance(mid, GuildMessage):
+            return Reply(mid.id)  # type: ignore
+        raise NotImplementedError

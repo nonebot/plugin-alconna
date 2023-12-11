@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, List, Union
 
 from nonebot.adapters import Bot, Event
 
+from .segment import Reply
 from .export import Target, MessageExporter
 
 if TYPE_CHECKING:
@@ -17,28 +18,57 @@ class Receipt:
     exporter: MessageExporter
     msg_ids: List[Any]
 
-    async def recall(self, delay: float = 0):
-        if delay > 1e-4:
-            await asyncio.sleep(delay)
-        try:
-            for msg_id in self.msg_ids:
-                if not msg_id:
-                    continue
-                await self.exporter.recall(msg_id, self.bot, self.context)
+    def reply(self, index: int = -1) -> Union[Reply, None]:
+        if not self.msg_ids:
             return
+        try:
+            msg_id = self.msg_ids[index]
+        except IndexError:
+            msg_id = self.msg_ids[0]
+        if not msg_id:
+            return
+        try:
+            return self.exporter.get_reply(msg_id)
         except NotImplementedError:
             return
 
-    async def edit(self, message: "UniMessage", delay: float = 0):
+    async def recall(self, delay: float = 0, index: int = -1):
+        if not self.msg_ids:
+            return
+        if delay > 1e-4:
+            await asyncio.sleep(delay)
+        try:
+            msg_id = self.msg_ids[index]
+        except IndexError:
+            msg_id = self.msg_ids[0]
+        if not msg_id:
+            return
+        try:
+            await self.exporter.recall(msg_id, self.bot, self.context)
+            self.msg_ids.remove(msg_id)
+        except NotImplementedError:
+            return
+
+    async def edit(self, message: "UniMessage", delay: float = 0, index: int = -1):
+        if not self.msg_ids:
+            return self
         if delay > 1e-4:
             await asyncio.sleep(delay)
         msg = await self.exporter.export(message, self.bot, True)
         try:
-            if not self.msg_ids[0]:
-                return self
-            res = await self.exporter.edit(msg, self.msg_ids[0], self.bot, self.context)
+            msg_id = self.msg_ids[index]
+        except IndexError:
+            msg_id = self.msg_ids[0]
+        if not msg_id:
+            return self
+        try:
+            res = await self.exporter.edit(msg, msg_id, self.bot, self.context)
             if res:
-                self.msg_ids = res if isinstance(res, list) else [res]
+                if isinstance(res, list):
+                    self.msg_ids.remove(msg_id)
+                    self.msg_ids.extend(res)
+                else:
+                    self.msg_ids[index] = res
             return self
         except NotImplementedError:
             return self

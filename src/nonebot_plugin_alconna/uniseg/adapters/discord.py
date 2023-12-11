@@ -124,3 +124,9 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
             assert isinstance(new, self.get_message_type())
 
         return await bot.edit_message(channel_id=mid.channel_id, message_id=_mid.id, **parse_message(new))
+
+    def get_reply(self, mid: Any):
+        from nonebot.adapters.discord.api.model import MessageGet
+
+        _mid: MessageGet = cast(MessageGet, mid)
+        return Reply(str(_mid.id), origin=_mid.id)

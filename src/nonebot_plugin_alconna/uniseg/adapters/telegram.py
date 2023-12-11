@@ -114,3 +114,9 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
         res = await bot.edit_message_text(text=text, chat_id=_mid.chat.id, message_id=_mid.message_id)
         if isinstance(res, MessageModel):
             return res
+
+    def get_reply(self, mid: Any):
+        from nonebot.adapters.telegram.model import Message as MessageModel
+
+        _mid: MessageModel = cast(MessageModel, mid)
+        return Reply(str(_mid.message_id))

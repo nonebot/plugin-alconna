@@ -152,3 +152,6 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         }
 
         return await bot.call_api(f"im/v1/messages/{mid['message_id']}", **params)
+
+    def get_reply(self, mid: Any):
+        return Reply(mid["message_id"])

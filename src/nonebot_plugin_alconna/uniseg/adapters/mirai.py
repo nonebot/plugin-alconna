@@ -53,13 +53,13 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
         elif isinstance(event, (MemberJoinEvent, MemberLeaveEventKick, MemberLeaveEventQuit)):
             return Target(str(event.member.group.id))
         elif isinstance(event, MemberStateChangeEvent):
-            return Target(str(event.operator.group.id))
+            return Target(str(event.member.group.id))
         elif isinstance(event, GroupStateChangeEvent):
-            return Target(str(event.operator.group.id))
+            return Target(str(event.group.id))
         elif isinstance(event, FriendRecallEvent):
             return Target(str(event.author_id), private=True)
         elif isinstance(event, GroupRecallEvent):
-            return Target(str(event.operator.group.id))
+            return Target(str(event.group.id))
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
@@ -177,3 +177,6 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
         assert isinstance(bot, MiraiBot)
         await bot.recall(target=mid["messageId"])
         return
+
+    def get_reply(self, mid: Any):
+        return Reply(str(mid["messageId"]))

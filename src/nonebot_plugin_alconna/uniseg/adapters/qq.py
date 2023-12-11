@@ -224,3 +224,10 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
                     message_id=mid.id,
                 )
         return
+
+    def get_reply(self, mid: Any):
+        from nonebot.adapters.qq.models.guild import Message as GuildMessage
+
+        if isinstance(mid, GuildMessage):
+            return Reply(mid.id)
+        raise NotImplementedError

@@ -848,7 +848,7 @@ class UniMessage(List[TS]):
         bot: Optional[Bot] = None,
         fallback: bool = True,
         at_sender: Union[str, bool] = False,
-        reply_to: Union[str, bool] = False,
+        reply_to: Union[str, bool, Reply, None] = False,
     ) -> Receipt:
         if not bot:
             try:
@@ -868,12 +868,15 @@ class UniMessage(List[TS]):
             else:
                 raise TypeError("at_sender must be str when target is not Event")
         if reply_to:
-            if isinstance(reply_to, bool):
-                if isinstance(target, Event):
-                    reply_to = self.get_message_id(target, bot)
-                else:
-                    raise TypeError("reply_to must be str when target is not Event")
-            self.insert(0, Reply(reply_to))  # type: ignore
+            if isinstance(reply_to, Reply):
+                self.insert(0, reply_to)  # type: ignore
+            else:
+                if isinstance(reply_to, bool):
+                    if isinstance(target, Event):
+                        reply_to = self.get_message_id(target, bot)
+                    else:
+                        raise TypeError("reply_to must be str when target is not Event")
+                self.insert(0, Reply(reply_to))  # type: ignore
         msg = await self.export(bot, fallback)
         adapter = bot.adapter
         adapter_name = adapter.get_name()

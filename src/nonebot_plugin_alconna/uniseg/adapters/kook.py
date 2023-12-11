@@ -149,7 +149,8 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
             assert isinstance(new, self.get_message_type())
 
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
-        assert _mid.msg_id
+        if not _mid.msg_id:
+            return
         _, text = MessageSerializer(new).serialize()
         assert isinstance(bot, KBot)
         if isinstance(context, Target):
@@ -162,3 +163,11 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         else:
             await bot.message_update(content=text, msg_id=_mid.msg_id)
         return
+
+    def get_reply(self, mid: Any):
+        from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
+
+        _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+        if not _mid.msg_id:
+            raise NotImplementedError
+        return Reply(_mid.msg_id)

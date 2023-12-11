@@ -166,3 +166,9 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
             return await bot.update_message(context.id, _mid.id, new)
         channel = mid.channel or context.channel  # type: ignore
         return await bot.update_message(channel.id, _mid.id, new)
+
+    def get_reply(self, mid: Any):
+        from nonebot.adapters.satori.models import InnerMessage
+
+        _mid: InnerMessage = cast(InnerMessage, mid)
+        return Reply(_mid.id)

@@ -121,3 +121,6 @@ class DoDoMessageExporter(MessageExporter["MessageSegment"]):
             return await bot.set_channel_message_edit(message_id=mid, message_body=new.to_message_body()[0])
         elif hasattr(context, "channel_id"):
             return await bot.set_channel_message_edit(message_id=mid, message_body=new.to_message_body()[0])
+
+    def get_reply(self, mid: Any):
+        return Reply(mid)
