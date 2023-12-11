@@ -929,7 +929,7 @@ class Receipt:
 
     async def recall(self, delay: float = 0, index: int = -1):
         if not self.msg_ids:
-            return
+            return self
         if delay > 1e-4:
             await asyncio.sleep(delay)
         try:
@@ -937,12 +937,13 @@ class Receipt:
         except IndexError:
             msg_id = self.msg_ids[0]
         if not msg_id:
-            return
+            return self
         try:
             await self.exporter.recall(msg_id, self.bot, self.context)
             self.msg_ids.remove(msg_id)
+            return self
         except NotImplementedError:
-            return
+            return self
 
     async def edit(
         self,
