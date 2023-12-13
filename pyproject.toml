@@ -56,10 +56,10 @@ dev = [
     "nonebot-adapter-telegram>=0.1.0b14",
     "nonebot-adapter-villa>=1.4.0",
     "nonebot-adapter-discord>=0.1.1",
-    "nonebot-adapter-kaiheila>=0.2.12",
+    "nonebot-adapter-kaiheila>=0.3.0",
     "nonebot-adapter-red>=0.7.2",
     "nonebot-adapter-qq>=1.3.4",
-    "nonebot-adapter-satori>=0.8.0",
+    "nonebot-adapter-satori>=0.8.1",
     "nonebot-adapter-dodo>=0.1.4",
 ]
 [tool.pdm.build]

@@ -44,17 +44,17 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
         if seg.flag == "role":
-            return ms.KMarkdown(f"(rol){seg.target}(rol)")
+            return ms.mention_role(seg.target)
         elif seg.flag == "channel":
             return ms.KMarkdown(f"(chn){seg.target}(chn)")
         else:
-            return ms.KMarkdown(f"(met){seg.target}(met)")
+            return ms.mention(seg.target)
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
 
-        return ms.KMarkdown(f"(met){'here' if seg.here else 'all'}(met)")
+        return ms.mention_here() if seg.here else ms.mention_all()
 
     @export
     async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
@@ -73,21 +73,27 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
 
             assert isinstance(bot, KBot)
         name = seg.__class__.__name__.lower()
-        method = {
-            "image": ms.image,
-            "voice": ms.audio,
-            "audio": ms.audio,
-            "video": ms.video,
-            "file": ms.file,
-        }[name]
+
         if seg.id or seg.url:
+            method = {
+                "image": ms.image,
+                "voice": ms.audio,
+                "audio": ms.audio,
+                "video": ms.video,
+                "file": ms.file,
+            }[name]
             return method(seg.id or seg.url)
-        elif seg.raw:
-            file_key = await bot.upload_file(seg.raw_bytes)
-            return method(file_key)
+        method = {
+            "image": ms.local_image,
+            "voice": ms.local_audio,
+            "audio": ms.local_audio,
+            "video": ms.local_video,
+            "file": ms.local_file,
+        }[name]
+        if seg.raw:
+            return method(seg.raw_bytes)
         elif seg.path:
-            file_key = await bot.upload_file(seg.path)
-            return method(file_key)
+            return method(seg.path)
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
@@ -147,21 +153,25 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
 
         if TYPE_CHECKING:
             assert isinstance(new, self.get_message_type())
+            assert isinstance(bot, KBot)
 
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
         if not _mid.msg_id:
             return
-        _, text = MessageSerializer(new).serialize()
-        assert isinstance(bot, KBot)
+        data = await MessageSerializer(new).serialize(bot=bot)
+        data.pop("type", None)
+        data["msg_id"] = _mid.msg_id
         if isinstance(context, Target):
             if context.private:
-                await bot.directMessage_update(content=text, msg_id=_mid.msg_id)
+                data.pop("quote", None)
+                await bot.directMessage_update(**data)
             else:
-                await bot.message_update(content=text, msg_id=_mid.msg_id)
+                await bot.message_update(**data)
         elif isinstance(context, PrivateMessageEvent):
-            await bot.directMessage_update(content=text, msg_id=_mid.msg_id)
+            data.pop("quote", None)
+            await bot.directMessage_update(**data)
         else:
-            await bot.message_update(content=text, msg_id=_mid.msg_id)
+            await bot.message_update(**data)
         return
 
     def get_reply(self, mid: Any):

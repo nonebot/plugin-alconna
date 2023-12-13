@@ -313,7 +313,7 @@ text = _Text()
 
 class _At(UniPattern[At]):
     def solve(self, seg: MessageSegment):
-        if seg.type == "at":  # ob11, feishu, red, satori, kook(edited)
+        if seg.type == "at":  # ob11, feishu, red, satori
             if "qq" in seg.data and seg.data["qq"] != "all":
                 return At("user", str(seg.data["qq"]))
             if "user_id" in seg.data and seg.data["user_id"] not in ("all", "here"):
@@ -324,16 +324,14 @@ class _At(UniPattern[At]):
                 return At("role", seg.data["role"], seg.data["name"])
         if seg.type == "at_user":  # dodo
             return At("user", seg.data["dodo_id"])
-        if seg.type == "at_role":  # dodo, kook(edited)
+        if seg.type == "at_role":  # dodo
             return At("role", seg.data["role_id"])
-        if seg.type == "at_channel":  # kook(edited)
-            return At("channel", seg.data["channel_id"])
         if seg.type == "channel_link":  # dodo
             return At("channel", seg.data["channel_id"])
         if seg.type == "sharp":  # satori
             return At("channel", seg.data["channel_id"], seg.data["name"])
         if seg.type == "mention":
-            if "user_id" in seg.data:  # ob12
+            if "user_id" in seg.data:  # ob12, kook
                 return At("user", str(seg.data["user_id"]))
             if "text" in seg.data:  # tg
                 return At("user", seg.data["text"])
@@ -344,15 +342,15 @@ class _At(UniPattern[At]):
                 return At("user", str(seg.data["user_id"]))
             if "mention_user" in seg.data:  # villa
                 return At("user", str(seg.data["mention_user"].user_id), seg.data["mention_user"].user_name)
-        if seg.type == "mention_channel":  # discord, qq, qqguild
+        if seg.type == "mention_channel":  # discord, qq, qqguild, kook(edited)
             return At("channel", str(seg.data["channel_id"]))
-        if seg.type == "mention_role":  # discord
+        if seg.type == "mention_role":  # discord, kook
             return At("role", str(seg.data["role_id"]))
         if seg.type == "mention_robot":  # villa
             return At("user", str(seg.data["mention_robot"].bot_id), seg.data["mention_robot"].bot_name)
         if seg.type == "At":  # mirai
             return At("user", str(seg.data["target"]), seg.data["display"])
-        if seg.type == "kmarkdown":  # kook
+        if seg.type == "kmarkdown":  # kook(fallback)
             content = seg.data["content"]
             if not content.startswith("(met)"):
                 return None
@@ -375,13 +373,15 @@ class _AtAll(UniPattern[AtAll]):
         if seg.type == "at":
             if "qq" in seg.data and seg.data["qq"] == "all":  # ob11
                 return AtAll()
-            if "user_id" in seg.data and seg.data["user_id"] in ("all", "here"):  # feishu, kook(edited)
+            if "user_id" in seg.data and seg.data["user_id"] in ("all", "here"):  # feishu
                 return AtAll()
             if "type" in seg.data and seg.data["type"] in ("all", "here"):  # satori
                 return AtAll(here=seg.data["type"] == "here")
         if seg.type in {"at_all", "AtAll", "mention_everyone", "mention_all"}:
             return AtAll()
-        if seg.type == "kmarkdown":
+        if seg.type == "mention_here":  # kook
+            return AtAll(here=True)
+        if seg.type == "kmarkdown":  # kook(fallback)
             content = seg.data["content"]
             if not content.startswith("(met)"):
                 return None
@@ -414,7 +414,7 @@ class _Emoji(UniPattern[Emoji]):
                 return Emoji(seg.data["custom_emoji_id"], seg.data["text"])
             if "id" in seg.data:  # discord
                 return Emoji(seg.data["id"], seg.data["name"])
-        if seg.type == "kmarkdown":  # kook
+        if seg.type == "kmarkdown":  # kook(fallback)
             content = seg.data["content"]
             if content.startswith("(emj)"):
                 mat = re.search(r"\(emj\)(?P<name>[^()\[\]]+)\(emj\)\[(?P<id>[^\[\]]+)\]", content)
