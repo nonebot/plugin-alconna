@@ -6,7 +6,12 @@ def test_kook():
 
     from nonebot_plugin_alconna.adapters.kook import Mention, KMarkdown
 
-    msg = Message() + MessageSegment.text("/command ") + MessageSegment.mention("123456") + MessageSegment.KMarkdown("12345678")
+    msg = (
+        Message()
+        + MessageSegment.text("/command ")
+        + MessageSegment.mention("123456")
+        + MessageSegment.KMarkdown("12345678")
+    )
 
     alc = Alconna("/command", Args["some_arg", Mention]["some_arg1", KMarkdown])
 
