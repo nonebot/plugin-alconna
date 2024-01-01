@@ -22,16 +22,29 @@ class DoDoMessageExporter(MessageExporter["MessageSegment"]):
 
         return Message
 
-    def get_target(self, event: Event) -> Target:
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from nonebot.adapters.dodo.event import Event as DoDoEvent
 
         assert isinstance(event, DoDoEvent)
         channel_id = getattr(event, "channel_id", None)
         island_id = getattr(event, "island_source_id", None)
         if channel_id:
-            return Target(channel_id, island_id or "", True)
+            return Target(
+                channel_id,
+                island_id or "",
+                True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         else:
-            return Target(event.user_id, island_id or "", True, True)
+            return Target(
+                event.user_id,
+                island_id or "",
+                True,
+                True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
 
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.dodo.event import MessageEvent

@@ -23,6 +23,7 @@ from tarina import lang
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
 
+from .tools import get_bot
 from .adapters import MAPPING
 from .fallback import FallbackMessage
 from .template import UniMessageTemplate
@@ -586,7 +587,7 @@ class UniMessage(List[TS]):
         """
 
     @overload
-    def __getitem__(self, args: slice) -> Self:
+    def __getitem__(self, args: slice) -> "UniMessage[TS]":
         """切片消息段
 
         参数:
@@ -605,7 +606,7 @@ class UniMessage(List[TS]):
             int,
             slice,
         ],
-    ) -> Union[TS, TS1, "UniMessage[TS1]", Self]:
+    ) -> Union[TS, TS1, "UniMessage[TS]", "UniMessage[TS1]"]:
         arg1, arg2 = args if isinstance(args, tuple) else (args, None)
         if isinstance(arg1, int) and arg2 is None:
             return super().__getitem__(arg1)
@@ -737,7 +738,7 @@ class UniMessage(List[TS]):
         """深拷贝消息"""
         return deepcopy(self)
 
-    def include(self, *types: Type[Segment]) -> Self:
+    def include(self, *types: Type[Segment]) -> "UniMessage[TS]":
         """过滤消息
 
         参数:
@@ -748,7 +749,7 @@ class UniMessage(List[TS]):
         """
         return UniMessage(seg for seg in self if seg.__class__ in types)
 
-    def exclude(self, *types: Type[Segment]) -> Self:
+    def exclude(self, *types: Type[Segment]) -> "UniMessage[TS]":
         """过滤消息
 
         参数:
@@ -835,7 +836,7 @@ class UniMessage(List[TS]):
             _adapter = bot.adapter
             adapter = _adapter.get_name()
         if fn := MAPPING.get(adapter):
-            return fn.get_target(event)
+            return fn.get_target(event, bot)
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
     async def export(self, bot: Optional[Bot] = None, fallback: bool = True) -> Message:
@@ -863,16 +864,21 @@ class UniMessage(List[TS]):
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
     ) -> "Receipt":
-        if not bot:
-            try:
-                bot = current_bot.get()
-            except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
         if not target:
             try:
                 target = current_event.get()
             except LookupError as e:
                 raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
+        if not bot:
+            try:
+                bot = current_bot.get()
+            except LookupError as e:
+                if not isinstance(target, Target) or not target.platform:
+                    raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+                if target.self_id:
+                    bot = get_bot(bot_id=target.self_id)
+                else:
+                    bot = get_bot(adapter=target.platform, rand=True)
         if at_sender:
             if isinstance(at_sender, str):
                 self.insert(0, At("user", at_sender))  # type: ignore

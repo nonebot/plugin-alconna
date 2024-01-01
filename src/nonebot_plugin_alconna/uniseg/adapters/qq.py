@@ -21,7 +21,7 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
         return Message
 
-    def get_target(self, event: Event) -> Target:
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from nonebot.adapters.qq.event import (
             ForumEvent,
             GuildEvent,
@@ -45,35 +45,103 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
                     channel=True,
                     private=True,
                     source=str(event.id),
+                    platform=self.get_adapter(),
+                    self_id=bot.self_id if bot else None,
                 )  # noqa: E501
-            return Target(str(event.channel_id), str(event.guild_id), channel=True, source=str(event.id))
+            return Target(
+                str(event.channel_id),
+                str(event.guild_id),
+                channel=True,
+                source=str(event.id),
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         if isinstance(event, GuildEvent):
-            return Target(str(event.id), channel=True)
+            return Target(
+                str(event.id), channel=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None
+            )
         if isinstance(event, GuildMemberEvent):
-            return Target(str(event.user.id), str(event.guild_id), channel=True)  # type: ignore
+            return Target(str(event.user.id), str(event.guild_id), channel=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None)  # type: ignore # noqa: E501
         if isinstance(event, ChannelEvent):
-            return Target(str(event.id), str(event.guild_id), channel=True)
+            return Target(
+                str(event.id),
+                str(event.guild_id),
+                channel=True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         if isinstance(event, MessageAuditEvent):
-            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+            return Target(
+                str(event.channel_id),
+                str(event.guild_id),
+                channel=True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         if isinstance(event, MessageReactionEvent):
-            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+            return Target(
+                str(event.channel_id),
+                str(event.guild_id),
+                channel=True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         if isinstance(event, ForumEvent):
-            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+            return Target(
+                str(event.channel_id),
+                str(event.guild_id),
+                channel=True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         if isinstance(event, C2CMessageCreateEvent):
-            return Target(str(event.author.id), private=True, source=str(event.id))
+            return Target(
+                str(event.author.id),
+                private=True,
+                source=str(event.id),
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         if isinstance(event, GroupAtMessageCreateEvent):
-            return Target(event.group_openid, source=str(event.id))
+            return Target(
+                event.group_openid,
+                source=str(event.id),
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         if isinstance(event, InteractionCreateEvent):
-            if event.group_open_id:
-                return Target(event.group_open_id, source=str(event.id))
+            if event.group_openid:
+                return Target(
+                    event.group_openid,
+                    source=str(event.id),
+                    platform=self.get_adapter(),
+                    self_id=bot.self_id if bot else None,
+                )
             elif event.channel_id:
-                return Target(event.channel_id, event.guild_id or "", channel=True, source=str(event.id))
+                return Target(
+                    event.channel_id,
+                    event.guild_id or "",
+                    channel=True,
+                    source=str(event.id),
+                    platform=self.get_adapter(),
+                    self_id=bot.self_id if bot else None,
+                )
             else:
-                return Target(event.get_user_id(), private=True, source=str(event.id))
+                return Target(
+                    event.get_user_id(),
+                    private=True,
+                    source=str(event.id),
+                    platform=self.get_adapter(),
+                    self_id=bot.self_id if bot else None,
+                )
         if isinstance(event, FriendRobotEvent):
-            return Target(event.openid, private=True)
+            return Target(
+                event.openid, private=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None
+            )
         if isinstance(event, GroupRobotEvent):
-            return Target(event.group_openid)
+            return Target(
+                event.group_openid, platform=self.get_adapter(), self_id=bot.self_id if bot else None
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

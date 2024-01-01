@@ -1,6 +1,6 @@
 from pathlib import Path
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message
@@ -22,11 +22,17 @@ class VillaMessageExporter(MessageExporter["MessageSegment"]):
 
         return Message
 
-    def get_target(self, event: Event) -> Target:
+    def get_target(self, event: Event, bot: Union[Bot, None]) -> Target:
         from nonebot.adapters.villa.event import SendMessageEvent, AddQuickEmoticonEvent
 
         assert isinstance(event, (AddQuickEmoticonEvent, SendMessageEvent))
-        return Target(str(event.room_id), str(event.villa_id), channel=True)
+        return Target(
+            str(event.room_id),
+            str(event.villa_id),
+            channel=True,
+            platform=self.get_adapter(),
+            self_id=bot.self_id if bot else None,
+        )
 
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.villa.event import SendMessageEvent

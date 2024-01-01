@@ -857,6 +857,7 @@ class AlconnaMatcher(Matcher):
         参数:
             parameterless: 非参数类型依赖列表
         """
+
         def wrapper(func: _DependentCallable[R]):
             return Waiter(func, cls.HANDLER_PARAM_TYPES, parameterless)
 

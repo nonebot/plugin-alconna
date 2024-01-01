@@ -21,7 +21,7 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
 
         return Message
 
-    def get_target(self, event: Event) -> Target:
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from nonebot.adapters.qqguild.event import (
             ForumEvent,
             GuildEvent,
@@ -34,20 +34,53 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
 
         if isinstance(event, MessageEvent):
             if event.__type__.value.startswith("DIRECT"):
-                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id))  # type: ignore  # noqa: E501
-            return Target(str(event.channel_id), str(event.guild_id), channel=True, source=str(event.id))
+                return Target(str(event.author.id), str(event.guild_id), channel=True, private=True, source=str(event.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)  # type: ignore  # noqa: E501
+            return Target(
+                str(event.channel_id),
+                str(event.guild_id),
+                channel=True,
+                source=str(event.id),
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         elif isinstance(event, GuildEvent):
-            return Target(str(event.id), channel=True)
+            return Target(
+                str(event.id), channel=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None
+            )
         elif isinstance(event, GuildMemberEvent):
-            return Target(str(event.user.id), str(event.guild_id), channel=True)  # type: ignore
+            return Target(str(event.user.id), str(event.guild_id), channel=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None)  # type: ignore # noqa: E501
         elif isinstance(event, ChannelEvent):
-            return Target(str(event.id), str(event.guild_id), channel=True)
+            return Target(
+                str(event.id),
+                str(event.guild_id),
+                channel=True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         elif isinstance(event, MessageAuditEvent):
-            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+            return Target(
+                str(event.channel_id),
+                str(event.guild_id),
+                channel=True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         elif isinstance(event, MessageReactionEvent):
-            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+            return Target(
+                str(event.channel_id),
+                str(event.guild_id),
+                channel=True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         elif isinstance(event, ForumEvent):
-            return Target(str(event.channel_id), str(event.guild_id), channel=True)
+            return Target(
+                str(event.channel_id),
+                str(event.guild_id),
+                channel=True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

@@ -28,16 +28,29 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         assert isinstance(event, MessageEvent)
         return str(event.message_id)
 
-    def get_target(self, event: Event) -> Target:
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from nonebot.adapters.discord.api.model import Channel
         from nonebot.adapters.discord.event import MessageEvent, GuildMessageCreateEvent
 
         if isinstance(event, MessageEvent):
             if isinstance(event, GuildMessageCreateEvent):
-                return Target(str(event.channel_id), str(event.guild_id), channel=True)
-            return Target(str(event.channel_id), channel=True)
+                return Target(
+                    str(event.channel_id),
+                    str(event.guild_id),
+                    channel=True,
+                    platform=self.get_adapter(),
+                    self_id=bot.self_id if bot else None,
+                )
+            return Target(
+                str(event.channel_id),
+                channel=True,
+                platform=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         elif isinstance(event, Channel):
-            return Target(str(event.id), channel=True)
+            return Target(
+                str(event.id), channel=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None
+            )
         raise NotImplementedError
 
     @export

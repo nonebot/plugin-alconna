@@ -63,7 +63,7 @@ async def test_unimsg_template(app: App):
 
 @pytest.mark.asyncio()
 async def test_unimsg_send(app: App):
-    from nonebot_plugin_alconna import MsgId, UniMessage, on_alconna
+    from nonebot_plugin_alconna import MsgId, Target, UniMessage, on_alconna
 
     matcher = on_alconna(Alconna("test_unimsg_send"))
 
@@ -96,3 +96,16 @@ async def test_unimsg_send(app: App):
             },
         )
         ctx.should_call_api("delete_msg", {"message_id": 2})
+
+    async with app.test_api() as ctx1:
+        adapter = get_adapter(Adapter)
+        _ = ctx1.create_bot(base=Bot, adapter=adapter)
+        ctx1.should_call_api(
+            "send_msg",
+            {
+                "message_type": "group",
+                "group_id": 456,
+                "message": Message("hello!"),
+            },
+        )
+        await Target("456", platform=adapter.get_name()).send("hello!")

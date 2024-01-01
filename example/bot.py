@@ -13,10 +13,9 @@ nonebot.load_plugin("plugins.demo")
 
 
 async def _():
-    from nonebot_plugin_alconna import Target, UniMessage, get_bot
+    from nonebot_plugin_alconna import Target, UniMessage
 
-    bot = get_bot(adapter=ONEBOT_V12Adapter, rand=True)
-    await UniMessage.image(path="test.png").send(Target("123456789"), bot)
+    await Target("123456789", platform=ONEBOT_V12Adapter.get_name()).send(UniMessage.image(path="test.png"))
 
 
 if __name__ == "__main__":

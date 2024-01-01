@@ -18,7 +18,7 @@ from typing import (
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
-from .segment import Other, Segment
+from .segment import Other, Reply, Segment
 
 if TYPE_CHECKING:
     from .message import UniMessage
@@ -44,6 +44,25 @@ class Target:
     """平台(适配器)名称，若为None则需要明确指定 Bot 对象"""
     self_id: Union[str, None] = None
     """机器人id，若为None则需要明确指定 Bot 对象"""
+
+    async def send(
+        self,
+        message: Union[str, Message, "UniMessage"],
+        bot: Union[Bot, None] = None,
+        fallback: bool = True,
+        at_sender: Union[str, bool] = False,
+        reply_to: Union[str, bool, Reply, None] = False,
+    ):
+        """发送消息"""
+        if isinstance(message, str):
+            from .message import UniMessage
+
+            message = UniMessage(message)
+        if isinstance(message, Message):
+            from .message import UniMessage
+
+            message = await UniMessage.generate(message=message, bot=bot)
+        return await message.send(self, bot, fallback, at_sender, reply_to)
 
 
 class SerializeFailed(Exception):
@@ -73,8 +92,8 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
     def get_message_id(self, event: Event) -> str:
         ...
 
-    def get_target(self, event: Event) -> Target:
-        return Target(event.get_user_id())
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+        return Target(event.get_user_id(), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
 
     def __init__(self):
         self._mapping = {}

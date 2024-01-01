@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from nonebot.adapters import Bot, Event, Message
 
@@ -19,13 +19,20 @@ class DingMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "Ding"
 
-    def get_target(self, event: Event) -> Target:
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from nonebot.adapters.ding.event import MessageEvent, ConversationType
 
         if isinstance(event, MessageEvent):
             if event.conversationType == ConversationType.private:
-                return Target(event.senderId, private=True)
-            return Target(event.conversationId)
+                return Target(
+                    event.senderId,
+                    private=True,
+                    platform=self.get_adapter(),
+                    self_id=bot.self_id if bot else None,
+                )
+            return Target(
+                event.conversationId, platform=self.get_adapter(), self_id=bot.self_id if bot else None
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

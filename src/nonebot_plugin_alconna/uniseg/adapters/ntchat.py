@@ -20,11 +20,13 @@ class NTChatMessageExporter(MessageExporter["MessageSegment"]):
     def get_adapter(cls) -> str:
         return "ntchat"
 
-    def get_target(self, event: Event) -> Target:
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from_wxid = getattr(event, "from_wxid", None)
         room_wxid = getattr(event, "room_wxid", "")
         if from_wxid:
-            return Target(from_wxid, room_wxid)
+            return Target(
+                from_wxid, room_wxid, platform=self.get_adapter(), self_id=bot.self_id if bot else None
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
