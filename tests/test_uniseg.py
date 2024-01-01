@@ -50,14 +50,14 @@ async def test_unimsg_template(app: App):
 
     @matcher.handle()
     async def handle():
-        await matcher.finish(UniMessage.template("{:Reply($message_id)}{:At(user, $event.get_user_id())}"))
+        await matcher.finish(UniMessage.template("{:Reply($message_id)}{:At(user, $event.get_user_id()[1:])}"))
 
     async with app.test_matcher(matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         event = fake_group_message_event_v11(message=Message("test_unimsg_template"), user_id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, MessageSegment.reply(1) + MessageSegment.at(123))
+        ctx.should_call_send(event, MessageSegment.reply(1) + MessageSegment.at(23))
         ctx.should_finished(matcher)
 
 
@@ -108,4 +108,5 @@ async def test_unimsg_send(app: App):
                 "message": Message("hello!"),
             },
         )
-        await Target("456", platform=adapter.get_name()).send("hello!")
+        target = Target("456", platform=adapter.get_name())
+        await target.send("hello!")

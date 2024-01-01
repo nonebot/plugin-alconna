@@ -1,5 +1,6 @@
 import re
 import functools
+import _string  # type: ignore
 from string import Formatter
 from typing_extensions import TypeAlias
 from typing import (
@@ -102,6 +103,43 @@ class UniMessageTemplate(Formatter):
     #             f"not all arguments converted during string formatting: " f"{set(kwargs) - set(keys)}"
     #         )
 
+    def _getattr(self, route: str, obj: Any):
+        res = obj
+        parts = re.split(r"\.|(\[.+\])|(\(.*\))", route)
+        for part in parts[1:]:
+            if not part:
+                continue
+            if part.startswith("_"):
+                raise ValueError(route)
+            if part.startswith("[") and part.endswith("]"):
+                item = part[1:-1]
+                if item[0] in ("'", '"') and item[-1] in ("'", '"'):
+                    res = res[item[1:-1]]
+                elif ":" in item:
+                    res = res[slice(*map(lambda x: int(x) if x else None, item.split(':')))]
+                else:
+                    res = res[int(item)]
+            elif part.startswith("(") and part.endswith(")"):
+                item = part[1:-1]
+                if not item:
+                    res = res()
+                else:
+                    _parts = item.split(",")
+                    _args = []
+                    _kwargs = {}
+                    for part in _parts:
+                        part = part.strip()
+                        if re.match(".+=.+", part):
+                            k, v = part.split("=")
+                            _kwargs[k] = v
+                        else:
+                            _args.append(part)
+                    res = res(*_args, **_kwargs)
+            else:
+                res = getattr(res, part)
+        return res
+
+
     def _vformat(
         self,
         format_string: str,
@@ -126,14 +164,14 @@ class UniMessageTemplate(Formatter):
                     for part in parts:
                         part = part.strip()
                         if part.startswith("$") and (key := part.split(".")[0]) in kwargs:
-                            _args.append(eval(part[1:], {}, {key[1:]: kwargs[key]}))
+                            _args.append(self._getattr(part[1:], kwargs[key]))
                         elif re.match(".+=.+", part):
                             k, v = part.split("=")
                             if v in kwargs:
                                 _kwargs[k] = kwargs[v]
                                 used_args.add(v)
                             elif v.startswith("$") and (key := v.split(".")[0]) in kwargs:
-                                _kwargs[k] = eval(v[1:], {}, {key[1:]: kwargs[key]})
+                                _kwargs[k] = self._getattr(v[1:], kwargs[key])
                             else:
                                 _kwargs[k] = v
                         elif part in kwargs:
@@ -178,6 +216,13 @@ class UniMessageTemplate(Formatter):
         if formatter is None and format_spec in _MAPPING:
             formatter = _MAPPING[format_spec]  # type: ignore
         return super().format_field(value, format_spec) if formatter is None else formatter(value)
+
+    def get_field(self, field_name, args, kwargs):
+        first, rest = _string.formatter_field_name_split(field_name)
+
+        obj = self.get_value(first, args, kwargs)
+
+        return obj, first
 
     def _add(self, a: Any, b: Any) -> Any:
         try:
