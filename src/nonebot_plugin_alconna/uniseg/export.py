@@ -40,6 +40,10 @@ class Target:
     """是否为私聊"""
     source: str = ""
     """可能的事件id"""
+    platform: Union[str, None] = None
+    """平台(适配器)名称，若为None则需要明确指定 Bot 对象"""
+    self_id: Union[str, None] = None
+    """机器人id，若为None则需要明确指定 Bot 对象"""
 
 
 class SerializeFailed(Exception):

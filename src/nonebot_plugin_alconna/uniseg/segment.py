@@ -780,14 +780,17 @@ async def reply_handle(event: Event, bot: Bot):
             )
     elif adapter_name == "QQ":
         if TYPE_CHECKING:
-            from nonebot.adapters.qq.event import GuildMessageEvent
+            from nonebot.adapters.qq.models import Message as GuildMessage
+            from nonebot.adapters.qq.event import GuildMessageEvent, QQMessageEvent
 
-            assert isinstance(event, GuildMessageEvent)
-        if hasattr(event, "reply") and event.reply:
+            assert isinstance(event, (GuildMessageEvent, QQMessageEvent))
+        if rpl := getattr(event, "reply", None):
+            if TYPE_CHECKING:
+                assert isinstance(rpl, GuildMessage)
             return Reply(
-                str(event.reply.id),
-                event.reply.content,
-                event.reply,
+                str(rpl.id),
+                rpl.content,
+                rpl,
             )
     elif adapter_name == "Satori":
         if TYPE_CHECKING:
