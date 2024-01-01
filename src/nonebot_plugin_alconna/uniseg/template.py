@@ -1,6 +1,5 @@
 import re
 import functools
-import _string  # type: ignore
 from string import Formatter
 from typing_extensions import TypeAlias
 from typing import (
@@ -19,6 +18,7 @@ from typing import (
     cast,
 )
 
+import _string  # type: ignore
 from tarina.tools import gen_subclass
 
 from .segment import Segment
@@ -116,7 +116,7 @@ class UniMessageTemplate(Formatter):
                 if item[0] in ("'", '"') and item[-1] in ("'", '"'):
                     res = res[item[1:-1]]
                 elif ":" in item:
-                    res = res[slice(*map(lambda x: int(x) if x else None, item.split(':')))]
+                    res = res[slice(*map(lambda x: int(x) if x else None, item.split(":")))]
                 else:
                     res = res[int(item)]
             elif part.startswith("(") and part.endswith(")"):
@@ -138,7 +138,6 @@ class UniMessageTemplate(Formatter):
             else:
                 res = getattr(res, part)
         return res
-
 
     def _vformat(
         self,
