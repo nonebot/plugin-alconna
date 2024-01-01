@@ -2,6 +2,7 @@ from typing import Union, Literal
 
 from tarina import lang
 from nonebot import require
+from nonebot.adapters import Event
 from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
 from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
@@ -31,6 +32,7 @@ from nonebot_plugin_alconna import (
     UniMsg,
     Command,
     Extension,
+    AlconnaArg,
     UniMessage,
     AlconnaMatch,
     AlconnaMatcher,
@@ -338,7 +340,7 @@ async def recall_h(group_id: str, user_id: str, message_id: str, bot: Bot):
         detail_type="group",
         user_id=user_id,
         group_id=group_id,
-        message=await UniMessage(f"recalled {user_id} {message_id}").export(bot),
+        message=await UniMessage(f"recalled {user_id} {message_id}").export(bot),  # type: ignore
     )
 
 
@@ -357,7 +359,7 @@ def permission_checker(permission: str):
 group = on_alconna(
     Alconna(
         "group",
-        Option("add", Args["group_id", int]["name", str]),
+        Option("add", Args["group_id", int]["name?", str]),
         Option("remove", Args["group_id", int]),
         Option("list"),
     ),
@@ -365,7 +367,13 @@ group = on_alconna(
 
 
 @group.assign("add", additional=permission_checker("group.add"))
-async def group_add(group_id: int, name: str):
+async def group_add(name: Match[str]):
+    if name.available:
+        group.set_path_arg("add.name", name.result)
+
+
+@group.got_path("add.name", prompt="请输入群名")
+async def group_add_name(group_id: int, name: str = AlconnaArg("add.name")):
     await group.finish(f"add {group_id} {name}")
 
 
@@ -412,8 +420,26 @@ cmd = on_alconna(alc, comp_config={"lite": True}, skip_for_unmatch=False)
 
 
 @cmd.handle()
-async def handle(name: str, phone: int, at: Union[str, At]):
+async def handle(event: Event, name: str, phone: int, at: Union[str, At]):
     r = await UniMessage(f"姓名：{name}").send(reply_to=True)
     await r.reply(f"手机号：{phone}")
     await r.reply(f"教师号：{at!r}")
-    await r.recall(delay=5)
+    # await r.recall(delay=5)
+
+    await cmd.send("请回复验证码：")
+
+    @cmd.waiter()
+    async def receive(event1: Event, msg: UniMsg):
+        if event.get_session_id() == event1.get_session_id() and msg:
+            return msg
+        return False
+
+    async for res in receive(timeout=10):
+        if not res:
+            await cmd.send("超时")
+            return
+        if str(res) == "123456":
+            await cmd.send("验证成功")
+            break
+        await cmd.send("验证失败，请重新输入：")
+        continue

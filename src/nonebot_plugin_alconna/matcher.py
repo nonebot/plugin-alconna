@@ -1,19 +1,24 @@
 from __future__ import annotations
 
+import asyncio
 import weakref
 from weakref import ref
 from types import FunctionType
+from typing_extensions import Self
 from datetime import datetime, timedelta
 from typing import (
     TYPE_CHECKING,
     Any,
     Union,
+    Generic,
     Literal,
+    TypeVar,
     Callable,
     ClassVar,
     Iterable,
     NoReturn,
     Protocol,
+    Awaitable,
     cast,
     overload,
 )
@@ -31,13 +36,13 @@ from arclet.alconna.typing import ShortcutRegWrapper
 from tarina import lang, is_awaitable, run_always_await
 from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
-from nonebot.plugin.on import store_matcher, get_matcher_source
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
+from nonebot.plugin.on import on_message, store_matcher, get_matcher_source
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
-from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 from nonebot.exception import PausedException, FinishedException, RejectedException
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
+from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker, _DependentCallable
 
 from .rule import alconna
 from .typings import MReturn
@@ -105,6 +110,98 @@ class _method:
         if instance is None:
             return self.__func__.__get__(owner, owner)
         return self.__func__.__get__(instance, owner)
+
+
+R = TypeVar("R")
+R1 = TypeVar("R1")
+T = TypeVar("T")
+T1 = TypeVar("T1")
+
+
+class WaiterIterator(Generic[R, T]):
+    def __init__(self, waiter: Waiter[R], default: T, timeout: float = 120):
+        self.waiter = waiter
+        self.timeout = timeout
+        self.default = default
+
+    def __aiter__(self) -> Self:
+        return self
+
+    @overload
+    def __anext__(self: WaiterIterator[R1, None]) -> Awaitable[R1 | None]:
+        ...
+
+    @overload
+    def __anext__(self: WaiterIterator[R1, T1]) -> Awaitable[R1 | T1]:
+        ...
+
+    def __anext__(self):  # type: ignore
+        return self.waiter.wait(default=self.default, timeout=self.timeout)  # type: ignore
+
+
+class Waiter(Generic[R]):
+    future: asyncio.Future
+    handler: _DependentCallable[R]
+
+    def __init__(
+        self, handler: _DependentCallable[R], params: tuple, parameterless: Iterable[Any] | None = None
+    ):
+        self.future = asyncio.Future()
+        _handler = Dependent[Any].parse(call=handler, parameterless=parameterless, allow_types=params)
+
+        async def wrapper(matcher: Matcher, bot: Bot, event: Event, state: T_State):
+            if self.future.done():
+                matcher.skip()
+            result = await _handler(
+                matcher=self,
+                bot=bot,
+                event=event,
+                state=state,
+            )
+            if result is not None and not self.future.done():
+                self.future.set_result(result)
+                matcher.stop_propagation()
+                await matcher.finish()
+            matcher.skip()
+
+        self.handler = wrapper
+
+    def __aiter__(self) -> WaiterIterator[R, None]:
+        return WaiterIterator(self, None)
+
+    @overload
+    def __call__(self, *, default: T, timeout: float = 120) -> WaiterIterator[R, T]:
+        ...
+
+    @overload
+    def __call__(self, *, timeout: float = 120) -> WaiterIterator[R, None]:
+        ...
+
+    def __call__(
+        self, *, default: T | None = None, timeout: float = 120
+    ) -> WaiterIterator[R, T] | WaiterIterator[R, None]:
+        return WaiterIterator(self, default, timeout)  # type: ignore
+
+    @overload
+    async def wait(self, *, default: R | T, timeout: float = 120) -> R | T:
+        ...
+
+    @overload
+    async def wait(self, *, timeout: float = 120) -> R | None:
+        ...
+
+    async def wait(self, *, default: R | T | None = None, timeout: float = 120) -> R | T | None:
+        matcher = on_message(priority=0, block=False, handlers=[self.handler])
+        try:
+            return await asyncio.wait_for(self.future, timeout)
+        except asyncio.TimeoutError:
+            return default
+        finally:
+            self.future = asyncio.Future()
+            try:
+                matcher.destroy()
+            except (IndexError, ValueError):
+                pass
 
 
 class AlconnaMatcher(Matcher):
@@ -750,6 +847,20 @@ class AlconnaMatcher(Matcher):
         if prompt is not None:
             await cls.send(prompt, fallback=fallback, **kwargs)
         raise RejectedException
+
+    @classmethod
+    def waiter(cls, parameterless: Iterable[Any] | None = None):
+        """装饰一个函数来创建一个 `Waiter` 对象用以等待用户输入
+
+        函数内需要自行判断输入是否符合预期并返回结果
+
+        参数:
+            parameterless: 非参数类型依赖列表
+        """
+        def wrapper(func: _DependentCallable[R]):
+            return Waiter(func, cls.HANDLER_PARAM_TYPES, parameterless)
+
+        return wrapper
 
 
 def on_alconna(
