@@ -835,15 +835,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-discord"
-version = "0.1.2"
+version = "0.1.3"
 requires_python = ">=3.8,<4.0"
 summary = "Discord adapter for nonebot2"
 dependencies = [
     "nonebot2<3.0.0,>=2.0.0",
 ]
 files = [
-    {file = "nonebot_adapter_discord-0.1.2-py3-none-any.whl", hash = "sha256:2495c2e4678206e3e609afd5ed91bd45679f7e7b6e53d6084d3b23fc76e63a4d"},
-    {file = "nonebot_adapter_discord-0.1.2.tar.gz", hash = "sha256:88cadc1aefe7a479f1f916e002689cf496ad986f3bb6fd32d98a34f9b3632a8c"},
+    {file = "nonebot_adapter_discord-0.1.3-py3-none-any.whl", hash = "sha256:4af3ef98e9d70d68880b43cb8a4421be8ca4961832eaf95377e2a339c73f0644"},
+    {file = "nonebot_adapter_discord-0.1.3.tar.gz", hash = "sha256:73b492c63747ff2d5c8c1e49236f5bf2ff2ca01adacf273f64899193f9210ffe"},
 ]
 
 [[package]]
