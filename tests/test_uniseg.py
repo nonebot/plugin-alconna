@@ -50,7 +50,9 @@ async def test_unimsg_template(app: App):
 
     @matcher.handle()
     async def handle():
-        await matcher.finish(UniMessage.template("{:Reply($message_id)}{:At(user, $event.get_user_id()[1:])}"))
+        await matcher.finish(
+            UniMessage.template("{:Reply($message_id)}{:At(user, $event.get_user_id()[1:])}")
+        )
 
     async with app.test_matcher(matcher) as ctx:
         adapter = get_adapter(Adapter)
