@@ -96,6 +96,7 @@ target-version = "py38"
 pythonVersion = "3.9"
 pythonPlatform = "All"
 typeCheckingMode = "basic"
+disableBytesTypePromotions = true
 
 [tool.pdm.scripts]
 test = "pytest -v -n auto -W ignore ./tests/"

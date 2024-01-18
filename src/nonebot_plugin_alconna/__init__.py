@@ -67,6 +67,7 @@ from .params import AlcResult as AlcResult
 from .uniseg import MessageId as MessageId
 from .uniseg import MsgTarget as MsgTarget
 from .uniseg import Reference as Reference
+from .uniseg import patch_saa as patch_saa
 from .argv import MessageArgv as MessageArgv
 from .params import AlcMatches as AlcMatches
 from .params import AlconnaArg as AlconnaArg
