@@ -55,6 +55,7 @@ from .uniseg import Video as Video
 from .uniseg import Voice as Voice
 from .params import assign as assign
 from .rule import alconna as alconna
+from .uniseg import Custom as Custom
 from .uniseg import Target as Target
 from .uniseg import UniMsg as UniMsg
 from .uniseg import RefNode as RefNode
@@ -89,6 +90,7 @@ from .params import AlconnaMatches as AlconnaMatches
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
 from .uniseg import SerializeFailed as SerializeFailed
+from .uniseg import custom_register as custom_register
 from .extension import load_from_path as load_from_path
 from .uniseg import UniversalMessage as UniversalMessage
 from .uniseg import UniversalSegment as UniversalSegment

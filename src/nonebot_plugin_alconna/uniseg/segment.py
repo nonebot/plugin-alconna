@@ -1,5 +1,6 @@
 """通用标注, 无法用于创建 MS对象"""
 import re
+import abc
 import json
 import contextlib
 from io import BytesIO
@@ -274,6 +275,52 @@ class Card(Segment):
     def __post_init__(self):
         with contextlib.suppress(json.JSONDecodeError):
             self.content = json.loads(self.raw)
+
+
+TM = TypeVar("TM", bound=Message)
+
+
+@dataclass
+class Custom(Segment, abc.ABC):
+    """Custom对象，表示一类自定义消息"""
+
+    type: str
+    content: Any
+
+    @abc.abstractmethod
+    def export(self, msg_type: Type[TM]) -> MessageSegment[TM]:
+        ...
+
+
+TCustom = TypeVar("TCustom", bound=Custom)
+
+
+class _Custom(UniPattern[Custom]):
+    BUILDERS: Dict[
+        Union[str, Callable[[MessageSegment], bool]], Callable[[MessageSegment], Union[Custom, None]]
+    ] = {}
+
+    @classmethod
+    def custom_register(
+        cls, custom_type: Type[TCustom], condition: Union[str, Callable[[MessageSegment], bool]]
+    ):
+        def _register(func: Callable[[MessageSegment], Union[TCustom, None]]):
+            cls.BUILDERS[condition] = func
+            return func
+
+        return _register
+
+    def solve(self, seg: MessageSegment):
+        for condition, func in self.BUILDERS.items():
+            if isinstance(condition, str):
+                if seg.type == condition:
+                    return func(seg)
+            elif condition(seg):
+                return func(seg)
+
+
+custom = _Custom()
+custom_register = custom.custom_register
 
 
 @dataclass
@@ -722,7 +769,7 @@ class _Card(UniPattern[Card]):
 
 
 card = _Card()
-segments = [at_all, at, emoji, image, video, voice, audio, file, reference, card, text, other]
+segments = [at_all, at, emoji, image, video, voice, audio, file, reference, card, text, custom, other]
 env = create_local_patterns("nonebot")
 env.sets(segments)
 

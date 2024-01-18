@@ -18,7 +18,7 @@ from typing import (
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
-from .segment import Other, Reply, Segment
+from .segment import Other, Reply, Custom, Segment
 
 if TYPE_CHECKING:
     from .message import UniMessage
@@ -108,8 +108,9 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
                     self._mapping[target] = method
 
     async def export(self, source: "UniMessage", bot: Bot, fallback: bool):
-        message = self.get_message_type()()
-        self.segment_class = self.get_message_type().get_segment_class()
+        msg_type = self.get_message_type()
+        message = msg_type()
+        self.segment_class = msg_type.get_segment_class()
         for seg in source:
             seg_type = seg.__class__
             if seg_type in self._mapping:
@@ -118,6 +119,8 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
                     message.extend(res)
                     break
                 message.append(res)
+            elif isinstance(seg, Custom):
+                message.append(seg.export(msg_type))
             elif isinstance(seg, Other):
                 message.append(seg.origin)  # type: ignore
             elif fallback:
