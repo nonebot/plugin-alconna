@@ -284,12 +284,16 @@ TM = TypeVar("TM", bound=Message)
 class Custom(Segment, abc.ABC):
     """Custom对象，表示一类自定义消息"""
 
-    type: str
+    mstype: str
     content: Any
 
     @abc.abstractmethod
     def export(self, msg_type: Type[TM]) -> MessageSegment[TM]:
         ...
+
+    @property
+    def type(self) -> str:
+        return self.mstype
 
 
 TCustom = TypeVar("TCustom", bound=Custom)
@@ -366,9 +370,9 @@ class _At(UniPattern[At]):
             if "user_id" in seg.data and seg.data["user_id"] not in ("all", "here"):
                 return At("user", str(seg.data["user_id"]))
             if "id" in seg.data:
-                return At("user", seg.data["id"], seg.data["name"])
+                return At("user", seg.data["id"], seg.data.get("name"))
             if "role" in seg.data:
-                return At("role", seg.data["role"], seg.data["name"])
+                return At("role", seg.data["role"], seg.data.get("name"))
         if seg.type == "at_user":  # dodo
             return At("user", seg.data["dodo_id"])
         if seg.type == "at_role":  # dodo
