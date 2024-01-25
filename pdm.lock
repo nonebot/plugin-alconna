@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:be585acf27d22b292fb6a69cac733e4be2eda96e6de53ab896457c53124720f2"
+content_hash = "sha256:9cc6bcc0ae031aa7eddcf3700ee7047e7c78b6f6f311e3615b26bc0fa39e3e8a"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -329,15 +329,6 @@ dependencies = [
 files = [
     {file = "fix-future-annotations-0.5.0.tar.gz", hash = "sha256:666bf5fd09068f3403b34b2dc69844955a4a7bac4df28dd345183bd18172cbfd"},
     {file = "fix_future_annotations-0.5.0-py3-none-any.whl", hash = "sha256:45b5e73b36c514a23c2fbb2b7ff26448496399bda3b98a7b78a14439639f2e59"},
-]
-
-[[package]]
-name = "fleep"
-version = "1.0.1"
-requires_python = ">=3.1"
-summary = "File format determination library"
-files = [
-    {file = "fleep-1.0.1.tar.gz", hash = "sha256:c8f62b258ee5364d7f6c1ed1f3f278e99020fc3f0a60a24ad1e10846e31d104c"},
 ]
 
 [[package]]

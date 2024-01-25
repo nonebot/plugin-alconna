@@ -25,9 +25,10 @@ from typing import (
     overload,
 )
 
-import fleep
 from nepattern import MatchMode, BasePattern, create_local_patterns
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
+
+from .utils import fleep
 
 if TYPE_CHECKING:
     from .message import UniMessage
@@ -186,9 +187,9 @@ class Media(Segment):
         raw = self.raw.getvalue() if isinstance(self.raw, BytesIO) else self.raw
         header = raw[:128]
         info = fleep.get(header)
-        self.mimetype = info.mime[0] if info.mime else self.mimetype
-        if info.type and info.extension:
-            self.name = f"{info.type[0]}.{info.extension[0]}"
+        self.mimetype = info.mimes[0] if info.mimes else self.mimetype
+        if info.types and info.extensions:
+            self.name = f"{info.types[0]}.{info.extensions[0]}"
         return raw
 
 

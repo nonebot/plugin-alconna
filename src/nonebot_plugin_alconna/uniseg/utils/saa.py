@@ -4,7 +4,7 @@ from typing import Any
 from nonebot import require
 from nonebot.internal.matcher import current_bot, current_event
 
-from .message import Receipt, UniMessage
+from nonebot_plugin_alconna.uniseg.message import Receipt, UniMessage
 
 try:
     require("nonebot_plugin_saa")

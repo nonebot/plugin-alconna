@@ -53,4 +53,4 @@ __plugin_meta__ = PluginMetadata(
 
 
 def patch_saa():
-    from . import saa  # noqa: F401
+    from .utils import saa  # noqa: F401
