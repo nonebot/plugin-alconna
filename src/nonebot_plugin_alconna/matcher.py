@@ -945,7 +945,7 @@ def on_alconna(
         {
             "_source": source,
             "type": "",
-            "rule": rule & _rule,
+            "rule": _rule & rule,
             "permission": Permission() | permission,
             "handlers": [
                 handler

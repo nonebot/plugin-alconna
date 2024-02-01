@@ -12,6 +12,7 @@ from arclet.alconna import (
     Option,
     Alconna,
     Arparma,
+    MultiVar,
     Subcommand,
     Duplication,
     SubcommandStub,
@@ -443,3 +444,70 @@ async def handle(event: Event, name: str, phone: int, at: Union[str, At]):
             break
         await cmd.send("验证失败，请重新输入：")
         continue
+
+
+hd = on_alconna(
+    Alconna(
+        "请求处理",
+        Args["handle", ["-fa", "-fr", "-fi", "-ga", "-gr", "-gi"]]["id", str],
+    )
+)
+
+hd.shortcut(
+    r"dddd(\d+)",
+    fuzzy=False,
+    command="请求处理 -fa {0}",
+)
+
+hd.shortcut(
+    "dddd",
+    fuzzy=True,
+    command="请求处理 -fa {%0}",
+)
+
+
+@hd.handle()
+async def hd_h(handle: str, id: str):
+    await hd.send(f"handle: {handle}\nid: {id}")
+
+
+setu = on_alconna(
+    Alconna(
+        "setu",
+        Args["count", int, 1],
+        Option("r18", action=store_true, default=False, help_text="是否开启R18模式"),
+        Option("tags", Args["tags", MultiVar(str, "*")], help_text="指定标签"),
+    )
+)
+
+
+def wrapper(slot: Union[int, str], content: str):
+    if slot == 0:
+        if not content:
+            return "1"
+        if content == "点":
+            import random
+
+            return str(random.randint(1, 5))
+    return content
+
+
+setu.shortcut(
+    r"(?:要|我要|给我|来|抽)(点|\d*)(?:张|个|份|幅)?(?:涩|色|瑟)图",
+    command="setu {0} tags",
+    fuzzy=True,
+    wrapper=wrapper,
+)
+
+setu.shortcut(
+    r"(?:要|我要|给我|来|抽)(点|\d*)(?:张|个|份|幅)?(.+?)的?(?:涩|色|瑟)图",
+    command="setu {0}",
+    arguments=["tags", "{1}"],
+    fuzzy=True,
+    wrapper=wrapper,
+)
+
+
+@setu.handle()
+async def setu_h(count: int, tags: Match[tuple[str, ...]]):
+    await setu.send(f"数量: {count}\n标签: {tags.result}")
