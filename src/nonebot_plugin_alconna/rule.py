@@ -4,13 +4,13 @@ from typing import Dict, List, Type, Union, Literal, Optional, cast
 
 from nonebot import get_driver
 from nonebot.typing import T_State
+from tarina import lang, init_spec
 from nonebot.matcher import Matcher
 from nonebot.utils import escape_tag
 from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
 from nonebot.internal.rule import Rule as Rule
 from nonebot.adapters import Bot, Event, Message
-from tarina import lang, init_spec, is_awaitable
 from arclet.alconna.exceptions import SpecialOptionTriggered
 from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
 
@@ -295,14 +295,7 @@ class AlconnaRule:
             return False
         await self.executor.parse_wrapper(bot, state, event, arp)
         state[ALCONNA_RESULT] = CommandResult(self.command, arp, may_help_text)
-        exec_result = self.command.exec_result
-        for key, value in exec_result.items():
-            if is_awaitable(value):
-                value = await value
-            if isinstance(value, (str, Message)):
-                value = await bot.send(event, value)
-            exec_result[key] = value
-        state[ALCONNA_EXEC_RESULT] = exec_result
+        state[ALCONNA_EXEC_RESULT] = self.command.exec_result
         state[ALCONNA_EXTENSION] = self.executor.context
         return True
 

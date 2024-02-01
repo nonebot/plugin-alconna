@@ -15,6 +15,7 @@ from typing import (
     TypeVar,
     Callable,
     ClassVar,
+    Hashable,
     Iterable,
     NoReturn,
     Protocol,
@@ -1055,9 +1056,9 @@ def funcommand(
         )
 
         @matcher.handle()
-        async def handle(results: AlcExecResult):
+        async def handle_func(results: AlcExecResult):
             if res := results.get(func.__name__):
-                if is_awaitable(res):
+                if isinstance(res, Hashable) and is_awaitable(res):
                     res = await res
                 if isinstance(res, (str, Message, MessageSegment, Segment, UniMessage, UniMessageTemplate)):
                     await matcher.send(res, fallback=True)
@@ -1095,7 +1096,20 @@ class Command(AlconnaString):
         params.pop("self")
         params.pop("__class__")
         alc = super().build()
-        return on_alconna(alc, **params)
+        matcher = on_alconna(alc, **params)
+        if self.actions:
+
+            @matcher.handle()
+            async def handle_actions(results: AlcExecResult):
+                for res in results.values():
+                    if isinstance(res, Hashable) and is_awaitable(res):
+                        res = await res
+                    if isinstance(
+                        res, (str, Message, MessageSegment, Segment, UniMessage, UniMessageTemplate)
+                    ):
+                        await matcher.send(res, fallback=True)
+
+        return matcher
 
 
 @run_postprocessor
