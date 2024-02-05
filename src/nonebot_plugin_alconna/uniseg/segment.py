@@ -1,4 +1,5 @@
 """通用标注, 无法用于创建 MS对象"""
+
 import re
 import abc
 import json
@@ -76,16 +77,13 @@ class Segment:
         return f"{self.__class__.__name__}({attrs})"
 
     @overload
-    def __add__(self: TS, item: str) -> "UniMessage[Union[TS, Text]]":
-        ...
+    def __add__(self: TS, item: str) -> "UniMessage[Union[TS, Text]]": ...
 
     @overload
-    def __add__(self: TS, item: Union[TS, Iterable[TS]]) -> "UniMessage[TS]":
-        ...
+    def __add__(self: TS, item: Union[TS, Iterable[TS]]) -> "UniMessage[TS]": ...
 
     @overload
-    def __add__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
-        ...
+    def __add__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]": ...
 
     def __add__(self: TS, item: Union[str, Union[TS, TS1], Iterable[Union[TS, TS1]]]) -> "UniMessage":
         from .message import UniMessage
@@ -93,16 +91,13 @@ class Segment:
         return UniMessage(self) + item
 
     @overload
-    def __radd__(self: TS, item: str) -> "UniMessage[Union[Text, TS]]":
-        ...
+    def __radd__(self: TS, item: str) -> "UniMessage[Union[Text, TS]]": ...
 
     @overload
-    def __radd__(self: TS, item: Union[TS, Iterable[TS]]) -> "UniMessage[TS]":
-        ...
+    def __radd__(self: TS, item: Union[TS, Iterable[TS]]) -> "UniMessage[TS]": ...
 
     @overload
-    def __radd__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS1, TS]]":
-        ...
+    def __radd__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS1, TS]]": ...
 
     def __radd__(self: TS, item: Union[str, Union[TS, TS1], Iterable[Union[TS, TS1]]]) -> "UniMessage":
         from .message import UniMessage
@@ -289,8 +284,7 @@ class Custom(Segment, abc.ABC):
     content: Any
 
     @abc.abstractmethod
-    def export(self, msg_type: Type[TM]) -> MessageSegment[TM]:
-        ...
+    def export(self, msg_type: Type[TM]) -> MessageSegment[TM]: ...
 
     @property
     def type(self) -> str:

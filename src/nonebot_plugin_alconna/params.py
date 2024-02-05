@@ -91,13 +91,11 @@ def AlconnaQuery(
 
 
 @overload
-def AlconnaDuplication() -> Duplication:
-    ...
+def AlconnaDuplication() -> Duplication: ...
 
 
 @overload
-def AlconnaDuplication(__t: Type[T_Duplication]) -> T_Duplication:
-    ...
+def AlconnaDuplication(__t: Type[T_Duplication]) -> T_Duplication: ...
 
 
 def AlconnaDuplication(__t: Optional[Type[T_Duplication]] = None) -> Duplication:

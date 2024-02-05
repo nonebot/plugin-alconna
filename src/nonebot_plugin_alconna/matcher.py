@@ -129,12 +129,10 @@ class WaiterIterator(Generic[R, T]):
         return self
 
     @overload
-    def __anext__(self: WaiterIterator[R1, None]) -> Awaitable[R1 | None]:
-        ...
+    def __anext__(self: WaiterIterator[R1, None]) -> Awaitable[R1 | None]: ...
 
     @overload
-    def __anext__(self: WaiterIterator[R1, T1]) -> Awaitable[R1 | T1]:
-        ...
+    def __anext__(self: WaiterIterator[R1, T1]) -> Awaitable[R1 | T1]: ...
 
     def __anext__(self):  # type: ignore
         return self.waiter.wait(default=self.default, timeout=self.timeout)  # type: ignore
@@ -171,12 +169,10 @@ class Waiter(Generic[R]):
         return WaiterIterator(self, None)
 
     @overload
-    def __call__(self, *, default: T, timeout: float = 120) -> WaiterIterator[R, T]:
-        ...
+    def __call__(self, *, default: T, timeout: float = 120) -> WaiterIterator[R, T]: ...
 
     @overload
-    def __call__(self, *, timeout: float = 120) -> WaiterIterator[R, None]:
-        ...
+    def __call__(self, *, timeout: float = 120) -> WaiterIterator[R, None]: ...
 
     def __call__(
         self, *, default: T | None = None, timeout: float = 120
@@ -184,12 +180,10 @@ class Waiter(Generic[R]):
         return WaiterIterator(self, default, timeout)  # type: ignore
 
     @overload
-    async def wait(self, *, default: R | T, timeout: float = 120) -> R | T:
-        ...
+    async def wait(self, *, default: R | T, timeout: float = 120) -> R | T: ...
 
     @overload
-    async def wait(self, *, timeout: float = 120) -> R | None:
-        ...
+    async def wait(self, *, timeout: float = 120) -> R | None: ...
 
     async def wait(self, *, default: R | T | None = None, timeout: float = 120) -> R | T | None:
         matcher = on_message(priority=0, block=False, handlers=[self.handler])
@@ -948,14 +942,18 @@ def on_alconna(
             "type": "",
             "rule": _rule & rule,
             "permission": Permission() | permission,
-            "handlers": [
-                handler
-                if isinstance(handler, Dependent)
-                else Dependent[Any].parse(call=handler, allow_types=params)
-                for handler in handlers
-            ]
-            if handlers
-            else [],
+            "handlers": (
+                [
+                    (
+                        handler
+                        if isinstance(handler, Dependent)
+                        else Dependent[Any].parse(call=handler, allow_types=params)
+                    )
+                    for handler in handlers
+                ]
+                if handlers
+                else []
+            ),
             "temp": temp,
             "expire_time": (
                 expire_time
