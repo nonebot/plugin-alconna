@@ -65,8 +65,7 @@ class Target:
         return await message.send(self, bot, fallback, at_sender, reply_to)
 
 
-class SerializeFailed(Exception):
-    ...
+class SerializeFailed(Exception): ...
 
 
 def export(func: Callable[[Any, TS, Bot], Awaitable[MessageSegment]]):
@@ -81,16 +80,13 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def get_adapter(cls) -> str:
-        ...
+    def get_adapter(cls) -> str: ...
 
     @abstractmethod
-    def get_message_type(self) -> Type[Message]:
-        ...
+    def get_message_type(self) -> Type[Message]: ...
 
     @abstractmethod
-    def get_message_id(self, event: Event) -> str:
-        ...
+    def get_message_id(self, event: Event) -> str: ...
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         return Target(event.get_user_id(), platform=self.get_adapter(), self_id=bot.self_id if bot else None)

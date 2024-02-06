@@ -478,16 +478,13 @@ class UniMessage(List[TS]):
         return UniMessageTemplate(format_string, cls)
 
     @overload
-    def __add__(self, other: str) -> "UniMessage[Union[TS, Text]]":
-        ...
+    def __add__(self, other: str) -> "UniMessage[Union[TS, Text]]": ...
 
     @overload
-    def __add__(self, other: Union[TS, Iterable[TS]]) -> "UniMessage[TS]":
-        ...
+    def __add__(self, other: Union[TS, Iterable[TS]]) -> "UniMessage[TS]": ...
 
     @overload
-    def __add__(self, other: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]":
-        ...
+    def __add__(self, other: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]": ...
 
     def __add__(self, other: Union[str, TS, TS1, Iterable[Union[TS, TS1]]]) -> "UniMessage":
         result: UniMessage = self.copy()
@@ -509,16 +506,13 @@ class UniMessage(List[TS]):
         return result
 
     @overload
-    def __radd__(self, other: str) -> "UniMessage[Union[Text, TS]]":
-        ...
+    def __radd__(self, other: str) -> "UniMessage[Union[Text, TS]]": ...
 
     @overload
-    def __radd__(self, other: Union[TS, Iterable[TS]]) -> "UniMessage[TS]":
-        ...
+    def __radd__(self, other: Union[TS, Iterable[TS]]) -> "UniMessage[TS]": ...
 
     @overload
-    def __radd__(self, other: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS1, TS]]":
-        ...
+    def __radd__(self, other: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS1, TS]]": ...
 
     def __radd__(self, other: Union[str, TS1, Iterable[TS1]]) -> "UniMessage":
         result = UniMessage(other)

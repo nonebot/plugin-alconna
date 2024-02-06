@@ -5,7 +5,6 @@ Author: Mykyta Paliienko
 License: MIT
 """
 
-
 import json
 from pathlib import Path
 
