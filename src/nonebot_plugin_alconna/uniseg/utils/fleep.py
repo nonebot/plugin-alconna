@@ -70,9 +70,9 @@ def get(obj: bytes):
                 extensions[element["extension"]] = len(signature)
                 mimes[element["mime"]] = len(signature)
     return Info(
-        sorted(types, key=types.get, reverse=True),
-        sorted(extensions, key=extensions.get, reverse=True),
-        sorted(mimes, key=mimes.get, reverse=True),
+        sorted(types, key=lambda x: types.get(x, False), reverse=True),
+        sorted(extensions.keys(), key=lambda x: extensions.get(x, False), reverse=True),
+        sorted(mimes.keys(), key=lambda x: mimes.get(x, False), reverse=True),
     )
 
 

@@ -1,4 +1,5 @@
 from nepattern.main import URL, INTEGER
+from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters.satori.message import Message
 from nonebot.adapters.satori.message import At as _At
 from nonebot.adapters.satori.message import Br as _Br
@@ -93,7 +94,7 @@ styles = {
 }
 
 
-def builder(self: MessageArgv, data: Message):
+def builder(self: MessageArgv, data: BaseMessage):
     styles["msg"] = str(data)
     _index = 0
     for index, unit in enumerate(data):
