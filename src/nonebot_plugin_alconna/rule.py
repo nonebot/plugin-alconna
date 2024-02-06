@@ -110,26 +110,12 @@ class AlconnaRule:
             if len(hides) < 3:
                 template = f"\n\n{{}}{{}}{{}}{lang.require('comp/nonebot', 'other')}\n"
                 self._comp_help = template.format(
-                    (
-                        (lang.require("comp/nonebot", "tab").format(cmd=_tab) + "\n")
-                        if "tab" not in hides
-                        else ""
-                    ),
-                    (
-                        (lang.require("comp/nonebot", "enter").format(cmd=_enter) + "\n")
-                        if "enter" not in hides
-                        else ""
-                    ),
-                    (
-                        (lang.require("comp/nonebot", "exit").format(cmd=_exit) + "\n")
-                        if "exit" not in hides
-                        else ""
-                    ),
+                    ((lang.require("comp/nonebot", "tab").format(cmd=_tab) + "\n") if "tab" not in hides else ""),
+                    ((lang.require("comp/nonebot", "enter").format(cmd=_enter) + "\n") if "enter" not in hides else ""),
+                    ((lang.require("comp/nonebot", "exit").format(cmd=_exit) + "\n") if "exit" not in hides else ""),
                 )
 
-            async def _waiter_handle(
-                _bot: Bot, _event: Event, _matcher: Matcher, content: Message = EventMessage()
-            ):
+            async def _waiter_handle(_bot: Bot, _event: Event, _matcher: Matcher, content: Message = EventMessage()):
                 msg = str(content).lstrip()
                 _future = self._futures[_bot.self_id][_event.get_session_id()]
                 _interface = self._interfaces[_event.get_session_id()]
@@ -140,9 +126,7 @@ class AlconnaRule:
                     else:
                         _future.set_result(None)
                         await _matcher.pause(
-                            lang.require("analyser", "param_unmatched").format(
-                                target=msg.replace(_exit, "", 1)
-                            )
+                            lang.require("analyser", "param_unmatched").format(target=msg.replace(_exit, "", 1))
                         )
                 elif msg.startswith(_enter) and "enter" not in disables:
                     if msg == _enter:
@@ -151,9 +135,7 @@ class AlconnaRule:
                     else:
                         _future.set_result(None)
                         await _matcher.pause(
-                            lang.require("analyser", "param_unmatched").format(
-                                target=msg.replace(_enter, "", 1)
-                            )
+                            lang.require("analyser", "param_unmatched").format(target=msg.replace(_enter, "", 1))
                         )
                 elif msg.startswith(_tab) and "tab" not in disables:
                     offset = msg.replace(_tab, "", 1).lstrip() or 1
@@ -161,9 +143,7 @@ class AlconnaRule:
                         offset = int(offset)
                     except ValueError:
                         _future.set_result(None)
-                        await _matcher.pause(
-                            lang.require("analyser", "param_unmatched").format(target=offset)
-                        )
+                        await _matcher.pause(lang.require("analyser", "param_unmatched").format(target=offset))
                     else:
                         _interface.tab(offset)
                         await _matcher.pause(
@@ -203,9 +183,7 @@ class AlconnaRule:
         def _checker(_event: Event):
             return session_id == _event.get_session_id()
 
-        self._matchers[session_id] = on_message(
-            priority=0, block=True, rule=Rule(_checker), handlers=[self._waiter]
-        )
+        self._matchers[session_id] = on_message(priority=0, block=True, rule=Rule(_checker), handlers=[self._waiter])
         res = Arparma(
             self.command.path,
             msg,
@@ -280,17 +258,13 @@ class AlconnaRule:
         if not arp.matched and not may_help_text and self.skip:
             log(
                 "TRACE",
-                escape_tag(
-                    lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp)
-                ),
+                escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp)),
             )
             return False
         if arp.head_matched:
             log(
                 "DEBUG",
-                escape_tag(
-                    lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp)
-                ),
+                escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp)),
             )
         if not may_help_text and arp.error_info:
             may_help_text = repr(arp.error_info)

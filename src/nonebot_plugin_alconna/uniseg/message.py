@@ -5,19 +5,7 @@ from copy import deepcopy
 from types import FunctionType
 from dataclasses import dataclass
 from typing_extensions import Self, SupportsIndex
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    List,
-    Type,
-    Tuple,
-    Union,
-    Literal,
-    TypeVar,
-    Iterable,
-    Optional,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, List, Type, Tuple, Union, Literal, TypeVar, Iterable, Optional, overload
 
 from tarina import lang
 from nonebot.internal.adapter import Bot, Event, Message
@@ -760,9 +748,7 @@ class UniMessage(List[TS]):
         return "".join(seg.text for seg in self if isinstance(seg, Text))
 
     @staticmethod
-    async def generate(
-        *, message: Optional[Message] = None, event: Optional[Event] = None, bot: Optional[Bot] = None
-    ):
+    async def generate(*, message: Optional[Message] = None, event: Optional[Event] = None, bot: Optional[Bot] = None):
         if not message:
             if not event:
                 try:
@@ -792,9 +778,7 @@ class UniMessage(List[TS]):
         return result
 
     @staticmethod
-    def get_message_id(
-        event: Optional[Event] = None, bot: Optional[Bot] = None, adapter: Optional[str] = None
-    ) -> str:
+    def get_message_id(event: Optional[Event] = None, bot: Optional[Bot] = None, adapter: Optional[str] = None) -> str:
         if not event:
             try:
                 event = current_event.get()
@@ -813,9 +797,7 @@ class UniMessage(List[TS]):
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
     @staticmethod
-    def get_target(
-        event: Optional[Event] = None, bot: Optional[Bot] = None, adapter: Optional[str] = None
-    ) -> Target:
+    def get_target(event: Optional[Event] = None, bot: Optional[Bot] = None, adapter: Optional[str] = None) -> Target:
         if not event:
             try:
                 event = current_event.get()

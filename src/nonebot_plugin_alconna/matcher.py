@@ -142,9 +142,7 @@ class Waiter(Generic[R]):
     future: asyncio.Future
     handler: _DependentCallable[R]
 
-    def __init__(
-        self, handler: _DependentCallable[R], params: tuple, parameterless: Iterable[Any] | None = None
-    ):
+    def __init__(self, handler: _DependentCallable[R], params: tuple, parameterless: Iterable[Any] | None = None):
         self.future = asyncio.Future()
         _handler = Dependent[Any].parse(call=handler, parameterless=parameterless, allow_types=params)
 
@@ -480,9 +478,7 @@ class AlconnaMatcher(Matcher):
                 new_handler = Dependent(
                     call=func_handler.call,
                     params=func_handler.params,
-                    parameterless=Dependent.parse_parameterless(
-                        tuple(_parameterless), cls.HANDLER_PARAM_TYPES
-                    )
+                    parameterless=Dependent.parse_parameterless(tuple(_parameterless), cls.HANDLER_PARAM_TYPES)
                     + func_handler.parameterless,
                 )
                 cls.handlers[-1] = new_handler
@@ -546,9 +542,7 @@ class AlconnaMatcher(Matcher):
                 new_handler = Dependent(
                     call=func_handler.call,
                     params=func_handler.params,
-                    parameterless=Dependent.parse_parameterless(
-                        tuple(_parameterless), cls.HANDLER_PARAM_TYPES
-                    )
+                    parameterless=Dependent.parse_parameterless(tuple(_parameterless), cls.HANDLER_PARAM_TYPES)
                     + func_handler.parameterless,
                 )
                 cls.handlers[-1] = new_handler
@@ -594,9 +588,7 @@ class AlconnaMatcher(Matcher):
         """
         path = merge_path(path, cls.basepath)
         if not (arg := extract_arg(path, cls.command)):
-            raise ValueError(
-                lang.require("nbp-alc", "error.matcher_got_path").format(path=path, cmd=cls.command.path)
-            )
+            raise ValueError(lang.require("nbp-alc", "error.matcher_got_path").format(path=path, cmd=cls.command.path))
 
         async def _key_getter(event: Event, bot: Bot, matcher: AlconnaMatcher, state: T_State):
             matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
@@ -613,9 +605,7 @@ class AlconnaMatcher(Matcher):
                 if (res := _validate(arg, ms)) is None:  # type: ignore
                     log(
                         "TRACE",
-                        escape_tag(
-                            lang.require("nbp-alc", "log.got_path/validate").format(path=path, validate=res)
-                        ),
+                        escape_tag(lang.require("nbp-alc", "log.got_path/validate").format(path=path, validate=res)),
                     )
                     await matcher.reject(prompt, fallback=True)
                 if middleware:
@@ -634,9 +624,7 @@ class AlconnaMatcher(Matcher):
                 new_handler = Dependent(
                     call=func_handler.call,
                     params=func_handler.params,
-                    parameterless=Dependent.parse_parameterless(
-                        tuple(_parameterless), cls.HANDLER_PARAM_TYPES
-                    )
+                    parameterless=Dependent.parse_parameterless(tuple(_parameterless), cls.HANDLER_PARAM_TYPES)
                     + func_handler.parameterless,
                 )
                 cls.handlers[-1] = new_handler
@@ -956,8 +944,7 @@ def on_alconna(
             ),
             "temp": temp,
             "expire_time": (
-                expire_time
-                and (expire_time if isinstance(expire_time, datetime) else datetime.now() + expire_time)
+                expire_time and (expire_time if isinstance(expire_time, datetime) else datetime.now() + expire_time)
             ),
             "priority": priority,
             "block": block,
@@ -1102,9 +1089,7 @@ class Command(AlconnaString):
                 for res in results.values():
                     if isinstance(res, Hashable) and is_awaitable(res):
                         res = await res
-                    if isinstance(
-                        res, (str, Message, MessageSegment, Segment, UniMessage, UniMessageTemplate)
-                    ):
+                    if isinstance(res, (str, Message, MessageSegment, Segment, UniMessage, UniMessageTemplate)):
                         await matcher.send(res, fallback=True)
 
         return matcher

@@ -231,11 +231,7 @@ class ExtensionExecutor:
 
     async def parse_wrapper(self, bot: Bot, state: T_State, event: Event, res: Arparma) -> None:
         await asyncio.gather(
-            *(
-                ext.parse_wrapper(bot, state, event, res)
-                for ext in self.context
-                if ext._overrides["parse_wrapper"]
-            )
+            *(ext.parse_wrapper(bot, state, event, res) for ext in self.context if ext._overrides["parse_wrapper"])
         )
 
     async def send_wrapper(self, bot: Bot, event: Event, send: TM) -> TM:

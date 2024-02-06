@@ -14,11 +14,7 @@ from nonebot.adapters.discord.commands.storage import _application_command_stora
 from nonebot.adapters.discord.api.types import MessageFlag, InteractionCallbackType
 from nonebot.internal.matcher.matcher import current_bot, current_event, current_matcher
 from nepattern import FLOAT, NUMBER, INTEGER, AnyOne, BasePattern, PatternModel, UnionPattern
-from nonebot.adapters.discord.commands.matcher import (
-    SlashCommandMatcher,
-    ApplicationCommandConfig,
-    on_slash_command,
-)
+from nonebot.adapters.discord.commands.matcher import SlashCommandMatcher, ApplicationCommandConfig, on_slash_command
 from nonebot.adapters.discord.message import (
     Message,
     EmbedSegment,
@@ -284,9 +280,7 @@ def translate(
     state: Optional[T_State] = None,
     _depth: int = 0,
 ) -> Type[SlashCommandMatcher]:
-    if alc.prefixes != ["/"] or (
-        not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")
-    ):
+    if alc.prefixes != ["/"] or (not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")):
         raise ValueError(lang.require("nbp-alc", "error.discord_prefix"))
     allow_opt = [
         opt
@@ -382,10 +376,7 @@ class DiscordSlashExtension(Extension):
             return False
         if not isinstance(event, ApplicationCommandInteractionEvent):
             return False
-        if (
-            event.data.name != self.application_command.name
-            or event.data.type != self.application_command.type
-        ):
+        if event.data.name != self.application_command.name or event.data.type != self.application_command.type:
             return False
         if not event.data.guild_id and self.application_command.guild_ids is None:
             return True

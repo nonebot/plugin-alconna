@@ -26,9 +26,7 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
         if group_id := getattr(event, "group_id", None):
             return Target(str(group_id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
         if user_id := getattr(event, "user_id", None):
-            return Target(
-                str(user_id), private=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(user_id), private=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None)
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
@@ -103,9 +101,7 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
             return ms.forward(seg.id)
 
         if not seg.content or not isinstance(seg.content, list):
-            raise SerializeFailed(
-                lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg)
-            )
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
 
         nodes = []
         for node in seg.content:

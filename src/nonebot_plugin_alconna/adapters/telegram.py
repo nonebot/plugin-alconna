@@ -69,9 +69,7 @@ def locator(x: str, t: str):
     if (maybe := styles["record"].get((start, styles["index"]))) and maybe == t:
         return True
     return any(
-        scale[0] <= start <= scale[1]
-        and scale[0] <= styles["index"] <= scale[1]
-        and styles["record"][scale] == t
+        scale[0] <= start <= scale[1] and scale[0] <= styles["index"] <= scale[1] and styles["record"][scale] == t
         for scale in styles["record"]
     )
 

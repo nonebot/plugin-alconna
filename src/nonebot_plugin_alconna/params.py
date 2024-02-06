@@ -133,9 +133,7 @@ def match_path(
         if path == "$main":
             return not result.components and (not additional or await additional(event, bot, state, result))
         else:
-            return result.query(path, "\0") != "\0" and (
-                not additional or await additional(event, bot, state, result)
-            )
+            return result.query(path, "\0") != "\0" and (not additional or await additional(event, bot, state, result))
 
     return wrapper
 
@@ -221,9 +219,7 @@ class ExtensionParam(Param):
         )
 
     @classmethod
-    def _check_param(
-        cls, param: inspect.Parameter, allow_types: Tuple[Type[Param], ...]
-    ) -> Optional["ExtensionParam"]:
+    def _check_param(cls, param: inspect.Parameter, allow_types: Tuple[Type[Param], ...]) -> Optional["ExtensionParam"]:
         if cls.executor.before_catch(param.name, param.annotation, param.default):
             return cls(param.default, name=param.name, type=param.annotation, validate=True)
 
@@ -244,9 +240,7 @@ class AlconnaParam(Param):
         return f"AlconnaParam(type={self.extra['type']!r})"
 
     @classmethod
-    def _check_param(
-        cls, param: inspect.Parameter, allow_types: Tuple[Type[Param], ...]
-    ) -> Optional["AlconnaParam"]:
+    def _check_param(cls, param: inspect.Parameter, allow_types: Tuple[Type[Param], ...]) -> Optional["AlconnaParam"]:
         annotation = get_origin(param.annotation)
         if annotation in _Contents:
             annotation = get_args(param.annotation)[0]

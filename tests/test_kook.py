@@ -21,9 +21,7 @@ def test_kook():
     assert res.some_arg.data["user_id"] == "123456"
     assert res.some_arg1.data["content"] == "12345678"
 
-    msg1 = Message(
-        [MessageSegment.text("/command1 "), MessageSegment.KMarkdown("[(met)123456(met)](42345) 12345678")]
-    )
+    msg1 = Message([MessageSegment.text("/command1 "), MessageSegment.KMarkdown("[(met)123456(met)](42345) 12345678")])
 
     alc1 = Alconna("/command1", Args["some_arg", str]["some_arg1", str])
 

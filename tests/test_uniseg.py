@@ -41,18 +41,14 @@ async def test_unimsg_template(app: App):
         [Text("hello "), Other(FallbackSegment.text("123"))]
     )
     assert UniMessage.template("{:At(user, target)}").format(target="123") == UniMessage(At("user", "123"))
-    assert UniMessage.template("{:At(flag=user, target=id)}").format(id="123") == UniMessage(
-        At("user", "123")
-    )
+    assert UniMessage.template("{:At(flag=user, target=id)}").format(id="123") == UniMessage(At("user", "123"))
     assert UniMessage.template("{:At(flag=user, target=123)}").format() == UniMessage(At("user", "123"))
 
     matcher = on_alconna(Alconna("test_unimsg_template"))
 
     @matcher.handle()
     async def handle():
-        await matcher.finish(
-            UniMessage.template("{:Reply($message_id)}{:At(user, $event.get_user_id()[1:])}")
-        )
+        await matcher.finish(UniMessage.template("{:Reply($message_id)}{:At(user, $event.get_user_id()[1:])}"))
 
     async with app.test_matcher(matcher) as ctx:
         adapter = get_adapter(Adapter)

@@ -297,14 +297,10 @@ TCustom = TypeVar("TCustom", bound=Custom)
 
 
 class _Custom(UniPattern[Custom]):
-    BUILDERS: Dict[
-        Union[str, Callable[[MessageSegment], bool]], Callable[[MessageSegment], Union[Custom, None]]
-    ] = {}
+    BUILDERS: Dict[Union[str, Callable[[MessageSegment], bool]], Callable[[MessageSegment], Union[Custom, None]]] = {}
 
     @classmethod
-    def custom_register(
-        cls, custom_type: Type[TCustom], condition: Union[str, Callable[[MessageSegment], bool]]
-    ):
+    def custom_register(cls, custom_type: Type[TCustom], condition: Union[str, Callable[[MessageSegment], bool]]):
         def _register(func: Callable[[MessageSegment], Union[TCustom, None]]):
             cls.BUILDERS[condition] = func
             return func
@@ -739,9 +735,7 @@ class _Reference(UniPattern[Reference]):
                 elif "messageRef" in node:
                     nodes.append(RefNode(node["messageRef"]["messageId"], node["messageRef"]["target"]))
                 else:
-                    nodes.append(
-                        CustomNode(node["senderId"], node["senderName"], node["time"], node["messageChain"])
-                    )
+                    nodes.append(CustomNode(node["senderId"], node["senderName"], node["time"], node["messageChain"]))
             return Reference(seg.data.get("messageId"), nodes)
 
 

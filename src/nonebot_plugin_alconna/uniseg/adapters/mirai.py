@@ -48,9 +48,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
                 self_id=bot.self_id if bot else None,
             )
         elif isinstance(event, GroupMessage):
-            return Target(
-                str(event.sender.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(event.sender.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, (BotMuteEvent, BotUnmuteEvent)):
             return Target(
                 str(event.operator.group.id),
@@ -58,25 +56,15 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
                 self_id=bot.self_id if bot else None,
             )
         elif isinstance(event, (MemberMuteEvent, MemberUnmuteEvent)):
-            return Target(
-                str(event.member.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(event.member.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, (BotJoinGroupEvent, BotLeaveEventActive, BotLeaveEventKick)):
-            return Target(
-                str(event.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(event.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, (MemberJoinEvent, MemberLeaveEventKick, MemberLeaveEventQuit)):
-            return Target(
-                str(event.member.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(event.member.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, MemberStateChangeEvent):
-            return Target(
-                str(event.member.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(event.member.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, GroupStateChangeEvent):
-            return Target(
-                str(event.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(event.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, FriendRecallEvent):
             return Target(
                 str(event.author_id),
@@ -85,9 +73,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
                 self_id=bot.self_id if bot else None,
             )
         elif isinstance(event, GroupRecallEvent):
-            return Target(
-                str(event.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(event.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
@@ -155,9 +141,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
 
         ms = self.segment_class
         if not seg.content or not isinstance(seg.content, list):
-            raise SerializeFailed(
-                lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg)
-            )
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
         nodes = []
         for node in seg.content:
             if isinstance(node, RefNode):

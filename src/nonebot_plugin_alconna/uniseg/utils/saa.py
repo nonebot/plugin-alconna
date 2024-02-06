@@ -83,9 +83,7 @@ async def send(self: MessageFactory, *, at_sender=False, reply=False) -> "SaaRec
         return await self._do_send(bot, target, event, at_sender, reply)
     except (RuntimeError, AdapterNotSupported):
         receipt = await convert(self).send(target=event, bot=bot, at_sender=at_sender, reply_to=reply)
-        return UnisegReceipt(
-            bot_id=receipt.bot.self_id, adapter_name=receipt.exporter.get_adapter(), data=receipt
-        )
+        return UnisegReceipt(bot_id=receipt.bot.self_id, adapter_name=receipt.exporter.get_adapter(), data=receipt)
 
 
 MessageFactory.send = send

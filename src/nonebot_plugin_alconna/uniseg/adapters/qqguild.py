@@ -105,9 +105,7 @@ class QQGuildMessageExporter(MessageExporter["MessageSegment"]):
             return ms.mention_user(int(seg.target))
         else:
             raise SerializeFailed(
-                lang.require("nbp-uniseg", "failed_segment").format(
-                    adapter="qqguild", seg=seg, target="mention"
-                )
+                lang.require("nbp-uniseg", "failed_segment").format(adapter="qqguild", seg=seg, target="mention")
             )
 
     @export

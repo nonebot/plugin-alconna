@@ -1,19 +1,7 @@
 import inspect
 from dataclasses import dataclass
 from abc import ABCMeta, abstractmethod
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Type,
-    Union,
-    Generic,
-    TypeVar,
-    Callable,
-    Awaitable,
-    get_args,
-    get_origin,
-)
+from typing import TYPE_CHECKING, Any, Dict, Type, Union, Generic, TypeVar, Callable, Awaitable, get_args, get_origin
 
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment

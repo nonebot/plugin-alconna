@@ -112,15 +112,11 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
 
         ms = self.segment_class
         if not seg.content or not isinstance(seg.content, list):
-            raise SerializeFailed(
-                lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg)
-            )
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
         nodes = []
         for node in seg.content:
             if not isinstance(node, CustomNode):
-                raise SerializeFailed(
-                    lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg)
-                )
+                raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
             content = self.get_message_type()()
             if isinstance(node.content, str):
                 content.extend(self.get_message_type()(node.content))
