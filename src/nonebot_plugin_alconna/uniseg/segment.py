@@ -199,6 +199,7 @@ class Image(Media):
 class Audio(Media):
     """Audio对象, 表示一类音频元素"""
 
+    duration: Optional[int] = field(default=None)
     name: str = field(default="audio.mp3")
 
 
@@ -206,6 +207,7 @@ class Audio(Media):
 class Voice(Media):
     """Voice对象, 表示一类语音元素"""
 
+    duration: Optional[int] = field(default=None)
     name: str = field(default="voice.wav")
 
 
