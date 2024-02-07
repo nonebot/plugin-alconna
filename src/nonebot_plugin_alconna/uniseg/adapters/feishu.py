@@ -6,7 +6,7 @@ from nonebot.internal.driver import Request
 from nonebot.adapters import Bot, Event, Message
 
 from ..export import Target, MessageExporter, SerializeFailed, export
-from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Voice
+from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
     from nonebot.adapters.feishu.message import MessageSegment
@@ -103,7 +103,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         result = await bot.call_api("im/v1/files", **params)
         file_key = result["file_key"]
         return ms.audio(file_key, seg.duration)
-    
+
     @export
     async def file(self, seg: File, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
@@ -125,7 +125,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         result = await bot.call_api("im/v1/files", **params)
         file_key = result["file_key"]
         return ms.file(file_key, seg.name)
-        
+
     @export
     async def video(self, seg: Video, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
