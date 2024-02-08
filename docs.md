@@ -981,7 +981,7 @@ Bracket Header 类似 python 里的 f-string 写法，通过 "{}" 声明匹配�
 
 其与函数签名类似，但是允许含有默认值的参数在前；同时支持 keyword-only 参数不依照构造顺序传入 （但是仍需要在非 keyword-only 参数之后）.
 
-#### key
+##### key
 `key` 的作用是用以标记解析出来的参数并存放于 **Arparma** 中，以方便用户调用.
 
 其有三种为 Args 注解的标识符:  `?`、`/`、 `!`, 标识符与 key 之间建议以 `;` 分隔:
@@ -1012,7 +1012,7 @@ from arclet.alconna import Alconna, Args, Option
 
 alc = Alconna("test", Option("--foo", Args["foo", str]))
 ```
-#### var
+##### var
 var 负责命令参数的**类型检查**与**类型转化**.
 
 `Args` 的`var`表面上看需要传入一个 `type`，但实际上它需要的是一个 `nepattern.BasePattern` 的实例.
