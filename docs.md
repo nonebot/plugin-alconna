@@ -252,13 +252,16 @@ async def handle_test4(qux: Query[bool] = Query("baz.qux", False)):
 
 ### 跨平台适配
 
+`uniseg` 模块属于 `nonebot-plugin-alconna` 的子插件，其提供了一套通用的消息组件，用于在 `nonebot-plugin-alconna` 下构建通用消息.
+
 #### 通用消息段
 
-适配器下的消息段标注会匹配适配器特定的 `MessageSegment`, 而通用消息段与适配器消息段的区别在于: 
+适配器下的消息段标注会匹配适配器特定的 `MessageSegment`, 而通用消息段与适配器消息段的区别在于:  
 
-通用消息段会匹配多个适配器中相似类型的消息段，并返回 `nonebot_plugin_alconna.uniseg` 中定义的 [`Segment` 模型](https://nonebot.dev/docs/next/best-practice/alconna/utils#%E9%80%9A%E7%94%A8%E6%B6%88%E6%81%AF%E6%AE%B5), 以达到**跨平台接收消息**的作用
+通用消息段会匹配多个适配器中相似类型的消息段，并返回 `uniseg` 模块中定义的 [`Segment` 模型](https://nonebot.dev/docs/next/best-practice/alconna/utils#%E9%80%9A%E7%94%A8%E6%B6%88%E6%81%AF%E6%AE%B5), 以达到**跨平台接收消息**的作用
 
-此类消息段通过 `UniMessage.export` 可以转为特定的 `MessageSegment`.
+`uniseg` 模块提供了类似 `MessageSegment` 的通用消息段，并可在 `Alconna` 下直接标注使用：
+
 ```python
 class Segment:
     """基类标注"""
@@ -324,10 +327,12 @@ class Card(Segment):
 class Other(Segment):
     """其他 Segment"""
 ```
+此类消息段通过 `UniMessage.export` 可以转为特定的 `MessageSegment`.
+
 
 #### 通用信息序列
 
-插件还提供了一个类似于 `Message` 的 `UniMessage` 类型，其元素为经过通用标注转换后的通用消息段.
+`uniseg` 模块还提供了一个类似于 `Message` 的 `UniMessage` 类型，其元素为经过通用标注转换后的通用消息段.
 
 你可以通过提供的 `UniversalMessage` 或 `UniMsg` 依赖注入器来获取 `UniMessage`.
 
@@ -396,7 +401,7 @@ async def handle():
     receipt = await UniMessage.text("hello!").send(at_sender=True, reply_to=True)
     await receipt.recall(delay=1)
 ```
-在响应器以外的地方，`bot` 参数必须手动传入
+**在响应器以外的地方，`bot` 参数必须手动传入**
 
 本插件为以下设配器提供了 **Segment** 标注，可用于匹配各适配器的 `MessageSegment`，也可用于创建 `MessageSegment`:
 
@@ -888,6 +893,8 @@ async def remove(plugin: Match[str], time: Match[int]):
     await matcher.finish(f"removed {plugin.result} with {time.result if time.available else -1}")
 ```
 
+TIP:  
+全局的 Extension 可延迟加载 (即若有全局拓展加载于部分 AlconnaMatcher 之后，这部分响应器会被追加拓展)
 
 
 ## 本体
@@ -940,6 +947,28 @@ print(res.all_matched_args)
 |[123, "foo"]|"bar"|`[123, "bar"]` 或 `"foobar"` 或 `["foo", "bar"]`|混合头|
 |[(int, "foo"), (456, "bar")]|"baz"|`[123, "foobaz"]` 或 `[456, "foobaz"]` 或 `[456, "barbaz"]`|对头|
 
+无前缀的类型头：此时会将传入的值尝试转为 BasePattern，例如 `int` 会转为 `nepattern.INTEGER`。此时命令头会匹配对应的类型， 例如 `int` 会匹配 `123` 或 `"456"`，但不会匹配 `"foo"`。同时，Alconna 会将命令头匹配到的值转为对应的类型，例如 `int` 会将 `"123"` 转为 `123`。
+
+**正则只在命令名上生效，命令前缀中的正则会被转义**  
+除了通过传入 `re:xxx` 来使用正则表达式外，Alconna 还提供了一种更加简洁的方式来使用正则表达式，那就是 Bracket Header。
+
+```python
+from alconna import Alconna
+
+
+alc = Alconna(".rd{roll:int}")
+assert alc.parse(".rd123").header["roll"] == 123
+```
+
+Bracket Header 类似 python 里的 f-string 写法，通过 "{}" 声明匹配类型
+
+"{}" 中的内容为 "name:type or pat"：
+- "{}", "{:}" **⇔** "(.+)", 占位符
+- "{foo}" **⇔** "(?P&lt;foo&gt;.+)"
+- "{:\d+}" **⇔** "(\d+)"
+- "{foo:int}" **⇔** "(?P&lt;foo&gt;\d+)"，其中 "int" 部分若能转为 `BasePattern` 则读取里面的表达式
+
+
 #### 参数声明(Args)
 
 `Args` 是用于声明命令参数的组件, 可以通过以下几种方式构造 **Args** :
@@ -952,7 +981,7 @@ print(res.all_matched_args)
 
 其与函数签名类似，但是允许含有默认值的参数在前；同时支持 keyword-only 参数不依照构造顺序传入 （但是仍需要在非 keyword-only 参数之后）.
 
-#### key
+##### key
 `key` 的作用是用以标记解析出来的参数并存放于 **Arparma** 中，以方便用户调用.
 
 其有三种为 Args 注解的标识符:  `?`、`/`、 `!`, 标识符与 key 之间建议以 `;` 分隔:
@@ -961,7 +990,7 @@ print(res.all_matched_args)
 - `?` 标识符表示该参数为**可选**参数，会在无参数匹配时跳过。
 - `/` 标识符表示该参数的类型注解需要隐藏。
 
-另外，对于参数的注释也可以标记在 `key` 中，其与 key 或者标识符 以 `#` 分割：
+另外，对于参数的注释也可以标记在 `key` 中，其与 key 或者标识符 以 `#` 分割：  
 `foo#这是注释;?` 或 `foo?#这是注释`
 
 `Args` 中的 `key` 在实际命令中并不需要传入（keyword 参数除外）：
@@ -983,7 +1012,7 @@ from arclet.alconna import Alconna, Args, Option
 
 alc = Alconna("test", Option("--foo", Args["foo", str]))
 ```
-#### var
+##### var
 var 负责命令参数的**类型检查**与**类型转化**.
 
 `Args` 的`var`表面上看需要传入一个 `type`，但实际上它需要的是一个 `nepattern.BasePattern` 的实例.
@@ -1049,13 +1078,13 @@ TIPS:
 
 
 #### **Option** 和 **Subcommand**
-`Option` 可以传入一组 `alias`，如 `Option("--foo|-F|--FOO|-f")` 或 `Option("--foo", alias=["-F"]`.
+`Option` 可以传入一组 `alias`，如 `Option("--foo|-F|--FOO|-f")` 或 `Option("--foo", alias=["-F"]`.  
 
-传入别名后，`option` 会选择其中长度最长的作为选项名称。若传入为 "--foo|-f"，则命令名称为 "--foo".
+传入别名后，`option` 会选择其中长度最长的作为选项名称。若传入为 "--foo|-f"，则命令名称为 "--foo".  
 
-在 Alconna 中 Option 的名字或别名**没有要求**必须在前面写上 `-`.
+**在 Alconna 中 Option 的名字或别名**没有要求**必须在前面写上 `-`.**  
 
-`Subcommand` 可以传入自己的 **Option** 与 **Subcommand**.
+`Subcommand` 可以传入自己的 **Option** 与 **Subcommand**.  
 
 他们拥有如下共同参数:
 
