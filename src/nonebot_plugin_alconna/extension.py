@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING, Any, Union, Generic, Literal, TypeVar
 
 from tarina import lang
 from nonebot.typing import T_State
-from pydantic.fields import Undefined
 from arclet.alconna import Alconna, Arparma
+from nonebot.compat import PydanticUndefined
 from nonebot.adapters import Bot, Event, Message
 
 from .uniseg import UniMessage, FallbackMessage
@@ -256,7 +256,7 @@ class ExtensionExecutor:
                 if res is None:
                     continue
                 return res
-        return Undefined
+        return PydanticUndefined
 
     def post_init(self) -> None:
         for ext in self.extensions:

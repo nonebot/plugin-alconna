@@ -1,5 +1,7 @@
+from nonebot.adapters.telegram.message import File
 from nepattern import BasePattern, PatternModel, UnionPattern
-from nonebot.adapters.telegram.message import File, Entity, Message, UnCombinFile, MessageSegment
+from nonebot.adapters.telegram.message import Reply as _Reply
+from nonebot.adapters.telegram.message import Entity, Message, UnCombinFile, MessageSegment
 
 from nonebot_plugin_alconna.argv import MessageArgv
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
@@ -105,6 +107,8 @@ Animation = SegmentPattern("animation", File, File.animation)
 Audio = SegmentPattern("audio", File, File.audio)
 Document = SegmentPattern("document", File, File.document)
 Video = SegmentPattern("video", File, File.video)
+
+Reply = SegmentPattern("reply", _Reply, _Reply.reply)
 
 Sticker = SegmentPattern("sticker", UnCombinFile, UnCombinFile.sticker)
 VideoNote = SegmentPattern("video_note", UnCombinFile, UnCombinFile.video_note)

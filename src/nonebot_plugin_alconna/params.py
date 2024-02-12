@@ -5,10 +5,10 @@ from typing import Any, Dict, Type, Tuple, Union, Literal, TypeVar, ClassVar, Op
 from nonebot.typing import T_State
 from tarina import run_always_await
 from nepattern.util import CUnionType
-from pydantic.fields import Undefined
 from tarina.generic import get_origin
 from nonebot.dependencies import Param
 from nonebot.internal.params import Depends
+from nonebot.compat import PydanticUndefined
 from nonebot.internal.matcher import Matcher
 from nonebot.internal.adapter import Bot, Event
 from arclet.alconna.builtin import generate_duplication
@@ -225,7 +225,7 @@ class ExtensionParam(Param):
 
     async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
         res = await self.executor.catch(event, state, self.extra["name"], self.extra["type"], self.default)
-        if res is not Undefined:
+        if res is not PydanticUndefined:
             return res
         return self.default
 
@@ -265,7 +265,7 @@ class AlconnaParam(Param):
     async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
         t = self.extra["type"]
         if ALCONNA_RESULT not in state:
-            return self.default if self.default not in (..., Empty) else Undefined
+            return self.default if self.default not in (..., Empty) else PydanticUndefined
         res: CommandResult = state[ALCONNA_RESULT]
         if t is CommandResult:
             return res
@@ -298,7 +298,7 @@ class AlconnaParam(Param):
             return state[key]
         if self.extra["name"] in res.result.all_matched_args:
             return res.result.all_matched_args[self.extra["name"]]
-        return self.default if self.default not in (..., Empty) else Undefined
+        return self.default if self.default not in (..., Empty) else PydanticUndefined
 
     async def _check(self, state: T_State, **kwargs: Any) -> Any:
         if self.extra["type"] == Any:

@@ -81,20 +81,17 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
+        from nonebot.adapters.telegram.message import Reply as TgReply
 
-        return ms("$reply", {"message_id": seg.id})  # type: ignore
+        return TgReply.reply(int(seg.id))
 
     async def send_to(self, target: Target, bot: Bot, message: Message):
         from nonebot.adapters.telegram.bot import Bot as TgBot
+        from nonebot.adapters.telegram.message import Message as TgMessage
 
         assert isinstance(bot, TgBot)
-        reply_message_id = None
-        if message.has("$reply"):
-            reply = message["$reply", 0]
-            reply_message_id = int(reply.data["message_id"])
-            message = message.exclude("$reply")
-        return await bot.send_to(target.id, message, reply_message_id=reply_message_id)  # type: ignore
+        assert isinstance(message, TgMessage)
+        return await bot.send_to(target.id, message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.telegram.bot import Bot as TgBot

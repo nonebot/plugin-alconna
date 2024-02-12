@@ -1,9 +1,9 @@
 from typing import List
 
-from pydantic import Extra, Field, BaseModel
+from pydantic import Field, BaseModel
 
 
-class Config(BaseModel, extra=Extra.ignore):
+class Config(BaseModel):
     """Plugin Config Here"""
 
     alconna_auto_send_output: bool = False

@@ -501,8 +501,6 @@ class _Image(UniPattern[Image]):
                 if "file" in seg.data:
                     return Image(url=seg.data["url"], id=seg.data["file"])
                 return Image(url=seg.data["url"])
-            if "msgData" in seg.data:  # minecraft
-                return Image(url=seg.data["msgData"])
             if "file_path" in seg.data:  # ntchat
                 return Image(id=seg.data["file_path"], path=seg.data["file_path"])
             if "picURL" in seg.data:  # ding
@@ -559,8 +557,6 @@ class _Video(UniPattern[Video]):
                 return Video(url=seg.data["url"])
             if "file_key" in seg.data:  # kook
                 return Video(url=seg.data["file_key"])
-            if "msgData" in seg.data:  # minecraft
-                return Video(url=seg.data["msgData"])
             if "file_path" in seg.data:  # ntchat
                 return Video(id=seg.data["file_path"], path=seg.data["file_path"])
             if "src" in seg.data:  # satori
@@ -699,7 +695,7 @@ class _Reply(UniPattern[Reply]):
         if seg.type == "reply":
             if "id" in seg.data:  # ob11
                 return Reply(seg.data["id"], origin=seg)
-            if "message_id" in seg.data:  # ob12
+            if "message_id" in seg.data:  # ob12, telegram
                 return Reply(seg.data["message_id"], origin=seg)
             if "msg_id" in seg.data:  # red
                 return Reply(seg.data["msg_seq"], origin=seg.data["_origin"])

@@ -1,10 +1,9 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
-from tarina import lang
 from nonebot.adapters import Bot, Event, Message
 
-from ..segment import Text, Image, Video
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..segment import Text
+from ..export import Target, MessageExporter, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.minecraft.message import MessageSegment
@@ -31,23 +30,9 @@ class MinecraftMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
         return ms.text(seg.text)
 
-    @export
-    async def media(self, seg: Union[Image, Video], bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        name = seg.__class__.__name__.lower()
-        method = {
-            "image": ms.image,
-            "video": ms.video,
-        }[name]
-        if seg.id or seg.url:
-            return method(seg.id or seg.url)  # type: ignore
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
-
     async def send_to(self, target: Target, bot: Bot, message: Message):
         from nonebot.adapters.minecraft.bot import Bot as MinecraftBot
 
         assert isinstance(bot, MinecraftBot)
 
-        return await bot.send_msg(message=message)
+        return await bot.send_msg(message=message)  # type: ignore

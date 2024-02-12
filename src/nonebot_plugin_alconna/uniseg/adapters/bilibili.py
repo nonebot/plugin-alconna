@@ -8,7 +8,7 @@ from ..export import Target, MessageExporter, export
 
 class BilibiliMessageExporter(MessageExporter):
     def get_message_type(self):
-        from nonebot.adapters.bilibili.message import Message
+        from nonebot.adapters.bilibili.message import Message  # type: ignore
 
         return Message
 
@@ -17,10 +17,10 @@ class BilibiliMessageExporter(MessageExporter):
         return "BilibiliLive"
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.bilibili.event import MessageEvent
+        from nonebot.adapters.bilibili.event import MessageEvent  # type: ignore
 
         assert isinstance(event, MessageEvent)
-        return str(event.session_id)
+        return str(event.session_id)  # type: ignore
 
     @export
     async def text(self, seg: Text, bot: Bot) -> MessageSegment:
@@ -30,7 +30,7 @@ class BilibiliMessageExporter(MessageExporter):
         return ms.danmu(seg.text)
 
     async def send_to(self, target: Target, bot: Bot, message: Message):
-        from nonebot.adapters.bilibili.adapter import Adapter
+        from nonebot.adapters.bilibili.adapter import Adapter  # type: ignore
 
         adapter: Adapter = cast(Adapter, bot.adapter)
         return await adapter.bili.send(str(message), bot.self_id)
