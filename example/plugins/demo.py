@@ -98,12 +98,6 @@ with namespace("nbtest") as ns:
 
     # auto_send already set in .env
     pipcmd = on_alconna(pip, comp_config={"timeout": 10}, block=True)  # , auto_send_output=True)
-    ali = on_alconna(
-        Alconna(["/"], "一言"),
-        aliases={"hitokoto"},
-        skip_for_unmatch=True,
-        use_origin=True,
-    )
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
     login = on_alconna(
         Alconna(
@@ -138,6 +132,15 @@ async def pip_i(res: PipResult):
 @pipcmd.handle()
 async def pip_m():
     await pipcmd.send("WIP...")
+
+
+ali = on_alconna(
+    Alconna("一言"),
+    aliases={"hitokoto"},
+    skip_for_unmatch=True,
+    use_cmd_start=True,
+    use_origin=True,
+)
 
 
 @ali.handle()

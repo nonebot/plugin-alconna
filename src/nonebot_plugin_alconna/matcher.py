@@ -893,14 +893,6 @@ def on_alconna(
     """
     if isinstance(command, str):
         command = AlconnaFormat(command)
-    if aliases:
-        aliases = set(aliases)
-        command_manager.delete(command)
-        if command.command:
-            aliases.add(str(command.command))
-        command.command = "re:(" + "|".join(aliases) + ")"
-        command._hash = command._calc_hash()
-        command_manager.register(command)
     _rule = alconna(
         command,
         skip_for_unmatch,
@@ -911,6 +903,7 @@ def on_alconna(
         use_origin,
         use_cmd_start,
         use_cmd_sep,
+        aliases,
     )
     executor = cast(ExtensionExecutor, list(_rule.checkers)[0].call.executor)  # type: ignore
     params = (

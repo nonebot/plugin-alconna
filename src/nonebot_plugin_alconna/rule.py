@@ -1,8 +1,7 @@
 import asyncio
 import importlib
-from typing import Dict, List, Type, Union, Literal, Optional, cast
+from typing import Set, Dict, List, Type, Tuple, Union, Literal, Optional, cast
 
-from nonebot import get_driver
 from nonebot.typing import T_State
 from tarina import lang, init_spec
 from nonebot.matcher import Matcher
@@ -11,6 +10,7 @@ from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
 from nonebot.internal.rule import Rule as Rule
 from nonebot.adapters import Bot, Event, Message
+from nonebot import get_driver, get_plugin_config
 from arclet.alconna.exceptions import SpecialOptionTriggered
 from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
 
@@ -63,12 +63,13 @@ class AlconnaRule:
         use_origin: bool = False,
         use_cmd_start: bool = False,
         use_cmd_sep: bool = False,
+        _aliases: Optional[Union[Set[str], Tuple[str, ...]]] = None,
     ):
         self.comp_config = comp_config
         self.use_origin = use_origin
         try:
             global_config = get_driver().config
-            config = Config.parse_obj(global_config)
+            config = get_plugin_config(Config)
             self.auto_send = auto_send_output or config.alconna_auto_send_output
             if (
                 not command.prefixes
@@ -88,6 +89,9 @@ class AlconnaRule:
         except ValueError:
             self.auto_send = auto_send_output
         self.command = command
+        if _aliases:
+            for alias in _aliases:
+                command.shortcut(alias, prefix=True)
         self.skip = skip_for_unmatch
         self.executor = ExtensionExecutor(self, extensions, exclude_ext)
         self.executor.post_init()
