@@ -1,6 +1,7 @@
-from nepattern.main import INTEGER
+from typing import Union
+from nepattern.base import INTEGER
 from nonebot.adapters.onebot.v11.message import MessageSegment
-from nepattern import URL, BasePattern, PatternModel, UnionPattern
+from nepattern import URL, BasePattern, MatchMode, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 
@@ -30,16 +31,16 @@ Xml = SegmentPattern("xml", MessageSegment, MessageSegment.xml)
 
 
 ImgOrUrl = (
-    UnionPattern(
+    UnionPattern[Union[str, MessageSegment]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=str,
-                converter=lambda _, x: x.data["url"],
+                converter=lambda _, x: x.data["url"],  # type: ignore
                 alias="img",
-                accepts=[Image],
+                accepts=MessageSegment,
             ),
-            URL,
+            URL,  # type: ignore
         ]
     )
     @ "img_url"
@@ -49,21 +50,21 @@ ImgOrUrl = (
 """
 
 AtID = (
-    UnionPattern(
+    UnionPattern[Union[str, MessageSegment]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=int,
                 alias="At",
-                accepts=[At],
+                addition_accepts=At,
                 converter=lambda _, x: int(x.data["qq"]),
             ),
             BasePattern(
                 r"@(\d+)",
-                model=PatternModel.REGEX_CONVERT,
+                mode=MatchMode.REGEX_CONVERT,
                 origin=int,
                 alias="@xxx",
-                accepts=[str],
+                accepts=str,
                 converter=lambda _, x: int(x[1]),
             ),
             INTEGER,

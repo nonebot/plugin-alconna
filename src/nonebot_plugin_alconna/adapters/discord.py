@@ -13,7 +13,7 @@ from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecke
 from nonebot.adapters.discord.commands.storage import _application_command_storage
 from nonebot.adapters.discord.api.types import MessageFlag, InteractionCallbackType
 from nonebot.internal.matcher.matcher import current_bot, current_event, current_matcher
-from nepattern import FLOAT, NUMBER, INTEGER, AnyOne, BasePattern, PatternModel, UnionPattern
+from nepattern import FLOAT, NUMBER, INTEGER, ANY, BasePattern, MatchMode, UnionPattern
 from nonebot.adapters.discord.commands.matcher import SlashCommandMatcher, ApplicationCommandConfig, on_slash_command
 from nonebot.adapters.discord.message import (
     Message,
@@ -74,21 +74,21 @@ Reference = SegmentPattern("reference", ReferenceSegment, MessageSegment.referen
 
 
 MentionID = (
-    UnionPattern(
+    UnionPattern[Union[str, MentionUserSegment]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=int,
                 alias="MentionUser",
-                accepts=[MentionUser],
+                addition_accepts=MentionUser,
                 converter=lambda _, x: int(x.data["user_id"]),
             ),
             BasePattern(
                 r"@(\d+)",
-                model=PatternModel.REGEX_CONVERT,
+                mode=MatchMode.REGEX_CONVERT,
                 origin=int,
                 alias="@xxx",
-                accepts=[str],
+                accepts=str,
                 converter=lambda _, x: int(x[1]),
             ),
             INTEGER,
@@ -146,7 +146,7 @@ def _translate_args(args: Args) -> List[AnyCommandOption]:
                     )
                 )
             continue
-        elif arg.value == AnyOne:
+        elif arg.value == ANY:
             result.append(
                 StringOption(
                     name=arg.name,

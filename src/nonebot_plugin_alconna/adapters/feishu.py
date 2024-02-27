@@ -1,7 +1,7 @@
-from nepattern.main import INTEGER
+from nepattern.base import INTEGER
 from nonebot.adapters.feishu.message import MessageSegment
-from nepattern import BasePattern, PatternModel, UnionPattern
-
+from nepattern import BasePattern, MatchMode, UnionPattern
+from typing import Union
 from nonebot_plugin_alconna.typings import SegmentPattern
 
 Text = str
@@ -21,21 +21,21 @@ Sticker = SegmentPattern("sticker", MessageSegment, MessageSegment.sticker)
 
 
 AtID = (
-    UnionPattern(
+    UnionPattern[Union[str, MessageSegment]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=int,
                 alias="At",
-                accepts=[At],
+                addition_accepts=At,
                 converter=lambda _, x: int(x.data["user_id"]),
             ),
             BasePattern(
                 r"@(\d+)",
-                model=PatternModel.REGEX_CONVERT,
+                mode=MatchMode.REGEX_CONVERT,
                 origin=int,
                 alias="@xxx",
-                accepts=[str],
+                accepts=str,
                 converter=lambda _, x: int(x[1]),
             ),
             INTEGER,

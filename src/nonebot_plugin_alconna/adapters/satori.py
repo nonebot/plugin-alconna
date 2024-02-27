@@ -1,4 +1,5 @@
-from nepattern.main import URL, INTEGER
+from typing import Union
+from nepattern.base import URL, INTEGER
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters.satori.message import Message
 from nonebot.adapters.satori.message import At as _At
@@ -12,7 +13,7 @@ from nonebot.adapters.satori.message import Audio as _Audio
 from nonebot.adapters.satori.message import Image as _Image
 from nonebot.adapters.satori.message import Sharp as _Sharp
 from nonebot.adapters.satori.message import Video as _Video
-from nepattern import BasePattern, PatternModel, UnionPattern
+from nepattern import BasePattern, MatchMode, UnionPattern
 from nonebot.adapters.satori.message import Author as _Author
 from nonebot.adapters.satori.message import Italic as _Italic
 from nonebot.adapters.satori.message import Spoiler as _Spoiler
@@ -44,11 +45,11 @@ ImgOrUrl = (
     UnionPattern(
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=str,
                 converter=lambda _, x: x.data["src"],
                 alias="img",
-                accepts=[Image],
+                addition_accepts=Image,
             ),
             URL,
         ]
@@ -60,21 +61,21 @@ ImgOrUrl = (
 """
 
 MentionID = (
-    UnionPattern(
+    UnionPattern[Union[str, _At]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=int,
                 alias="at",
-                accepts=[At],
+                addition_accepts=At,
                 converter=lambda _, x: "id" in x.data and int(x.data["id"]),
             ),
             BasePattern(
                 r"@(\d+)",
-                model=PatternModel.REGEX_CONVERT,
+                mode=MatchMode.REGEX_CONVERT,
                 origin=int,
                 alias="@xxx",
-                accepts=[str],
+                accepts=str,
                 converter=lambda _, x: int(x[1]),
             ),
             INTEGER,

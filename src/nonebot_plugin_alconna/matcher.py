@@ -30,7 +30,7 @@ from nonebot.utils import escape_tag
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from nonebot.message import run_postprocessor
-from nepattern import STRING, AnyOne, AnyString
+from nepattern import STRING, ANY, AnyString
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
 from arclet.alconna.typing import ShortcutRegWrapper
@@ -88,14 +88,14 @@ def extract_arg(path: str, target: ArgsMounter) -> Arg | None:
 
 def _validate(target: Arg[Any], arg: MessageSegment):
     value = target.value
-    if value == AnyOne:
+    if value == ANY:
         return arg
     if value == AnyString or (value == STRING and arg.is_text()):
         return str(arg)
     default_val = target.field.default
     if arg.is_text():
         arg = arg.data["text"]
-    res = value.invalidate(arg, default_val) if value.anti else value.validate(arg, default_val)
+    res = value.validate(arg, default_val)
     if target.optional and res.flag != "valid":
         return
     if res.flag == "error":

@@ -1,6 +1,7 @@
-from nepattern.main import INTEGER
+from typing import Union
+from nepattern.base import INTEGER
 from nonebot.adapters.red.message import MessageSegment
-from nepattern import BasePattern, PatternModel, UnionPattern
+from nepattern import BasePattern, MatchMode, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 
@@ -19,21 +20,21 @@ Forward = SegmentPattern("forward", MessageSegment, MessageSegment.forward)
 
 
 AtID = (
-    UnionPattern(
+    UnionPattern[Union[str, MessageSegment]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=int,
                 alias="At",
-                accepts=[At],
+                addition_accepts=At,
                 converter=lambda _, x: int(x.data["user_id"]),
             ),
             BasePattern(
                 r"@(\d+)",
-                model=PatternModel.REGEX_CONVERT,
+                mode=MatchMode.REGEX_CONVERT,
                 origin=int,
                 alias="@xxx",
-                accepts=[str],
+                accepts=str,
                 converter=lambda _, x: int(x[1]),
             ),
             INTEGER,

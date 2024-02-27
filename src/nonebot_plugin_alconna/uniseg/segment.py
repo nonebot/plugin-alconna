@@ -39,7 +39,7 @@ TS = TypeVar("TS", bound="Segment")
 TS1 = TypeVar("TS1", bound="Segment")
 
 
-class UniPattern(BasePattern[TS], Generic[TS]):
+class UniPattern(BasePattern[TS, MessageSegment], Generic[TS]):
     additional: Optional[Callable[..., bool]] = None
 
     def __init__(self):
@@ -51,11 +51,11 @@ class UniPattern(BasePattern[TS], Generic[TS]):
             return res
 
         super().__init__(
-            model=MatchMode.TYPE_CONVERT,
+            mode=MatchMode.TYPE_CONVERT,
             origin=origin,
-            converter=_converter,  # type: ignore
+            converter=_converter,
             alias=origin.__name__,
-            accepts=[MessageSegment],
+            accepts=MessageSegment,
             validators=[self.additional] if self.additional else [],
         )
 

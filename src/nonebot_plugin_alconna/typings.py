@@ -17,7 +17,7 @@ TCallable = TypeVar("TCallable", bound=Callable[..., Any])
 P = ParamSpec("P")
 
 
-class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
+class SegmentPattern(BasePattern[TMS, MessageSegment], Generic[TMS, P]):
     def __init__(
         self,
         name: str,
@@ -27,17 +27,17 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         handle: Callable[[TMS], TMS | None] | None = None,
     ):
         super().__init__(
-            model=MatchMode.TYPE_CONVERT,
+            mode=MatchMode.TYPE_CONVERT,
             origin=origin,
             alias=name,
-            accepts=[MessageSegment],
+            accepts=MessageSegment,
             validators=[additional] if additional else [],
         )
         self.pattern = name
         self.call = call
         self.handle = handle
 
-    def match(self, input_: Any) -> TMS:
+    def match(self, input_: MessageSegment) -> TMS:
         if not isinstance(input_, self.origin):
             raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
         if input_.type != self.pattern:
@@ -52,7 +52,7 @@ class SegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         return self.call(*args, **kwargs)  # type: ignore
 
 
-class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
+class TextSegmentPattern(BasePattern[TMS, Union[MessageSegment, str]], Generic[TMS, P]):
     def __init__(
         self,
         name: str,
@@ -61,16 +61,16 @@ class TextSegmentPattern(BasePattern[TMS], Generic[TMS, P]):
         locator: Callable[[str, str], bool] | None = None,
     ):
         super().__init__(
-            model=MatchMode.TYPE_CONVERT,
+            mode=MatchMode.TYPE_CONVERT,
             origin=origin,
             alias=name,
-            accepts=[MessageSegment, str],
+            accepts=Union[MessageSegment, str],
         )
         self.pattern = name
         self.call = call
         self.locator = locator
 
-    def match(self, input_: Any) -> TMS:
+    def match(self, input_: Union[MessageSegment, str]) -> TMS:
         if not isinstance(input_, (str, self.origin)):  # type: ignore
             raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
         if isinstance(input_, str):

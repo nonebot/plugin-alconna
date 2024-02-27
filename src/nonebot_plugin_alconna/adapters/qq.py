@@ -1,9 +1,10 @@
-from nepattern.main import URL, INTEGER
+from typing import Union
+from nepattern.base import URL, INTEGER
 from nonebot.adapters.qq.message import Ark as _Ark
 from nonebot.adapters.qq.message import MessageSegment
 from nonebot.adapters.qq.message import Embed as _Embed
 from nonebot.adapters.qq.message import Emoji as _Emoji
-from nepattern import BasePattern, PatternModel, UnionPattern
+from nepattern import BasePattern, MatchMode, UnionPattern
 from nonebot.adapters.qq.message import Keyboard as _Keyboard
 from nonebot.adapters.qq.message import Markdown as _Markdown
 from nonebot.adapters.qq.message import Reference as _Reference
@@ -39,11 +40,11 @@ ImgOrUrl = (
     UnionPattern(
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=str,
                 converter=lambda _, x: x.data["url"],
                 alias="img",
-                accepts=[Image],
+                addition_accepts=Image,
             ),
             URL,
         ]
@@ -55,21 +56,21 @@ ImgOrUrl = (
 """
 
 MentionID = (
-    UnionPattern(
+    UnionPattern[Union[str, _MentionUser]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=int,
                 alias="MentionUser",
-                accepts=[MentionUser],
+                addition_accepts=MentionUser,
                 converter=lambda _, x: int(x.data["user_id"]),
             ),
             BasePattern(
                 r"@(\d+)",
-                model=PatternModel.REGEX_CONVERT,
+                mode=MatchMode.REGEX_CONVERT,
                 origin=int,
                 alias="@xxx",
-                accepts=[str],
+                accepts=str,
                 converter=lambda _, x: int(x[1]),
             ),
             INTEGER,

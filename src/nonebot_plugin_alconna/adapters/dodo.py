@@ -1,5 +1,6 @@
-from nepattern.main import URL, INTEGER
-from nepattern import BasePattern, PatternModel, UnionPattern
+from typing import Union
+from nepattern.base import URL, INTEGER
+from nepattern import BasePattern, MatchMode, UnionPattern
 from nonebot.adapters.dodo.message import (
     CardSegment,
     FileSegment,
@@ -32,11 +33,11 @@ ImgOrUrl = (
     UnionPattern(
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=str,
                 converter=lambda _, x: x.data["picture"].url,
                 alias="img",
-                accepts=[Image],
+                addition_accepts=Image
             ),
             URL,
         ]
@@ -48,21 +49,21 @@ ImgOrUrl = (
 """
 
 AtID = (
-    UnionPattern(
+    UnionPattern[Union[str, AtUserSegment]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=int,
                 alias="AtUser",
-                accepts=[AtUser],
+                addition_accepts=AtUser,
                 converter=lambda _, x: int(x.data["dodo_id"]),
             ),
             BasePattern(
                 r"@(\d+)",
-                model=PatternModel.REGEX_CONVERT,
+                mode=MatchMode.REGEX_CONVERT,
                 origin=int,
                 alias="@xxx",
-                accepts=[str],
+                accepts=str,
                 converter=lambda _, x: int(x[1]),
             ),
             INTEGER,

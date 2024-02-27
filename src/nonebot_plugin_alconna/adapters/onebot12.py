@@ -1,5 +1,6 @@
-from nepattern.main import URL, INTEGER
-from nepattern import BasePattern, PatternModel, UnionPattern
+from typing import Union
+from nepattern.base import URL, INTEGER
+from nepattern import BasePattern, MatchMode, UnionPattern
 from nonebot.adapters.onebot.v12.message import MessageSegment
 
 from nonebot_plugin_alconna.typings import SegmentPattern
@@ -19,7 +20,7 @@ ImgOrUrl = (
     UnionPattern(
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=str,
                 converter=lambda _, x: x.data["url"],
                 alias="img",
@@ -35,21 +36,21 @@ ImgOrUrl = (
 """
 
 MentionID = (
-    UnionPattern(
+    UnionPattern[Union[str, MessageSegment]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=int,
                 alias="Mention",
-                accepts=[Mention],
+                addition_accepts=Mention,
                 converter=lambda _, x: int(x.data["user_id"]),
             ),
             BasePattern(
                 r"@(\d+)",
-                model=PatternModel.REGEX_CONVERT,
+                mode=MatchMode.REGEX_CONVERT,
                 origin=int,
                 alias="@xxx",
-                accepts=[str],
+                accepts=str,
                 converter=lambda _, x: int(x[1]),
             ),
             INTEGER,

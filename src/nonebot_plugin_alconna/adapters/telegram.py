@@ -1,5 +1,5 @@
 from nonebot.adapters.telegram.message import File
-from nepattern import BasePattern, PatternModel, UnionPattern
+from nepattern import BasePattern, MatchMode, UnionPattern
 from nonebot.adapters.telegram.message import Reply as _Reply
 from nonebot.adapters.telegram.message import Entity, Message, UnCombinFile, MessageSegment
 
@@ -122,18 +122,18 @@ Videos = UnionPattern([Video, Animation])
 ImgOrUrl = UnionPattern(
     [
         BasePattern(
-            model=PatternModel.TYPE_CONVERT,
+            mode=MatchMode.TYPE_CONVERT,
             origin=str,
             converter=lambda _, x: x.data["file_id"],
             alias="img",
-            accepts=[Image],
+            addition_accepts=Image,
         ),
         BasePattern(
-            model=PatternModel.TYPE_CONVERT,
+            mode=MatchMode.TYPE_CONVERT,
             origin=str,
             converter=lambda _, x: x.data["text"],
             alias="url",
-            accepts=[Url],
+            addition_accepts=Url,
         ),
     ]
 )

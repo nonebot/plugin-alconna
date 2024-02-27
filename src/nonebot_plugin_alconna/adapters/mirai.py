@@ -1,6 +1,7 @@
-from nepattern.main import INTEGER
+from typing import Union
+from nepattern.base import INTEGER
 from nonebot.adapters.mirai2.message import MessageSegment
-from nepattern import URL, BasePattern, PatternModel, UnionPattern
+from nepattern import URL, BasePattern, MatchMode, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 
@@ -26,14 +27,14 @@ MiraiCode = SegmentPattern("MiraiCode", MessageSegment, MessageSegment.mirai_cod
 
 
 ImgOrUrl = (
-    UnionPattern(
+    UnionPattern[str](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=str,
                 converter=lambda _, x: x.data["url"],
                 alias="img",
-                accepts=[Image],
+                addition_accepts=Image,
             ),
             URL,
         ]
@@ -45,21 +46,21 @@ ImgOrUrl = (
 """
 
 AtID = (
-    UnionPattern(
+    UnionPattern[Union[str, MessageSegment]](
         [
             BasePattern(
-                model=PatternModel.TYPE_CONVERT,
+                mode=MatchMode.TYPE_CONVERT,
                 origin=int,
                 alias="At",
-                accepts=[At],
+                addition_accepts=At,
                 converter=lambda _, x: int(x.data["target"]),
             ),
             BasePattern(
                 r"@(\d+)",
-                model=PatternModel.REGEX_CONVERT,
+                mode=MatchMode.REGEX_CONVERT,
                 origin=int,
                 alias="@xxx",
-                accepts=[str],
+                accepts=str,
                 converter=lambda _, x: int(x[1]),
             ),
             INTEGER,
