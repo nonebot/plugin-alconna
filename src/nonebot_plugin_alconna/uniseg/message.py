@@ -764,14 +764,14 @@ class UniMessage(List[TS]):
         if (event and bot) and (_reply := await reply_handle(event, bot)):
             result.append(_reply)
         elif (res := reply.validate(message[0])).success:
-            res.value.origin = message[0]
+            res._value.origin = message[0]
             result.append(res.value)
             msg_copy.pop(0)
         for seg in msg_copy:
             for pat in segments:
                 if (res := pat.validate(seg)).success:
-                    res.value.origin = seg
-                    result.append(res.value)
+                    res._value.origin = seg
+                    result.append(res._value)
                     break
             else:
                 result.append(Other(seg))
@@ -877,14 +877,7 @@ class UniMessage(List[TS]):
         adapter_name = adapter.get_name()
         if not (fn := MAPPING.get(adapter_name)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
-        if isinstance(target, Event):
-            _target = fn.get_target(target)
-            try:
-                res = await fn.send_to(_target, bot, msg)
-            except (AssertionError, NotImplementedError):
-                res = await bot.send(target, msg)
-        else:
-            res = await fn.send_to(target, bot, msg)
+        res = await fn.send_to(target, bot, msg)
         return Receipt(bot, target, fn, res if isinstance(res, list) else [res])
 
 
@@ -986,14 +979,7 @@ class Receipt:
                         raise TypeError("reply_to must be str when target is not Event")
                 self.insert(0, Reply(reply_to))  # type: ignore
         msg = await self.exporter.export(message, self.bot, fallback)
-        if isinstance(self.context, Event):
-            _target = self.exporter.get_target(self.context)
-            try:
-                res = await self.exporter.send_to(_target, self.bot, msg)
-            except (AssertionError, NotImplementedError):
-                res = await self.bot.send(self.context, msg)
-        else:
-            res = await self.exporter.send_to(self.context, self.bot, msg)
+        res = await self.exporter.send_to(self.context, self.bot, msg)
         self.msg_ids.extend(res if isinstance(res, list) else [res])
         return self
 

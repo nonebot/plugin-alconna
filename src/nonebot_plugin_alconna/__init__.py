@@ -69,6 +69,7 @@ from .uniseg import MsgTarget as MsgTarget
 from .uniseg import Reference as Reference
 from .uniseg import patch_saa as patch_saa
 from .argv import MessageArgv as MessageArgv
+from .params import AlcContext as AlcContext
 from .params import AlcMatches as AlcMatches
 from .params import AlconnaArg as AlconnaArg
 from .params import match_path as match_path
@@ -87,6 +88,7 @@ from .params import AlcExecResult as AlcExecResult
 from .params import AlconnaResult as AlconnaResult
 from .uniseg import MessageTarget as MessageTarget
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
+from .params import AlconnaContext as AlconnaContext
 from .params import AlconnaMatches as AlconnaMatches
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY

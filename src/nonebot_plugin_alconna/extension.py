@@ -44,6 +44,7 @@ class Extension(metaclass=ABCMeta):
             "send_wrapper": cls.send_wrapper != Extension.send_wrapper,
             "receive_wrapper": cls.receive_wrapper != Extension.receive_wrapper,
             "permission_check": cls.permission_check != Extension.permission_check,
+            "context_provider": cls.context_provider != Extension.context_provider,
             "parse_wrapper": cls.parse_wrapper != Extension.parse_wrapper,
             "catch": cls.catch != Extension.catch and cls.before_catch != Extension.before_catch,
         }
@@ -93,6 +94,10 @@ class Extension(metaclass=ABCMeta):
     async def permission_check(self, bot: Bot, event: Event, command: Alconna) -> bool:
         """命令首次解析并确认头部匹配（即确认选择响应）时对发送者的权限判断"""
         return True
+
+    async def context_provider(self, ctx: dict[str, Any], event: Event, bot: Bot, state: T_State) -> dict[str, Any]:
+        """提供上下文以便 Alconna 进行处理。"""
+        return ctx
 
     async def parse_wrapper(self, bot: Bot, state: T_State, event: Event, res: Arparma) -> None:
         """解析消息后的钩子函数。"""
@@ -228,6 +233,15 @@ class ExtensionExecutor:
                     return False
                 continue
         return True
+
+    async def context_provider(self, event: Event, bot: Bot, state: T_State) -> dict[str, Any]:
+        ctx = {}
+        for ext in self.context:
+            if ext._overrides["context_provider"]:
+                ctx = await ext.context_provider(ctx, event, bot, state)
+        ctx["event"] = event
+        # ctx["bot"] = bot
+        return ctx
 
     async def parse_wrapper(self, bot: Bot, state: T_State, event: Event, res: Arparma) -> None:
         await asyncio.gather(

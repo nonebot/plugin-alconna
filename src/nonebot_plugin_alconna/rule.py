@@ -85,6 +85,9 @@ class AlconnaRule:
                 command_manager.resolve(command).separators = tuple(global_config.command_sep)
             if config.alconna_auto_completion and not self.comp_config:
                 self.comp_config = cast(CompConfig, {})
+            if config.alconna_context_style:
+                self.command.meta.context_style = config.alconna_context_style
+                command_manager.resolve(command).context_style = config.alconna_context_style
             self.use_origin = use_origin or config.alconna_use_origin
         except ValueError:
             self.auto_send = auto_send_output
@@ -168,15 +171,16 @@ class AlconnaRule:
     def __hash__(self) -> int:
         return hash(self.command.__hash__())
 
-    async def handle(self, bot: Bot, event: Event, msg: Message) -> Union[Arparma, Literal[False]]:
+    async def handle(self, bot: Bot, event: Event, state: T_State, msg: Message) -> Union[Arparma, Literal[False]]:
+        ctx = await self.executor.context_provider(event, bot, state)
         if self.comp_config is None:
-            return self.command.parse(msg)
+            return self.command.parse(msg, ctx)
         res = None
         session_id = event.get_session_id()
         if session_id not in self._interfaces:
             self._interfaces[session_id] = CompSession(self.command)
         with self._interfaces[session_id]:
-            res = self.command.parse(msg)
+            res = self.command.parse(msg, ctx)
         if res:
             self._interfaces[session_id].exit()
             del self._interfaces[session_id]
@@ -251,7 +255,7 @@ class AlconnaRule:
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
             try:
-                arp = await self.handle(bot, event, msg)
+                arp = await self.handle(bot, event, state, msg)
                 if arp is False:
                     return False
             except Exception as e:

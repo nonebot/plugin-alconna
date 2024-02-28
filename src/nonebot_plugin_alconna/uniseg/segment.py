@@ -769,8 +769,8 @@ class _Segment(UniPattern[Segment]):
     def solve(self, seg: MessageSegment):
         for pat in segments:
             if (res := pat.validate(seg)).success:
-                res.value.origin = seg
-                return res.value
+                res._value.origin = seg
+                return res._value
         return Other(seg)  # type: ignore
 
 

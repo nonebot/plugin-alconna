@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Union
 from nonebot.adapters import Bot, Event, Message
 
 from ..segment import At, Text, Image
-from ..export import Target, MessageExporter, export, SupportAdapter
+from ..export import Target, SupportAdapter, MessageExporter, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.github.message import MessageSegment  # type: ignore

@@ -49,6 +49,14 @@ def AlconnaMatches() -> Arparma:
     return Depends(_alconna_matches, use_cache=False)
 
 
+def _alconna_ctx(state: T_State):
+    return state[ALCONNA_RESULT].context
+
+
+def AlconnaContext() -> Dict[str, Any]:
+    return Depends(_alconna_ctx, use_cache=False)
+
+
 def AlconnaMatch(name: str, middleware: Optional[MIDDLEWARE] = None) -> Match:
     async def _alconna_match(state: T_State, bot: Bot, event: Event) -> Match:
         arp = _alconna_result(state).result
@@ -117,6 +125,7 @@ def AlconnaArg(path: str) -> Any:
 AlcResult = Annotated[CommandResult, AlconnaResult()]
 AlcExecResult = Annotated[Dict[str, Any], AlconnaExecResult()]
 AlcMatches = Annotated[Arparma, AlconnaMatches()]
+AlcContext = Annotated[Dict[str, Any], AlconnaContext()]
 
 
 def match_path(
@@ -260,6 +269,8 @@ class AlconnaParam(Param):
             return cls(param.default, name=param.name, type=Match)
         if isinstance(param.default, Query):
             return cls(param.default, type=Query)
+        if param.name in ("ctx", "context") and annotation is dict:
+            return cls(..., type=Literal["context"])
         return cls(param.default, name=param.name, type=param.annotation, validate=True)
 
     async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
@@ -294,6 +305,8 @@ class AlconnaParam(Param):
             elif self.default.result != Empty:
                 q.available = True
             return q
+        if t == Literal["context"]:
+            return res.result.context
         if (key := ALCONNA_ARG_KEY.format(key=self.extra["name"])) in state:
             return state[key]
         if self.extra["name"] in res.result.all_matched_args:

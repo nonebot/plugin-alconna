@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Literal, Optional
 
 from pydantic import Field, BaseModel
 
@@ -23,3 +23,6 @@ class Config(BaseModel):
 
     alconna_global_extensions: List[str] = Field(default_factory=list)
     """全局加载的扩展, 路径以 . 分隔, 如 foo.bar.baz:DemoExtension"""
+
+    alconna_context_style: Optional[Literal["bracket", "parentheses"]] = Field(default=None)
+    "全局命令上下文插值的风格，None 为关闭，bracket 为 {...}，parentheses 为 $(...)"

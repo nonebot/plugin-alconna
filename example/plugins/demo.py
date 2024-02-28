@@ -14,6 +14,7 @@ from arclet.alconna import (
     Arparma,
     MultiVar,
     Subcommand,
+    CommandMeta,
     Duplication,
     SubcommandStub,
     namespace,
@@ -418,6 +419,7 @@ alc = Alconna(
     Args["name", str, Field(completion=lambda: "请输入姓名")],
     Args["phone", int, Field(completion=lambda: "请输入手机号")],
     Args["at", [str, At], Field(completion=lambda: "请输入教师号")],
+    meta=CommandMeta(context_style="parentheses"),
 )
 
 cmd = on_alconna(alc, comp_config={"lite": True}, skip_for_unmatch=False)
