@@ -1,7 +1,9 @@
-from nepattern.base import INTEGER
-from nonebot.adapters.feishu.message import MessageSegment
-from nepattern import BasePattern, MatchMode, UnionPattern
 from typing import Union
+
+from nepattern.base import INTEGER
+from nepattern import MatchMode, BasePattern, UnionPattern
+from nonebot.adapters.feishu.message import MessageSegment
+
 from nonebot_plugin_alconna.typings import SegmentPattern
 
 Text = str

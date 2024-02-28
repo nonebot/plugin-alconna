@@ -5,9 +5,9 @@ authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "arclet-alconna>=1.8.0",
-    "arclet-alconna-tools>=0.6.11",
-    "nepattern>=0.5.15",
+    "arclet-alconna>=1.8.1",
+    "arclet-alconna-tools>=0.7.0",
+    "nepattern>=0.6.0",
     "nonebot2>=2.2.0",
 ]
 dynamic = ["version"]

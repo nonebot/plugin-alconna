@@ -27,4 +27,4 @@ def test_tg():
     assert res1.baz.data["text"] == "baz"
 
     _img = type_parser(Image)
-    assert _img.exec(Photo("1")).value == Image(id="1")
+    assert _img.validate(Photo("1")).value() == Image(id="1")

@@ -1,7 +1,8 @@
 from typing import Union
+
 from nepattern.base import INTEGER
 from nonebot.adapters.red.message import MessageSegment
-from nepattern import BasePattern, MatchMode, UnionPattern
+from nepattern import MatchMode, BasePattern, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 

@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:bdc0df8fe6a19b499005af4374758c2d1a5c1c39b6031586a47cfe9c9500d841"
+content_hash = "sha256:f016a4e3167cf02fc5bca2dc198dc1456e4e3511d055418c8b76d53320b3237e"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -34,7 +34,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.8.0"
+version = "1.8.1"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -43,22 +43,22 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.8.0-py3-none-any.whl", hash = "sha256:e2408f4f3bf50ebafc2ee55ab7c17ea57f33bd02cf8528d381b8dd5c3a5ebe4f"},
-    {file = "arclet_alconna-1.8.0.tar.gz", hash = "sha256:d6227838862cc1c129a421030be5f63e9204ae0a808cc6ab5095b9136bdfd197"},
+    {file = "arclet_alconna-1.8.1-py3-none-any.whl", hash = "sha256:1e7ac67bc5e8fe62b126170bd2938aaccc3caecd4b2527f6348bd3f89453d629"},
+    {file = "arclet_alconna-1.8.1.tar.gz", hash = "sha256:a80857ab23da9c789a4704bd795c51f2b8c54eb98594224ba6e161cb8d15f724"},
 ]
 
 [[package]]
 name = "arclet-alconna-tools"
-version = "0.6.11"
+version = "0.7.0"
 requires_python = ">=3.8"
 summary = "Builtin Tools for Alconna"
 dependencies = [
-    "arclet-alconna>=1.7.39",
-    "nepattern>=0.5.15",
+    "arclet-alconna>=1.8.1",
+    "nepattern<1.0.0,>=0.6.5",
 ]
 files = [
-    {file = "arclet-alconna-tools-0.6.11.tar.gz", hash = "sha256:079f1ccd84120c65288e50014de2117a0dc7c52e5c2d2d718ad9fd95afb40232"},
-    {file = "arclet_alconna_tools-0.6.11-py3-none-any.whl", hash = "sha256:d3bc7d70040fbc1c0b44a9b751089f87c6c487161d7c930dd4018d7ef468d91f"},
+    {file = "arclet-alconna-tools-0.7.0.tar.gz", hash = "sha256:361a193239555d243d8738c39e89f536847d49fa9d74c0a2706b58514c8d8a70"},
+    {file = "arclet_alconna_tools-0.7.0-py3-none-any.whl", hash = "sha256:c4835d277c5927a2d036fba44a710471496b8086575fe3699dfbf256ca72bda2"},
 ]
 
 [[package]]

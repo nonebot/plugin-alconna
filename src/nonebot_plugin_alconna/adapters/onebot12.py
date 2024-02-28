@@ -1,6 +1,7 @@
 from typing import Union
+
 from nepattern.base import URL, INTEGER
-from nepattern import BasePattern, MatchMode, UnionPattern
+from nepattern import MatchMode, BasePattern, UnionPattern
 from nonebot.adapters.onebot.v12.message import MessageSegment
 
 from nonebot_plugin_alconna.typings import SegmentPattern
@@ -24,7 +25,7 @@ ImgOrUrl = (
                 origin=str,
                 converter=lambda _, x: x.data["url"],
                 alias="img",
-                accepts=[Image],
+                addition_accepts=Image,
             ),
             URL,
         ]

@@ -1,10 +1,11 @@
 from typing import Union
+
 from nepattern.base import URL, INTEGER
 from nonebot.adapters.qq.message import Ark as _Ark
 from nonebot.adapters.qq.message import MessageSegment
 from nonebot.adapters.qq.message import Embed as _Embed
 from nonebot.adapters.qq.message import Emoji as _Emoji
-from nepattern import BasePattern, MatchMode, UnionPattern
+from nepattern import MatchMode, BasePattern, UnionPattern
 from nonebot.adapters.qq.message import Keyboard as _Keyboard
 from nonebot.adapters.qq.message import Markdown as _Markdown
 from nonebot.adapters.qq.message import Reference as _Reference

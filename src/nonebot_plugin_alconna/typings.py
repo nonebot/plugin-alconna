@@ -70,7 +70,7 @@ class TextSegmentPattern(BasePattern[TMS, Union[MessageSegment, str]], Generic[T
         self.call = call
         self.locator = locator
 
-    def match(self, input_: Union[MessageSegment, str]) -> TMS:
+    def match(self, input_: str | MessageSegment) -> TMS:
         if not isinstance(input_, (str, self.origin)):  # type: ignore
             raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
         if isinstance(input_, str):

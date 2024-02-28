@@ -1,6 +1,7 @@
 from typing import Union
+
 from nepattern.base import URL, INTEGER
-from nepattern import BasePattern, MatchMode, UnionPattern
+from nepattern import MatchMode, BasePattern, UnionPattern
 from nonebot.adapters.dodo.message import (
     CardSegment,
     FileSegment,
@@ -37,7 +38,7 @@ ImgOrUrl = (
                 origin=str,
                 converter=lambda _, x: x.data["picture"].url,
                 alias="img",
-                addition_accepts=Image
+                addition_accepts=Image,
             ),
             URL,
         ]

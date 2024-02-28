@@ -1,4 +1,5 @@
 from typing import Union
+
 from nepattern.base import URL, INTEGER
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters.satori.message import Message
@@ -8,12 +9,12 @@ from nonebot.adapters.satori.message import Bold as _Bold
 from nonebot.adapters.satori.message import Code as _Code
 from nonebot.adapters.satori.message import File as _File
 from nonebot.adapters.satori.message import Link as _Link
+from nepattern import MatchMode, BasePattern, UnionPattern
 from nonebot.adapters.satori.message import MessageSegment
 from nonebot.adapters.satori.message import Audio as _Audio
 from nonebot.adapters.satori.message import Image as _Image
 from nonebot.adapters.satori.message import Sharp as _Sharp
 from nonebot.adapters.satori.message import Video as _Video
-from nepattern import BasePattern, MatchMode, UnionPattern
 from nonebot.adapters.satori.message import Author as _Author
 from nonebot.adapters.satori.message import Italic as _Italic
 from nonebot.adapters.satori.message import Spoiler as _Spoiler

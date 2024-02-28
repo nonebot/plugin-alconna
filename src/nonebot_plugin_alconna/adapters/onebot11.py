@@ -1,7 +1,8 @@
 from typing import Union
+
 from nepattern.base import INTEGER
 from nonebot.adapters.onebot.v11.message import MessageSegment
-from nepattern import URL, BasePattern, MatchMode, UnionPattern
+from nepattern import URL, MatchMode, BasePattern, UnionPattern
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 

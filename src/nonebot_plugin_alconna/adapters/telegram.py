@@ -1,5 +1,5 @@
 from nonebot.adapters.telegram.message import File
-from nepattern import BasePattern, MatchMode, UnionPattern
+from nepattern import MatchMode, BasePattern, UnionPattern
 from nonebot.adapters.telegram.message import Reply as _Reply
 from nonebot.adapters.telegram.message import Entity, Message, UnCombinFile, MessageSegment
 

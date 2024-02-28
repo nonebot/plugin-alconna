@@ -29,8 +29,8 @@ from nonebot.params import Depends
 from nonebot.utils import escape_tag
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
+from nepattern import ANY, STRING, AnyString
 from nonebot.message import run_postprocessor
-from nepattern import STRING, ANY, AnyString
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
 from arclet.alconna.typing import ShortcutRegWrapper
