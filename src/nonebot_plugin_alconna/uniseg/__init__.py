@@ -28,6 +28,7 @@ from .message import UniMessage as UniMessage
 from .segment import CustomNode as CustomNode
 from .tools import image_fetch as image_fetch
 from .params import MessageTarget as MessageTarget
+from .export import SupportAdapter as SupportAdapter
 from .export import SerializeFailed as SerializeFailed
 from .segment import custom_register as custom_register
 from .fallback import FallbackMessage as FallbackMessage
@@ -35,7 +36,7 @@ from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 
-__version__ = "0.37.1"
+__version__ = "0.38.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",

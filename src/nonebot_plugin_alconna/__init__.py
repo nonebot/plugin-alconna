@@ -90,6 +90,7 @@ from .uniseg import MessageTarget as MessageTarget
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
 from .params import AlconnaContext as AlconnaContext
 from .params import AlconnaMatches as AlconnaMatches
+from .uniseg import SupportAdapter as SupportAdapter
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
 from .uniseg import SerializeFailed as SerializeFailed
@@ -102,7 +103,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.37.1"
+__version__ = "0.38.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",
