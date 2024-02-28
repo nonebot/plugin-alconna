@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Union
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Voice, RefNode, Reference
 
 if TYPE_CHECKING:
@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 
 class MiraiMessageExporter(MessageExporter["MessageSegment"]):
     @classmethod
-    def get_adapter(cls) -> str:
-        return "mirai2"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.mirai
 
     def get_message_type(self):
         from nonebot.adapters.mirai2.message import MessageChain
@@ -167,7 +167,7 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
                 )
         return ms(MessageType.FORWARD, nodeList=nodes)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.mirai2.bot import Bot as MiraiBot
 
         assert isinstance(bot, MiraiBot)
@@ -178,6 +178,10 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
             quote = message.pop(message.index("Quote")).data["id"]
         else:
             quote = None
+
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
+
         if target.private:
             return await bot.send_friend_message(target=int(target.id), message_chain=message, quote=quote)
         else:

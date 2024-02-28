@@ -5,7 +5,7 @@ from tarina import lang
 from nonebot.internal.driver import Request
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from ..segment import At, Card, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice, RefNode, Reference
 
 if TYPE_CHECKING:
@@ -19,8 +19,8 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "OneBot V11"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.onebot11
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         if group_id := getattr(event, "group_id", None):
@@ -118,12 +118,15 @@ class Onebot11MessageExporter(MessageExporter["MessageSegment"]):
                 nodes.append(ms.node_custom(user_id=node.uid, nickname=node.name, content=content))  # type: ignore
         return nodes  # type: ignore
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.onebot.v11.bot import Bot as OnebotBot
 
         assert isinstance(bot, OnebotBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
+
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
 
         if target.private:
             return await bot.send_msg(message_type="private", user_id=int(target.id), message=message)

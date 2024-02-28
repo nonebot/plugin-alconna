@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Union, cast
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice, RefNode, Reference
 
 if TYPE_CHECKING:
@@ -17,8 +17,8 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "Satori"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.satori
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from nonebot.adapters.satori.event import NoticeEvent, MessageEvent
@@ -129,12 +129,15 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
             content = seg.content
         return ms.message(seg.id, bool(seg.content), content)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.satori.bot import Bot as SatoriBot
 
         assert isinstance(bot, SatoriBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
+
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
 
         if target.private:
             return await bot.send_private_message(target.id, message)

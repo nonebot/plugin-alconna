@@ -1,9 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from nonebot.adapters import Bot, Event, Message
 
 from ..segment import Text
-from ..export import Target, MessageExporter, export
+from ..export import Target, SupportAdapter, MessageExporter, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.minecraft.message import MessageSegment
@@ -16,8 +16,8 @@ class MinecraftMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "Minecraft"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.minecraft
 
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.minecraft.event.base import MessageEvent
@@ -30,7 +30,7 @@ class MinecraftMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
         return ms.text(seg.text)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.minecraft.bot import Bot as MinecraftBot
 
         assert isinstance(bot, MinecraftBot)

@@ -1,6 +1,7 @@
 import inspect
-from dataclasses import dataclass
+from enum import Enum
 from abc import ABCMeta, abstractmethod
+from dataclasses import field, dataclass
 from typing import TYPE_CHECKING, Any, Dict, Type, Union, Generic, TypeVar, Callable, Awaitable, get_args, get_origin
 
 from tarina import lang
@@ -14,6 +15,28 @@ if TYPE_CHECKING:
 
 TS = TypeVar("TS", bound=Segment)
 TMS = TypeVar("TMS", bound=MessageSegment)
+
+
+class SupportAdapter(str, Enum):
+    """支持的适配器"""
+
+    bilibili = "BilibiliLive"
+    console = "Console"
+    ding = "Ding"
+    discord = "Discord"
+    dodo = "DoDo"
+    feishu = "Feishu"
+    github = "GitHub"
+    kook = "Kaiheila"
+    minecraft = "Minecraft"
+    mirai = "mirai2"
+    ntchat = "ntchat"
+    onebot11 = "OneBot V11"
+    onebot12 = "OneBot V12"
+    qq = "QQ"
+    red = "RedProtocol"
+    satori = "Satori"
+    telegram = "Telegram"
 
 
 @dataclass
@@ -32,6 +55,8 @@ class Target:
     """平台(适配器)名称，若为None则需要明确指定 Bot 对象"""
     self_id: Union[str, None] = None
     """机器人id，若为None则需要明确指定 Bot 对象"""
+    extra: Dict[str, Any] = field(default_factory=dict)
+    """额外信息，用于适配器扩展"""
 
     async def send(
         self,
@@ -68,7 +93,7 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def get_adapter(cls) -> str: ...
+    def get_adapter(cls) -> SupportAdapter: ...
 
     @abstractmethod
     def get_message_type(self) -> Type[Message]: ...
@@ -116,7 +141,7 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
         return message
 
     @abstractmethod
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         raise NotImplementedError
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):

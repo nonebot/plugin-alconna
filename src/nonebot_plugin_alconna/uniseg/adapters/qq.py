@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Union
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 
 class QQMessageExporter(MessageExporter["MessageSegment"]):
     @classmethod
-    def get_adapter(cls) -> str:
-        return "QQ"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.qq
 
     def get_message_type(self):
         from nonebot.adapters.qq.message import Message
@@ -101,6 +101,7 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
                 source=str(event.id),
                 platform=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                extra={"qq.reply_seq": event._reply_seq},
             )
         if isinstance(event, GroupAtMessageCreateEvent):
             return Target(
@@ -108,6 +109,7 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
                 source=str(event.id),
                 platform=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                extra={"qq.reply_seq": event._reply_seq},
             )
         if isinstance(event, InteractionCreateEvent):
             if event.group_openid:
@@ -223,12 +225,20 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
         return ms.reference(seg.id)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.qq.bot import Bot as QQBot
+        from nonebot.adapters.qq.event import MessageEvent
 
         assert isinstance(bot, QQBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
+
+        if isinstance(target, Event):
+            assert isinstance(target, MessageEvent)
+            return await bot.send(
+                event=target,
+                message=message,
+            )
 
         if target.channel:
             if target.private:
@@ -248,16 +258,19 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
                 msg_id=target.source,
             )
         if target.private:
-            return await bot.send_to_c2c(
+            res = await bot.send_to_c2c(
                 openid=target.id,
                 message=message,
                 msg_id=target.source,
             )
-        return await bot.send_to_group(
-            group_openid=target.id,
-            message=message,
-            msg_id=target.source,
-        )
+        else:
+            res = await bot.send_to_group(
+                group_openid=target.id,
+                message=message,
+                msg_id=target.source,
+            )
+        target.extra["qq.reply_seq"] += 1
+        return res
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         from nonebot.adapters.qq.bot import Bot as QQBot

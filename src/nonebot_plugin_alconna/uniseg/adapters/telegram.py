@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Any, Union, cast
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, Audio, Emoji, Image, Reply, Video, Voice
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.telegram.message import MessageSegment
@@ -18,8 +18,8 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "Telegram"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.telegram
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from nonebot.adapters.telegram.event import EventWithChat
@@ -85,12 +85,16 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
 
         return TgReply.reply(int(seg.id))
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.telegram.bot import Bot as TgBot
+        from nonebot.adapters.telegram.event import Event as TgEvent
         from nonebot.adapters.telegram.message import Message as TgMessage
 
         assert isinstance(bot, TgBot)
         assert isinstance(message, TgMessage)
+        if isinstance(target, Event):
+            assert isinstance(target, TgEvent)
+            return await bot.send(event=target, message=message)
         return await bot.send_to(target.id, message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):

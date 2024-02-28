@@ -5,8 +5,8 @@ from tarina import lang
 from nonebot.internal.driver import Request
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.feishu.message import MessageSegment
@@ -19,8 +19,8 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "Feishu"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.feishu
 
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.feishu.event import MessageEvent
@@ -154,12 +154,15 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
 
         return ms("$reply", {"message_id": seg.id})  # type: ignore
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.feishu.bot import Bot as FeishuBot
 
         assert isinstance(bot, FeishuBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
+
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
 
         if target.private:
             receive_id, receive_id_type = target.id, "open_id"

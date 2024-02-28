@@ -1,9 +1,9 @@
-from typing import cast
+from typing import Union, cast
 
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
 from ..segment import Text
-from ..export import Target, MessageExporter, export
+from ..export import Target, SupportAdapter, MessageExporter, export
 
 
 class BilibiliMessageExporter(MessageExporter):
@@ -13,8 +13,8 @@ class BilibiliMessageExporter(MessageExporter):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "BilibiliLive"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.bilibili
 
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.bilibili.event import MessageEvent  # type: ignore
@@ -29,7 +29,7 @@ class BilibiliMessageExporter(MessageExporter):
 
         return ms.danmu(seg.text)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.bilibili.adapter import Adapter  # type: ignore
 
         adapter: Adapter = cast(Adapter, bot.adapter)

@@ -5,7 +5,7 @@ from tarina import lang
 from nonebot.internal.driver import Request
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice, Reference, CustomNode
 
 if TYPE_CHECKING:
@@ -19,8 +19,8 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "RedProtocol"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.red
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from nonebot.adapters.red.api.model import ChatType
@@ -127,12 +127,15 @@ class RedMessageExporter(MessageExporter["MessageSegment"]):
             nodes.append(ForwardNode(uin=node.uid, name=node.name, time=node.time, message=content))
         return ms.forward(nodes)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.red.bot import Bot as RedBot
 
         assert isinstance(bot, RedBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
+
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
 
         if target.private:
             return await bot.send_friend_message(target=target.id, message=message)

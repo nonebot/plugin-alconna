@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Union, cast
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
@@ -17,8 +17,8 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "Kaiheila"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.kook
 
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.kaiheila.event import MessageEvent
@@ -113,12 +113,16 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
 
         return ms.quote(seg.id)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.kaiheila.bot import Bot as KBot
 
         assert isinstance(bot, KBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
+
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
+
         if target.private:
             return await bot.send_msg(message_type="private", user_id=target.id, message=message)
         else:

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Union
 from nonebot.adapters import Bot, Event, Message
 
 from ..segment import At, Text, AtAll, Image
-from ..export import Target, MessageExporter, export
+from ..export import Target, SupportAdapter, MessageExporter, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.ding.message import MessageSegment
@@ -16,8 +16,8 @@ class DingMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "Ding"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.ding
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from nonebot.adapters.ding.event import MessageEvent, ConversationType
@@ -63,5 +63,5 @@ class DingMessageExporter(MessageExporter["MessageSegment"]):
         assert seg.url, "ding image segment must have url"
         return ms.image(seg.url)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         raise NotImplementedError

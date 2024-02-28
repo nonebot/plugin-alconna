@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Any, Union
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.onebot.v12.message import MessageSegment
@@ -18,8 +18,8 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "OneBot V12"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.onebot12
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         if channel_id := getattr(event, "channel_id", None):
@@ -96,13 +96,15 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
 
         return ms.reply(seg.id)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
 
         assert isinstance(bot, OnebotBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
         if target.private:
             return await bot.send_message(detail_type="private", user_id=target.id, message=message)
         elif target.channel:

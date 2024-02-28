@@ -6,7 +6,7 @@ from nonebot.drivers import Request
 from nonebot.adapters import Bot, Event, Message
 
 from ..segment import At, Text, Image, Reply, Video
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.dodo.message import MessageSegment
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 
 class DoDoMessageExporter(MessageExporter["MessageSegment"]):
     @classmethod
-    def get_adapter(cls) -> str:
-        return "DoDo"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.dodo
 
     def get_message_type(self):
         from nonebot.adapters.dodo.message import Message
@@ -103,12 +103,15 @@ class DoDoMessageExporter(MessageExporter["MessageSegment"]):
         ms = self.segment_class
         return ms.reference(seg.id)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.dodo.bot import Bot as DodoBot
 
         assert isinstance(bot, DodoBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
+
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
 
         if target.private:
             return await bot.send_to_personal(target.parent_id, target.id, message)

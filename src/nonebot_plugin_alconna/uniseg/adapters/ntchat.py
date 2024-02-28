@@ -4,7 +4,7 @@ from tarina import lang
 from nonebot.adapters import Bot, Event, Message
 
 from ..segment import Card, File, Text, Image, Video
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 if TYPE_CHECKING:
     from nonebot.adapters.ntchat.message import MessageSegment
@@ -17,8 +17,8 @@ class NTChatMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "ntchat"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.ntchat
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         from_wxid = getattr(event, "from_wxid", None)
@@ -67,11 +67,14 @@ class NTChatMessageExporter(MessageExporter["MessageSegment"]):
 
         return ms.xml(seg.raw)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.ntchat.bot import send
         from nonebot.adapters.ntchat.bot import Bot as NTChatBot
 
         assert isinstance(bot, NTChatBot)
+
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
 
         class FakeEvent:
             from_wxid = target.id

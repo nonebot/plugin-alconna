@@ -5,7 +5,7 @@ from tarina import lang
 from nonebot.internal.driver import Request
 from nonebot.adapters import Bot, Event, Message
 
-from ..export import Target, MessageExporter, SerializeFailed, export
+from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from ..segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 
 if TYPE_CHECKING:
@@ -19,8 +19,8 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
         return Message
 
     @classmethod
-    def get_adapter(cls) -> str:
-        return "Discord"
+    def get_adapter(cls) -> SupportAdapter:
+        return SupportAdapter.discord
 
     def get_message_id(self, event: Event) -> str:
         from nonebot.adapters.discord.event import MessageEvent
@@ -107,12 +107,16 @@ class DiscordMessageExporter(MessageExporter["MessageSegment"]):
 
         return ms.reference(seg.origin or int(seg.id), fail_if_not_exists=False)
 
-    async def send_to(self, target: Target, bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         from nonebot.adapters.discord import Bot as DiscordBot
 
         assert isinstance(bot, DiscordBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
+
+        if isinstance(target, Event):
+            target = self.get_target(target, bot)
+
         return await bot.send_to(channel_id=int(target.id), message=message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
