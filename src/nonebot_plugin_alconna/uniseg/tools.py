@@ -27,7 +27,7 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
 
         return await origin.download(bot)
 
-    if img.url:  # mirai2, qqguild, kook, villa, feishu, minecraft, ding
+    if img.url:  # mirai2, qqguild, kook, villa, minecraft, ding
         req = Request("GET", img.url, **kwargs)
         resp = await bot.adapter.request(req)
         return resp.content
@@ -68,6 +68,14 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
         req = Request("GET", url, **kwargs)
         resp = await bot.adapter.request(req)
         return resp.content
+    if adapter_name == "Feishu":
+        if TYPE_CHECKING:
+            from nonebot.adapters.feishu.bot import Bot
+            from nonebot.adapters.feishu.event import MessageEvent
+
+            assert isinstance(bot, Bot)
+            assert isinstance(event, MessageEvent)
+        return await bot.get_msg_resource(message_id=event.message_id, file_key=img.id, type_="image")
     if adapter_name == "ntchat":
         raise NotImplementedError("ntchat image fetch not implemented")
 
