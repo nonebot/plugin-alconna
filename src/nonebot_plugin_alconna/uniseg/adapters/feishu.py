@@ -78,7 +78,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         files = {"image": ("file", image)}
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/images", **params)
-        file_key = result["image_key"]
+        file_key = result["data"]["image_key"]
         return ms.image(file_key)
 
     @export
@@ -101,7 +101,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         files = {"file": ("file", raw)}
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
-        file_key = result["file_key"]
+        file_key = result["data"]["file_key"]
         return ms.audio(file_key, seg.duration)
 
     @export
@@ -123,7 +123,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         files = {"file": ("file", raw)}
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
-        file_key = result["file_key"]
+        file_key = result["data"]["file_key"]
         return ms.file(file_key, seg.name)
 
     @export
@@ -145,7 +145,7 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         files = {"file": ("file", raw)}
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
-        file_key = result["file_key"]
+        file_key = result["data"]["file_key"]
         return ms.sticker(file_key)
 
     @export
