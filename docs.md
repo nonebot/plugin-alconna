@@ -421,7 +421,6 @@ async def handle():
 |[MineCraft](https://github.com/17TheWord/nonebot-adapter-minecraft)|adapters.minecraft|
 |[BiliBili Live](https://github.com/wwweww/adapter-bilibili)|adapters.bilibili|
 |[Walle-Q](https://github.com/onebot-walle/nonebot_adapter_walleq)|adapters.onebot12|
-|[Villa](https://github.com/CMHopeSunshine/nonebot-adapter-villa)|adapters.villa|
 |[Discord](https://github.com/nonebot/adapter-discord)|adapters.discord|
 |[Red 协议](https://github.com/nonebot/adapter-red)|adapters.red|
 |[Satori](https://github.com/nonebot/adapter-satori)|adapters.satori|

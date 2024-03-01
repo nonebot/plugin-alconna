@@ -36,7 +36,7 @@ from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 
-__version__ = "0.38.0"
+__version__ = "0.38.1"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",
