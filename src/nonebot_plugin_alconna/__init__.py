@@ -103,7 +103,7 @@ from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.38.1"
+__version__ = "0.38.2"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

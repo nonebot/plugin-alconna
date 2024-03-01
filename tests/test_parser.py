@@ -1,10 +1,42 @@
-from arclet.alconna import Args, Option, Alconna
+from arclet.alconna import Args, Option, Alconna, store_true
 
 
 def test_fallback():
     import nonebot_plugin_alconna  # noqa: F401
 
     assert Alconna("test_fallback").parse("test_fallback").matched
+
+
+def test_shortcut():
+    cchess = Alconna(
+        "cchess",
+        Option("--battle", default=False, action=store_true, help_text="开始一场对局"),
+        Option("--black", default=False, action=store_true, help_text="执黑"),
+        Option("-l|--level", Args["level", int], help_text="设置AI等级"),
+    )
+
+    def wrapper(slot, content):
+        if slot == "mode":
+            if content in ("对战", "双人"):
+                return "--battle"
+            return
+        elif slot == "order":
+            if content in ("后手", "执黑"):
+                return "--black"
+            return
+        elif slot == "level":
+            return f"--level {content or 1}"
+        return content
+
+    cchess.shortcut(
+        r"象棋(?P<mode>对战|双人|人机|单机)?(?P<order>先手|执白|后手|执黑)?(?:[lL][vV](?P<level>[1-8]))?",
+        wrapper=wrapper,
+        arguments=["{mode}", "{order}", "{level}"],
+    )
+
+    assert cchess.parse("象棋对战执黑lv8").query[int]("level") == 8
+    assert cchess.parse("象棋对战先手").query[bool]("battle")
+    assert cchess.parse("象棋人机先手").query[int]("level") == 1
 
 
 def test_v11():

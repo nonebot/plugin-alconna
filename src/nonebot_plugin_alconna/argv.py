@@ -76,11 +76,12 @@ class MessageArgv(Argv[TM]):
             self.token = self.generate_token(self.raw_data)
         return self
 
-    def addon(self, data: Iterable[str | MessageSegment]) -> Self:
+    def addon(self, data: Iterable[str | MessageSegment], merge_str: bool = True) -> Self:
         """添加命令元素
 
         Args:
             data (Iterable[str | MessageSegment]): 命令元素
+            merge_str (bool, optional): 是否合并前后字符串
 
         Returns:
             Self: 自身
@@ -98,7 +99,7 @@ class MessageArgv(Argv[TM]):
                 continue
             if not text.strip("\xa0").strip():  # type: ignore
                 continue
-            if i > 0 and isinstance(self.raw_data[-1], str):
+            if merge_str and i > 0 and isinstance(self.raw_data[-1], str):
                 self.raw_data[-1] += f"{self.separators[0]}{text}"
             else:
                 self.raw_data.append(text)
