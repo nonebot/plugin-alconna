@@ -7,10 +7,12 @@ from tarina import lang
 from arclet.alconna import NullMessage
 from nonebot.adapters import Message, MessageSegment
 from arclet.alconna.argv import Argv, set_default_argv_type
+from arclet.alconna.typing import CommandMeta
 
 from .uniseg import Segment, UniMessage, FallbackMessage
 
 TM = TypeVar("TM", Message, UniMessage)
+TM1 = TypeVar("TM1", bound=Message)
 
 
 def _default_builder(self: MessageArgv, data: Message | UniMessage):
@@ -29,9 +31,9 @@ class MessageArgv(Argv[TM]):
     @classmethod
     def custom_build(
         cls,
-        target: type[TM],
+        target: type[TM1],
         is_text: Callable[[MessageSegment | Segment], bool] = lambda x: x.is_text(),
-        builder: Callable[[MessageArgv, TM], None] = _default_builder,
+        builder: Callable[[MessageArgv, TM1], None] = _default_builder,
         cleanup: Callable[..., None] = lambda: None,
     ):
         cls._cache.setdefault(target, {}).update(
@@ -42,8 +44,8 @@ class MessageArgv(Argv[TM]):
             }
         )
 
-    def __post_init__(self):
-        super().__post_init__()
+    def __post_init__(self, meta: CommandMeta):
+        super().__post_init__(meta)
         self.is_text = lambda x: x.is_text()
 
     @staticmethod

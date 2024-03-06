@@ -2,7 +2,7 @@ import inspect
 from enum import Enum
 from abc import ABCMeta, abstractmethod
 from dataclasses import field, dataclass
-from typing import TYPE_CHECKING, Any, Dict, Type, Union, Generic, TypeVar, Callable, Awaitable, get_args, get_origin
+from typing import TYPE_CHECKING, Any, Dict, List, Type, Union, Generic, TypeVar, Callable, Awaitable, get_args, get_origin
 
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
@@ -81,14 +81,14 @@ class Target:
 class SerializeFailed(Exception): ...
 
 
-def export(func: Callable[[Any, TS, Bot], Awaitable[MessageSegment]]):
+def export(func: Union[Callable[[Any, TS, Bot], Awaitable[MessageSegment]], Callable[[Any, TS, Bot], Awaitable[List[MessageSegment]]]]):
     sig = inspect.signature(func)
     func.__export_target__ = sig.parameters["seg"].annotation
     return func
 
 
 class MessageExporter(Generic[TMS], metaclass=ABCMeta):
-    _mapping: Dict[Type[Segment], Callable[[Segment, Bot], Awaitable[MessageSegment]]]
+    _mapping: Dict[Type[Segment], Union[Callable[[Segment, Bot], Awaitable[MessageSegment]], Callable[[Segment, Bot], Awaitable[List[MessageSegment]]]]]
     segment_class: Type[TMS]
 
     @classmethod
@@ -126,8 +126,8 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
                 res = await self._mapping[seg_type](seg, bot)
                 if isinstance(res, list):
                     message.extend(res)
-                    break
-                message.append(res)
+                else:
+                    message.append(res)
             elif isinstance(seg, Custom):
                 message.append(seg.export(msg_type))
             elif isinstance(seg, Other):

@@ -1,12 +1,11 @@
-from typing import Union
+from typing import Union, TYPE_CHECKING
 
 from nepattern.base import URL, INTEGER
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters.satori.message import Message
 from nonebot.adapters.satori.message import At as _At
 from nonebot.adapters.satori.message import Br as _Br
-from nonebot.adapters.satori.message import Bold as _Bold
-from nonebot.adapters.satori.message import Code as _Code
+from nonebot.adapters.satori.message import Text as _Text
 from nonebot.adapters.satori.message import File as _File
 from nonebot.adapters.satori.message import Link as _Link
 from nepattern import MatchMode, BasePattern, UnionPattern
@@ -16,17 +15,10 @@ from nonebot.adapters.satori.message import Image as _Image
 from nonebot.adapters.satori.message import Sharp as _Sharp
 from nonebot.adapters.satori.message import Video as _Video
 from nonebot.adapters.satori.message import Author as _Author
-from nonebot.adapters.satori.message import Italic as _Italic
-from nonebot.adapters.satori.message import Spoiler as _Spoiler
-from nonebot.adapters.satori.message import Paragraph as _Paragraph
-from nonebot.adapters.satori.message import Subscript as _Subscript
-from nonebot.adapters.satori.message import Underline as _Underline
-from nonebot.adapters.satori.message import Superscript as _Superscript
 from nonebot.adapters.satori.message import RenderMessage as _RenderMessage
-from nonebot.adapters.satori.message import Strikethrough as _Strikethrough
 
 from nonebot_plugin_alconna.argv import MessageArgv
-from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
+from nonebot_plugin_alconna.typings import SegmentPattern, StyleTextPattern
 
 Text = str
 At = SegmentPattern("at", _At, MessageSegment.at, lambda x: "id" in x.data)
@@ -96,8 +88,8 @@ styles = {
 }
 
 
-def builder(self: MessageArgv, data: BaseMessage):
-    styles["msg"] = str(data)
+def builder(self: MessageArgv, data: Message):
+    styles["msg"] = data.extract_plain_text()
     _index = 0
     for index, unit in enumerate(data):
         if not self.is_text(unit):
@@ -109,8 +101,10 @@ def builder(self: MessageArgv, data: BaseMessage):
                 continue
             if not self.is_text(data[index - 1]) or not self.is_text(data[index + 1]):
                 continue
+        if TYPE_CHECKING:
+            assert isinstance(unit, _Text)
         text = unit.data["text"]
-        if unit.type == "text":
+        if not (_styles := unit.data.get("styles")):
             self.raw_data.append(text)
             self.ndata += 1
             continue
@@ -119,9 +113,10 @@ def builder(self: MessageArgv, data: BaseMessage):
         else:
             self.raw_data.append(text)
             self.ndata += 1
+
         start = styles["msg"].find(text, _index)
-        _index = start + len(text)
-        styles["record"][(start, _index)] = unit.type
+        for scale, style in _styles.items():
+            styles["record"][(start + scale[0], start + scale[1])] = style
 
 
 def clean_style():
@@ -132,26 +127,36 @@ def clean_style():
 MessageArgv.custom_build(Message, builder=builder, cleanup=clean_style)
 
 
-def locator(x: str, t: str):
+def locator(x: str, expected: list[str]):
     start = styles["msg"].find(x, styles["index"])
     if start == -1:
-        return False
+        return
     styles["index"] = start + len(x)
-    if (maybe := styles["record"].get((start, styles["index"]))) and maybe == t:
-        return True
-    return any(
-        scale[0] <= start <= scale[1] and scale[0] <= styles["index"] <= scale[1] and styles["record"][scale] == t
-        for scale in styles["record"]
-    )
+    if (maybe := styles["record"].get((start, styles["index"]))) and set(maybe).issuperset(expected):
+        return _Text("text", {"text": x, "styles": {(0, len(x)): maybe}})
+    _styles = {}
+    _len = len(x)
+    for scale, style in styles["record"].items():
+        if start <= scale[0] < styles["index"] <= scale[1]:
+            _styles[(scale[0] - start, scale[1] - start)] = style
+        if scale[0] <= start <= scale[1] <= styles["index"]:
+            _styles[(0, scale[1] - start)] = style
+        if start <= scale[0] < scale[1] <= styles["index"]:
+            _styles[(scale[0] - start, scale[1] - start)] = style
+        if scale[0] <= start < styles["index"] <= scale[1]:
+            _styles[(scale[0] - start, _len)] = style
+    if all(set(style).issuperset(expected) for style in _styles.values()):
+        return _Text("text", {"text": x, "styles": _styles})
+    return
 
 
-Br = TextSegmentPattern("br", _Br, MessageSegment.br, locator)
-Paragraph = TextSegmentPattern("paragraph", _Paragraph, MessageSegment.paragraph, locator)
-Bold = TextSegmentPattern("bold", _Bold, MessageSegment.bold, locator)
-Italic = TextSegmentPattern("italic", _Italic, MessageSegment.italic, locator)
-Underline = TextSegmentPattern("underline", _Underline, MessageSegment.underline, locator)
-Strikethrough = TextSegmentPattern("strikethrough", _Strikethrough, MessageSegment.strikethrough, locator)
-Spoiler = TextSegmentPattern("spoiler", _Spoiler, MessageSegment.spoiler, locator)
-Code = TextSegmentPattern("code", _Code, MessageSegment.code, locator)
-Superscript = TextSegmentPattern("superscript", _Superscript, MessageSegment.superscript, locator)
-Subscript = TextSegmentPattern("subscript", _Subscript, MessageSegment.subscript, locator)
+
+Paragraph = StyleTextPattern("p", _Text, MessageSegment.paragraph, locator)
+Bold = StyleTextPattern("b", _Text, MessageSegment.bold, locator)
+Italic = StyleTextPattern("i", _Text, MessageSegment.italic, locator)
+Underline = StyleTextPattern("u", _Text, MessageSegment.underline, locator)
+Strikethrough = StyleTextPattern("s", _Text, MessageSegment.strikethrough, locator)
+Spoiler = StyleTextPattern("spl", _Text, MessageSegment.spoiler, locator)
+Code = StyleTextPattern("code", _Text, MessageSegment.code, locator)
+Superscript = StyleTextPattern("sup", _Text, MessageSegment.superscript, locator)
+Subscript = StyleTextPattern("sub", _Text, MessageSegment.subscript, locator)

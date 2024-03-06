@@ -16,6 +16,7 @@ from typing import (
     Dict,
     List,
     Type,
+    Tuple,
     Union,
     Generic,
     Literal,
@@ -124,7 +125,7 @@ class Text(Segment):
     """Text对象, 表示一类文本元素"""
 
     text: str
-    style: Optional[str] = field(default=None)
+    styles: Dict[Tuple[int, int], List[str]] = field(default_factory=dict)
 
     def __post_init__(self):
         self.text = str(self.text)
@@ -132,9 +133,72 @@ class Text(Segment):
     def is_text(self) -> bool:
         return True
 
-    def __str__(self):
-        return self.text
+    def __merge__(self):
+        data = {}
+        styles = self.styles
+        if not styles:
+            return
+        for scale, _styles in styles.items():
+            for i in range(*scale):
+                if i not in data:
+                    data[i] = _styles[:]
+                else:
+                    data[i].extend(s for s in _styles if s not in data[i])
+        styles.clear()
+        data1 = {}
+        for i, _styles in data.items():
+            key = "\x01".join(_styles)
+            data1.setdefault(key, []).append(i)
+        data.clear()
+        for key, indexes in data1.items():
+            start = indexes[0]
+            end = start
+            for i in indexes[1:]:
+                if i - end == 1:
+                    end = i
+                else:
+                    data[(start, end + 1)] = key.split("\x01")
+                    start = end = i
+            if end >= start:
+                data[(start, end + 1)] = key.split("\x01")
+        for scale in sorted(data.keys()):
+            styles[scale] = data[scale]
 
+    def mark(self, start: int, end: int, *styles: str):
+        _styles = self.styles.setdefault((start, end), [])
+        for sty in styles:
+            if sty not in _styles:
+                _styles.append(sty)
+        self.__merge__()
+        return self
+
+    def __str__(self) -> str:
+        result = []
+        text = self.text
+        styles = self.styles
+        if not styles:
+            return text
+        self.__merge__()
+        scales = sorted(styles.keys(), key=lambda x: x[0])
+        left = scales[0][0]
+        result.append(text[:left])
+        for scale in scales:
+            prefix = "".join(f"<{style}>" for style in styles[scale])
+            suffix = "".join(f"</{style}>" for style in reversed(styles[scale]))
+            result.append(prefix + text[scale[0] : scale[1]] + suffix)
+        right = scales[-1][1]
+        result.append(text[right:])
+        text = "".join(result)
+        pat = re.compile(r"</(\w+)(?<!/p)><\1>")
+        for _ in range(max(map(len, styles.values()))):
+            text = pat.sub("", text)
+        return text
+
+    def extract_most_style(self):
+        if not self.styles:
+            return ""
+        max_scale = max(self.styles, key=lambda x: x[1] - x[0], default=(0, 0))
+        return self.styles[max_scale][0]
 
 @dataclass
 class At(Segment):
@@ -342,14 +406,18 @@ class _Text(UniPattern[Text]):
     def solve(self, seg: MessageSegment):
         if seg.type == "markdown":  # qq, console
             if "markup" in seg.data:  # console
-                return Text(seg.data["markup"], "markdown")
-            return Text(seg.data["content"], "markdown")
+                return Text(seg.data["markup"]).mark(0, len(seg.data["markup"]), "markdown")
+            return Text(seg.data["content"]).mark(0, len(seg.data["content"]), "markdown")
         if seg.type == "markup":  # console
-            return Text(seg.data["markup"], "markup")
+            return Text(seg.data["markup"]).mark(0, len(seg.data["markup"]), "markdown")
         if seg.type == "kmarkdown":  # kook
-            return Text(seg.data["content"], "markdown")
+            return Text(seg.data["content"]).mark(0, len(seg.data["content"]), "markdown")
         if seg.is_text():
-            return Text(seg.data["text"], seg.type if seg.type != "text" else None)
+            if seg.type == "text":
+                if "styles" in seg.data:  # satori
+                    return Text(seg.data["text"], seg.data["styles"])
+                return Text(seg.data["text"])
+            return Text(seg.data["text"]).mark(0, len(seg.data["text"]), seg.type)
 
 
 text = _Text()

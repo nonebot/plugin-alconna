@@ -24,11 +24,11 @@ def test_unimsg():
     assert str(msg) == "[text][segment]123"
     assert (
         repr(msg)
-        == "[Other(origin=FallbackSegment(type='text', data={'text': '123'})), Segment(), Text(text='123', style=None)]"  # noqa: E501
+        == "[Other(origin=FallbackSegment(type='text', data={'text': '123'})), Segment(), Text(text='123', styles={})]"  # noqa: E501
     )
     assert (
         repr(UniMessage.text("123") + Other(FallbackSegment.text("123")))
-        == "[Text(text='123', style=None), Other(origin=FallbackSegment(type='text', data={'text': '123'}))]"
+        == "[Text(text='123', styles={}), Other(origin=FallbackSegment(type='text', data={'text': '123'}))]"
     )
 
 

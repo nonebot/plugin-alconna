@@ -11,6 +11,28 @@ if TYPE_CHECKING:
     from nonebot.adapters.telegram.message import MessageSegment
 
 
+STYLE_TYPE_MAP = {
+    "b": "bold",
+    "strong": "bold",
+    "bold": "bold",
+    "i": "italic",
+    "em": "italic",
+    "italic": "italic",
+    "u": "underline",
+    "ins": "underline",
+    "underline": "underline",
+    "s": "strikethrough",
+    "del": "strikethrough",
+    "strike": "strikethrough",
+    "strikethrough": "strikethrough",
+    "spl": "spoiler",
+    "spoiler": "spoiler",
+    "blockquote": "spoiler",
+    "code": "code",
+    "pre": "pre"
+}
+
+
 class TelegramMessageExporter(MessageExporter["MessageSegment"]):
     def get_message_type(self):
         from nonebot.adapters.telegram.message import Message
@@ -37,10 +59,11 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         from nonebot.adapters.telegram.message import Entity
 
-        if not seg.style:
+        if not seg.styles:
             return Entity.text(seg.text)
         else:
-            return Entity(seg.style, {"text": seg.text})
+            style = seg.extract_most_style()
+            return Entity(STYLE_TYPE_MAP.get(style, style), {"text": seg.text})
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":

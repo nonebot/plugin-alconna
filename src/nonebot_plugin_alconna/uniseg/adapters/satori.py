@@ -48,20 +48,16 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.satori.message import STYLE_TYPE_MAP
+        from nonebot.adapters.satori.message import STYLE_TYPE_MAP, Text
 
         ms = self.segment_class
 
-        if not seg.style:
+        if not seg.styles:
             return ms.text(seg.text)
-        if seg.style == "br" or seg.text == "\n":
-            return ms.br()
-        if seg.style in STYLE_TYPE_MAP:
-            seg_cls, seg_type = STYLE_TYPE_MAP[seg.style]
-            return seg_cls(seg_type, {"text": seg.text})
-        if hasattr(ms, seg.style):
-            return getattr(ms, seg.style)(seg.text)
-        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=seg.style, seg=seg))
+        styles = seg.styles.copy()
+        for scale, style in seg.styles.items():
+            styles[scale] = [STYLE_TYPE_MAP.get(s, s) for s in style]
+        return Text("text", {"text": seg.text, "styles": styles})
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
@@ -96,7 +92,7 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         if seg.raw:
             data = seg.raw_bytes
             if seg.mimetype:
-                return method(raw={"data": data, "mime": seg.mimetype})
+                return method(raw=data, mime=seg.mimetype)
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export

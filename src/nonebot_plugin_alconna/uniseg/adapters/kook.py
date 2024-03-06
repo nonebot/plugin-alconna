@@ -36,8 +36,10 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         ms = self.segment_class
-        if seg.style and "markdown" in seg.style:
+        if seg.extract_most_style() == "markdown":
             return ms.KMarkdown(seg.text)
+        elif seg.styles:
+            return ms.KMarkdown(str(seg))
         return ms.text(seg.text)
 
     @export

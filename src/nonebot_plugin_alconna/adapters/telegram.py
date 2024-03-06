@@ -1,10 +1,12 @@
+from typing import List
+
 from nonebot.adapters.telegram.message import File
 from nepattern import MatchMode, BasePattern, UnionPattern
 from nonebot.adapters.telegram.message import Reply as _Reply
 from nonebot.adapters.telegram.message import Entity, Message, UnCombinFile, MessageSegment
 
 from nonebot_plugin_alconna.argv import MessageArgv
-from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
+from nonebot_plugin_alconna.typings import SegmentPattern, StyleTextPattern
 
 
 def is_text(x: MessageSegment):
@@ -60,20 +62,22 @@ def clean_style():
     styles["index"] = 0
 
 
-MessageArgv.custom_build(Message, is_text=is_text, builder=builder, cleanup=clean_style)  # type: ignore
+MessageArgv.custom_build(Message, is_text=is_text, builder=builder, cleanup=clean_style) # type: ignore
 
 
-def locator(x: str, t: str):
+def locator(x: str, t: List[str]):
     start = styles["msg"].find(x, styles["index"])
     if start == -1:
-        return False
+        return
     styles["index"] = start + len(x)
-    if (maybe := styles["record"].get((start, styles["index"]))) and maybe == t:
-        return True
-    return any(
-        scale[0] <= start <= scale[1] and scale[0] <= styles["index"] <= scale[1] and styles["record"][scale] == t
+    if (maybe := styles["record"].get((start, styles["index"]))) and maybe == t[0]:
+        return Entity(maybe, {"text": x})
+    if any(
+        scale[0] <= start <= scale[1] and scale[0] <= styles["index"] <= scale[1] and styles["record"][scale] == t[0]
         for scale in styles["record"]
-    )
+    ):
+        return Entity(t[0], {"text": x})
+    return
 
 
 Text = str
@@ -86,16 +90,18 @@ ChatAction = SegmentPattern("chat_action", MessageSegment, MessageSegment.chat_a
 Mention = SegmentPattern("mention", Entity, Entity.mention)
 Hashtag = SegmentPattern("hashtag", Entity, Entity.hashtag)
 Cashtag = SegmentPattern("cashtag", Entity, Entity.cashtag)
-BotCommand = TextSegmentPattern("bot_command", Entity, Entity.bot_command, locator)
 Url = SegmentPattern("url", Entity, Entity.url)
 Email = SegmentPattern("email", Entity, Entity.email)
 PhoneNumber = SegmentPattern("phone_number", Entity, Entity.phone_number)
-Bold = TextSegmentPattern("bold", Entity, Entity.bold, locator)
-Italic = TextSegmentPattern("italic", Entity, Entity.italic, locator)
-Underline = TextSegmentPattern("underline", Entity, Entity.underline, locator)
-Strikethrough = TextSegmentPattern("strikethrough", Entity, Entity.strikethrough, locator)
-Spoiler = TextSegmentPattern("spoiler", Entity, Entity.spoiler, locator)
-Code = TextSegmentPattern("code", Entity, Entity.code, locator)
+
+BotCommand = StyleTextPattern("bot_command", Entity, Entity.bot_command, locator)
+Bold = StyleTextPattern("bold", Entity, Entity.bold, locator)
+Italic = StyleTextPattern("italic", Entity, Entity.italic, locator)
+Underline = StyleTextPattern("underline", Entity, Entity.underline, locator)
+Strikethrough = StyleTextPattern("strikethrough", Entity, Entity.strikethrough, locator)
+Spoiler = StyleTextPattern("spoiler", Entity, Entity.spoiler, locator)
+Code = StyleTextPattern("code", Entity, Entity.code, locator)
+
 Pre = SegmentPattern("pre", Entity, Entity.pre)
 TextLink = SegmentPattern("text_link", Entity, Entity.text_link)
 TextMention = SegmentPattern("text_mention", Entity, Entity.text_mention)

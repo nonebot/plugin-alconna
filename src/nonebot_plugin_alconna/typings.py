@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing_extensions import ParamSpec, TypeAlias
+from typing_extensions import Self, ParamSpec, TypeAlias
 from typing import Any, Union, Generic, TypeVar, Callable, Awaitable
 
 from tarina import lang
@@ -52,13 +52,13 @@ class SegmentPattern(BasePattern[TMS, MessageSegment], Generic[TMS, P]):
         return self.call(*args, **kwargs)  # type: ignore
 
 
-class TextSegmentPattern(BasePattern[TMS, Union[MessageSegment, str]], Generic[TMS, P]):
+class StyleTextPattern(BasePattern[TMS, Union[MessageSegment, str]], Generic[TMS, P]):
     def __init__(
         self,
         name: str,
         origin: type[TMS],
         call: Callable[P, TMS],
-        locator: Callable[[str, str], bool] | None = None,
+        spliter: Callable[[str, list[str]], TMS | None] | None = None,
     ):
         super().__init__(
             mode=MatchMode.TYPE_CONVERT,
@@ -68,14 +68,18 @@ class TextSegmentPattern(BasePattern[TMS, Union[MessageSegment, str]], Generic[T
         )
         self.pattern = name
         self.call = call
-        self.locator = locator
+        self.spliter = spliter
+        self.expected = [name]
 
     def match(self, input_: str | MessageSegment) -> TMS:
         if not isinstance(input_, (str, self.origin)):  # type: ignore
             raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
         if isinstance(input_, str):
-            if self.locator and not self.locator(input_, self.pattern):
-                raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
+            if self.spliter:
+                res = self.spliter(input_, self.expected)
+                if not res:
+                    raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
+                return res
             return self.call(input_)  # type: ignore
         if input_.type != self.pattern:
             raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
@@ -83,6 +87,13 @@ class TextSegmentPattern(BasePattern[TMS, Union[MessageSegment, str]], Generic[T
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> TMS:
         return self.call(*args, **kwargs)  # type: ignore
+    
+    def __add__(self, other: StyleTextPattern[TMS, P]) -> Self:
+        if not isinstance(other, StyleTextPattern):
+            raise TypeError(other)
+        if other.pattern not in self.expected:
+            self.expected.append(other.pattern)
+        return self
 
 
 MReturn: TypeAlias = Union[

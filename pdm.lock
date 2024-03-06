@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:f881e2f9f638d85c32ff13558e665f0586c15acf7402dc0cdc730232750fd554"
+content_hash = "sha256:32d7e9503cdeca36ae10a14333b20c771326e276c48502d5dad08ef1ddfa90a5"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -34,7 +34,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.8.3"
+version = "1.8.4"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -43,8 +43,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.8.3-py3-none-any.whl", hash = "sha256:a9e3ee69ae06b2ac20bb6571cfb2560f8d72c4103a1a866a464101b78fe3d578"},
-    {file = "arclet_alconna-1.8.3.tar.gz", hash = "sha256:5f698062206c7ff4e6c906f02017eacd07de8c03ad155b8ccbb1c37c1b638673"},
+    {file = "arclet_alconna-1.8.4-py3-none-any.whl", hash = "sha256:834f45b4f8fcf719c666f91184217ab5defe15db70bfcd3456cb8baa362ba990"},
+    {file = "arclet_alconna-1.8.4.tar.gz", hash = "sha256:f8a28d18442a028a362ef863912a6fffeade9fbaa76c57ce60b5c627dfaae308"},
 ]
 
 [[package]]
@@ -297,7 +297,7 @@ files = [
 
 [[package]]
 name = "fastapi"
-version = "0.109.2"
+version = "0.110.0"
 requires_python = ">=3.8"
 summary = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 dependencies = [
@@ -306,8 +306,8 @@ dependencies = [
     "typing-extensions>=4.8.0",
 ]
 files = [
-    {file = "fastapi-0.109.2-py3-none-any.whl", hash = "sha256:2c9bab24667293b501cad8dd388c05240c850b58ec5876ee3283c47d6e1e3a4d"},
-    {file = "fastapi-0.109.2.tar.gz", hash = "sha256:f3817eac96fe4f65a2ebb4baa000f394e55f5fccdaf7f75250804bc58f354f73"},
+    {file = "fastapi-0.110.0-py3-none-any.whl", hash = "sha256:87a1f6fb632a218222c5984be540055346a8f5d8a68e8f6fb647b1dc9934de4b"},
+    {file = "fastapi-0.110.0.tar.gz", hash = "sha256:266775f0dcc95af9d3ef39bad55cff525329a931d5fd51930aadd4f428bf7ff3"},
 ]
 
 [[package]]
@@ -782,16 +782,18 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-console"
-version = "0.4.0"
+version = "0.5.0"
 requires_python = "<4.0,>=3.8"
 summary = "console adapter for nonebot2"
 dependencies = [
-    "nonebot2<3.0.0,>=2.0.0b1",
+    "nonebot2<3.0.0,>=2.2.0",
     "nonechat<1.0.0,>=0.2.0",
+    "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=1.10.0",
+    "typing-extensions>=4.7.1",
 ]
 files = [
-    {file = "nonebot_adapter_console-0.4.0-py3-none-any.whl", hash = "sha256:03ddc91d7ecd0709a085377f0027e839d567a7f647e9f02fc484562495f9097a"},
-    {file = "nonebot_adapter_console-0.4.0.tar.gz", hash = "sha256:7ed2f253c6b2ef44b01357f5d2dad9deb0af7ca6a83a665b52f9c73ae9922371"},
+    {file = "nonebot_adapter_console-0.5.0-py3-none-any.whl", hash = "sha256:0796579df2b28cddc0394b7c003de6c18aa96007b5195e33bdfe4abcd95ff3e1"},
+    {file = "nonebot_adapter_console-0.5.0.tar.gz", hash = "sha256:efb43ed8684382ae9a38b21652df6e7f4baca0eb66ef88fcb8fefc37b75ecd53"},
 ]
 
 [[package]]
@@ -810,15 +812,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-discord"
-version = "0.1.3"
+version = "0.1.4"
 requires_python = ">=3.8,<4.0"
 summary = "Discord adapter for nonebot2"
 dependencies = [
-    "nonebot2<3.0.0,>=2.0.0",
+    "nonebot2<3.0.0,>=2.2.1",
 ]
 files = [
-    {file = "nonebot_adapter_discord-0.1.3-py3-none-any.whl", hash = "sha256:4af3ef98e9d70d68880b43cb8a4421be8ca4961832eaf95377e2a339c73f0644"},
-    {file = "nonebot_adapter_discord-0.1.3.tar.gz", hash = "sha256:73b492c63747ff2d5c8c1e49236f5bf2ff2ca01adacf273f64899193f9210ffe"},
+    {file = "nonebot_adapter_discord-0.1.4-py3-none-any.whl", hash = "sha256:e65f30ec52d826cce31dc481389ca72a81b87338b749b89dde247f81adbd8724"},
+    {file = "nonebot_adapter_discord-0.1.4.tar.gz", hash = "sha256:686024c6449fab1869c554eef96318259d4a5b161a1623e8681968df72cb2b4d"},
 ]
 
 [[package]]
@@ -836,7 +838,7 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-feishu"
-version = "2.4.1"
+version = "2.4.2"
 requires_python = ">=3.8,<4.0"
 summary = "feishu(larksuite) adapter for nonebot2"
 dependencies = [
@@ -845,8 +847,8 @@ dependencies = [
     "pycryptodome<4.0.0,>=3.18.0",
 ]
 files = [
-    {file = "nonebot_adapter_feishu-2.4.1-py3-none-any.whl", hash = "sha256:4b4e38c92903518eba2e7c69e0bb319d9169303a78dd2ff92b2549209a25ea75"},
-    {file = "nonebot_adapter_feishu-2.4.1.tar.gz", hash = "sha256:387af65195e4800a6c91bf7a4f85914dd07a22ecca289b166787b24f0b5919de"},
+    {file = "nonebot_adapter_feishu-2.4.2-py3-none-any.whl", hash = "sha256:37d0ade8e7e997df9e05f65303aedda36c64aad4ae5b1665586e45db7edadb39"},
+    {file = "nonebot_adapter_feishu-2.4.2.tar.gz", hash = "sha256:032bd7483c0f2fbfeb85867619d204bc9cca97d29302885d27d1115ade230134"},
 ]
 
 [[package]]
@@ -865,17 +867,17 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-minecraft"
-version = "1.0.8"
+version = "1.0.8.post1"
 requires_python = ">=3.8,<4.0"
 summary = "NoneBot2与MineCraft Server互通的适配器。"
 dependencies = [
     "aio-mc-rcon<4.0.0,>=3.2.2",
     "mcqq-tool<2.0.0,>=1.1.4",
-    "nonebot2[fastapi]<3.0.0,>=2.1.3",
+    "nonebot2[fastapi]<3.0.0,>=2.2.0",
 ]
 files = [
-    {file = "nonebot_adapter_minecraft-1.0.8-py3-none-any.whl", hash = "sha256:b7a535b2d0e5e4a55c1beb9b40db1f1feae17c43723bd23eafe87d810595ab78"},
-    {file = "nonebot_adapter_minecraft-1.0.8.tar.gz", hash = "sha256:e67d502ed7dd1b95bb0601110f7fb3a84f555f41c3a718d054d3ca41893e70c6"},
+    {file = "nonebot_adapter_minecraft-1.0.8.post1-py3-none-any.whl", hash = "sha256:c6fe243fae543be39fc2c25494f1f3b3e8a6ef6794fdb442a4af10d1e4603eb4"},
+    {file = "nonebot_adapter_minecraft-1.0.8.post1.tar.gz", hash = "sha256:bc67d34d307e5b673b4813cb3a78cbc2792a2f4b72c2f0f0235c2f7fa702fffe"},
 ]
 
 [[package]]
@@ -906,7 +908,7 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-onebot"
-version = "2.4.1"
+version = "2.4.2"
 requires_python = ">=3.8,<4.0"
 summary = "OneBot(CQHTTP) adapter for nonebot2"
 dependencies = [
@@ -916,13 +918,13 @@ dependencies = [
     "typing-extensions<5.0.0,>=4.0.0",
 ]
 files = [
-    {file = "nonebot_adapter_onebot-2.4.1-py3-none-any.whl", hash = "sha256:67fb0ebaec0265708cc1005a5f45a3408fa8d7b78c835d70d97bd0831d5d5a44"},
-    {file = "nonebot_adapter_onebot-2.4.1.tar.gz", hash = "sha256:632e5ea84ba0553d54773a1a6283985d028647eadb07ff8940ea32e8aebe79bc"},
+    {file = "nonebot_adapter_onebot-2.4.2-py3-none-any.whl", hash = "sha256:7e97a08300c7dc0a9ba2c7fb4b7dda8b0038fa4e73f5c730932da5d12c4972be"},
+    {file = "nonebot_adapter_onebot-2.4.2.tar.gz", hash = "sha256:7ef7eca7b3eaf60f503c7e4f8df8ab0c58506645bbcca8297a9b93159ce98033"},
 ]
 
 [[package]]
 name = "nonebot-adapter-qq"
-version = "1.4.1"
+version = "1.4.2"
 requires_python = ">=3.8,<4.0"
 summary = "QQ adapter for nonebot2"
 dependencies = [
@@ -932,8 +934,8 @@ dependencies = [
     "yarl<2.0.0,>=1.9.0",
 ]
 files = [
-    {file = "nonebot_adapter_qq-1.4.1-py3-none-any.whl", hash = "sha256:dbe59b9559943cb7940f0ff9190ec7428db75be9bc4ba1dbe2cba7ff6e249c23"},
-    {file = "nonebot_adapter_qq-1.4.1.tar.gz", hash = "sha256:45e99d8caaf7e52857cbd2661d07fd1451bf56d63ef49e80b833933a222dcb26"},
+    {file = "nonebot_adapter_qq-1.4.2-py3-none-any.whl", hash = "sha256:1bae0016420140841baad81365a8226f448d89ce8bd375f9ec5dd030e244e1da"},
+    {file = "nonebot_adapter_qq-1.4.2.tar.gz", hash = "sha256:69331998182ecbeec2efa3dee89c63a0d359b93936afa39f158224d96e087c3a"},
 ]
 
 [[package]]
@@ -967,15 +969,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-satori"
-version = "0.9.3"
+version = "0.10.0"
 requires_python = ">=3.8"
 summary = "Satori Protocol Adapter for Nonebot2"
 dependencies = [
     "nonebot2>=2.2.0",
 ]
 files = [
-    {file = "nonebot_adapter_satori-0.9.3-py3-none-any.whl", hash = "sha256:742e904f8ef4ad6a0795836cb1b46b90c0454c1c884311ce458e56923d7517c0"},
-    {file = "nonebot_adapter_satori-0.9.3.tar.gz", hash = "sha256:27acda6f64e2545d5373c926b9ecfcf8c13b720581ee5461808bd7cf1e00b8a2"},
+    {file = "nonebot_adapter_satori-0.10.0-py3-none-any.whl", hash = "sha256:e020a1df36d176930a9251e94c3aa343ab57049d2a0ec5c633494637c746b3b3"},
+    {file = "nonebot_adapter_satori-0.10.0.tar.gz", hash = "sha256:e62f8627c4c480a96405bbcd19a1f0e8b7fdd02aa94364ab03f4bbaaa69c8f7b"},
 ]
 
 [[package]]
@@ -1009,23 +1011,23 @@ files = [
 
 [[package]]
 name = "nonebot-plugin-send-anything-anywhere"
-version = "0.5.0"
+version = "0.6.0"
 requires_python = ">=3.8,<4.0"
 summary = "An adaptor for nonebot2 adaptors"
 dependencies = [
-    "anyio<4.0.0,>=3.6.2",
+    "anyio<5.0.0,>=3.3.0",
     "nonebot2<3.0.0,>=2.0.0",
-    "pydantic<2.0.0,>=1.10.5",
+    "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=1.10.0",
     "strenum<0.5.0,>=0.4.8",
 ]
 files = [
-    {file = "nonebot_plugin_send_anything_anywhere-0.5.0-py3-none-any.whl", hash = "sha256:bff64f5f337643ba34b9ea0bdd8d86d3ee6285a29b9083d416a67d4815e83ddf"},
-    {file = "nonebot_plugin_send_anything_anywhere-0.5.0.tar.gz", hash = "sha256:0230db94ca5654e2b0462b144db7ea74b763ee04fa7bc53deecacf32362e5268"},
+    {file = "nonebot_plugin_send_anything_anywhere-0.6.0-py3-none-any.whl", hash = "sha256:30d328c350bc44c39d0e45b622a843275336b4e25d1d670ae1c76ace400fd3d6"},
+    {file = "nonebot_plugin_send_anything_anywhere-0.6.0.tar.gz", hash = "sha256:48196b7fdcb1c6c82ec6d27e225a2f11811aee4393edf86a874985480c4d199d"},
 ]
 
 [[package]]
 name = "nonebot2"
-version = "2.2.0"
+version = "2.2.1"
 requires_python = ">=3.8,<4.0"
 summary = "An asynchronous python bot framework."
 dependencies = [
@@ -1038,40 +1040,40 @@ dependencies = [
     "yarl<2.0.0,>=1.7.2",
 ]
 files = [
-    {file = "nonebot2-2.2.0-py3-none-any.whl", hash = "sha256:447fa63d384414c0e610f4ce6d2b3999db81ac2becd8d86716c4117013dc032f"},
-    {file = "nonebot2-2.2.0.tar.gz", hash = "sha256:138800846fa3dc635bda9f2ddc589519ee8d9d3b401013fbb95e47676fc830fb"},
+    {file = "nonebot2-2.2.1-py3-none-any.whl", hash = "sha256:88f2bb456bf90922925bbe489a9effe3b09300f3aa50bfa75ee50d8a83d7330f"},
+    {file = "nonebot2-2.2.1.tar.gz", hash = "sha256:fe57692300571b00724999238545d8d894523460e6835a11b326a2e1cdf98fc4"},
 ]
 
 [[package]]
 name = "nonebot2"
-version = "2.2.0"
+version = "2.2.1"
 extras = ["fastapi"]
 requires_python = ">=3.8,<4.0"
 summary = "An asynchronous python bot framework."
 dependencies = [
     "fastapi<1.0.0,>=0.93.0",
-    "nonebot2==2.2.0",
+    "nonebot2==2.2.1",
     "uvicorn[standard]<1.0.0,>=0.20.0",
 ]
 files = [
-    {file = "nonebot2-2.2.0-py3-none-any.whl", hash = "sha256:447fa63d384414c0e610f4ce6d2b3999db81ac2becd8d86716c4117013dc032f"},
-    {file = "nonebot2-2.2.0.tar.gz", hash = "sha256:138800846fa3dc635bda9f2ddc589519ee8d9d3b401013fbb95e47676fc830fb"},
+    {file = "nonebot2-2.2.1-py3-none-any.whl", hash = "sha256:88f2bb456bf90922925bbe489a9effe3b09300f3aa50bfa75ee50d8a83d7330f"},
+    {file = "nonebot2-2.2.1.tar.gz", hash = "sha256:fe57692300571b00724999238545d8d894523460e6835a11b326a2e1cdf98fc4"},
 ]
 
 [[package]]
 name = "nonebot2"
-version = "2.2.0"
+version = "2.2.1"
 extras = ["httpx", "websockets"]
 requires_python = ">=3.8,<4.0"
 summary = "An asynchronous python bot framework."
 dependencies = [
     "httpx[http2]<1.0.0,>=0.20.0",
-    "nonebot2==2.2.0",
+    "nonebot2==2.2.1",
     "websockets>=10.0",
 ]
 files = [
-    {file = "nonebot2-2.2.0-py3-none-any.whl", hash = "sha256:447fa63d384414c0e610f4ce6d2b3999db81ac2becd8d86716c4117013dc032f"},
-    {file = "nonebot2-2.2.0.tar.gz", hash = "sha256:138800846fa3dc635bda9f2ddc589519ee8d9d3b401013fbb95e47676fc830fb"},
+    {file = "nonebot2-2.2.1-py3-none-any.whl", hash = "sha256:88f2bb456bf90922925bbe489a9effe3b09300f3aa50bfa75ee50d8a83d7330f"},
+    {file = "nonebot2-2.2.1.tar.gz", hash = "sha256:fe57692300571b00724999238545d8d894523460e6835a11b326a2e1cdf98fc4"},
 ]
 
 [[package]]
@@ -1488,27 +1490,27 @@ files = [
 
 [[package]]
 name = "ruff"
-version = "0.2.2"
+version = "0.3.0"
 requires_python = ">=3.7"
 summary = "An extremely fast Python linter and code formatter, written in Rust."
 files = [
-    {file = "ruff-0.2.2-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:0a9efb032855ffb3c21f6405751d5e147b0c6b631e3ca3f6b20f917572b97eb6"},
-    {file = "ruff-0.2.2-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:d450b7fbff85913f866a5384d8912710936e2b96da74541c82c1b458472ddb39"},
-    {file = "ruff-0.2.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ecd46e3106850a5c26aee114e562c329f9a1fbe9e4821b008c4404f64ff9ce73"},
-    {file = "ruff-0.2.2-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:5e22676a5b875bd72acd3d11d5fa9075d3a5f53b877fe7b4793e4673499318ba"},
-    {file = "ruff-0.2.2-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:1695700d1e25a99d28f7a1636d85bafcc5030bba9d0578c0781ba1790dbcf51c"},
-    {file = "ruff-0.2.2-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:b0c232af3d0bd8f521806223723456ffebf8e323bd1e4e82b0befb20ba18388e"},
-    {file = "ruff-0.2.2-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:f63d96494eeec2fc70d909393bcd76c69f35334cdbd9e20d089fb3f0640216ca"},
-    {file = "ruff-0.2.2-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:6a61ea0ff048e06de273b2e45bd72629f470f5da8f71daf09fe481278b175001"},
-    {file = "ruff-0.2.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5e1439c8f407e4f356470e54cdecdca1bd5439a0673792dbe34a2b0a551a2fe3"},
-    {file = "ruff-0.2.2-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:940de32dc8853eba0f67f7198b3e79bc6ba95c2edbfdfac2144c8235114d6726"},
-    {file = "ruff-0.2.2-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:0c126da55c38dd917621552ab430213bdb3273bb10ddb67bc4b761989210eb6e"},
-    {file = "ruff-0.2.2-py3-none-musllinux_1_2_i686.whl", hash = "sha256:3b65494f7e4bed2e74110dac1f0d17dc8e1f42faaa784e7c58a98e335ec83d7e"},
-    {file = "ruff-0.2.2-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:1ec49be4fe6ddac0503833f3ed8930528e26d1e60ad35c2446da372d16651ce9"},
-    {file = "ruff-0.2.2-py3-none-win32.whl", hash = "sha256:d920499b576f6c68295bc04e7b17b6544d9d05f196bb3aac4358792ef6f34325"},
-    {file = "ruff-0.2.2-py3-none-win_amd64.whl", hash = "sha256:cc9a91ae137d687f43a44c900e5d95e9617cb37d4c989e462980ba27039d239d"},
-    {file = "ruff-0.2.2-py3-none-win_arm64.whl", hash = "sha256:c9d15fc41e6054bfc7200478720570078f0b41c9ae4f010bcc16bd6f4d1aacdd"},
-    {file = "ruff-0.2.2.tar.gz", hash = "sha256:e62ed7f36b3068a30ba39193a14274cd706bc486fad521276458022f7bccb31d"},
+    {file = "ruff-0.3.0-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:7deb528029bacf845bdbb3dbb2927d8ef9b4356a5e731b10eef171e3f0a85944"},
+    {file = "ruff-0.3.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:e1e0d4381ca88fb2b73ea0766008e703f33f460295de658f5467f6f229658c19"},
+    {file = "ruff-0.3.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2f7dbba46e2827dfcb0f0cc55fba8e96ba7c8700e0a866eb8cef7d1d66c25dcb"},
+    {file = "ruff-0.3.0-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:23dbb808e2f1d68eeadd5f655485e235c102ac6f12ad31505804edced2a5ae77"},
+    {file = "ruff-0.3.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3ef655c51f41d5fa879f98e40c90072b567c666a7114fa2d9fe004dffba00932"},
+    {file = "ruff-0.3.0-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:d0d3d7ef3d4f06433d592e5f7d813314a34601e6c5be8481cccb7fa760aa243e"},
+    {file = "ruff-0.3.0-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:b08b356d06a792e49a12074b62222f9d4ea2a11dca9da9f68163b28c71bf1dd4"},
+    {file = "ruff-0.3.0-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:9343690f95710f8cf251bee1013bf43030072b9f8d012fbed6ad702ef70d360a"},
+    {file = "ruff-0.3.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a1f3ed501a42f60f4dedb7805fa8d4534e78b4e196f536bac926f805f0743d49"},
+    {file = "ruff-0.3.0-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:cc30a9053ff2f1ffb505a585797c23434d5f6c838bacfe206c0e6cf38c921a1e"},
+    {file = "ruff-0.3.0-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:5da894a29ec018a8293d3d17c797e73b374773943e8369cfc50495573d396933"},
+    {file = "ruff-0.3.0-py3-none-musllinux_1_2_i686.whl", hash = "sha256:755c22536d7f1889be25f2baf6fedd019d0c51d079e8417d4441159f3bcd30c2"},
+    {file = "ruff-0.3.0-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:dd73fe7f4c28d317855da6a7bc4aa29a1500320818dd8f27df95f70a01b8171f"},
+    {file = "ruff-0.3.0-py3-none-win32.whl", hash = "sha256:19eacceb4c9406f6c41af806418a26fdb23120dfe53583df76d1401c92b7c14b"},
+    {file = "ruff-0.3.0-py3-none-win_amd64.whl", hash = "sha256:128265876c1d703e5f5e5a4543bd8be47c73a9ba223fd3989d4aa87dd06f312f"},
+    {file = "ruff-0.3.0-py3-none-win_arm64.whl", hash = "sha256:e3a4a6d46aef0a84b74fcd201a4401ea9a6cd85614f6a9435f2d33dd8cefbf83"},
+    {file = "ruff-0.3.0.tar.gz", hash = "sha256:0886184ba2618d815067cf43e005388967b67ab9c80df52b32ec1152ab49f53a"},
 ]
 
 [[package]]
