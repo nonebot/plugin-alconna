@@ -1,19 +1,18 @@
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Event, Message
+from nonebot.adapters import Bot, Event
+from nonebot.adapters.ntchat.bot import send
+from nonebot.adapters.ntchat.event import MessageEvent
+from nonebot.adapters.ntchat.bot import Bot as NTChatBot
+from nonebot.adapters.ntchat.message import Message, MessageSegment
 
-from ..segment import Card, File, Text, Image, Video
-from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-
-if TYPE_CHECKING:
-    from nonebot.adapters.ntchat.message import MessageSegment
+from nonebot_plugin_alconna.uniseg.segment import Card, File, Text, Image, Video
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 
-class NTChatMessageExporter(MessageExporter["MessageSegment"]):
+class NTChatMessageExporter(MessageExporter[Message]):
     def get_message_type(self):
-        from nonebot.adapters.ntchat.message import Message
-
         return Message
 
     @classmethod
@@ -28,26 +27,20 @@ class NTChatMessageExporter(MessageExporter["MessageSegment"]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.ntchat.event import MessageEvent
-
         assert isinstance(event, MessageEvent)
         return str(event.msgid)
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.text(seg.text)
+        return MessageSegment.text(seg.text)
 
     @export
     async def res(self, seg: Union[Image, File, Video], bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         name = seg.__class__.__name__.lower()
         method = {
-            "image": ms.image,
-            "video": ms.video,
-            "file": ms.file,
+            "image": MessageSegment.image,
+            "video": MessageSegment.video,
+            "file": MessageSegment.file,
         }[name]
         if seg.path:
             return method(seg.path)
@@ -60,17 +53,12 @@ class NTChatMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         if seg.flag != "xml":
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="card", seg=seg))
 
-        return ms.xml(seg.raw)
+        return MessageSegment.xml(seg.raw)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        from nonebot.adapters.ntchat.bot import send
-        from nonebot.adapters.ntchat.bot import Bot as NTChatBot
-
         assert isinstance(bot, NTChatBot)
 
         if isinstance(target, Event):

@@ -15,7 +15,7 @@ from .tools import get_bot
 from .adapters import MAPPING
 from .fallback import FallbackMessage
 from .template import UniMessageTemplate
-from .export import Target, MessageExporter, SerializeFailed
+from .exporter import Target, MessageExporter, SerializeFailed
 from .segment import (
     At,
     Card,

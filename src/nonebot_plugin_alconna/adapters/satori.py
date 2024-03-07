@@ -1,13 +1,11 @@
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from nepattern.base import URL, INTEGER
-from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters.satori.message import Message
 from nonebot.adapters.satori.message import At as _At
-from nonebot.adapters.satori.message import Br as _Br
-from nonebot.adapters.satori.message import Text as _Text
 from nonebot.adapters.satori.message import File as _File
 from nonebot.adapters.satori.message import Link as _Link
+from nonebot.adapters.satori.message import Text as _Text
 from nepattern import MatchMode, BasePattern, UnionPattern
 from nonebot.adapters.satori.message import MessageSegment
 from nonebot.adapters.satori.message import Audio as _Audio
@@ -148,7 +146,6 @@ def locator(x: str, expected: list[str]):
     if all(set(style).issuperset(expected) for style in _styles.values()):
         return _Text("text", {"text": x, "styles": _styles})
     return
-
 
 
 Paragraph = StyleTextPattern("p", _Text, MessageSegment.paragraph, locator)

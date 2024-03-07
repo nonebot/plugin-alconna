@@ -200,6 +200,7 @@ class Text(Segment):
         max_scale = max(self.styles, key=lambda x: x[1] - x[0], default=(0, 0))
         return self.styles[max_scale][0]
 
+
 @dataclass
 class At(Segment):
     """At对象, 表示一类提醒某用户的元素"""

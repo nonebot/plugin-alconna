@@ -2,19 +2,17 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Event, Message
+from nonebot.adapters import Bot, Event
+from nonebot.adapters.onebot.v12.event import MessageEvent
+from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
+from nonebot.adapters.onebot.v12.message import Message, MessageSegment
 
-from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
-from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-
-if TYPE_CHECKING:
-    from nonebot.adapters.onebot.v12.message import MessageSegment
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 
-class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
+class Onebot12MessageExporter(MessageExporter["Message"]):
     def get_message_type(self):
-        from nonebot.adapters.onebot.v12.message import Message
-
         return Message
 
     @classmethod
@@ -42,39 +40,30 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.onebot.v12.event import MessageEvent
-
         assert isinstance(event, MessageEvent)
         return str(event.message_id)
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.text(seg.text)
+        return MessageSegment.text(seg.text)
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.mention(seg.target)
+        return MessageSegment.mention(seg.target)
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.mention_all()
+        return MessageSegment.mention_all()
 
     @export
     async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         name = seg.__class__.__name__.lower()
         method = {
-            "image": ms.image,
-            "voice": ms.voice,
-            "video": ms.video,
-            "audio": ms.audio,
-            "file": ms.file,
+            "image": MessageSegment.image,
+            "voice": MessageSegment.voice,
+            "video": MessageSegment.video,
+            "audio": MessageSegment.audio,
+            "file": MessageSegment.file,
         }[name]
         if seg.id:
             return method(seg.id)
@@ -92,13 +81,9 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.reply(seg.id)
+        return MessageSegment.reply(seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
-
         assert isinstance(bot, OnebotBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -115,8 +100,6 @@ class Onebot12MessageExporter(MessageExporter["MessageSegment"]):
             return await bot.send_message(detail_type="group", group_id=target.id, message=message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
-
         assert isinstance(bot, OnebotBot)
 
         await bot.delete_message(message_id=mid["message_id"])

@@ -1,19 +1,18 @@
 from typing import TYPE_CHECKING, Any, Union, cast
 
 from tarina import lang
-from nonebot.adapters import Bot, Event, Message
+from nonebot.adapters import Bot, Event
+from nonebot.adapters.kaiheila.bot import Bot as KBot
+from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
+from nonebot.adapters.kaiheila.event import MessageEvent, PrivateMessageEvent
+from nonebot.adapters.kaiheila.message import Message, MessageSegment, MessageSerializer
 
-from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
-
-if TYPE_CHECKING:
-    from nonebot.adapters.kaiheila.message import MessageSegment
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 
 
-class KookMessageExporter(MessageExporter["MessageSegment"]):
+class KookMessageExporter(MessageExporter["Message"]):
     def get_message_type(self):
-        from nonebot.adapters.kaiheila.message import Message
-
         return Message
 
     @classmethod
@@ -21,8 +20,6 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         return SupportAdapter.kook
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.kaiheila.event import MessageEvent
-
         assert isinstance(event, MessageEvent)
         return str(event.msg_id)
 
@@ -35,62 +32,53 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
         if seg.extract_most_style() == "markdown":
-            return ms.KMarkdown(seg.text)
+            return MessageSegment.KMarkdown(seg.text)
         elif seg.styles:
-            return ms.KMarkdown(str(seg))
-        return ms.text(seg.text)
+            return MessageSegment.KMarkdown(str(seg))
+        return MessageSegment.text(seg.text)
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
         if seg.flag == "role":
-            return ms.mention_role(seg.target)
+            return MessageSegment.mention_role(seg.target)
         elif seg.flag == "channel":
-            return ms.KMarkdown(f"(chn){seg.target}(chn)")
+            return MessageSegment.KMarkdown(f"(chn){seg.target}(chn)")
         else:
-            return ms.mention(seg.target)
+            return MessageSegment.mention(seg.target)
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.mention_here() if seg.here else ms.mention_all()
+        return MessageSegment.mention_here() if seg.here else MessageSegment.mention_all()
 
     @export
     async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         if seg.name:
-            return ms.KMarkdown(f"(emj){seg.name}(emj)[{seg.id}]")
+            return MessageSegment.KMarkdown(f"(emj){seg.name}(emj)[{seg.id}]")
         else:
-            return ms.KMarkdown(f":{seg.id}:")
+            return MessageSegment.KMarkdown(f":{seg.id}:")
 
     @export
     async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
         if TYPE_CHECKING:
-            from nonebot.adapters.kaiheila.bot import Bot as KBot
-
             assert isinstance(bot, KBot)
         name = seg.__class__.__name__.lower()
 
         if seg.id or seg.url:
             method = {
-                "image": ms.image,
-                "voice": ms.audio,
-                "audio": ms.audio,
-                "video": ms.video,
-                "file": ms.file,
+                "image": MessageSegment.image,
+                "voice": MessageSegment.audio,
+                "audio": MessageSegment.audio,
+                "video": MessageSegment.video,
+                "file": MessageSegment.file,
             }[name]
             return method(seg.id or seg.url)
         method = {
-            "image": ms.local_image,
-            "voice": ms.local_audio,
-            "audio": ms.local_audio,
-            "video": ms.local_video,
-            "file": ms.local_file,
+            "image": MessageSegment.local_image,
+            "voice": MessageSegment.local_audio,
+            "audio": MessageSegment.local_audio,
+            "video": MessageSegment.local_video,
+            "file": MessageSegment.local_file,
         }[name]
         if seg.raw:
             return method(seg.raw_bytes)
@@ -101,23 +89,17 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         if seg.flag == "xml":
             raise SerializeFailed(
                 lang.require("nbp-uniseg", "failed_segment").format(adapter="kook", seg=seg, target="Card")
             )
-        return ms.Card(seg.raw)
+        return MessageSegment.Card(seg.raw)
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.quote(seg.id)
+        return MessageSegment.quote(seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        from nonebot.adapters.kaiheila.bot import Bot as KBot
-
         assert isinstance(bot, KBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -131,10 +113,6 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
             return await bot.send_msg(message_type="channel", channel_id=target.id, message=message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.kaiheila.bot import Bot as KBot
-        from nonebot.adapters.kaiheila.event import PrivateMessageEvent
-        from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
-
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
 
         assert _mid.msg_id
@@ -152,11 +130,6 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         return
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.kaiheila.bot import Bot as KBot
-        from nonebot.adapters.kaiheila.event import PrivateMessageEvent
-        from nonebot.adapters.kaiheila.message import MessageSerializer
-        from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
-
         if TYPE_CHECKING:
             assert isinstance(new, self.get_message_type())
             assert isinstance(bot, KBot)
@@ -181,8 +154,6 @@ class KookMessageExporter(MessageExporter["MessageSegment"]):
         return
 
     def get_reply(self, mid: Any):
-        from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
-
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
         if not _mid.msg_id:
             raise NotImplementedError

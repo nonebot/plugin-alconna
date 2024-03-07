@@ -1,19 +1,32 @@
 from typing import TYPE_CHECKING, Any, Union, cast
 
 from tarina import lang
-from nonebot.adapters import Bot, Event, Message
+from nonebot.adapters import Bot, Event
+from nonebot.adapters.satori.models import InnerMessage
+from nonebot.adapters.satori.bot import Bot as SatoriBot
+from nonebot.adapters.satori.message import Text as _Text
+from nonebot.adapters.satori.message import STYLE_TYPE_MAP
+from nonebot.adapters.satori.event import NoticeEvent, MessageEvent
+from nonebot.adapters.satori.message import Message, MessageSegment
 
-from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice, RefNode, Reference
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Image,
+    Reply,
+    Video,
+    Voice,
+    RefNode,
+    Reference,
+)
 
-if TYPE_CHECKING:
-    from nonebot.adapters.satori.message import MessageSegment
 
-
-class SatoriMessageExporter(MessageExporter["MessageSegment"]):
+class SatoriMessageExporter(MessageExporter[Message]):
     def get_message_type(self):
-        from nonebot.adapters.satori.message import Message
-
         return Message
 
     @classmethod
@@ -21,8 +34,6 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         return SupportAdapter.satori
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
-        from nonebot.adapters.satori.event import NoticeEvent, MessageEvent
-
         if isinstance(event, (MessageEvent, NoticeEvent)):
             if event.channel:
                 return Target(
@@ -41,49 +52,39 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.satori.event import MessageEvent
-
         assert isinstance(event, MessageEvent)
         return str(event.message.id)
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.satori.message import STYLE_TYPE_MAP, Text
-
-        ms = self.segment_class
-
         if not seg.styles:
-            return ms.text(seg.text)
+            return MessageSegment.text(seg.text)
         styles = seg.styles.copy()
         for scale, style in seg.styles.items():
             styles[scale] = [STYLE_TYPE_MAP.get(s, s) for s in style]
-        return Text("text", {"text": seg.text, "styles": styles})
+        return _Text("text", {"text": seg.text, "styles": styles})
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
         if seg.flag == "role":
-            return ms.at_role(seg.target, seg.display)
+            return MessageSegment.at_role(seg.target, seg.display)
         if seg.flag == "channel":
-            return ms.sharp(seg.target, seg.display)
-        return ms.at(seg.target, seg.display)
+            return MessageSegment.sharp(seg.target, seg.display)
+        return MessageSegment.at(seg.target, seg.display)
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.at_all(seg.here)
+        return MessageSegment.at_all(seg.here)
 
     @export
     async def res(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         name = seg.__class__.__name__.lower()
         method = {
-            "image": ms.image,
-            "voice": ms.audio,
-            "video": ms.video,
-            "audio": ms.audio,
-            "file": ms.file,
+            "image": MessageSegment.image,
+            "voice": MessageSegment.audio,
+            "video": MessageSegment.video,
+            "audio": MessageSegment.audio,
+            "file": MessageSegment.file,
         }[name]
         if seg.id or seg.url:
             return method(url=seg.id or seg.url)
@@ -97,37 +98,32 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.quote(seg.id, content=seg.msg)  # type: ignore
+        return MessageSegment.quote(seg.id, content=seg.msg)  # type: ignore
 
     @export
     async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
         if isinstance(seg.content, str):
             content = self.get_message_type()(seg.content)
         elif isinstance(seg.content, list):
             content = self.get_message_type()()
             for node in seg.content:
                 if isinstance(node, RefNode):
-                    content.append(ms.message(node.id))
+                    content.append(MessageSegment.message(node.id))
                 else:
                     _content = self.get_message_type()()
-                    _content.append(ms.author(node.uid, node.name))
+                    _content.append(MessageSegment.author(node.uid, node.name))
                     if isinstance(node.content, str):
                         _content.extend(self.get_message_type()(node.content))
                     elif isinstance(node.content, list):
                         _content.extend(await self.export(node.content, bot, True))  # type: ignore
                     else:
                         _content.extend(node.content)
-                    content.append(ms.message(content=_content))
+                    content.append(MessageSegment.message(content=_content))
         else:
             content = seg.content
-        return ms.message(seg.id, bool(seg.content), content)
+        return MessageSegment.message(seg.id, bool(seg.content), content)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        from nonebot.adapters.satori.bot import Bot as SatoriBot
-
         assert isinstance(bot, SatoriBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -141,9 +137,6 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
             return await bot.send_message(target.id, message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.satori.models import InnerMessage
-        from nonebot.adapters.satori.bot import Bot as SatoriBot
-
         assert isinstance(bot, SatoriBot)
         _mid: InnerMessage = cast(InnerMessage, mid)
         if isinstance(context, Target):
@@ -158,9 +151,6 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         return
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.satori.models import InnerMessage
-        from nonebot.adapters.satori.bot import Bot as SatoriBot
-
         assert isinstance(bot, SatoriBot)
         if TYPE_CHECKING:
             assert isinstance(new, self.get_message_type())
@@ -175,7 +165,5 @@ class SatoriMessageExporter(MessageExporter["MessageSegment"]):
         return await bot.update_message(channel.id, _mid.id, new)
 
     def get_reply(self, mid: Any):
-        from nonebot.adapters.satori.models import InnerMessage
-
         _mid: InnerMessage = cast(InnerMessage, mid)
         return Reply(_mid.id)

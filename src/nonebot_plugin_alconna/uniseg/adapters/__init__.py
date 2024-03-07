@@ -1,22 +1,42 @@
-from typing import Dict
+import importlib
+from pathlib import Path
+from warnings import warn
+from typing import Dict, cast
 
-from ..export import MessageExporter
-from .qq import QQMessageExporter  # noqa: F401
-from .red import RedMessageExporter  # noqa: F401
-from .ding import DingMessageExporter  # noqa: F401
-from .dodo import DoDoMessageExporter  # noqa: F401
-from .kook import KookMessageExporter  # noqa: F401
-from .mirai import MiraiMessageExporter  # noqa: F401
-from .feishu import FeishuMessageExporter  # noqa: F401
-from .github import GithubMessageExporter  # noqa: F401
-from .ntchat import NTChatMessageExporter  # noqa: F401
-from .satori import SatoriMessageExporter  # noqa: F401
-from .console import ConsoleMessageExporter  # noqa: F401
-from .discord import DiscordMessageExporter  # noqa: F401
-from .bilibili import BilibiliMessageExporter  # noqa: F401
-from .onebot11 import Onebot11MessageExporter  # noqa: F401
-from .onebot12 import Onebot12MessageExporter  # noqa: F401
-from .telegram import TelegramMessageExporter  # noqa: F401
-from .minecraft import MinecraftMessageExporter  # noqa: F401
+from nonebot import get_adapters
 
-MAPPING: Dict[str, MessageExporter] = {cls.get_adapter(): cls() for cls in MessageExporter.__subclasses__()}
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
+
+from ..loader import BaseLoader
+
+root = Path(__file__).parent
+loaders: Dict[str, BaseLoader] = {}
+_adapters = [path.stem for path in root.iterdir() if path.is_dir()]
+for name in _adapters:
+    try:
+        module = importlib.import_module(f".{name}", __package__)
+        loader = cast(BaseLoader, getattr(module, "Loader"))
+        loaders[loader.get_adapter()] = loader
+    except Exception as e:
+        warn(f"Failed to load adapter {name}: {e}", RuntimeWarning, 15)
+
+adapters = get_adapters()
+if not adapters:
+    warn(
+        "No adapters found, please make sure you have installed at least one adapter and have it configured properly.",
+        RuntimeWarning,
+        15,
+    )
+    MAPPING: Dict[str, MessageExporter] = {loader.get_adapter(): loader.get_exporter() for loader in loaders.values()}
+else:
+    MAPPING: Dict[str, MessageExporter] = {}
+    for adapter in adapters:
+        if adapter in loaders:
+            MAPPING[adapter] = loaders[adapter].get_exporter()
+        else:
+            warn(
+                f"Adapter {adapter} is not found in the uniseg.adapters,"
+                f"please go to the github repo and create an issue for it.",
+                RuntimeWarning,
+                15,
+            )

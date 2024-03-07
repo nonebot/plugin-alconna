@@ -4,7 +4,7 @@ from typing_extensions import Annotated
 from nonebot.internal.params import Depends
 from nonebot.internal.adapter import Bot, Event
 
-from .export import Target
+from .exporter import Target
 from .message import TS, UniMessage
 
 

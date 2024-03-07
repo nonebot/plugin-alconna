@@ -1,15 +1,21 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, cast
+from typing import Any, Union, cast
 
 from tarina import lang
-from nonebot.adapters import Bot, Event, Message
+from nonebot.adapters import Bot, Event
+from nonebot.adapters.telegram.message import Entity
+from nonebot.adapters.telegram.message import Message
+from nonebot.adapters.telegram.bot import Bot as TgBot
+from nonebot.adapters.telegram.event import Event as TgEvent
+from nonebot.adapters.telegram.message import File as TgFile
+from nonebot.adapters.telegram.message import MessageSegment
+from nonebot.adapters.telegram.message import Reply as TgReply
+from nonebot.adapters.telegram.message import Message as TgMessage
+from nonebot.adapters.telegram.model import Message as MessageModel
+from nonebot.adapters.telegram.event import MessageEvent, EventWithChat
 
-from ..segment import At, File, Text, Audio, Emoji, Image, Reply, Video, Voice
-from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-
-if TYPE_CHECKING:
-    from nonebot.adapters.telegram.message import MessageSegment
-
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, Audio, Emoji, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 STYLE_TYPE_MAP = {
     "b": "bold",
@@ -29,14 +35,12 @@ STYLE_TYPE_MAP = {
     "spoiler": "spoiler",
     "blockquote": "spoiler",
     "code": "code",
-    "pre": "pre"
+    "pre": "pre",
 }
 
 
-class TelegramMessageExporter(MessageExporter["MessageSegment"]):
+class TelegramMessageExporter(MessageExporter[Message]):
     def get_message_type(self):
-        from nonebot.adapters.telegram.message import Message
-
         return Message
 
     @classmethod
@@ -44,21 +48,15 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
         return SupportAdapter.telegram
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
-        from nonebot.adapters.telegram.event import EventWithChat
-
         assert isinstance(event, EventWithChat)
         return Target(str(event.chat.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.telegram.event import MessageEvent
-
         assert isinstance(event, MessageEvent)
         return f"{event.message_id}"
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.telegram.message import Entity
-
         if not seg.styles:
             return Entity.text(seg.text)
         else:
@@ -67,8 +65,6 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.telegram.message import Entity
-
         return (
             Entity.mention(f"{seg.target} ")
             if seg.target.startswith("@")
@@ -77,14 +73,10 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.telegram.message import Entity
-
         return Entity.custom_emoji(seg.name, seg.id)  # type: ignore
 
     @export
     async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.telegram.message import File as TgFile
-
         name = seg.__class__.__name__.lower()
         method = {
             "image": TgFile.photo,
@@ -104,15 +96,9 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.telegram.message import Reply as TgReply
-
         return TgReply.reply(int(seg.id))
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        from nonebot.adapters.telegram.bot import Bot as TgBot
-        from nonebot.adapters.telegram.event import Event as TgEvent
-        from nonebot.adapters.telegram.message import Message as TgMessage
-
         assert isinstance(bot, TgBot)
         assert isinstance(message, TgMessage)
         if isinstance(target, Event):
@@ -121,17 +107,11 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
         return await bot.send_to(target.id, message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.telegram.bot import Bot as TgBot
-        from nonebot.adapters.telegram.model import Message as MessageModel
-
         assert isinstance(bot, TgBot)
         _mid: MessageModel = cast(MessageModel, mid)
         await bot.delete_message(chat_id=_mid.chat.id, message_id=_mid.message_id)
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.telegram.bot import Bot as TgBot
-        from nonebot.adapters.telegram.model import Message as MessageModel
-
         assert isinstance(bot, TgBot)
         _mid: MessageModel = cast(MessageModel, mid)
         text = new.extract_plain_text()
@@ -140,7 +120,5 @@ class TelegramMessageExporter(MessageExporter["MessageSegment"]):
             return res
 
     def get_reply(self, mid: Any):
-        from nonebot.adapters.telegram.model import Message as MessageModel
-
         _mid: MessageModel = cast(MessageModel, mid)
         return Reply(str(_mid.message_id))

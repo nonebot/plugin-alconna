@@ -99,7 +99,7 @@ disableBytesTypePromotions = true
 
 [tool.pdm.scripts]
 test = "pytest -v -n auto -W ignore ./tests/"
-format = { composite = ["isort ./src/ ./example/ ./tests/","black ./src/ ./example/ ./tests/","ruff ./src/ ./example/ ./tests/"] }
+format = { composite = ["isort ./src/ ./example/ ./tests/","black ./src/ ./example/ ./tests/","ruff check ./src/ ./example/ ./tests/"] }
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

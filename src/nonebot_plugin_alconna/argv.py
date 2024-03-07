@@ -5,9 +5,9 @@ from typing import TypeVar, Callable, Iterable
 
 from tarina import lang
 from arclet.alconna import NullMessage
+from arclet.alconna.typing import CommandMeta
 from nonebot.adapters import Message, MessageSegment
 from arclet.alconna.argv import Argv, set_default_argv_type
-from arclet.alconna.typing import CommandMeta
 
 from .uniseg import Segment, UniMessage, FallbackMessage
 

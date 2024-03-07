@@ -2,41 +2,40 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Event, Message
+from nonebot.adapters import Bot, Event
+from nonebot.adapters.qq.bot import Bot as QQBot
+from nonebot.adapters.qq.message import Message, MessageSegment
+from nonebot.adapters.qq.models.guild import Message as GuildMessage
+from nonebot.adapters.qq.event import (
+    ForumEvent,
+    GuildEvent,
+    ChannelEvent,
+    MessageEvent,
+    GroupRobotEvent,
+    FriendRobotEvent,
+    GuildMemberEvent,
+    GuildMessageEvent,
+    MessageAuditEvent,
+    MessageReactionEvent,
+    C2CMessageCreateEvent,
+    InteractionCreateEvent,
+    DirectMessageCreateEvent,
+    GroupAtMessageCreateEvent,
+)
 
-from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-from ..segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
-
-if TYPE_CHECKING:
-    from nonebot.adapters.qq.message import MessageSegment
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 
-class QQMessageExporter(MessageExporter["MessageSegment"]):
+class QQMessageExporter(MessageExporter[Message]):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.qq
 
     def get_message_type(self):
-        from nonebot.adapters.qq.message import Message
-
         return Message
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
-        from nonebot.adapters.qq.event import (
-            ForumEvent,
-            GuildEvent,
-            ChannelEvent,
-            GroupRobotEvent,
-            FriendRobotEvent,
-            GuildMemberEvent,
-            GuildMessageEvent,
-            MessageAuditEvent,
-            MessageReactionEvent,
-            C2CMessageCreateEvent,
-            InteractionCreateEvent,
-            GroupAtMessageCreateEvent,
-        )
-
         if isinstance(event, GuildMessageEvent):
             if event.__type__.value.startswith("DIRECT"):
                 return Target(
@@ -143,13 +142,6 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.qq.event import (
-            GuildMessageEvent,
-            C2CMessageCreateEvent,
-            InteractionCreateEvent,
-            GroupAtMessageCreateEvent,
-        )
-
         assert isinstance(
             event,
             (InteractionCreateEvent, GuildMessageEvent, C2CMessageCreateEvent, GroupAtMessageCreateEvent),
@@ -158,22 +150,18 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         if seg.extract_most_style() == "markdown":
-            return ms.markdown(seg.text)
+            return MessageSegment.markdown(seg.text)
         elif seg.styles:
-            return ms.markdown(str(seg))
-        return ms.text(seg.text)
+            return MessageSegment.markdown(str(seg))
+        return MessageSegment.text(seg.text)
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         if seg.flag == "channel":
-            return ms.mention_channel(seg.target)
+            return MessageSegment.mention_channel(seg.target)
         elif seg.flag == "user":
-            return ms.mention_user(seg.target)
+            return MessageSegment.mention_user(seg.target)
         else:
             raise SerializeFailed(
                 lang.require("nbp-uniseg", "failed_segment").format(adapter="qq", seg=seg, target="mention")
@@ -181,35 +169,29 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.mention_everyone()
+        return MessageSegment.mention_everyone()
 
     @export
     async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.emoji(seg.id)
+        return MessageSegment.emoji(seg.id)
 
     @export
     async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         name = seg.__class__.__name__.lower()
         method = {
-            "image": ms.image,
-            "voice": ms.audio,
-            "video": ms.video,
-            "audio": ms.audio,
-            "file": ms.file,
+            "image": MessageSegment.image,
+            "voice": MessageSegment.audio,
+            "video": MessageSegment.video,
+            "audio": MessageSegment.audio,
+            "file": MessageSegment.file,
         }[name]
 
         file_method = {
-            "image": ms.file_image,
-            "voice": ms.file_audio,
-            "video": ms.file_video,
-            "audio": ms.file_audio,
-            "file": ms.file_file,
+            "image": MessageSegment.file_image,
+            "voice": MessageSegment.file_audio,
+            "video": MessageSegment.file_video,
+            "audio": MessageSegment.file_audio,
+            "file": MessageSegment.file_file,
         }[name]
 
         if seg.url:
@@ -223,14 +205,9 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.reference(seg.id)
+        return MessageSegment.reference(seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        from nonebot.adapters.qq.bot import Bot as QQBot
-        from nonebot.adapters.qq.event import MessageEvent
-
         assert isinstance(bot, QQBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -275,10 +252,6 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         return res
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.qq.bot import Bot as QQBot
-        from nonebot.adapters.qq.event import DirectMessageCreateEvent
-        from nonebot.adapters.qq.models.guild import Message as GuildMessage
-
         assert isinstance(bot, QQBot)
         if isinstance(mid, GuildMessage):
             if isinstance(context, Target):
@@ -305,8 +278,6 @@ class QQMessageExporter(MessageExporter["MessageSegment"]):
         return
 
     def get_reply(self, mid: Any):
-        from nonebot.adapters.qq.models.guild import Message as GuildMessage
-
         if isinstance(mid, GuildMessage):
             return Reply(mid.id)
         raise NotImplementedError

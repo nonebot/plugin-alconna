@@ -87,7 +87,7 @@ class StyleTextPattern(BasePattern[TMS, Union[MessageSegment, str]], Generic[TMS
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> TMS:
         return self.call(*args, **kwargs)  # type: ignore
-    
+
     def __add__(self, other: StyleTextPattern[TMS, P]) -> Self:
         if not isinstance(other, StyleTextPattern):
             raise TypeError(other)

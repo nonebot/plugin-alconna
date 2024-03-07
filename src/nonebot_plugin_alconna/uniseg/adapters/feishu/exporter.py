@@ -2,20 +2,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
+from nonebot.adapters import Bot, Event
 from nonebot.internal.driver import Request
-from nonebot.adapters import Bot, Event, Message
+from nonebot.adapters.feishu.bot import Bot as FeishuBot
+from nonebot.adapters.feishu.message import Message, MessageSegment
+from nonebot.adapters.feishu.event import MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
-from ..segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
-from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-
-if TYPE_CHECKING:
-    from nonebot.adapters.feishu.message import MessageSegment
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 
-class FeishuMessageExporter(MessageExporter["MessageSegment"]):
+class FeishuMessageExporter(MessageExporter[Message]):
     def get_message_type(self):
-        from nonebot.adapters.feishu.message import Message
-
         return Message
 
     @classmethod
@@ -23,14 +21,10 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         return SupportAdapter.feishu
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.feishu.event import MessageEvent
-
         assert isinstance(event, MessageEvent)
         return str(event.message_id)
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
-        from nonebot.adapters.feishu.event import GroupMessageEvent, PrivateMessageEvent
-
         if isinstance(event, GroupMessageEvent):
             return Target(
                 event.event.message.chat_id, platform=self.get_adapter(), self_id=bot.self_id if bot else None
@@ -46,25 +40,20 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.text(seg.text)
+        return MessageSegment.text(seg.text)
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.at(seg.target)
+        return MessageSegment.at(seg.target)
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.at("all")
+        return MessageSegment.at("all")
 
     @export
     async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         if seg.id:
-            return ms.image(seg.id)
+            return MessageSegment.image(seg.id)
         elif seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             image = resp.content
@@ -79,15 +68,13 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/images", **params)
         file_key = result["data"]["image_key"]
-        return ms.image(file_key)
+        return MessageSegment.image(file_key)
 
     @export
     async def audio(self, seg: Union[Voice, Audio], bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         name = seg.__class__.__name__.lower()
         if seg.id:
-            return ms.audio(seg.id, seg.duration)
+            return MessageSegment.audio(seg.id, seg.duration)
         elif seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             raw = resp.content
@@ -102,14 +89,12 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
         file_key = result["data"]["file_key"]
-        return ms.audio(file_key, seg.duration)
+        return MessageSegment.audio(file_key, seg.duration)
 
     @export
     async def file(self, seg: File, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         if seg.id:
-            return ms.file(seg.id, seg.name)
+            return MessageSegment.file(seg.id, seg.name)
         elif seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             raw = resp.content
@@ -124,14 +109,12 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
         file_key = result["data"]["file_key"]
-        return ms.file(file_key, seg.name)
+        return MessageSegment.file(file_key, seg.name)
 
     @export
     async def video(self, seg: Video, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         if seg.id:
-            return ms.sticker(seg.id)
+            return MessageSegment.sticker(seg.id)
         elif seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             raw = resp.content
@@ -146,17 +129,13 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
         file_key = result["data"]["file_key"]
-        return ms.sticker(file_key)
+        return MessageSegment.sticker(file_key)
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms("$reply", {"message_id": seg.id})  # type: ignore
+        return MessageSegment("$reply", {"message_id": seg.id})  # type: ignore
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        from nonebot.adapters.feishu.bot import Bot as FeishuBot
-
         assert isinstance(bot, FeishuBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -177,16 +156,12 @@ class FeishuMessageExporter(MessageExporter["MessageSegment"]):
         return await bot.send_msg(receive_id_type, receive_id, content, msg_type)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.feishu.bot import Bot as FeishuBot
-
         assert isinstance(bot, FeishuBot)
 
         params = {"method": "DELETE"}
         return await bot.call_api(f"im/v1/messages/{mid['message_id']}", **params)
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.feishu.bot import Bot as FeishuBot
-
         assert isinstance(bot, FeishuBot)
         if TYPE_CHECKING:
             assert isinstance(new, self.get_message_type())

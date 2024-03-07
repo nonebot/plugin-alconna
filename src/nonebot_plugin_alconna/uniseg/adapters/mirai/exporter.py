@@ -1,45 +1,55 @@
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
-from nonebot.adapters import Bot, Event, Message
+from nonebot.adapters import Bot, Event
+from nonebot.adapters.mirai2.bot import Bot as MiraiBot
+from nonebot.adapters.mirai2.message import MessageType, MessageChain, MessageSegment
+from nonebot.adapters.mirai2.event import (
+    BotMuteEvent,
+    GroupMessage,
+    MessageEvent,
+    FriendMessage,
+    BotUnmuteEvent,
+    MemberJoinEvent,
+    MemberMuteEvent,
+    GroupRecallEvent,
+    BotJoinGroupEvent,
+    BotLeaveEventKick,
+    FriendRecallEvent,
+    MemberUnmuteEvent,
+    BotLeaveEventActive,
+    MemberLeaveEventKick,
+    MemberLeaveEventQuit,
+    GroupStateChangeEvent,
+    MemberStateChangeEvent,
+)
 
-from ..export import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-from ..segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Voice, RefNode, Reference
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    Card,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Emoji,
+    Image,
+    Reply,
+    Voice,
+    RefNode,
+    Reference,
+)
 
-if TYPE_CHECKING:
-    from nonebot.adapters.mirai2.message import MessageSegment
 
-
-class MiraiMessageExporter(MessageExporter["MessageSegment"]):
+class MiraiMessageExporter(MessageExporter[MessageChain]):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.mirai
 
     def get_message_type(self):
-        from nonebot.adapters.mirai2.message import MessageChain
-
         return MessageChain
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
-        from nonebot.adapters.mirai2.event import (
-            BotMuteEvent,
-            GroupMessage,
-            FriendMessage,
-            BotUnmuteEvent,
-            MemberJoinEvent,
-            MemberMuteEvent,
-            GroupRecallEvent,
-            BotJoinGroupEvent,
-            BotLeaveEventKick,
-            FriendRecallEvent,
-            MemberUnmuteEvent,
-            BotLeaveEventActive,
-            MemberLeaveEventKick,
-            MemberLeaveEventQuit,
-            GroupStateChangeEvent,
-            MemberStateChangeEvent,
-        )
-
         if isinstance(event, FriendMessage):
             return Target(
                 str(event.sender.id),
@@ -77,39 +87,32 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.mirai2.event import MessageEvent
-
         assert isinstance(event, MessageEvent)
         return str(event.source and event.source.id)
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.plain(seg.text)
+        return MessageSegment.plain(seg.text)
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.at(int(seg.target))
+        return MessageSegment.at(int(seg.target))
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.at_all()
+        return MessageSegment.at_all()
 
     @export
     async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.face(int(seg.id), seg.name)
+        return MessageSegment.face(int(seg.id), seg.name)
 
     @export
     async def media(self, seg: Union[Image, Voice, Audio], bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
         name = seg.__class__.__name__.lower()
         method = {
-            "image": ms.image,
-            "voice": ms.voice,
-            "audio": ms.voice,
+            "image": MessageSegment.image,
+            "voice": MessageSegment.voice,
+            "audio": MessageSegment.voice,
         }[name]
         if seg.id:
             return method(seg.id)
@@ -122,24 +125,18 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
 
     @export
     async def file(self, seg: File, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.file(seg.id, seg.name, 0)  # type: ignore
+        return MessageSegment.file(seg.id, seg.name, 0)  # type: ignore
 
     @export
     async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.xml(seg.raw) if seg.flag == "xml" else ms.app(seg.raw)
+        return MessageSegment.xml(seg.raw) if seg.flag == "xml" else MessageSegment.app(seg.raw)
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms("$reply", {"message_id": seg.id})  # type: ignore
+        return MessageSegment("$reply", {"message_id": seg.id})  # type: ignore
 
     @export
     async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
-        from nonebot.adapters.mirai2.message import MessageType
-
-        ms = self.segment_class
         if not seg.content or not isinstance(seg.content, list):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
         nodes = []
@@ -165,11 +162,9 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
                         "messageChain": content,
                     }
                 )
-        return ms(MessageType.FORWARD, nodeList=nodes)
+        return MessageSegment(MessageType.FORWARD, nodeList=nodes)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        from nonebot.adapters.mirai2.bot import Bot as MiraiBot
-
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: MessageChain):
         assert isinstance(bot, MiraiBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -188,8 +183,6 @@ class MiraiMessageExporter(MessageExporter["MessageSegment"]):
             return await bot.send_group_message(target=int(target.id), message_chain=message, quote=quote)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        from nonebot.adapters.mirai2.bot import Bot as MiraiBot
-
         assert isinstance(bot, MiraiBot)
         await bot.recall(target=mid["messageId"])
         return

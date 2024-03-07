@@ -7,7 +7,8 @@ from nonebot.adapters.satori import Bot, Adapter, Message, MessageSegment
 from tests.fake import fake_message_event_satori
 
 
-def test_satori():
+@pytest.mark.asyncio()
+async def test_satori(app: App):
     from nonebot.adapters.satori import Message
 
     from nonebot_plugin_alconna.adapters.satori import Bold, Underline
@@ -23,7 +24,7 @@ def test_satori():
     assert str(some_arg) == "<b>s<i>ome</i>_arg</b>"
     some_arg1 = res.some_arg1
     assert some_arg1.type == "text"
-    assert some_arg1.data["styles"] == {(0, 8): ['u']}
+    assert some_arg1.data["styles"] == {(0, 8): ["u"]}
     assert isinstance(res.some_arg2, str)
 
     msg1 = "/command " + Bold("foo bar baz")

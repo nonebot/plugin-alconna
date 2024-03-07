@@ -1,18 +1,15 @@
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
-from nonebot.adapters import Bot, Event, Message
+from nonebot.adapters import Bot, Event
+from nonebot.adapters.ding.message import Message, MessageSegment
+from nonebot.adapters.ding.event import MessageEvent, ConversationType
 
-from ..segment import At, Text, AtAll, Image
-from ..export import Target, SupportAdapter, MessageExporter, export
-
-if TYPE_CHECKING:
-    from nonebot.adapters.ding.message import MessageSegment
+from nonebot_plugin_alconna.uniseg.segment import At, Text, AtAll, Image
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
 
 
-class DingMessageExporter(MessageExporter["MessageSegment"]):
+class DingMessageExporter(MessageExporter[Message]):
     def get_message_type(self):
-        from nonebot.adapters.ding.message import Message
-
         return Message
 
     @classmethod
@@ -20,8 +17,6 @@ class DingMessageExporter(MessageExporter["MessageSegment"]):
         return SupportAdapter.ding
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
-        from nonebot.adapters.ding.event import MessageEvent, ConversationType
-
         if isinstance(event, MessageEvent):
             if event.conversationType == ConversationType.private:
                 return Target(
@@ -34,34 +29,25 @@ class DingMessageExporter(MessageExporter["MessageSegment"]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        from nonebot.adapters.ding.event import MessageEvent
-
         assert isinstance(event, MessageEvent)
         return str(event.msgId)
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-        return ms.text(seg.text)
+        return MessageSegment.text(seg.text)
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.atDingtalkIds(seg.target)
+        return MessageSegment.atDingtalkIds(seg.target)
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
-        return ms.atAll()
+        return MessageSegment.atAll()
 
     @export
     async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
-        ms = self.segment_class
-
         assert seg.url, "ding image segment must have url"
-        return ms.image(seg.url)
+        return MessageSegment.image(seg.url)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         raise NotImplementedError

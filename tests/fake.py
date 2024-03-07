@@ -88,7 +88,6 @@ def fake_discord_interaction_event(**field) -> "ApplicationCommandInteractionEve
 def fake_message_event_satori(**field) -> "SatoriMessageEvent":
     from pydantic import create_model
     from nonebot.adapters.satori import Message
-    from nonebot.adapters.satori.element import Element
     from nonebot.adapters.satori.event import MessageEvent
     from nonebot.adapters.satori.models import User, Channel, ChannelType, InnerMessage
 

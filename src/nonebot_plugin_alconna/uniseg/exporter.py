@@ -1,12 +1,25 @@
 import inspect
-from enum import Enum
 from abc import ABCMeta, abstractmethod
 from dataclasses import field, dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Type, Union, Generic, TypeVar, Callable, Awaitable, get_args, get_origin
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Type,
+    Union,
+    Generic,
+    TypeVar,
+    Callable,
+    Awaitable,
+    get_args,
+    get_origin,
+)
 
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
+from .constraint import SupportAdapter
 from .segment import Other, Reply, Custom, Segment
 
 if TYPE_CHECKING:
@@ -14,29 +27,7 @@ if TYPE_CHECKING:
 
 
 TS = TypeVar("TS", bound=Segment)
-TMS = TypeVar("TMS", bound=MessageSegment)
-
-
-class SupportAdapter(str, Enum):
-    """支持的适配器"""
-
-    bilibili = "BilibiliLive"
-    console = "Console"
-    ding = "Ding"
-    discord = "Discord"
-    dodo = "DoDo"
-    feishu = "Feishu"
-    github = "GitHub"
-    kook = "Kaiheila"
-    minecraft = "Minecraft"
-    mirai = "mirai2"
-    ntchat = "ntchat"
-    onebot11 = "OneBot V11"
-    onebot12 = "OneBot V12"
-    qq = "QQ"
-    red = "RedProtocol"
-    satori = "Satori"
-    telegram = "Telegram"
+TM = TypeVar("TM", bound=Message)
 
 
 @dataclass
@@ -81,22 +72,31 @@ class Target:
 class SerializeFailed(Exception): ...
 
 
-def export(func: Union[Callable[[Any, TS, Bot], Awaitable[MessageSegment]], Callable[[Any, TS, Bot], Awaitable[List[MessageSegment]]]]):
+def export(
+    func: Union[
+        Callable[[Any, TS, Bot], Awaitable[MessageSegment]], Callable[[Any, TS, Bot], Awaitable[List[MessageSegment]]]
+    ]
+):
     sig = inspect.signature(func)
     func.__export_target__ = sig.parameters["seg"].annotation
     return func
 
 
-class MessageExporter(Generic[TMS], metaclass=ABCMeta):
-    _mapping: Dict[Type[Segment], Union[Callable[[Segment, Bot], Awaitable[MessageSegment]], Callable[[Segment, Bot], Awaitable[List[MessageSegment]]]]]
-    segment_class: Type[TMS]
+class MessageExporter(Generic[TM], metaclass=ABCMeta):
+    _mapping: Dict[
+        Type[Segment],
+        Union[
+            Callable[[Segment, Bot], Awaitable[MessageSegment]],
+            Callable[[Segment, Bot], Awaitable[List[MessageSegment]]],
+        ],
+    ]
 
     @classmethod
     @abstractmethod
     def get_adapter(cls) -> SupportAdapter: ...
 
     @abstractmethod
-    def get_message_type(self) -> Type[Message]: ...
+    def get_message_type(self) -> Type[TM]: ...
 
     @abstractmethod
     def get_message_id(self, event: Event) -> str: ...
@@ -119,7 +119,6 @@ class MessageExporter(Generic[TMS], metaclass=ABCMeta):
     async def export(self, source: "UniMessage", bot: Bot, fallback: bool):
         msg_type = self.get_message_type()
         message = msg_type()
-        self.segment_class = msg_type.get_segment_class()
         for seg in source:
             seg_type = seg.__class__
             if seg_type in self._mapping:
