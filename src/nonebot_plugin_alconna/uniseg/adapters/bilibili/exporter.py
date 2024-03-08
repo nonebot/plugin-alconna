@@ -6,7 +6,8 @@ from nonebot.adapters.bilibili.event import MessageEvent  # type: ignore
 from nonebot.adapters.bilibili.message import Message, MessageSegment  # type: ignore
 
 from nonebot_plugin_alconna.uniseg.segment import Text
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.exporter import Target, MessageExporter, export
 
 
 class BilibiliMessageExporter(MessageExporter["Message"]):

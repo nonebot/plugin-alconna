@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.telegram
 
     @classmethod
+    def get_builder(cls):
+        from .builder import TelegramMessageBuilder
+
+        return TelegramMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import TelegramMessageExporter
 

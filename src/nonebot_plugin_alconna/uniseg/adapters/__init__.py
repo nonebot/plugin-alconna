@@ -5,13 +5,13 @@ from typing import Dict, cast
 
 from nonebot import get_adapters
 
-from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
-
 from ..loader import BaseLoader
+from ..builder import MessageBuilder
+from ..exporter import MessageExporter
 
 root = Path(__file__).parent
 loaders: Dict[str, BaseLoader] = {}
-_adapters = [path.stem for path in root.iterdir() if path.is_dir()]
+_adapters = [path.stem for path in root.iterdir() if path.is_dir() and not path.stem.startswith("_")]
 for name in _adapters:
     try:
         module = importlib.import_module(f".{name}", __package__)
@@ -27,12 +27,22 @@ if not adapters:
         RuntimeWarning,
         15,
     )
-    MAPPING: Dict[str, MessageExporter] = {loader.get_adapter(): loader.get_exporter() for loader in loaders.values()}
+    EXPORTER_MAPPING: Dict[str, MessageExporter] = {
+        loader.get_adapter(): loader.get_exporter() for loader in loaders.values()
+    }
+    BUILDER_MAPPING: Dict[str, MessageBuilder] = {
+        loader.get_adapter(): loader.get_builder() for loader in loaders.values()
+    }
 else:
-    MAPPING: Dict[str, MessageExporter] = {}
+    EXPORTER_MAPPING: Dict[str, MessageExporter] = {}
+    BUILDER_MAPPING: Dict[str, MessageBuilder] = {}
     for adapter in adapters:
         if adapter in loaders:
-            MAPPING[adapter] = loaders[adapter].get_exporter()
+            try:
+                EXPORTER_MAPPING[adapter] = loaders[adapter].get_exporter()
+                BUILDER_MAPPING[adapter] = loaders[adapter].get_builder()
+            except Exception as e:
+                warn(f"Failed to load adapter {adapter}: {e}", RuntimeWarning, 15)
         else:
             warn(
                 f"Adapter {adapter} is not found in the uniseg.adapters,"

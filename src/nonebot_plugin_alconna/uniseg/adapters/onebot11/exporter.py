@@ -11,11 +11,11 @@ from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    Card,
     Text,
     AtAll,
     Audio,
     Emoji,
+    Hyper,
     Image,
     Reply,
     Video,
@@ -82,8 +82,9 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
-        return MessageSegment.xml(seg.raw) if seg.flag == "xml" else MessageSegment.json(seg.raw)
+    async def hyper(self, seg: Hyper, bot: Bot) -> "MessageSegment":
+        assert seg.raw, lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg)
+        return MessageSegment.xml(seg.raw) if seg.format == "xml" else MessageSegment.json(seg.raw)
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

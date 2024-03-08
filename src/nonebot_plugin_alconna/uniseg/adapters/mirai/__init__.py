@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.mirai
 
     @classmethod
+    def get_builder(cls):
+        from .builder import MiraiMessageBuilder
+
+        return MiraiMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import MiraiMessageExporter
 

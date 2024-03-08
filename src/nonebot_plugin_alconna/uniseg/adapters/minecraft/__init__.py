@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.minecraft
 
     @classmethod
+    def get_builder(cls):
+        from .builder import MinecraftMessageBuilder
+
+        return MinecraftMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import MinecraftMessageExporter
 

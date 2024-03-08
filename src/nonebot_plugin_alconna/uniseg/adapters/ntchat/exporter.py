@@ -7,7 +7,7 @@ from nonebot.adapters.ntchat.event import MessageEvent
 from nonebot.adapters.ntchat.bot import Bot as NTChatBot
 from nonebot.adapters.ntchat.message import Message, MessageSegment
 
-from nonebot_plugin_alconna.uniseg.segment import Card, File, Text, Image, Video
+from nonebot_plugin_alconna.uniseg.segment import File, Text, Hyper, Image, Video
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 
@@ -52,10 +52,11 @@ class NTChatMessageExporter(MessageExporter[Message]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
-        if seg.flag != "xml":
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="card", seg=seg))
-
+    async def hyper(self, seg: Hyper, bot: Bot) -> "MessageSegment":
+        if seg.format == "json" and seg.content and "card_wxid" in seg.content:
+            return MessageSegment.card(seg.content["card_wxid"])  # type: ignore
+        if seg.format != "xml" or not seg.raw:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg))
         return MessageSegment.xml(seg.raw)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

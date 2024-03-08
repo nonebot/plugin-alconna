@@ -12,28 +12,11 @@ from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
 
 from .tools import get_bot
-from .adapters import MAPPING
 from .fallback import FallbackMessage
 from .template import UniMessageTemplate
+from .adapters import BUILDER_MAPPING, EXPORTER_MAPPING
 from .exporter import Target, MessageExporter, SerializeFailed
-from .segment import (
-    At,
-    Card,
-    File,
-    Text,
-    AtAll,
-    Audio,
-    Emoji,
-    Image,
-    Other,
-    Reply,
-    Video,
-    Voice,
-    Segment,
-    reply,
-    segments,
-    reply_handle,
-)
+from .segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice, Segment
 
 T = TypeVar("T")
 TS = TypeVar("TS", bound=Segment)
@@ -286,7 +269,7 @@ class UniMessage(List[TS]):
             cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
             flag: Literal["xml", "json"],
             content: str,
-        ) -> "UniMessage[Union[TS1, Card]]":
+        ) -> "UniMessage[Union[TS1, Hyper]]":
             """创建卡片消息
 
             参数:
@@ -425,11 +408,11 @@ class UniMessage(List[TS]):
             return UniMessage(Reply(id))
 
         @_method
-        def card(cls_or_self, flag: Literal["xml", "json"], content: str) -> "UniMessage[Union[TS1, Card]]":
+        def card(cls_or_self, flag: Literal["xml", "json"], content: str) -> "UniMessage[Union[TS1, Hyper]]":
             if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Card(flag, content))
+                cls_or_self.append(Hyper(flag, content))
                 return cls_or_self
-            return UniMessage(Card(flag, content))
+            return UniMessage(Hyper(flag, content))
 
     def __init__(
         self: "UniMessage[Segment]",
@@ -748,7 +731,13 @@ class UniMessage(List[TS]):
         return "".join(seg.text for seg in self if isinstance(seg, Text))
 
     @staticmethod
-    async def generate(*, message: Optional[Message] = None, event: Optional[Event] = None, bot: Optional[Bot] = None):
+    async def generate(
+        *,
+        message: Optional[Message] = None,
+        event: Optional[Event] = None,
+        bot: Optional[Bot] = None,
+        adapter: Optional[str] = None,
+    ):
         if not message:
             if not event:
                 try:
@@ -759,22 +748,21 @@ class UniMessage(List[TS]):
                 message = event.get_message()
             except Exception:
                 return UniMessage()
-        result = UniMessage()
-        msg_copy = message.copy()
-        if (event and bot) and (_reply := await reply_handle(event, bot)):
-            result.append(_reply)
-        elif (res := reply.validate(message[0])).success:
-            res._value.origin = message[0]
-            result.append(res.value)
-            msg_copy.pop(0)
-        for seg in msg_copy:
-            for pat in segments:
-                if (res := pat.validate(seg)).success:
-                    res._value.origin = seg
-                    result.append(res._value)
-                    break
-            else:
-                result.append(Other(seg))
+        if not adapter:
+            if not bot:
+                try:
+                    bot = current_bot.get()
+                except LookupError as e:
+                    raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+            _adapter = bot.adapter
+            adapter = _adapter.get_name()
+        if not (fn := BUILDER_MAPPING.get(adapter)):
+            raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
+        result = UniMessage(fn.generate(message))
+        if (event and bot) and (_reply := await fn.extract_reply(event, bot)):
+            if result.index(Reply) == 0:
+                result.pop(0)
+            result.insert(0, _reply)
         return result
 
     @staticmethod
@@ -792,7 +780,7 @@ class UniMessage(List[TS]):
                     raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
             _adapter = bot.adapter
             adapter = _adapter.get_name()
-        if fn := MAPPING.get(adapter):
+        if fn := EXPORTER_MAPPING.get(adapter):
             return fn.get_message_id(event)
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
@@ -811,7 +799,7 @@ class UniMessage(List[TS]):
                     raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
             _adapter = bot.adapter
             adapter = _adapter.get_name()
-        if fn := MAPPING.get(adapter):
+        if fn := EXPORTER_MAPPING.get(adapter):
             return fn.get_target(event, bot)
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
@@ -824,7 +812,7 @@ class UniMessage(List[TS]):
         adapter = bot.adapter
         adapter_name = adapter.get_name()
         try:
-            if fn := MAPPING.get(adapter_name):
+            if fn := EXPORTER_MAPPING.get(adapter_name):
                 return await fn.export(self, bot, fallback)
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
         except SerializeFailed:
@@ -875,7 +863,7 @@ class UniMessage(List[TS]):
         msg = await self.export(bot, fallback)
         adapter = bot.adapter
         adapter_name = adapter.get_name()
-        if not (fn := MAPPING.get(adapter_name)):
+        if not (fn := EXPORTER_MAPPING.get(adapter_name)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
         res = await fn.send_to(target, bot, msg)
         return Receipt(bot, target, fn, res if isinstance(res, list) else [res])

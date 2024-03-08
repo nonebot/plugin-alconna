@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.qq
 
     @classmethod
+    def get_builder(cls):
+        from .builder import QQMessageBuilder
+
+        return QQMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import QQMessageExporter
 

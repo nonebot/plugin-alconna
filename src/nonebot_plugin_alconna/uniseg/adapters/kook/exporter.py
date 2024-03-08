@@ -8,7 +8,7 @@ from nonebot.adapters.kaiheila.event import MessageEvent, PrivateMessageEvent
 from nonebot.adapters.kaiheila.message import Message, MessageSegment, MessageSerializer
 
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-from nonebot_plugin_alconna.uniseg.segment import At, Card, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice
 
 
 class KookMessageExporter(MessageExporter["Message"]):
@@ -88,12 +88,12 @@ class KookMessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
-        if seg.flag == "xml":
+    async def hyper(self, seg: Hyper, bot: Bot) -> "MessageSegment":
+        if seg.format == "xml":
             raise SerializeFailed(
                 lang.require("nbp-uniseg", "failed_segment").format(adapter="kook", seg=seg, target="Card")
             )
-        return MessageSegment.Card(seg.raw)
+        return MessageSegment.Card(seg.content or seg.raw)
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

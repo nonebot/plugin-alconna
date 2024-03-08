@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.dodo
 
     @classmethod
+    def get_builder(cls):
+        from .builder import DodoMessageBuilder
+
+        return DodoMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import DoDoMessageExporter
 

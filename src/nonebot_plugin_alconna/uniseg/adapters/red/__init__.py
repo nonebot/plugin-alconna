@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.red
 
     @classmethod
+    def get_builder(cls):
+        from .builder import RedMessageBuilder
+
+        return RedMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import RedMessageExporter
 

@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.bilibili
 
     @classmethod
+    def get_builder(cls):
+        from .builder import BilibiliMessageBuilder
+
+        return BilibiliMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import BilibiliMessageExporter
 

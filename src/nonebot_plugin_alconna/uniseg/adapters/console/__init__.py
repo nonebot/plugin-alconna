@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.console
 
     @classmethod
+    def get_builder(cls):
+        from .builder import ConsoleMessageBuilder
+
+        return ConsoleMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import ConsoleMessageExporter
 

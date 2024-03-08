@@ -1,58 +1,47 @@
 from __future__ import annotations
 
 from typing_extensions import Self
-from typing import TypeVar, Callable, Iterable
+from typing import Callable, Iterable
 
 from tarina import lang
+from nonebot.adapters import Message
 from arclet.alconna import NullMessage
-from arclet.alconna.typing import CommandMeta
-from nonebot.adapters import Message, MessageSegment
 from arclet.alconna.argv import Argv, set_default_argv_type
 
-from .uniseg import Segment, UniMessage, FallbackMessage
-
-TM = TypeVar("TM", Message, UniMessage)
-TM1 = TypeVar("TM1", bound=Message)
+from .uniseg import Text, Segment, UniMessage, FallbackMessage
 
 
-def _default_builder(self: MessageArgv, data: Message | UniMessage):
+def _default_builder(self: MessageArgv, data: UniMessage[Segment]):
     for unit in data:
-        if not self.is_text(unit):
+        if not isinstance(unit, Text):
             self.raw_data.append(unit)
             self.ndata += 1
-        elif res := unit.data["text"].strip():
+        elif res := unit.text.strip():
             self.raw_data.append(res)
             self.ndata += 1
 
 
-class MessageArgv(Argv[TM]):
-    is_text: Callable[[MessageSegment | Segment], bool]
+class MessageArgv(Argv[UniMessage]):
 
     @classmethod
     def custom_build(
         cls,
-        target: type[TM1],
-        is_text: Callable[[MessageSegment | Segment], bool] = lambda x: x.is_text(),
-        builder: Callable[[MessageArgv, TM1], None] = _default_builder,
+        target: type[Message],
+        builder: Callable[[MessageArgv, UniMessage], None] = _default_builder,
         cleanup: Callable[..., None] = lambda: None,
     ):
         cls._cache.setdefault(target, {}).update(
             {
-                "is_text": is_text,
                 "builder": builder,
                 "cleanup": cleanup,
             }
         )
 
-    def __post_init__(self, meta: CommandMeta):
-        super().__post_init__(meta)
-        self.is_text = lambda x: x.is_text()
-
     @staticmethod
     def generate_token(data: list) -> int:
         return hash("".join(i.__class__.__name__ + i.__repr__() for i in data))
 
-    def build(self, data: TM) -> Self:
+    def build(self, data: UniMessage) -> Self:
         """命令分析功能, 传入字符串或消息链
 
         Args:
@@ -62,13 +51,11 @@ class MessageArgv(Argv[TM]):
             Self: 自身
         """
         self.reset()
-        if not isinstance(data, (Message, UniMessage)):
-            data = FallbackMessage(data)  # type: ignore
-        cache = self.__class__._cache.get(data.__class__, {})
+        origin_class = self.context.get("message_type", FallbackMessage)
+        cache = self.__class__._cache.get(origin_class, {})
         if "cleanup" in cache:
             cache["cleanup"]()
-        self.is_text = cache.get("is_text", self.is_text)
-        self.converter = lambda x: data.__class__(x)
+        self.converter = lambda x: UniMessage(x)
         self.origin = data
         cache.get("builder", _default_builder)(self, data)
         if self.ndata < 1:
@@ -78,11 +65,11 @@ class MessageArgv(Argv[TM]):
             self.token = self.generate_token(self.raw_data)
         return self
 
-    def addon(self, data: Iterable[str | MessageSegment], merge_str: bool = True) -> Self:
+    def addon(self, data: Iterable[str | Segment], merge_str: bool = True) -> Self:
         """添加命令元素
 
         Args:
-            data (Iterable[str | MessageSegment]): 命令元素
+            data (Iterable[str | Segment]): 命令元素
             merge_str (bool, optional): 是否合并前后字符串
 
         Returns:
@@ -93,8 +80,8 @@ class MessageArgv(Argv[TM]):
                 continue
             if d.__class__ is str:
                 text = d
-            elif self.is_text(d):  # type: ignore
-                text = d.data["text"]  # type: ignore
+            elif isinstance(d, Text):  # type: ignore
+                text = d.text  # type: ignore
             else:
                 self.raw_data.append(d)
                 self.ndata += 1

@@ -1,13 +1,13 @@
 from nonebot.plugin import PluginMetadata
 
 from .segment import At as At
-from .segment import Card as Card
 from .segment import File as File
 from .segment import Text as Text
 from .params import MsgId as MsgId
 from .segment import AtAll as AtAll
 from .segment import Audio as Audio
 from .segment import Emoji as Emoji
+from .segment import Hyper as Hyper
 from .segment import Image as Image
 from .segment import Other as Other
 from .segment import Reply as Reply

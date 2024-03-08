@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.discord
 
     @classmethod
+    def get_builder(cls):
+        from .builder import DiscordMessageBuilder
+
+        return DiscordMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import DiscordMessageExporter
 

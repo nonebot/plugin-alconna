@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.ntchat
 
     @classmethod
+    def get_builder(cls):
+        from .builder import NTChatMessageBuilder
+
+        return NTChatMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import NTChatMessageExporter
 

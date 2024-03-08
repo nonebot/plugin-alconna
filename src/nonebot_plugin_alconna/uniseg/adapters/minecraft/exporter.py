@@ -1,12 +1,34 @@
 from typing import Union
 
 from nonebot.adapters import Bot, Event
+from nonebot.adapters.minecraft.model import TextColor
 from nonebot.adapters.minecraft.bot import Bot as MinecraftBot
 from nonebot.adapters.minecraft.event.base import MessageEvent
 from nonebot.adapters.minecraft.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.segment import Text
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
+
+STYLE_TYPE_MAP = {
+    "b": "bold",
+    "strong": "bold",
+    "bold": "bold",
+    "i": "italic",
+    "em": "italic",
+    "italic": "italic",
+    "u": "underline",
+    "ins": "underline",
+    "underline": "underline",
+    "s": "strikethrough",
+    "del": "strikethrough",
+    "strike": "strikethrough",
+    "strikethrough": "strikethrough",
+    "obf": "obfuscated",
+    "obfuscated": "obfuscated",
+}
+
+for color in TextColor.__members__.values():
+    STYLE_TYPE_MAP[color.value] = color.value
 
 
 class MinecraftMessageExporter(MessageExporter[Message]):
@@ -23,7 +45,26 @@ class MinecraftMessageExporter(MessageExporter[Message]):
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        return MessageSegment.text(seg.text)
+        if seg.extract_most_style() == "title":
+            return MessageSegment.title(seg.text)
+        styles = [STYLE_TYPE_MAP[s] for s in seg.styles if s in STYLE_TYPE_MAP]
+        kwargs = {}
+        for style in styles:
+            if style == "bold":
+                kwargs["bold"] = True
+            elif style == "italic":
+                kwargs["italic"] = True
+            elif style == "underline":
+                kwargs["underlined"] = True
+            elif style == "strikethrough":
+                kwargs["strikethrough"] = True
+            elif style == "obfuscated":
+                kwargs["obfuscated"] = True
+            else:
+                kwargs["color"] = style
+        if seg.extract_most_style() == "actionbar":
+            return MessageSegment.actionbar(seg.text, **kwargs)
+        return MessageSegment.text(seg.text, **kwargs)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, MinecraftBot)

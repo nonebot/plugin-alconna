@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.github
 
     @classmethod
+    def get_builder(cls):
+        from .builder import GithubMessageBuilder
+
+        return GithubMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import GithubMessageExporter
 

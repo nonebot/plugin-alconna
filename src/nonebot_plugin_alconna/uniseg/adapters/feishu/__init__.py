@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.feishu
 
     @classmethod
+    def get_builder(cls):
+        from .builder import FeishuMessageBuilder
+
+        return FeishuMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import FeishuMessageExporter
 

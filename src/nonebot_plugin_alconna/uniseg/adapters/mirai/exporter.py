@@ -27,12 +27,12 @@ from nonebot.adapters.mirai2.event import (
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    Card,
     File,
     Text,
     AtAll,
     Audio,
     Emoji,
+    Hyper,
     Image,
     Reply,
     Voice,
@@ -128,8 +128,9 @@ class MiraiMessageExporter(MessageExporter[MessageChain]):
         return MessageSegment.file(seg.id, seg.name, 0)  # type: ignore
 
     @export
-    async def card(self, seg: Card, bot: Bot) -> "MessageSegment":
-        return MessageSegment.xml(seg.raw) if seg.flag == "xml" else MessageSegment.app(seg.raw)
+    async def hyper(self, seg: Hyper, bot: Bot) -> "MessageSegment":
+        assert seg.raw, lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg)
+        return MessageSegment.xml(seg.raw) if seg.format == "xml" else MessageSegment.app(seg.raw)
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":

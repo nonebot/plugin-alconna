@@ -6,7 +6,6 @@ from nonebot.typing import T_State
 from tarina import lang, init_spec
 from nonebot.matcher import Matcher
 from nonebot.utils import escape_tag
-from nonebot.params import EventMessage
 from nonebot.plugin.on import on_message
 from nonebot.internal.rule import Rule as Rule
 from nonebot.adapters import Bot, Event, Message
@@ -16,7 +15,7 @@ from arclet.alconna import Alconna, Arparma, CompSession, output_manager, comman
 
 from .config import Config
 from .adapters import MAPPING
-from .uniseg import UniMessage
+from .uniseg import UniMsg, UniMessage
 from .model import CompConfig, CommandResult
 from .extension import Extension, ExtensionExecutor
 from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT, log
@@ -122,7 +121,7 @@ class AlconnaRule:
                     ((lang.require("comp/nonebot", "exit").format(cmd=_exit) + "\n") if "exit" not in hides else ""),
                 )
 
-            async def _waiter_handle(_bot: Bot, _event: Event, _matcher: Matcher, content: Message = EventMessage()):
+            async def _waiter_handle(_bot: Bot, _event: Event, _matcher: Matcher, content: UniMsg):
                 msg = str(content).lstrip()
                 _future = self._futures[_bot.self_id][_event.get_session_id()]
                 _interface = self._interfaces[_event.get_session_id()]
@@ -171,16 +170,27 @@ class AlconnaRule:
     def __hash__(self) -> int:
         return hash(self.command.__hash__())
 
-    async def handle(self, bot: Bot, event: Event, state: T_State, msg: Message) -> Union[Arparma, Literal[False]]:
+    async def handle(
+        self, bot: Bot, event: Event, state: T_State, msg: Union[Message, UniMessage]
+    ) -> Union[Arparma, Literal[False]]:
         ctx = await self.executor.context_provider(event, bot, state)
+        if isinstance(msg, UniMessage):
+            _msg = msg
+            try:
+                ctx["message_type"] = event.get_message().__class__
+            except ValueError:
+                pass
+        else:
+            ctx["message_type"] = msg.__class__
+            _msg = await UniMessage.generate(message=msg, event=event, bot=bot)
         if self.comp_config is None:
-            return self.command.parse(msg, ctx)
+            return self.command.parse(_msg, ctx)
         res = None
         session_id = event.get_session_id()
         if session_id not in self._interfaces:
             self._interfaces[session_id] = CompSession(self.command)
         with self._interfaces[session_id]:
-            res = self.command.parse(msg, ctx)
+            res = self.command.parse(_msg, ctx)
         if res:
             self._interfaces[session_id].exit()
             del self._interfaces[session_id]
@@ -216,7 +226,7 @@ class AlconnaRule:
                 finally:
                     if not _futures[session_id].done():
                         _futures[session_id].cancel()
-                ans: Union[Message, bool, None] = _futures[session_id].result()
+                ans: Union[UniMessage, bool, None] = _futures[session_id].result()
                 _futures[session_id] = asyncio.get_running_loop().create_future()
                 if ans is False:
                     await self.send(lang.require("comp/nonebot", "exited"), bot, event, res)
@@ -246,8 +256,6 @@ class AlconnaRule:
         if not (msg := await self.executor.message_provider(event, state, bot, self.use_origin)):
             return False
         msg = await self.executor.receive_wrapper(bot, event, msg)
-        if isinstance(msg, UniMessage):
-            msg = await msg.export(bot, fallback=True)
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
         adapter_name = bot.adapter.get_name()
         if adapter_name in MAPPING and MAPPING[adapter_name] not in _modules:

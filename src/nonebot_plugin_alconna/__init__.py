@@ -38,7 +38,6 @@ from arclet.alconna import SubcommandResult as SubcommandResult
 from .consts import log
 from .config import Config
 from .uniseg import At as At
-from .uniseg import Card as Card
 from .uniseg import File as File
 from .uniseg import Text as Text
 from .model import Match as Match
@@ -47,6 +46,7 @@ from .params import Check as Check
 from .uniseg import AtAll as AtAll
 from .uniseg import Audio as Audio
 from .uniseg import Emoji as Emoji
+from .uniseg import Hyper as Hyper
 from .uniseg import Image as Image
 from .uniseg import MsgId as MsgId
 from .uniseg import Other as Other

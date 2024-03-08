@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.ding
 
     @classmethod
+    def get_builder(cls):
+        from .builder import DingMessageBuilder
+
+        return DingMessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import DingMessageExporter
 

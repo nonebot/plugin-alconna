@@ -8,6 +8,12 @@ class Loader(BaseLoader):
         return SupportAdapter.onebot11
 
     @classmethod
+    def get_builder(cls):
+        from .builder import Onebot11MessageBuilder
+
+        return Onebot11MessageBuilder()
+
+    @classmethod
     def get_exporter(cls):
         from .exporter import Onebot11MessageExporter
 
