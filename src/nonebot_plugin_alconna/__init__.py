@@ -102,6 +102,15 @@ from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
+from .typings import AtID as AtID
+from .typings import ImageOrUrl as ImageOrUrl
+from .typings import Style as Style
+from .typings import Bold as Bold
+from .typings import Underline as Underline
+from .typings import Italic as Italic
+from .typings import Spoiler as Spoiler
+from .typings import Strikethrough as Strikethrough
+from .typings import Code as Code
 
 __version__ = "0.38.2"
 

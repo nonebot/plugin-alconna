@@ -50,7 +50,7 @@ Card = SegmentPattern("card", _Card, Hyper, MessageSegment.Card, handle=lambda x
 Quote = SegmentPattern("quote", _Quote, Reply, MessageSegment.quote)
 
 
-def kmarkdown(text: UniText):
+def kmarkdown(self, text: UniText):
     if text.extract_most_style() == "markdown":
         return MessageSegment.KMarkdown(text.text, text.text)
 

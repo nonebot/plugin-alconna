@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing_extensions import ParamSpec, TypeAlias
+from typing_extensions import Self, ParamSpec, TypeAlias
 from typing import Any, Union, Generic, TypeVar, Callable, Awaitable
 
 from tarina import lang
 from arclet.alconna import Arparma
 from nonebot.typing import T_State
-from nepattern import MatchMode, BasePattern, MatchFailed
+from nepattern import MatchMode, BasePattern, MatchFailed, INTEGER, UnionPattern, URL
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
 
 from .argv import argv_ctx
 from .uniseg.segment import env
-from .uniseg import Text, Segment, UniMessage
+from .uniseg import Text, Segment, UniMessage, At, Image
 
 T = TypeVar("T")
 TS = TypeVar("TS", bound=Segment)
@@ -43,11 +43,11 @@ class _Text(BasePattern[Text, str]):
         for scale, style in styles["record"].items():
             if start <= scale[0] < styles["index"] <= scale[1]:
                 _styles[(scale[0] - start, scale[1] - start)] = style
-            if scale[0] <= start <= scale[1] <= styles["index"]:
+            elif scale[0] <= start < scale[1] <= styles["index"]:
                 _styles[(0, scale[1] - start)] = style
-            if start <= scale[0] < scale[1] <= styles["index"]:
+            elif start <= scale[0] < scale[1] <= styles["index"]:
                 _styles[(scale[0] - start, scale[1] - start)] = style
-            if scale[0] <= start < styles["index"] <= scale[1]:
+            elif scale[0] <= start < styles["index"] <= scale[1]:
                 _styles[(scale[0] - start, _len)] = style
         return Text(x, _styles)
 
@@ -61,6 +61,52 @@ class _Text(BasePattern[Text, str]):
 
 text = _Text()
 env[Text] = text
+
+ImageOrUrl = (
+    UnionPattern[Union[str, Image]](
+        [
+            BasePattern(
+                mode=MatchMode.TYPE_CONVERT,
+                origin=str,
+                converter=lambda _, x: x.url,  # type: ignore 
+                alias="img",
+                accepts=Image,
+            ),
+            URL,  # type: ignore
+        ]
+    )
+    @ "img_url"
+)
+"""
+内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接
+"""
+
+AtID = (
+    UnionPattern[Union[str, At]](
+        [
+            BasePattern(
+                mode=MatchMode.TYPE_CONVERT,
+                origin=int,
+                alias="At",
+                accepts=At,
+                converter=lambda _, x: int(x.target),  # type: ignore
+            ),
+            BasePattern(
+                r"@(\d+)",
+                mode=MatchMode.REGEX_CONVERT,
+                origin=int,
+                alias="@xxx",
+                accepts=str,
+                converter=lambda _, x: int(x[1]),  # type: ignore
+            ),
+            INTEGER,
+        ]
+    )
+    @ "notice_id"
+)
+"""
+内置类型，允许传入@元素(At)或者'@xxxx'式样的字符串或者数字, 返回数字
+"""
 
 
 class SegmentPattern(BasePattern[TMS, TS], Generic[TS, TMS, P]):
@@ -104,13 +150,13 @@ class TextSegmentPattern(BasePattern[TMS, Union[str, Text]], Generic[TMS, P]):
         name: str,
         origin: type[TMS],
         call: Callable[P, TMS],
-        converter: Callable[[Text], TMS | None],
+        converter: Callable[[Any, Text], TMS | None],
     ):
         super().__init__(
             mode=MatchMode.TYPE_CONVERT,
             origin=origin,
             alias=name,
-            converter=lambda _, x: converter(x) if isinstance(x.origin, origin) and x.origin.type == name else None,  # type: ignore
+            converter=converter,
             accepts=Text,
             previous=text,
         )
@@ -121,41 +167,40 @@ class TextSegmentPattern(BasePattern[TMS, Union[str, Text]], Generic[TMS, P]):
         return self.call(*args, **kwargs)  # type: ignore
 
 
-# class StyleTextPattern(BasePattern[TMS, Union[str, Text]], Generic[TMS, P]):
-#     def __init__(
-#         self,
-#         expect: str,
-#         origin: type[TMS],
-#         call: Callable[P, TMS],
-#         converter: Callable[[Any, Text], TMS | None],
-#     ):
-#         self.expected = [expect]
-#         super().__init__(
-#             mode=MatchMode.TYPE_CONVERT,
-#             origin=origin,
-#             alias=expect,
-#             converter=(
-#               lambda _, x: converter(_, x)
-#                   if all(set(style).issuperset(_.expected)
-#                   for style in x.styles.values()) else None),  # type: ignore
-#             accepts=Text,
-#             previous=text,
-#         )
-#         self.pattern = expect
-#         self.call = call
+class Style(BasePattern[Text, Union[str, Text]], Generic[TMS, P]):
+    def __init__(
+        self,
+        expect: str,
+    ):
+        self.expected = [expect]
+        super().__init__(
+            mode=MatchMode.VALUE_OPERATE,
+            origin=Text,
+            converter=lambda _, x: x if all(set(style).issuperset(_.expected) for style in x.styles.values()) else None,  # type: ignore
+            alias=expect,
+            previous=text,
+        )
+        self.pattern = expect
 
-#     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> TMS:
-#         return self.call(*args, **kwargs)  # type: ignore
+    def __call__(self, text: str):
+        return Text(text).mark(0, len(text), *self.expected)
 
-#     def __add__(self, other: "StyleTextPattern") -> Self:
-#         if not isinstance(other, StyleTextPattern):
-#             raise TypeError(other)
-#         if other.pattern not in self.expected:
-#             self.expected.append(other.pattern)
-#         self.alias = "+".join(self.expected)
-#         self.refresh()
-#         return self
+    def __add__(self, other: "Style") -> Self:
+        if not isinstance(other, Style):
+            raise TypeError(other)
+        if other.pattern not in self.expected:
+            self.expected.append(other.pattern)
+        self.alias = "+".join(self.expected)
+        self.refresh()
+        return self
 
+
+Bold = Style("bold")
+Italic = Style("italic")
+Underline = Style("underline")
+Strikethrough = Style("strikethrough")
+Spoiler = Style("spoiler")
+Code = Style("code")
 
 MReturn: TypeAlias = Union[
     Union[str, Segment, UniMessage, Message, MessageSegment],

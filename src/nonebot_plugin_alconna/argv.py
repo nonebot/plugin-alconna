@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Iterable
 from tarina import lang
 from arclet.alconna import NullMessage
 from arclet.alconna.argv import Argv, set_default_argv_type
-
+from nonebot.adapters import Message
 from .uniseg import Text, Segment, UniMessage
 
 argv_ctx: ContextVar[MessageArgv] = ContextVar("argv_ctx")
@@ -39,7 +39,7 @@ class MessageArgv(Argv[UniMessage]):
         del self.context["__token__"]
         return super().exit()
 
-    def build(self, data: UniMessage) -> Self:
+    def build(self, data: str | Message | UniMessage) -> Self:
         """命令分析功能, 传入字符串或消息链
 
         Args:
@@ -49,6 +49,10 @@ class MessageArgv(Argv[UniMessage]):
             Self: 自身
         """
         self.reset()
+        if isinstance(data, Message):
+            data = UniMessage.generate_without_reply(message=data, adapter=self.context.get("$adapter.name"))
+        elif isinstance(data, str):
+            data = UniMessage.text(data)
         self.converter = lambda x: UniMessage(x)
         self.origin = data
         styles = self.context.setdefault("__styles__", {"record": {}, "index": 0, "msg": ""})
@@ -58,6 +62,7 @@ class MessageArgv(Argv[UniMessage]):
             if not isinstance(unit, Text):
                 self.raw_data.append(unit)
                 self.ndata += 1
+                continue
             if not unit.text.strip():
                 if not index or index == len(data) - 1:
                     continue

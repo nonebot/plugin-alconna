@@ -22,12 +22,12 @@ STYLE_TYPE_MAP = {
 }
 
 
-def title(x: Text):
+def title(self, x: Text):
     if x.extract_most_style() == "title":
         return MessageSegment.title(x.text)
 
 
-def actionbar(x: Text):
+def actionbar(sef, x: Text):
     if x.extract_most_style() == "actionbar":
         styles = [STYLE_TYPE_MAP[s] for s in x.styles[(0, len(x.text))] if s in STYLE_TYPE_MAP]
         kwargs = {}

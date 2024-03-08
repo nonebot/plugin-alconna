@@ -448,6 +448,25 @@ class UniMessage(List[TS]):
         """
         return UniMessageTemplate(format_string, cls)
 
+    def __merge_text__(self) -> Self:
+        if not self:
+            return self
+        result = []
+        last = self[0]
+        for seg in self[1:]:
+            if isinstance(seg, Text) and isinstance(last, Text):
+                _len = len(last.text)
+                last.text += seg.text
+                for scale, styles in seg.styles.items():
+                    last.styles[(scale[0] + _len, scale[1] + _len)] = styles[:]
+            else:
+                result.append(last)
+                last = seg
+        result.append(last)
+        self.clear()
+        self.extend(result)
+        return self
+
     @overload
     def __add__(self, other: str) -> "UniMessage[Union[TS, Text]]": ...
 
@@ -465,15 +484,13 @@ class UniMessage(List[TS]):
             else:
                 result.append(Text(other))
         elif isinstance(other, Segment):
-            if result and isinstance(result[-1], Text) and isinstance(other, Text):
-                result[-1] = Text(result[-1].text + other.text)
-            else:
-                result.append(other)
+            result.append(other)
         elif isinstance(other, Iterable):
             for seg in other:
                 result += seg
         else:
             raise TypeError(f"Unsupported type {type(other)!r}")
+        result.__merge_text__()
         return result
 
     @overload
@@ -496,15 +513,13 @@ class UniMessage(List[TS]):
             else:
                 self.append(Text(other))  # type: ignore
         elif isinstance(other, Segment):
-            if self and (isinstance(text := self[-1], Text) and isinstance(other, Text)):
-                text.text += other.text
-            else:
-                self.append(other)
+            self.append(other)
         elif isinstance(other, Iterable):
             for seg in other:
                 self.__iadd__(seg)
         else:
             raise TypeError(f"Unsupported type {type(other)!r}")
+        self.__merge_text__()
         return self
 
     @overload
@@ -764,6 +779,36 @@ class UniMessage(List[TS]):
                 result.pop(0)
             result.insert(0, _reply)
         return result
+
+    @staticmethod
+    def generate_without_reply(
+        *,
+        message: Optional[Message] = None,
+        event: Optional[Event] = None,
+        bot: Optional[Bot] = None,
+        adapter: Optional[str] = None,
+    ):
+        if not message:
+            if not event:
+                try:
+                    event = current_event.get()
+                except LookupError as e:
+                    raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
+            try:
+                message = event.get_message()
+            except Exception:
+                return UniMessage()
+        if not adapter:
+            if not bot:
+                try:
+                    bot = current_bot.get()
+                except LookupError as e:
+                    raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+            _adapter = bot.adapter
+            adapter = _adapter.get_name()
+        if not (fn := BUILDER_MAPPING.get(adapter)):
+            raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
+        return UniMessage(fn.generate(message))
 
     @staticmethod
     def get_message_id(event: Optional[Event] = None, bot: Optional[Bot] = None, adapter: Optional[str] = None) -> str:

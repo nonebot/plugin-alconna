@@ -48,7 +48,7 @@ MentionEveryone = SegmentPattern("mention_everyone", _MentionEveryone, AtAll, Me
 Reference = SegmentPattern("reference", _Reference, Reply, MessageSegment.reference)
 
 
-def markdown(x: Text):
+def markdown(self, x: Text):
     if x.extract_most_style() == "markdown":
         return MessageSegment.markdown(x.text)
 

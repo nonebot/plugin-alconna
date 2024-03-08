@@ -1,4 +1,5 @@
 import importlib
+import os
 from pathlib import Path
 from warnings import warn
 from typing import Dict, cast
@@ -20,22 +21,27 @@ for name in _adapters:
     except Exception as e:
         warn(f"Failed to load adapter {name}: {e}", RuntimeWarning, 15)
 
-adapters = get_adapters()
-if not adapters:
+try:
+    adapters = get_adapters()
+except Exception as e:
+    warn(f"Failed to load adapters: {e}", RuntimeWarning, 15)
+    adapters = {}
+EXPORTER_MAPPING: Dict[str, MessageExporter] = {}
+BUILDER_MAPPING: Dict[str, MessageBuilder] = {}
+
+if not adapters or os.environ.get("PLUGIN_ALCONNA_TESTENV"):
     warn(
         "No adapters found, please make sure you have installed at least one adapter and have it configured properly.",
         RuntimeWarning,
         15,
     )
-    EXPORTER_MAPPING: Dict[str, MessageExporter] = {
-        loader.get_adapter(): loader.get_exporter() for loader in loaders.values()
-    }
-    BUILDER_MAPPING: Dict[str, MessageBuilder] = {
-        loader.get_adapter(): loader.get_builder() for loader in loaders.values()
-    }
+    for adapter, loader in loaders.items():
+        try:
+            EXPORTER_MAPPING[adapter] = loaders[adapter].get_exporter()
+            BUILDER_MAPPING[adapter] = loaders[adapter].get_builder()
+        except Exception as e:
+            warn(f"Failed to load adapter {adapter}: {e}", RuntimeWarning, 15)
 else:
-    EXPORTER_MAPPING: Dict[str, MessageExporter] = {}
-    BUILDER_MAPPING: Dict[str, MessageBuilder] = {}
     for adapter in adapters:
         if adapter in loaders:
             try:

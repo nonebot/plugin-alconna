@@ -37,7 +37,7 @@ Quote = SegmentPattern("quote", _RenderMessage, UniReply, MessageSegment.quote)
 Author = SegmentPattern("author", _Author, Other, MessageSegment.author)
 
 
-def link(x: Text):
+def link(self, x: Text):
     style = x.extract_most_style()
     if style == "link":
         return MessageSegment.link(x.text)

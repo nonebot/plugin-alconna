@@ -34,6 +34,7 @@ class KookMessageBuilder(MessageBuilder):
         for index, unit in enumerate(source):
             if not unit.is_text():
                 res.append(unit)
+                continue
             if unit.type == "text":
                 text = unit.data["text"]
                 if not text.strip():

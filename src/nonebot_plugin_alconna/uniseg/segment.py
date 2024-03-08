@@ -94,6 +94,34 @@ class Segment:
             return vars(self)
 
 
+STYLE_TYPE_MAP = {
+    "bold": "\033[1m",
+    "italic": "\033[3m",
+    "underline": "\033[4m",
+    "strikethrough": "\033[9m",
+    "obfuscated": "\033[47m",
+    "code": "\033[7m",
+    "spoiler": "\033[8m",
+    "reset": "\033[0m",
+    "black": "\033[30m",
+    "dark_blue": "\033[34m",
+    "dark_green": "\033[32m",
+    "dark_aqua": "\033[36m",
+    "dark_red": "\033[31m",
+    "dark_purple": "\033[35m",
+    "gold": "\033[33m",
+    "gray": "\033[37m",
+    "dark_gray": "\033[90m",
+    "blue": "\033[94m",
+    "green": "\033[92m",
+    "aqua": "\033[96m",
+    "red": "\033[91m",
+    "light_purple": "\033[95m",
+    "yellow": "\033[93m",
+    "white": "\033[97m",
+}
+
+
 @dataclass
 class Text(Segment):
     """Text对象, 表示一类文本元素"""
@@ -166,6 +194,24 @@ class Text(Segment):
         pat = re.compile(r"</(\w+)(?<!/p)><\1>")
         for _ in range(max(map(len, styles.values()))):
             text = pat.sub("", text)
+        return text
+
+    def __rich__(self):
+        result = []
+        text = self.text
+        styles = self.styles
+        if not styles:
+            return text
+        self.__merge__()
+        scales = sorted(styles.keys(), key=lambda x: x[0])
+        left = scales[0][0]
+        result.append(text[:left])
+        for scale in scales:
+            prefix = "".join(f"{STYLE_TYPE_MAP[style]}" for style in styles[scale])
+            result.append(f"{prefix}{text[scale[0] : scale[1]]}\033[0m")
+        right = scales[-1][1]
+        result.append(text[right:])
+        text = "".join(result)
         return text
 
     def extract_most_style(self) -> str:
