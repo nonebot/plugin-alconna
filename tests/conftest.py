@@ -1,4 +1,5 @@
 import os
+
 import pytest
 import nonebot
 from nonebug import NONEBOT_INIT_KWARGS

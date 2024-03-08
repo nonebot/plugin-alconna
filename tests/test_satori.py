@@ -11,7 +11,7 @@ from tests.fake import fake_message_event_satori
 async def test_satori(app: App):
     from nonebot.adapters.satori import Message
 
-    from nonebot_plugin_alconna import Text, Bold, Underline, on_alconna
+    from nonebot_plugin_alconna import Bold, Text, Underline, on_alconna
 
     msg = Message("/com<b>mand s<i>ome</i>_arg</b> <u>some_arg</u> some_arg")
 

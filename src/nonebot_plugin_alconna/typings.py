@@ -6,12 +6,12 @@ from typing import Any, Union, Generic, TypeVar, Callable, Awaitable
 from tarina import lang
 from arclet.alconna import Arparma
 from nonebot.typing import T_State
-from nepattern import MatchMode, BasePattern, MatchFailed, INTEGER, UnionPattern, URL
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
+from nepattern import URL, INTEGER, MatchMode, BasePattern, MatchFailed, UnionPattern
 
 from .argv import argv_ctx
 from .uniseg.segment import env
-from .uniseg import Text, Segment, UniMessage, At, Image
+from .uniseg import At, Text, Image, Segment, UniMessage
 
 T = TypeVar("T")
 TS = TypeVar("TS", bound=Segment)
@@ -68,7 +68,7 @@ ImageOrUrl = (
             BasePattern(
                 mode=MatchMode.TYPE_CONVERT,
                 origin=str,
-                converter=lambda _, x: x.url,  # type: ignore 
+                converter=lambda _, x: x.url,  # type: ignore
                 alias="img",
                 accepts=Image,
             ),
@@ -185,7 +185,7 @@ class Style(BasePattern[Text, Union[str, Text]], Generic[TMS, P]):
     def __call__(self, text: str):
         return Text(text).mark(0, len(text), *self.expected)
 
-    def __add__(self, other: "Style") -> Self:
+    def __add__(self, other: Style) -> Self:
         if not isinstance(other, Style):
             raise TypeError(other)
         if other.pattern not in self.expected:

@@ -41,6 +41,7 @@ def test_shortcut():
 
 def test_v11():
     from nonebot.adapters.onebot.v11 import Message
+
     from nonebot_plugin_alconna import At as GenericAt
     from nonebot_plugin_alconna.adapters.onebot11 import At, Image
 
@@ -71,6 +72,7 @@ def test_v11():
 
 def test_v12():
     from nonebot.adapters.onebot.v12 import Message
+
     from nonebot_plugin_alconna import At as GenericAt
     from nonebot_plugin_alconna.adapters.onebot12 import Image, Mention
 

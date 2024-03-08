@@ -5,9 +5,10 @@ from typing_extensions import Self
 from typing import TYPE_CHECKING, Any, Iterable
 
 from tarina import lang
+from nonebot.adapters import Message
 from arclet.alconna import NullMessage
 from arclet.alconna.argv import Argv, set_default_argv_type
-from nonebot.adapters import Message
+
 from .uniseg import Text, Segment, UniMessage
 
 argv_ctx: ContextVar[MessageArgv] = ContextVar("argv_ctx")

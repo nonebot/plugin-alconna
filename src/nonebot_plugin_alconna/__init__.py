@@ -42,6 +42,9 @@ from .uniseg import File as File
 from .uniseg import Text as Text
 from .model import Match as Match
 from .model import Query as Query
+from .typings import AtID as AtID
+from .typings import Bold as Bold
+from .typings import Code as Code
 from .params import Check as Check
 from .uniseg import AtAll as AtAll
 from .uniseg import Audio as Audio
@@ -53,21 +56,25 @@ from .uniseg import Other as Other
 from .uniseg import Reply as Reply
 from .uniseg import Video as Video
 from .uniseg import Voice as Voice
+from .typings import Style as Style
 from .params import assign as assign
 from .rule import alconna as alconna
 from .uniseg import Custom as Custom
 from .uniseg import Target as Target
 from .uniseg import UniMsg as UniMsg
+from .typings import Italic as Italic
 from .uniseg import RefNode as RefNode
 from .uniseg import Segment as Segment
 from .uniseg import get_bot as get_bot
 from .matcher import Command as Command
+from .typings import Spoiler as Spoiler
 from .matcher import referent as referent
 from .params import AlcResult as AlcResult
 from .uniseg import MessageId as MessageId
 from .uniseg import MsgTarget as MsgTarget
 from .uniseg import Reference as Reference
 from .uniseg import patch_saa as patch_saa
+from .typings import Underline as Underline
 from .argv import MessageArgv as MessageArgv
 from .params import AlcContext as AlcContext
 from .params import AlcMatches as AlcMatches
@@ -79,6 +86,7 @@ from .extension import Extension as Extension
 from .extension import Interface as Interface
 from .matcher import funcommand as funcommand
 from .matcher import on_alconna as on_alconna
+from .typings import ImageOrUrl as ImageOrUrl
 from .params import match_value as match_value
 from .uniseg import image_fetch as image_fetch
 from .params import AlconnaMatch as AlconnaMatch
@@ -87,6 +95,7 @@ from .model import CommandResult as CommandResult
 from .params import AlcExecResult as AlcExecResult
 from .params import AlconnaResult as AlconnaResult
 from .uniseg import MessageTarget as MessageTarget
+from .typings import Strikethrough as Strikethrough
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
 from .params import AlconnaContext as AlconnaContext
 from .params import AlconnaMatches as AlconnaMatches
@@ -102,15 +111,6 @@ from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
-from .typings import AtID as AtID
-from .typings import ImageOrUrl as ImageOrUrl
-from .typings import Style as Style
-from .typings import Bold as Bold
-from .typings import Underline as Underline
-from .typings import Italic as Italic
-from .typings import Spoiler as Spoiler
-from .typings import Strikethrough as Strikethrough
-from .typings import Code as Code
 
 __version__ = "0.38.2"
 

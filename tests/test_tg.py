@@ -3,7 +3,8 @@ from arclet.alconna import Args, Alconna
 
 def test_tg():
     from nonebot.adapters.telegram.message import Entity
-    from nonebot_plugin_alconna import Text, Bold, Underline
+
+    from nonebot_plugin_alconna import Bold, Text, Underline
 
     msg = "/com" + Entity.bold("mand some_arg") + " " + Entity.underline("some_arg ") + "some_arg"
 
@@ -25,4 +26,3 @@ def test_tg():
     assert isinstance(res1.foo, str)
     assert isinstance(res1.bar, Text)
     assert res1.baz.text == "baz"
-
