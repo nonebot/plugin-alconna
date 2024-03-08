@@ -13,7 +13,6 @@ from .segment import Other as Other
 from .segment import Reply as Reply
 from .segment import Video as Video
 from .segment import Voice as Voice
-from .const import log  # noqa: F401
 from .params import UniMsg as UniMsg
 from .segment import Custom as Custom
 from .tools import get_bot as get_bot
@@ -21,6 +20,7 @@ from .exporter import Target as Target
 from .message import Receipt as Receipt
 from .segment import RefNode as RefNode
 from .segment import Segment as Segment
+from .constraint import log  # noqa: F401
 from .params import MessageId as MessageId
 from .params import MsgTarget as MsgTarget
 from .segment import Reference as Reference
@@ -28,8 +28,8 @@ from .message import UniMessage as UniMessage
 from .segment import CustomNode as CustomNode
 from .tools import image_fetch as image_fetch
 from .params import MessageTarget as MessageTarget
-from .exporter import SupportAdapter as SupportAdapter
 from .segment import custom_register as custom_register
+from .constraint import SupportAdapter as SupportAdapter
 from .exporter import SerializeFailed as SerializeFailed
 from .fallback import FallbackMessage as FallbackMessage
 from .fallback import FallbackSegment as FallbackSegment

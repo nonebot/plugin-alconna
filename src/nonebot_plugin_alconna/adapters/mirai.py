@@ -1,74 +1,30 @@
-from typing import Union
-
-from nepattern.base import INTEGER
 from nonebot.adapters.mirai2.message import MessageSegment
-from nepattern import URL, MatchMode, BasePattern, UnionPattern
 
+from nonebot_plugin_alconna.uniseg import Reference
+from nonebot_plugin_alconna.uniseg import At as UniAt
+from nonebot_plugin_alconna.uniseg import Emoji, Hyper
+from nonebot_plugin_alconna.uniseg import Other, Reply
 from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot_plugin_alconna.uniseg import File as UniFile
+from nonebot_plugin_alconna.uniseg import AtAll as UniAtAll
+from nonebot_plugin_alconna.uniseg import Image as UniImage
+from nonebot_plugin_alconna.uniseg import Voice as UniVoice
 
-Source = SegmentPattern("Source", MessageSegment, MessageSegment.source)
-Quote = SegmentPattern("Quote", MessageSegment, MessageSegment.quote)
+Source = SegmentPattern("Source", MessageSegment, Other, MessageSegment.source)
+Quote = SegmentPattern("Quote", MessageSegment, Reply, MessageSegment.quote)
 Plain = str
-At = SegmentPattern("At", MessageSegment, MessageSegment.at)
-AtAll = SegmentPattern("AtAll", MessageSegment, MessageSegment.at_all)
-Face = SegmentPattern("Face", MessageSegment, MessageSegment.face)
-Image = SegmentPattern("Image", MessageSegment, MessageSegment.image)
-FlashImage = SegmentPattern("FlashImage", MessageSegment, MessageSegment.flash_image)
-Voice = SegmentPattern("Voice", MessageSegment, MessageSegment.voice)
-Xml = SegmentPattern("Xml", MessageSegment, MessageSegment.xml)
-Json = SegmentPattern("Json", MessageSegment, MessageSegment.json)
-App = SegmentPattern("App", MessageSegment, MessageSegment.app)
-Dice = SegmentPattern("Dice", MessageSegment, MessageSegment.Dice)
-Poke = SegmentPattern("Poke", MessageSegment, MessageSegment.poke)
-MarketFace = SegmentPattern("MarketFace", MessageSegment, MessageSegment.market_face)
-MusicShare = SegmentPattern("MusicShare", MessageSegment, MessageSegment.music_share)
-Forward = SegmentPattern("Forward", MessageSegment, MessageSegment.forward)
-File = SegmentPattern("File", MessageSegment, MessageSegment.file)
-MiraiCode = SegmentPattern("MiraiCode", MessageSegment, MessageSegment.mirai_code)
-
-
-ImgOrUrl = (
-    UnionPattern[str](
-        [
-            BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=str,
-                converter=lambda _, x: x.data["url"],
-                alias="img",
-                addition_accepts=Image,
-            ),
-            URL,
-        ]
-    )
-    @ "img_url"
-)
-"""
-内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接
-"""
-
-AtID = (
-    UnionPattern[Union[str, MessageSegment]](
-        [
-            BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=int,
-                alias="At",
-                addition_accepts=At,
-                converter=lambda _, x: int(x.data["target"]),
-            ),
-            BasePattern(
-                r"@(\d+)",
-                mode=MatchMode.REGEX_CONVERT,
-                origin=int,
-                alias="@xxx",
-                accepts=str,
-                converter=lambda _, x: int(x[1]),
-            ),
-            INTEGER,
-        ]
-    )
-    @ "at_id"
-)
-"""
-内置类型，允许传入提醒元素(At)或者'@xxxx'式样的字符串或者数字, 返回数字
-"""
+At = SegmentPattern("At", MessageSegment, UniAt, MessageSegment.at)
+AtAll = SegmentPattern("AtAll", MessageSegment, UniAtAll, MessageSegment.at_all)
+Face = SegmentPattern("Face", MessageSegment, Emoji, MessageSegment.face)
+Image = SegmentPattern("Image", MessageSegment, UniImage, MessageSegment.image)
+FlashImage = SegmentPattern("FlashImage", MessageSegment, UniImage, MessageSegment.flash_image)
+Voice = SegmentPattern("Voice", MessageSegment, UniVoice, MessageSegment.voice)
+Xml = SegmentPattern("Xml", MessageSegment, Hyper, MessageSegment.xml)
+Json = SegmentPattern("Json", MessageSegment, Hyper, MessageSegment.json)
+App = SegmentPattern("App", MessageSegment, Hyper, MessageSegment.app)
+Dice = SegmentPattern("Dice", MessageSegment, Other, MessageSegment.Dice)
+Poke = SegmentPattern("Poke", MessageSegment, Other, MessageSegment.poke)
+MarketFace = SegmentPattern("MarketFace", MessageSegment, Other, MessageSegment.market_face)
+MusicShare = SegmentPattern("MusicShare", MessageSegment, Other, MessageSegment.music_share)
+Forward = SegmentPattern("Forward", MessageSegment, Reference, MessageSegment.forward)
+File = SegmentPattern("File", MessageSegment, UniFile, MessageSegment.file)

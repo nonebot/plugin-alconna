@@ -18,6 +18,31 @@ from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
 from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Reference
 
+STYLE_TYPE_MAP = {
+    "b": "bold",
+    "strong": "bold",
+    "bold": "bold",
+    "i": "italic",
+    "em": "italic",
+    "italic": "italic",
+    "u": "underline",
+    "ins": "underline",
+    "underline": "underline",
+    "s": "strikethrough",
+    "del": "strikethrough",
+    "strike": "strikethrough",
+    "strikethrough": "strikethrough",
+    "spl": "spoiler",
+    "spoiler": "spoiler",
+    "code": "code",
+    "sup": "superscript",
+    "superscript": "superscript",
+    "sub": "subscript",
+    "subscript": "subscript",
+    "p": "paragraph",
+    "paragraph": "paragraph",
+}
+
 
 class SatoriMessageBuilder(MessageBuilder):
     @classmethod
@@ -26,7 +51,8 @@ class SatoriMessageBuilder(MessageBuilder):
 
     @build("text")
     def text(self, seg: TextSegment):
-        return Text(seg.data["text"], seg.data["styles"])
+        styles = {scale: [STYLE_TYPE_MAP.get(s, s) for s in _styles] for scale, _styles in seg.data["styles"].items()}
+        return Text(seg.data["text"], styles)
 
     @build("at")
     def at(self, seg: AtSegment):

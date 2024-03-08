@@ -1,9 +1,20 @@
 from nonebot.adapters.console.message import MessageSegment
 
-from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot_plugin_alconna.uniseg import Text, Emoji
+from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
-Emoji = SegmentPattern("emoji", MessageSegment, MessageSegment.emoji)
-Markup = SegmentPattern("markup", MessageSegment, MessageSegment.markup)
-Markdown = SegmentPattern("markdown", MessageSegment, MessageSegment.markdown)
+Emoji = SegmentPattern("emoji", MessageSegment, Emoji, MessageSegment.emoji)
 
-Text = str
+
+def markup(text: Text):
+    if text.extract_most_style().startswith("markdown"):
+        return MessageSegment.markup(text.text, style=text.extract_most_style().split(":")[1])
+
+
+def markdown(text: Text):
+    if text.extract_most_style().startswith("markdown"):
+        return MessageSegment.markdown(text.text, code_theme=text.extract_most_style().split(":")[1])
+
+
+Markup = TextSegmentPattern("markup", MessageSegment, MessageSegment.markup, markup)
+Markdown = TextSegmentPattern("markdown", MessageSegment, MessageSegment.markdown, markdown)

@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+from contextvars import ContextVar
 from typing_extensions import Self
-from typing import Callable, Iterable
+from typing import TYPE_CHECKING, Any, Iterable
 
 from tarina import lang
-from nonebot.adapters import Message
 from arclet.alconna import NullMessage
 from arclet.alconna.argv import Argv, set_default_argv_type
 
-from .uniseg import Text, Segment, UniMessage, FallbackMessage
+from .uniseg import Text, Segment, UniMessage
+
+argv_ctx: ContextVar[MessageArgv] = ContextVar("argv_ctx")
 
 
 def _default_builder(self: MessageArgv, data: UniMessage[Segment]):
@@ -23,23 +25,19 @@ def _default_builder(self: MessageArgv, data: UniMessage[Segment]):
 
 class MessageArgv(Argv[UniMessage]):
 
-    @classmethod
-    def custom_build(
-        cls,
-        target: type[Message],
-        builder: Callable[[MessageArgv, UniMessage], None] = _default_builder,
-        cleanup: Callable[..., None] = lambda: None,
-    ):
-        cls._cache.setdefault(target, {}).update(
-            {
-                "builder": builder,
-                "cleanup": cleanup,
-            }
-        )
-
     @staticmethod
     def generate_token(data: list) -> int:
         return hash("".join(i.__class__.__name__ + i.__repr__() for i in data))
+
+    def enter(self, ctx: dict[str, Any] | None = None) -> Self:
+        super().enter(ctx)
+        self.context["__token__"] = argv_ctx.set(self)
+        return self
+
+    def exit(self) -> dict[str, Any]:
+        argv_ctx.reset(self.context["__token__"])
+        del self.context["__token__"]
+        return super().exit()
 
     def build(self, data: UniMessage) -> Self:
         """命令分析功能, 传入字符串或消息链
@@ -51,13 +49,36 @@ class MessageArgv(Argv[UniMessage]):
             Self: 自身
         """
         self.reset()
-        origin_class = self.context.get("message_type", FallbackMessage)
-        cache = self.__class__._cache.get(origin_class, {})
-        if "cleanup" in cache:
-            cache["cleanup"]()
         self.converter = lambda x: UniMessage(x)
         self.origin = data
-        cache.get("builder", _default_builder)(self, data)
+        styles = self.context.setdefault("__styles__", {"record": {}, "index": 0, "msg": ""})
+        styles["msg"] = data.extract_plain_text()
+        _index = 0
+        for index, unit in enumerate(data):
+            if not isinstance(unit, Text):
+                self.raw_data.append(unit)
+                self.ndata += 1
+            if not unit.text.strip():
+                if not index or index == len(data) - 1:
+                    continue
+                if not isinstance(data[index - 1], Text) or not isinstance(data[index + 1], Text):
+                    continue
+            if TYPE_CHECKING:
+                assert isinstance(unit, Text)
+            text = unit.text
+            if not (_styles := unit.styles):
+                self.raw_data.append(text)
+                self.ndata += 1
+                continue
+            if self.raw_data and self.raw_data[-1].__class__ is str:
+                self.raw_data[-1] = f"{self.raw_data[-1]}{text}"
+            else:
+                self.raw_data.append(text)
+                self.ndata += 1
+
+            start = styles["msg"].find(text, _index)
+            for scale, style in _styles.items():
+                styles["record"][(start + scale[0], start + scale[1])] = style
         if self.ndata < 1:
             raise NullMessage(lang.require("argv", "null_message").format(target=data))
         self.bak_data = self.raw_data.copy()

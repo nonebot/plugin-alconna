@@ -35,7 +35,6 @@ STYLE_TYPE_MAP = {
     "spoiler": "spoiler",
     "blockquote": "spoiler",
     "code": "code",
-    "pre": "pre",
 }
 
 

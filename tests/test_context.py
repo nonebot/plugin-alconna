@@ -22,7 +22,7 @@ async def test_ctx(app: App):
     async with app.test_matcher(test_cmd) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter, platform="satori", info=None)
-        msg = "test $(event.get_user_id())"
+        msg = Message("test $(event.get_user_id())")
         event = fake_message_event_satori(message=msg, id=123, user=User(id="456", name="test"))
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, Message("ok\n456"))

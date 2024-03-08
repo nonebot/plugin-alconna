@@ -11,7 +11,17 @@ from nonebot.adapters.kaiheila.message import MentionAll as _MentionAll
 from nonebot.adapters.kaiheila.message import MentionHere as _MentionHere
 from nonebot.adapters.kaiheila.message import MentionRole as _MentionRole
 
-from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot_plugin_alconna.uniseg import Hyper
+from nonebot_plugin_alconna.uniseg import Reply
+from nonebot_plugin_alconna.uniseg import At as UniAt
+from nonebot_plugin_alconna.uniseg import File as UniFile
+from nonebot_plugin_alconna.uniseg import Text as UniText
+from nonebot_plugin_alconna.uniseg import AtAll as UniAtAll
+from nonebot_plugin_alconna.uniseg import Audio as UniAudio
+from nonebot_plugin_alconna.uniseg import Emoji as UniEmoji
+from nonebot_plugin_alconna.uniseg import Image as UniImage
+from nonebot_plugin_alconna.uniseg import Video as UniVideo
+from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
 
 def mention_channel(channel_id: str):
@@ -25,28 +35,24 @@ def emoji(id: str, name: str = ""):
         return MessageSegment.KMarkdown(f":{id}:")
 
 
-Text = str
+Mention = At = SegmentPattern("mention", _Mention, UniAt, MessageSegment.mention)
+MentionRole = AtRole = SegmentPattern("mention_role", _MentionRole, UniAt, MessageSegment.mention_role)
+MentionChannel = AtChannel = SegmentPattern("mention_channel", MessageSegment, UniAt, mention_channel)
+MentionAll = AtAll = SegmentPattern("mention_all", _MentionAll, UniAtAll, MessageSegment.mention_all)
+MentionHere = AtHere = SegmentPattern("mention_here", _MentionHere, UniAtAll, MessageSegment.mention_here)
+Emoji = SegmentPattern("emoji", MessageSegment, UniEmoji, emoji)
 
-Mention = At = SegmentPattern("mention", _Mention, MessageSegment.mention)
-MentionRole = AtRole = SegmentPattern("mention_role", _MentionRole, MessageSegment.mention_role)
-MentionChannel = AtChannel = SegmentPattern("mention_channel", MessageSegment, mention_channel)
-MentionAll = AtAll = SegmentPattern("mention_all", _MentionAll, MessageSegment.mention_all)
-MentionHere = AtHere = SegmentPattern("mention_here", _MentionHere, MessageSegment.mention_here)
-Emoji = SegmentPattern("emoji", MessageSegment, emoji)
-
-Image = SegmentPattern("image", _Image, MessageSegment.image)
-Video = SegmentPattern("video", _Video, MessageSegment.video)
-File = SegmentPattern("file", _File, MessageSegment.file)
-Audio = SegmentPattern("audio", _Audio, MessageSegment.audio)
-Card = SegmentPattern("card", _Card, MessageSegment.Card)
-Quote = SegmentPattern("quote", _Quote, MessageSegment.quote)
+Image = SegmentPattern("image", _Image, UniImage, MessageSegment.image)
+Video = SegmentPattern("video", _Video, UniVideo, MessageSegment.video)
+File = SegmentPattern("file", _File, UniFile, MessageSegment.file)
+Audio = SegmentPattern("audio", _Audio, UniAudio, MessageSegment.audio)
+Card = SegmentPattern("card", _Card, Hyper, MessageSegment.Card, handle=lambda x: MessageSegment.Card(x.raw))
+Quote = SegmentPattern("quote", _Quote, Reply, MessageSegment.quote)
 
 
-class KMPattern(SegmentPattern):
-    def match(self, input_) -> MessageSegment:
-        if isinstance(input_, str):
-            return MessageSegment.KMarkdown(input_, input_)
-        return super().match(input_)
+def kmarkdown(text: UniText):
+    if text.extract_most_style() == "markdown":
+        return MessageSegment.KMarkdown(text.text, text.text)
 
 
-KMarkdown = KMPattern("kmarkdown", _KMarkdown, MessageSegment.KMarkdown)
+KMarkdown = TextSegmentPattern("kmarkdown", _KMarkdown, MessageSegment.KMarkdown, kmarkdown)

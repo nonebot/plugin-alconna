@@ -8,7 +8,7 @@ from nonebot.adapters.telegram.message import Reply as ReplySegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, Audio, Emoji, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, Audio, Emoji, Image, Reply, Video, Voice
 
 
 class TelegramMessageBuilder(MessageBuilder):
@@ -51,6 +51,58 @@ class TelegramMessageBuilder(MessageBuilder):
     @build("reply")
     def reply(self, seg: ReplySegment):
         return Reply(str(seg.data["message_id"]), origin=seg)
+
+    @build("hashtag")
+    def hashtag(self, seg: Entity):
+        return Text(seg.data["text"])
+
+    @build("cashtag")
+    def cashtag(self, seg: Entity):
+        return Text(seg.data["text"])
+
+    @build("bot_command")
+    def bot_command(self, seg: Entity):
+        return Text(seg.data["text"]).mark(0, len(seg.data["text"]), "bot_command")
+
+    @build("url")
+    def url(self, seg: Entity):
+        return Text(seg.data["text"])
+
+    @build("email")
+    def email(self, seg: Entity):
+        return Text(seg.data["text"])
+
+    @build("phone_number")
+    def phone_number(self, seg: Entity):
+        return Text(seg.data["text"])
+
+    @build("bold")
+    def bold(self, seg: Entity):
+        return Text(seg.data["text"]).mark(0, len(seg.data["text"]), "bold")
+
+    @build("italic")
+    def italic(self, seg: Entity):
+        return Text(seg.data["text"]).mark(0, len(seg.data["text"]), "italic")
+
+    @build("underline")
+    def underline(self, seg: Entity):
+        return Text(seg.data["text"]).mark(0, len(seg.data["text"]), "underline")
+
+    @build("strikethrough")
+    def strikethrough(self, seg: Entity):
+        return Text(seg.data["text"]).mark(0, len(seg.data["text"]), "strikethrough")
+
+    @build("code")
+    def code(self, seg: Entity):
+        return Text(seg.data["text"]).mark(0, len(seg.data["text"]), "code")
+
+    @build("pre")
+    def pre(self, seg: Entity):
+        return Text(seg.data["text"]).mark(0, len(seg.data["text"]), f"pre:{seg.data['language']}")
+
+    @build("text_link")
+    def text_link(self, seg: Entity):
+        return Text(seg.data["url"]).mark(0, len(seg.data["url"]), f"link:{seg.data['text']}")
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:

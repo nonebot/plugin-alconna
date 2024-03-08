@@ -176,12 +176,7 @@ class AlconnaRule:
         ctx = await self.executor.context_provider(event, bot, state)
         if isinstance(msg, UniMessage):
             _msg = msg
-            try:
-                ctx["message_type"] = event.get_message().__class__
-            except ValueError:
-                pass
         else:
-            ctx["message_type"] = msg.__class__
             _msg = await UniMessage.generate(message=msg, event=event, bot=bot)
         if self.comp_config is None:
             return self.command.parse(_msg, ctx)

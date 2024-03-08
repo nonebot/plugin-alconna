@@ -1,78 +1,35 @@
-from typing import Union
-
-from nepattern.base import INTEGER
 from nonebot.adapters.onebot.v11.message import MessageSegment
-from nepattern import URL, MatchMode, BasePattern, UnionPattern
 
+from nonebot_plugin_alconna.uniseg import Other
+from nonebot_plugin_alconna.uniseg import Reference
+from nonebot_plugin_alconna.uniseg import At as UniAt
+from nonebot_plugin_alconna.uniseg import Emoji, Hyper
 from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot_plugin_alconna.uniseg import AtAll as UniAtAll
+from nonebot_plugin_alconna.uniseg import Image as UniImage
+from nonebot_plugin_alconna.uniseg import Reply as UniReply
+from nonebot_plugin_alconna.uniseg import Video as UniVideo
+from nonebot_plugin_alconna.uniseg import Voice as UniVoice
 
-Anonymous = SegmentPattern("anonymous", MessageSegment, MessageSegment.anonymous)
-Text = str
-At = SegmentPattern("at", MessageSegment, MessageSegment.at, additional=lambda x: x.data["qq"] != "all")
+Anonymous = SegmentPattern("anonymous", MessageSegment, Other, MessageSegment.anonymous)
+At = SegmentPattern("at", MessageSegment, UniAt, MessageSegment.at, additional=lambda x: x.origin.data["qq"] != "all")
 AtAll = SegmentPattern(
-    "at", MessageSegment, lambda: MessageSegment.at("all"), additional=lambda x: x.data["qq"] == "all"
+    "at", MessageSegment, UniAtAll, lambda: MessageSegment.at("all"), additional=lambda x: x.origin.data["qq"] == "all"
 )
-Contact = SegmentPattern("contact", MessageSegment, MessageSegment.contact)
-Dice = SegmentPattern("dice", MessageSegment, MessageSegment.dice)
-Face = SegmentPattern("face", MessageSegment, MessageSegment.face)
-Forward = SegmentPattern("forward", MessageSegment, MessageSegment.forward)
-Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
-Json = SegmentPattern("json", MessageSegment, MessageSegment.json)
-Location = SegmentPattern("location", MessageSegment, MessageSegment.location)
-Music = SegmentPattern("music", MessageSegment, MessageSegment.music)
-Node = SegmentPattern("node", MessageSegment, MessageSegment.node)
-Poke = SegmentPattern("poke", MessageSegment, MessageSegment.poke)
-Record = SegmentPattern("record", MessageSegment, MessageSegment.record)
-Reply = SegmentPattern("reply", MessageSegment, MessageSegment.reply)
-RPS = SegmentPattern("rps", MessageSegment, MessageSegment.rps)
-Shake = SegmentPattern("shake", MessageSegment, MessageSegment.shake)
-Share = SegmentPattern("share", MessageSegment, MessageSegment.share)
-Video = SegmentPattern("video", MessageSegment, MessageSegment.video)
-Xml = SegmentPattern("xml", MessageSegment, MessageSegment.xml)
-
-
-ImgOrUrl = (
-    UnionPattern[Union[str, MessageSegment]](
-        [
-            BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=str,
-                converter=lambda _, x: x.data["url"],  # type: ignore
-                alias="img",
-                accepts=MessageSegment,
-            ),
-            URL,  # type: ignore
-        ]
-    )
-    @ "img_url"
-)
-"""
-内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接
-"""
-
-AtID = (
-    UnionPattern[Union[str, MessageSegment]](
-        [
-            BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=int,
-                alias="At",
-                addition_accepts=At,
-                converter=lambda _, x: int(x.data["qq"]),
-            ),
-            BasePattern(
-                r"@(\d+)",
-                mode=MatchMode.REGEX_CONVERT,
-                origin=int,
-                alias="@xxx",
-                accepts=str,
-                converter=lambda _, x: int(x[1]),
-            ),
-            INTEGER,
-        ]
-    )
-    @ "at_id"
-)
-"""
-内置类型，允许传入提醒元素(At)或者'@xxxx'式样的字符串或者数字, 返回数字
-"""
+Contact = SegmentPattern("contact", MessageSegment, Other, MessageSegment.contact)
+Dice = SegmentPattern("dice", MessageSegment, Other, MessageSegment.dice)
+Face = SegmentPattern("face", MessageSegment, Emoji, MessageSegment.face)
+Forward = SegmentPattern("forward", MessageSegment, Reference, MessageSegment.forward)
+Image = SegmentPattern("image", MessageSegment, UniImage, MessageSegment.image)
+Json = SegmentPattern("json", MessageSegment, Hyper, MessageSegment.json)
+Location = SegmentPattern("location", MessageSegment, Other, MessageSegment.location)
+Music = SegmentPattern("music", MessageSegment, Other, MessageSegment.music)
+Node = SegmentPattern("node", MessageSegment, Other, MessageSegment.node)
+Poke = SegmentPattern("poke", MessageSegment, Other, MessageSegment.poke)
+Record = SegmentPattern("record", MessageSegment, UniVoice, MessageSegment.record)
+Reply = SegmentPattern("reply", MessageSegment, UniReply, MessageSegment.reply)
+RPS = SegmentPattern("rps", MessageSegment, Other, MessageSegment.rps)
+Shake = SegmentPattern("shake", MessageSegment, Other, MessageSegment.shake)
+Share = SegmentPattern("share", MessageSegment, Other, MessageSegment.share)
+Video = SegmentPattern("video", MessageSegment, UniVideo, MessageSegment.video)
+Xml = SegmentPattern("xml", MessageSegment, Hyper, MessageSegment.xml)

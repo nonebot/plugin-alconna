@@ -48,7 +48,7 @@ from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecke
 from .rule import alconna
 from .typings import MReturn
 from .model import CompConfig
-from .uniseg import Segment, UniMessage
+from .uniseg import Text, Segment, UniMessage
 from .uniseg.template import UniMessageTemplate
 from .extension import Extension, ExtensionExecutor
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, log
@@ -86,7 +86,7 @@ def extract_arg(path: str, target: ArgsMounter) -> Arg | None:
     return
 
 
-def _validate(target: Arg[Any], arg: MessageSegment):
+def _validate(target: Arg[Any], arg: Segment):
     value = target.value
     if value == ANY:
         return arg
@@ -596,10 +596,10 @@ class AlconnaMatcher(Matcher):
                 msg = await cls.executor.select(bot, event).message_provider(event, state, bot)
                 if not msg:
                     await matcher.reject(prompt, fallback=True)
-                if isinstance(msg, UniMessage):
-                    msg = await msg.export(bot, True)
+                if not isinstance(msg, UniMessage):
+                    msg = await UniMessage.generate(message=msg, event=event, bot=bot)
                 ms = msg[0]
-                if ms.is_text() and not ms.data["text"].strip():
+                if isinstance(ms, Text) and not ms.text.strip():
                     await matcher.reject(prompt, fallback=True)
                 log("DEBUG", escape_tag(lang.require("nbp-alc", "log.got_path/ms").format(path=path, ms=ms)))
                 if (res := _validate(arg, ms)) is None:  # type: ignore

@@ -47,7 +47,7 @@ class MinecraftMessageExporter(MessageExporter[Message]):
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         if seg.extract_most_style() == "title":
             return MessageSegment.title(seg.text)
-        styles = [STYLE_TYPE_MAP[s] for s in seg.styles if s in STYLE_TYPE_MAP]
+        styles = [STYLE_TYPE_MAP[s] for s in seg.styles[(0, len(seg.text))] if s in STYLE_TYPE_MAP]
         kwargs = {}
         for style in styles:
             if style == "bold":

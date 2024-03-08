@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Union, TypeVar, Callable, Optional
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
 from .constraint import SupportAdapter
-from .segment import Text, Other, Reply, Segment
+from .segment import Text, Other, Reply, Segment, custom
 
 TS = TypeVar("TS", bound=MessageSegment)
 
@@ -45,7 +45,7 @@ class MessageBuilder(metaclass=ABCMeta):
         if seg_type in self._mapping:
             res = self._mapping[seg_type](seg)
             if not res:
-                return Other(seg)
+                return custom.solve(seg) or Other(seg)
             if isinstance(res, list):
                 for _seg in res:
                     _seg.origin = seg
@@ -62,7 +62,7 @@ class MessageBuilder(metaclass=ABCMeta):
                 res = Text(seg.data["text"]).mark(0, len(seg.data["text"]), seg.type)
             res.origin = seg
             return res
-        return Other(seg)
+        return custom.solve(seg) or Other(seg)
 
     def generate(self, source: Message[MessageSegment]) -> List[Segment]:
         result = []

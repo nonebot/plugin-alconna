@@ -1,11 +1,9 @@
-from typing import Union
-
-from nepattern.base import URL, INTEGER
+from nonebot.compat import type_validate_python
+from nonebot.adapters.qq.models import MessageArk
 from nonebot.adapters.qq.message import Ark as _Ark
 from nonebot.adapters.qq.message import MessageSegment
 from nonebot.adapters.qq.message import Embed as _Embed
 from nonebot.adapters.qq.message import Emoji as _Emoji
-from nepattern import MatchMode, BasePattern, UnionPattern
 from nonebot.adapters.qq.message import Keyboard as _Keyboard
 from nonebot.adapters.qq.message import Markdown as _Markdown
 from nonebot.adapters.qq.message import Reference as _Reference
@@ -15,70 +13,44 @@ from nonebot.adapters.qq.message import MentionChannel as _MentionChannel
 from nonebot.adapters.qq.message import LocalAttachment as _LocalAttachment
 from nonebot.adapters.qq.message import MentionEveryone as _MentionEveryone
 
-from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot_plugin_alconna.uniseg import At
+from nonebot_plugin_alconna.uniseg import Hyper
+from nonebot_plugin_alconna.uniseg import Text, AtAll
+from nonebot_plugin_alconna.uniseg import Other, Reply
+from nonebot_plugin_alconna.uniseg import File as UniFile
+from nonebot_plugin_alconna.uniseg import Audio as UniAudio
+from nonebot_plugin_alconna.uniseg import Emoji as UniEmoji
+from nonebot_plugin_alconna.uniseg import Image as UniImage
+from nonebot_plugin_alconna.uniseg import Video as UniVideo
+from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
-Text = str
-Ark = SegmentPattern("ark", _Ark, MessageSegment.ark)
-Embed = SegmentPattern("embed", _Embed, MessageSegment.embed)
-Emoji = SegmentPattern("emoji", _Emoji, MessageSegment.emoji)
-Image = SegmentPattern("image", _Attachment, MessageSegment.image)
-FileImage = SegmentPattern("file_image", _LocalAttachment, MessageSegment.file_image)
-Audio = SegmentPattern("audio", _Attachment, MessageSegment.audio)
-FileAudio = SegmentPattern("file_audio", _LocalAttachment, MessageSegment.file_audio)
-Video = SegmentPattern("video", _Attachment, MessageSegment.video)
-FileVideo = SegmentPattern("file_video", _LocalAttachment, MessageSegment.file_video)
-File = SegmentPattern("file", _Attachment, MessageSegment.file)
-FileFile = SegmentPattern("file_file", _LocalAttachment, MessageSegment.file_file)
-Keyboard = SegmentPattern("keyboard", _Keyboard, MessageSegment.keyboard)
-Markdown = SegmentPattern("markdown", _Markdown, MessageSegment.markdown)
-MentionUser = SegmentPattern("mention_user", _MentionUser, MessageSegment.mention_user)
-MentionChannel = SegmentPattern("mention_channel", _MentionChannel, MessageSegment.mention_channel)
-MentionEveryone = SegmentPattern("mention_everyone", _MentionEveryone, MessageSegment.mention_everyone)
-Reference = SegmentPattern("reference", _Reference, MessageSegment.reference)
-
-
-ImgOrUrl = (
-    UnionPattern(
-        [
-            BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=str,
-                converter=lambda _, x: x.data["url"],
-                alias="img",
-                addition_accepts=Image,
-            ),
-            URL,
-        ]
-    )
-    @ "img_url"
+Ark = SegmentPattern(
+    "ark",
+    _Ark,
+    Hyper,
+    MessageSegment.ark,
+    handle=lambda x: MessageSegment.ark(type_validate_python(MessageArk, x.content)),
 )
-"""
-内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接
-"""
+Embed = SegmentPattern("embed", _Embed, Other, MessageSegment.embed)
+Emoji = SegmentPattern("emoji", _Emoji, UniEmoji, MessageSegment.emoji)
+Image = SegmentPattern("image", _Attachment, UniImage, MessageSegment.image)
+FileImage = SegmentPattern("file_image", _LocalAttachment, UniImage, MessageSegment.file_image)
+Audio = SegmentPattern("audio", _Attachment, UniAudio, MessageSegment.audio)
+FileAudio = SegmentPattern("file_audio", _LocalAttachment, UniAudio, MessageSegment.file_audio)
+Video = SegmentPattern("video", _Attachment, UniVideo, MessageSegment.video)
+FileVideo = SegmentPattern("file_video", _LocalAttachment, UniVideo, MessageSegment.file_video)
+File = SegmentPattern("file", _Attachment, UniFile, MessageSegment.file)
+FileFile = SegmentPattern("file_file", _LocalAttachment, UniFile, MessageSegment.file_file)
+Keyboard = SegmentPattern("keyboard", _Keyboard, Other, MessageSegment.keyboard)
+MentionUser = SegmentPattern("mention_user", _MentionUser, At, MessageSegment.mention_user)
+MentionChannel = SegmentPattern("mention_channel", _MentionChannel, At, MessageSegment.mention_channel)
+MentionEveryone = SegmentPattern("mention_everyone", _MentionEveryone, AtAll, MessageSegment.mention_everyone)
+Reference = SegmentPattern("reference", _Reference, Reply, MessageSegment.reference)
 
-MentionID = (
-    UnionPattern[Union[str, _MentionUser]](
-        [
-            BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=int,
-                alias="MentionUser",
-                addition_accepts=MentionUser,
-                converter=lambda _, x: int(x.data["user_id"]),
-            ),
-            BasePattern(
-                r"@(\d+)",
-                mode=MatchMode.REGEX_CONVERT,
-                origin=int,
-                alias="@xxx",
-                accepts=str,
-                converter=lambda _, x: int(x[1]),
-            ),
-            INTEGER,
-        ]
-    )
-    @ "mention_id"
-)
-"""
-内置类型，允许传入提醒元素(Mention)或者'@xxxx'式样的字符串或者数字, 返回数字
-"""
+
+def markdown(x: Text):
+    if x.extract_most_style() == "markdown":
+        return MessageSegment.markdown(x.text)
+
+
+Markdown = TextSegmentPattern("markdown", _Markdown, MessageSegment.markdown, markdown)

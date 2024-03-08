@@ -1,48 +1,25 @@
-from typing import Union
-
-from nepattern.base import INTEGER
 from nonebot.adapters.red.message import MessageSegment
-from nepattern import MatchMode, BasePattern, UnionPattern
 
+from nonebot_plugin_alconna.uniseg import Other
+from nonebot_plugin_alconna.uniseg import Reference
+from nonebot_plugin_alconna.uniseg import At as UniAt
+from nonebot_plugin_alconna.uniseg import Emoji, Hyper
 from nonebot_plugin_alconna.typings import SegmentPattern
+from nonebot_plugin_alconna.uniseg import File as UniFile
+from nonebot_plugin_alconna.uniseg import AtAll as UniAtAll
+from nonebot_plugin_alconna.uniseg import Image as UniImage
+from nonebot_plugin_alconna.uniseg import Reply as UniReply
+from nonebot_plugin_alconna.uniseg import Video as UniVideo
+from nonebot_plugin_alconna.uniseg import Voice as UniVoice
 
-Text = str
-At = SegmentPattern("at", MessageSegment, MessageSegment.at)
-AtAll = SegmentPattern("at_all", MessageSegment, MessageSegment.at_all)
-Face = SegmentPattern("face", MessageSegment, MessageSegment.face)
-Image = SegmentPattern("image", MessageSegment, MessageSegment.image)
-File = SegmentPattern("file", MessageSegment, MessageSegment.file)
-Voice = SegmentPattern("voice", MessageSegment, MessageSegment.voice)
-Video = SegmentPattern("video", MessageSegment, MessageSegment.video)
-Reply = SegmentPattern("reply", MessageSegment, MessageSegment.reply)
-Ark = SegmentPattern("ark", MessageSegment, MessageSegment.ark)
-MarketFace = SegmentPattern("market_face", MessageSegment, MessageSegment.market_face)
-Forward = SegmentPattern("forward", MessageSegment, MessageSegment.forward)
-
-
-AtID = (
-    UnionPattern[Union[str, MessageSegment]](
-        [
-            BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=int,
-                alias="At",
-                addition_accepts=At,
-                converter=lambda _, x: int(x.data["user_id"]),
-            ),
-            BasePattern(
-                r"@(\d+)",
-                mode=MatchMode.REGEX_CONVERT,
-                origin=int,
-                alias="@xxx",
-                accepts=str,
-                converter=lambda _, x: int(x[1]),
-            ),
-            INTEGER,
-        ]
-    )
-    @ "at_id"
-)
-"""
-内置类型，允许传入提醒元素(At)或者'@xxxx'式样的字符串或者数字, 返回数字
-"""
+At = SegmentPattern("at", MessageSegment, UniAt, MessageSegment.at)
+AtAll = SegmentPattern("at_all", MessageSegment, UniAtAll, MessageSegment.at_all)
+Face = SegmentPattern("face", MessageSegment, Emoji, MessageSegment.face)
+Image = SegmentPattern("image", MessageSegment, UniImage, MessageSegment.image)
+File = SegmentPattern("file", MessageSegment, UniFile, MessageSegment.file)
+Voice = SegmentPattern("voice", MessageSegment, UniVoice, MessageSegment.voice)
+Video = SegmentPattern("video", MessageSegment, UniVideo, MessageSegment.video)
+Reply = SegmentPattern("reply", MessageSegment, UniReply, MessageSegment.reply)
+Ark = SegmentPattern("ark", MessageSegment, Hyper, MessageSegment.ark)
+MarketFace = SegmentPattern("market_face", MessageSegment, Other, MessageSegment.market_face)
+Forward = SegmentPattern("forward", MessageSegment, Reference, MessageSegment.forward)

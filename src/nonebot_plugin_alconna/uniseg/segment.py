@@ -17,7 +17,6 @@ from typing import (
     Type,
     Tuple,
     Union,
-    Generic,
     Literal,
     TypeVar,
     Callable,
@@ -37,30 +36,6 @@ if TYPE_CHECKING:
 
 TS = TypeVar("TS", bound="Segment")
 TS1 = TypeVar("TS1", bound="Segment")
-
-
-class UniPattern(BasePattern[TS, MessageSegment], Generic[TS]):
-    additional: Optional[Callable[..., bool]] = None
-
-    def __init__(self):
-        origin: Type[TS] = self.__class__.__orig_bases__[0].__args__[0]  # type: ignore
-
-        def _converter(_, seg: MessageSegment) -> Optional[TS]:
-            if (res := self.solve(seg)) and not hasattr(res, "origin"):
-                res.origin = seg
-            return res
-
-        super().__init__(
-            mode=MatchMode.TYPE_CONVERT,
-            origin=origin,
-            converter=_converter,
-            alias=origin.__name__,
-            accepts=MessageSegment,
-            validators=[self.additional] if self.additional else [],
-        )
-
-    def solve(self, seg: MessageSegment) -> Optional[TS]:
-        raise NotImplementedError
 
 
 class Segment:
@@ -193,11 +168,17 @@ class Text(Segment):
             text = pat.sub("", text)
         return text
 
-    def extract_most_style(self):
+    def extract_most_style(self) -> str:
         if not self.styles:
             return ""
         max_scale = max(self.styles, key=lambda x: x[1] - x[0], default=(0, 0))
         return self.styles[max_scale][0]
+
+    def extract_most_styles(self) -> List[str]:
+        if not self.styles:
+            return []
+        max_scale = max(self.styles, key=lambda x: x[1] - x[0], default=(0, 0))
+        return self.styles[max_scale]
 
 
 @dataclass
@@ -343,6 +324,16 @@ class Hyper(Segment):
                 self.raw = json.dumps(self.content, ensure_ascii=False)
 
 
+@dataclass
+class Other(Segment):
+    """其他 Segment"""
+
+    origin: MessageSegment
+
+    def __str__(self):
+        return f"[{self.origin.type}]"
+
+
 TM = TypeVar("TM", bound=Message)
 
 
@@ -364,7 +355,7 @@ class Custom(Segment, abc.ABC):
 TCustom = TypeVar("TCustom", bound=Custom)
 
 
-class _Custom(UniPattern[Custom]):
+class _CustomBuilder:
     BUILDERS: Dict[Union[str, Callable[[MessageSegment], bool]], Callable[[MessageSegment], Union[Custom, None]]] = {}
 
     @classmethod
@@ -384,103 +375,15 @@ class _Custom(UniPattern[Custom]):
                 return func(seg)
 
 
-custom = _Custom()
+custom = _CustomBuilder()
 custom_register = custom.custom_register
 
 
-@dataclass
-class Other(Segment):
-    """其他 Segment"""
-
-    origin: MessageSegment
-
-    def __str__(self):
-        return f"[{self.origin.type}]"
-
-
-class _Other(UniPattern[Other]): ...
-
-
-other = _Other()
-
-
-class _Text(UniPattern[Text]): ...
-
-
-text = _Text()
-
-
-class _At(UniPattern[At]): ...
-
-
-at = _At()
-
-
-class _AtAll(UniPattern[AtAll]): ...
-
-
-at_all = _AtAll()
-
-
-class _Emoji(UniPattern[Emoji]): ...
-
-
-emoji = _Emoji()
-
-
-class _Image(UniPattern[Image]): ...
-
-
-image = _Image()
-
-
-class _Video(UniPattern[Video]): ...
-
-
-video = _Video()
-
-
-class _Voice(UniPattern[Voice]): ...
-
-
-voice = _Voice()
-
-
-class _Audio(UniPattern[Audio]): ...
-
-
-audio = _Audio()
-
-
-class _File(UniPattern[File]): ...
-
-
-file = _File()
-
-
-class _Reply(UniPattern[Reply]): ...
-
-
-reply = _Reply()
-
-
-class _Reference(UniPattern[Reference]): ...
-
-
-reference = _Reference()
-
-
-class _Card(UniPattern[Hyper]): ...
-
-
-card = _Card()
-
-segments = [at_all, at, emoji, image, video, voice, audio, file, reference, card, text, custom, other]
 env = create_local_patterns("nonebot")
-env.sets(segments)
 
 
-class _Segment(UniPattern[Segment]): ...
-
-
-env[Segment] = _Segment()
+env[Segment] = BasePattern(
+    mode=MatchMode.KEEP,
+    origin=Segment,
+    accepts=Segment,
+)
