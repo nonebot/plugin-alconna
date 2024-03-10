@@ -7,9 +7,6 @@ from pydantic.dataclasses import dataclass
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
 
-if PYDANTIC_V2:
-    from pydantic import ConfigDict
-
 T = TypeVar("T")
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 
