@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:32d7e9503cdeca36ae10a14333b20c771326e276c48502d5dad08ef1ddfa90a5"
+content_hash = "sha256:0bebe8983d5b4cd78486b6b6ab8f60cf69c4f8857fe7d144aec64b5da9c468b1"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -939,21 +939,6 @@ files = [
 ]
 
 [[package]]
-name = "nonebot-adapter-qqguild"
-version = "0.4.0"
-requires_python = ">=3.8,<4.0"
-summary = "QQ Guild adapter for nonebot2"
-dependencies = [
-    "nonebot2<3.0.0,>=2.1.0",
-    "pydantic<2.0.0,>=1.9.0",
-    "typing-extensions<5.0.0,>=4.4.0",
-]
-files = [
-    {file = "nonebot_adapter_qqguild-0.4.0-py3-none-any.whl", hash = "sha256:991480cb8c931d540f4db439a9a0f71fc92d7585ecbab292e5d4643ef2535402"},
-    {file = "nonebot_adapter_qqguild-0.4.0.tar.gz", hash = "sha256:481802ad9dc5254ef555a47ed2737d9027ef5eb9743d28775052874b870ca15e"},
-]
-
-[[package]]
 name = "nonebot-adapter-red"
 version = "0.9.0"
 requires_python = ">=3.8"
@@ -992,21 +977,6 @@ dependencies = [
 files = [
     {file = "nonebot-adapter-telegram-0.1.0b16.tar.gz", hash = "sha256:04cc84a68efaf2e48682104bb988d6f257eef2557106ca2dfb173abc010112b8"},
     {file = "nonebot_adapter_telegram-0.1.0b16-py3-none-any.whl", hash = "sha256:f15036d6200aceb8a3a00d122dd3dd1641ea1da8970b6953fd42173e82eb6ce9"},
-]
-
-[[package]]
-name = "nonebot-adapter-villa"
-version = "1.4.2"
-requires_python = ">=3.8,<4.0"
-summary = "NoneBot2 米游社大别野 Bot 适配器。MiHoYo Villa Bot adapter for nonebot2."
-dependencies = [
-    "nonebot2<3.0.0,>=2.1.2",
-    "protobuf<5.0.0,>=4.25.1",
-    "rsa<5.0,>=4.9",
-]
-files = [
-    {file = "nonebot_adapter_villa-1.4.2-py3-none-any.whl", hash = "sha256:13583a494c007cf46f17166c0459423ff6e80dc05d7cbab12c4466776411353d"},
-    {file = "nonebot_adapter_villa-1.4.2.tar.gz", hash = "sha256:1234b946ec275f257eaf0a05769c6992243586930dd37eee4cd23fcd9282590a"},
 ]
 
 [[package]]
@@ -1200,35 +1170,6 @@ dependencies = [
 files = [
     {file = "prompt_toolkit-3.0.41-py3-none-any.whl", hash = "sha256:f36fe301fafb7470e86aaf90f036eef600a3210be4decf461a5b1ca8403d3cb2"},
     {file = "prompt_toolkit-3.0.41.tar.gz", hash = "sha256:941367d97fc815548822aa26c2a269fdc4eb21e9ec05fc5d447cf09bad5d75f0"},
-]
-
-[[package]]
-name = "protobuf"
-version = "4.25.1"
-requires_python = ">=3.8"
-summary = ""
-files = [
-    {file = "protobuf-4.25.1-cp310-abi3-win32.whl", hash = "sha256:193f50a6ab78a970c9b4f148e7c750cfde64f59815e86f686c22e26b4fe01ce7"},
-    {file = "protobuf-4.25.1-cp310-abi3-win_amd64.whl", hash = "sha256:3497c1af9f2526962f09329fd61a36566305e6c72da2590ae0d7d1322818843b"},
-    {file = "protobuf-4.25.1-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:0bf384e75b92c42830c0a679b0cd4d6e2b36ae0cf3dbb1e1dfdda48a244f4bcd"},
-    {file = "protobuf-4.25.1-cp37-abi3-manylinux2014_aarch64.whl", hash = "sha256:0f881b589ff449bf0b931a711926e9ddaad3b35089cc039ce1af50b21a4ae8cb"},
-    {file = "protobuf-4.25.1-cp37-abi3-manylinux2014_x86_64.whl", hash = "sha256:ca37bf6a6d0046272c152eea90d2e4ef34593aaa32e8873fc14c16440f22d4b7"},
-    {file = "protobuf-4.25.1-cp38-cp38-win32.whl", hash = "sha256:abc0525ae2689a8000837729eef7883b9391cd6aa7950249dcf5a4ede230d5dd"},
-    {file = "protobuf-4.25.1-cp38-cp38-win_amd64.whl", hash = "sha256:1484f9e692091450e7edf418c939e15bfc8fc68856e36ce399aed6889dae8bb0"},
-    {file = "protobuf-4.25.1-cp39-cp39-win32.whl", hash = "sha256:8bdbeaddaac52d15c6dce38c71b03038ef7772b977847eb6d374fc86636fa510"},
-    {file = "protobuf-4.25.1-cp39-cp39-win_amd64.whl", hash = "sha256:becc576b7e6b553d22cbdf418686ee4daa443d7217999125c045ad56322dda10"},
-    {file = "protobuf-4.25.1-py3-none-any.whl", hash = "sha256:a19731d5e83ae4737bb2a089605e636077ac001d18781b3cf489b9546c7c80d6"},
-    {file = "protobuf-4.25.1.tar.gz", hash = "sha256:57d65074b4f5baa4ab5da1605c02be90ac20c8b40fb137d6a8df9f416b0d0ce2"},
-]
-
-[[package]]
-name = "pyasn1"
-version = "0.5.1"
-requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
-summary = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
-files = [
-    {file = "pyasn1-0.5.1-py2.py3-none-any.whl", hash = "sha256:4439847c58d40b1d0a573d07e3856e95333f1976294494c325775aeca506eb58"},
-    {file = "pyasn1-0.5.1.tar.gz", hash = "sha256:6d391a96e59b23130a5cfa74d6fd7f388dbbe26cc8f1edf39fdddf08d9d6676c"},
 ]
 
 [[package]]
@@ -1473,19 +1414,6 @@ dependencies = [
 files = [
     {file = "rich-13.7.0-py3-none-any.whl", hash = "sha256:6da14c108c4866ee9520bbffa71f6fe3962e193b7da68720583850cd4548e235"},
     {file = "rich-13.7.0.tar.gz", hash = "sha256:5cb5123b5cf9ee70584244246816e9114227e0b98ad9176eede6ad54bf5403fa"},
-]
-
-[[package]]
-name = "rsa"
-version = "4.9"
-requires_python = ">=3.6,<4"
-summary = "Pure-Python RSA implementation"
-dependencies = [
-    "pyasn1>=0.1.3",
-]
-files = [
-    {file = "rsa-4.9-py3-none-any.whl", hash = "sha256:90260d9058e514786967344d0ef75fa8727eed8a7d2e43ce9f4bcf1b536174f7"},
-    {file = "rsa-4.9.tar.gz", hash = "sha256:e38464a49c6c85d7f1351b0126661487a7e0a14a50f1675ec50eb34d4f20ef21"},
 ]
 
 [[package]]

@@ -111,6 +111,8 @@ from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .extension import add_global_extension as add_global_extension
+from .uniseg import SupportAdapter as SupportAdapter
+from .uniseg import SupportAdapterModule as SupportAdapterModule
 
 __version__ = "0.40.0rc1"
 
@@ -120,7 +122,7 @@ __plugin_meta__ = PluginMetadata(
     usage="matcher = on_alconna(...)",
     homepage="https://github.com/nonebot/plugin-alconna",
     type="library",
-    supported_adapters=None,
+    supported_adapters={i for i in SupportAdapterModule.__members__.values()},
     config=Config,
     extra={
         "author": "RF-Tar-Railt",
