@@ -1,7 +1,9 @@
-from dataclasses import field, dataclass
+from dataclasses import field
 from typing_extensions import NotRequired
 from typing import Set, Type, Union, Generic, Literal, TypeVar, Optional, TypedDict
 
+from pydantic import ConfigDict
+from pydantic.dataclasses import dataclass
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
 
@@ -45,7 +47,7 @@ class Query(Generic[T]):
         return f"Query({self.path}, {self.result})"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, config=ConfigDict(arbitrary_types_allowed=True))
 class CommandResult:
     source: Alconna
     result: Arparma
