@@ -1,9 +1,9 @@
-from dataclasses import field, dataclass
+from dataclasses import field
 from typing_extensions import NotRequired
 from typing import Set, Type, Union, Generic, Literal, TypeVar, Optional, TypedDict
 
-from pydantic import BaseModel
-from nonebot.compat import PYDANTIC_V2
+from pydantic import ConfigDict
+from pydantic.dataclasses import dataclass
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
 
@@ -50,21 +50,11 @@ class Query(Generic[T]):
         return f"Query({self.path}, {self.result})"
 
 
-class CommandResult(BaseModel):
-    if PYDANTIC_V2:
-        model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)
-    else:
-
-        class Config:
-            frozen = True
-            arbitrary_types_allowed = True
-
+@dataclass(frozen=True, config=ConfigDict(arbitrary_types_allowed=True))
+class CommandResult:
     source: Alconna
     result: Arparma
     output: Optional[str] = field(default=None)
-
-    def __init__(self, source: Alconna, result: Arparma, output: Optional[str] = None):
-        super().__init__(source=source, result=result, output=output)
 
     @property
     def matched(self) -> bool:
