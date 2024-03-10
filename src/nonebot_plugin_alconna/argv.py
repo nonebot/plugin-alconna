@@ -40,7 +40,7 @@ class MessageArgv(Argv[UniMessage]):
         del self.context["__token__"]
         return super().exit()
 
-    def build(self, data: str | Message | UniMessage) -> Self:
+    def build(self, data: str | list[str] | Message | UniMessage) -> Self:
         """命令分析功能, 传入字符串或消息链
 
         Args:
@@ -52,8 +52,8 @@ class MessageArgv(Argv[UniMessage]):
         self.reset()
         if isinstance(data, Message):
             data = UniMessage.generate_without_reply(message=data, adapter=self.context.get("$adapter.name"))
-        elif isinstance(data, str):
-            data = UniMessage.text(data)
+        else:
+            data = UniMessage(data)
         self.converter = lambda x: UniMessage(x)
         self.origin = data
         styles = self.context.setdefault("__styles__", {"record": {}, "index": 0, "msg": ""})

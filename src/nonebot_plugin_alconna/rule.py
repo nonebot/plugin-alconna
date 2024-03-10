@@ -17,6 +17,7 @@ from .config import Config
 from .adapters import MAPPING
 from .uniseg import UniMsg, UniMessage
 from .model import CompConfig, CommandResult
+from .uniseg.constraint import UNISEG_MESSAGE
 from .extension import Extension, ExtensionExecutor
 from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT, log
 
@@ -170,22 +171,17 @@ class AlconnaRule:
     def __hash__(self) -> int:
         return hash(self.command.__hash__())
 
-    async def handle(
-        self, bot: Bot, event: Event, state: T_State, msg: Union[Message, UniMessage]
-    ) -> Union[Arparma, Literal[False]]:
+    async def handle(self, bot: Bot, event: Event, state: T_State, msg: UniMessage) -> Union[Arparma, Literal[False]]:
         ctx = await self.executor.context_provider(event, bot, state)
-        if isinstance(msg, UniMessage):
-            _msg = msg
-        else:
-            _msg = await UniMessage.generate(message=msg, event=event, bot=bot)
+
         if self.comp_config is None:
-            return self.command.parse(_msg, ctx)
+            return self.command.parse(msg, ctx)
         res = None
         session_id = event.get_session_id()
         if session_id not in self._interfaces:
             self._interfaces[session_id] = CompSession(self.command)
         with self._interfaces[session_id]:
-            res = self.command.parse(_msg, ctx)
+            res = self.command.parse(msg, ctx)
         if res:
             self._interfaces[session_id].exit()
             del self._interfaces[session_id]
@@ -255,10 +251,15 @@ class AlconnaRule:
         adapter_name = bot.adapter.get_name()
         if adapter_name in MAPPING and MAPPING[adapter_name] not in _modules:
             importlib.import_module(f"nonebot_plugin_alconna.adapters.{MAPPING[adapter_name]}")
+        if isinstance(msg, UniMessage):
+            _msg = msg
+        else:
+            _msg = await UniMessage.generate(message=msg, event=event, bot=bot)
+        state[UNISEG_MESSAGE] = _msg
         with output_manager.capture(self.command.name) as cap:
             output_manager.set_action(lambda x: x, self.command.name)
             try:
-                arp = await self.handle(bot, event, state, msg)
+                arp = await self.handle(bot, event, state, _msg)
                 if arp is False:
                     return False
             except Exception as e:
