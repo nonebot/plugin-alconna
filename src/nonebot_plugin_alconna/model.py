@@ -57,6 +57,7 @@ class CommandResult(BaseModel):
 
         class Config:
             frozen = True
+            arbitrary_types_allowed = True
 
     source: Alconna
     result: Arparma
