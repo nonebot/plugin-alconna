@@ -8,7 +8,7 @@ from io import BytesIO
 from pathlib import Path
 from datetime import datetime
 from urllib.parse import urlparse
-from dataclasses import field, asdict, dataclass
+from dataclasses import field, asdict
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -25,6 +25,7 @@ from typing import (
     overload,
 )
 
+from nonebot.compat import PYDANTIC_V2, ConfigDict
 from nonebot.internal.adapter import Message, MessageSegment
 from nepattern import MatchMode, BasePattern, create_local_patterns
 
@@ -32,6 +33,21 @@ from .utils import fleep
 
 if TYPE_CHECKING:
     from .message import UniMessage
+
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass as _dataclass
+
+    if PYDANTIC_V2:
+        config = ConfigDict(arbitrary_types_allowed=True)
+    else:
+
+        class config:
+            arbitrary_types_allowed = True
+
+    def dataclass(*args, **kwargs):
+        return _dataclass(*args, config=config, **kwargs)
 
 
 TS = TypeVar("TS", bound="Segment")

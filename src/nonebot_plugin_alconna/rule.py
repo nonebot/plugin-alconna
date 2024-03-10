@@ -285,7 +285,7 @@ class AlconnaRule:
         if not await self.executor.permission_check(bot, event):
             return False
         await self.executor.parse_wrapper(bot, state, event, arp)
-        state[ALCONNA_RESULT] = CommandResult(self.command, arp, may_help_text)
+        state[ALCONNA_RESULT] = CommandResult(source=self.command, result=arp, output=may_help_text)
         state[ALCONNA_EXEC_RESULT] = self.command.exec_result
         state[ALCONNA_EXTENSION] = self.executor.context
         return True

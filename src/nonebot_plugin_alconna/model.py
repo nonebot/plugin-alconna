@@ -1,17 +1,15 @@
-from dataclasses import field
 from typing_extensions import NotRequired
 from typing import Set, Type, Union, Generic, Literal, TypeVar, Optional, TypedDict
 
-from pydantic import ConfigDict
-from pydantic.dataclasses import dataclass
+from pydantic import Field, BaseModel
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
+from nonebot.compat import PYDANTIC_V2, ConfigDict
 
 T = TypeVar("T")
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 
 
-@dataclass
 class Match(Generic[T]):
     """
     匹配项，表示参数是否存在于 `all_matched_args` 内
@@ -21,6 +19,13 @@ class Match(Generic[T]):
 
     result: T
     available: bool
+
+    def __init__(self, result: T, available: bool):
+        self.result = result
+        self.available = available
+
+    def __repr__(self):
+        return f"Match({self.result}, {self.available})"
 
 
 class Query(Generic[T]):
@@ -47,15 +52,22 @@ class Query(Generic[T]):
         return f"Query({self.path}, {self.result})"
 
 
-@dataclass(frozen=True, config=ConfigDict(arbitrary_types_allowed=True))
-class CommandResult:
+class CommandResult(BaseModel):
     source: Alconna
     result: Arparma
-    output: Optional[str] = field(default=None)
+    output: Optional[str] = Field(default=None)
 
     @property
     def matched(self) -> bool:
         return self.result.matched
+
+    if PYDANTIC_V2:
+        model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)  # type: ignore
+    else:
+
+        class Config:
+            frozen = True
+            arbitrary_types_allowed = True
 
 
 class CompConfig(TypedDict):

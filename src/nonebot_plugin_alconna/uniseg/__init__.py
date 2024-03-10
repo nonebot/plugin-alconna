@@ -30,12 +30,12 @@ from .tools import image_fetch as image_fetch
 from .params import MessageTarget as MessageTarget
 from .segment import custom_register as custom_register
 from .constraint import SupportAdapter as SupportAdapter
-from .constraint import SupportAdapterModule as SupportAdapterModule
 from .exporter import SerializeFailed as SerializeFailed
 from .fallback import FallbackMessage as FallbackMessage
 from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
+from .constraint import SupportAdapterModule as SupportAdapterModule
 
 __version__ = "0.40.0rc1"
 
@@ -45,7 +45,7 @@ __plugin_meta__ = PluginMetadata(
     usage="unimsg: UniMsg",
     homepage="https://github.com/nonebot/plugin-alconna/tree/master/src/nonebot_plugin_alconna/uniseg",
     type="library",
-    supported_adapters={i for i in SupportAdapterModule.__members__.values()},
+    supported_adapters=set(SupportAdapterModule.__members__.values()),
     extra={
         "author": "RF-Tar-Railt",
         "priority": 1,
