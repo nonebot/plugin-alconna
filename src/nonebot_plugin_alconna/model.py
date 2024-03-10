@@ -4,6 +4,11 @@ from typing import Set, Type, Union, Generic, Literal, TypeVar, Optional, TypedD
 
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
+from nonebot.compat import PYDANTIC_V2
+from pydantic import BaseModel
+
+if PYDANTIC_V2:
+    from pydantic import ConfigDict
 
 T = TypeVar("T")
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
@@ -45,11 +50,19 @@ class Query(Generic[T]):
         return f"Query({self.path}, {self.result})"
 
 
-@dataclass(frozen=True)
-class CommandResult:
+class CommandResult(BaseModel):
+    if PYDANTIC_V2:
+        model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)
+    else:
+        class Config:
+            frozen = True
+
     source: Alconna
     result: Arparma
     output: Optional[str] = field(default=None)
+
+    def __init__(self, source: Alconna, result: Arparma, output: Optional[str] = None):
+        super().__init__(source=source, result=result, output=output)
 
     @property
     def matched(self) -> bool:
