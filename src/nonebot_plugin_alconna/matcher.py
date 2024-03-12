@@ -654,7 +654,7 @@ class AlconnaMatcher(Matcher):
         if isinstance(message, MessageTemplate):
             return message.format(**state[ALCONNA_RESULT].result.all_matched_args, **state)
         if isinstance(message, UniMessageTemplate):
-            extra = {"$event": event, "$bot": bot, "$target": UniMessage.get_target(event, bot)}
+            extra = {"$event": event, "$target": UniMessage.get_target(event, bot)}
             try:
                 msg_id = UniMessage.get_message_id(event, bot)
             except Exception:

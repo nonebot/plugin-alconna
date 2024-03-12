@@ -37,7 +37,7 @@ from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 from .constraint import SupportAdapterModule as SupportAdapterModule
 
-__version__ = "0.40.0rc3"
+__version__ = "0.40.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",

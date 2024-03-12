@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:11c0b2576b4748d420624611402fca6cf0c8671d2c37521f380d25b2bca6e146"
+content_hash = "sha256:d49dc133c490bdb49913574e9cc57f0608251081224d9177351a29e79a6fa754"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -47,7 +47,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.8.4"
+version = "1.8.5"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -56,8 +56,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.8.4-py3-none-any.whl", hash = "sha256:834f45b4f8fcf719c666f91184217ab5defe15db70bfcd3456cb8baa362ba990"},
-    {file = "arclet_alconna-1.8.4.tar.gz", hash = "sha256:f8a28d18442a028a362ef863912a6fffeade9fbaa76c57ce60b5c627dfaae308"},
+    {file = "arclet_alconna-1.8.5-py3-none-any.whl", hash = "sha256:b9f0309df53f957a16316155a3e61d1c3ffa33c2eb641b928ad27aa3effd9b2c"},
+    {file = "arclet_alconna-1.8.5.tar.gz", hash = "sha256:d8afc384b4481d6156302bd3e5b89bc511c66357ff49775d3f6d5b74cf6886c0"},
 ]
 
 [[package]]
@@ -866,7 +866,7 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-kaiheila"
-version = "0.3.1"
+version = "0.3.2"
 requires_python = ">=3.8,<4.0"
 summary = "kaiheila adapter for nonebot2"
 dependencies = [
@@ -874,8 +874,8 @@ dependencies = [
     "typing-extensions<5.0.0,>=4.8.0",
 ]
 files = [
-    {file = "nonebot_adapter_kaiheila-0.3.1-py3-none-any.whl", hash = "sha256:7acaa39d6c7479ae925b8d171fbae23fedf8bb3a81ded98c5b1e1214faad6aae"},
-    {file = "nonebot_adapter_kaiheila-0.3.1.tar.gz", hash = "sha256:1c14c22133ce84edc72de298e922f980d4e3b09febe4dcfeededc9603936daec"},
+    {file = "nonebot_adapter_kaiheila-0.3.2-py3-none-any.whl", hash = "sha256:06b109aefce62da80dc4e0653c4d2797efb516fdd32c70e75746b295c212928c"},
+    {file = "nonebot_adapter_kaiheila-0.3.2.tar.gz", hash = "sha256:7d42a61df1bef60762b6186a6ab5cf474ca4c4e75ed2ef5f9df662d72d8017ed"},
 ]
 
 [[package]]

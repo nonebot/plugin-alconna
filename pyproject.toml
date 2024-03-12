@@ -5,7 +5,7 @@ authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "arclet-alconna>=1.8.4",
+    "arclet-alconna>=1.8.5",
     "arclet-alconna-tools>=0.7.0",
     "nepattern>=0.6.5",
     "nonebot2>=2.2.1",
@@ -52,7 +52,7 @@ dev = [
     "nonebot-adapter-ntchat>=0.3.5",
     "nonebot-adapter-telegram>=0.1.0b16",
     "nonebot-adapter-discord>=0.1.4",
-    "nonebot-adapter-kaiheila>=0.3.1",
+    "nonebot-adapter-kaiheila>=0.3.2",
     "nonebot-adapter-red>=0.9.0",
     "nonebot-adapter-qq>=1.4.2",
     "nonebot-adapter-satori>=0.10.1",
