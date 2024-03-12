@@ -2,6 +2,8 @@ import pytest
 from nonebug import App
 from nonebot import get_adapter
 from arclet.alconna import Alconna
+from nonebot.adapters.onebot.v11.event import Reply
+from nonebot.compat import model_dump, type_validate_python
 from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment
 
 from tests.fake import fake_group_message_event_v11
@@ -57,6 +59,42 @@ async def test_unimsg_template(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, MessageSegment.reply(1) + MessageSegment.at(23))
         ctx.should_finished(matcher)
+
+
+@pytest.mark.asyncio()
+async def test_uniseg_recv(app: App):
+    from nonebot_plugin_alconna import UniMessage
+    from nonebot_plugin_alconna import Reply as UniReply
+
+    async with app.test_api() as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(base=Bot, adapter=adapter)
+        event2 = fake_group_message_event_v11(
+            message_id=2,
+            message=Message(
+                [
+                    MessageSegment.reply(1),
+                    MessageSegment.at(123),
+                    MessageSegment.text("hello!"),
+                ]
+            ),
+            user_id=789,
+            group_id=456,
+            reply=type_validate_python(
+                Reply,
+                model_dump(
+                    fake_group_message_event_v11(
+                        message_id=1,
+                        real_id=1,
+                        message=Message("test_uniseg_recv"),
+                        user_id=123,
+                        group_id=456,
+                    )
+                ),
+            ),
+        )
+        msg = await UniMessage.generate(event=event2, bot=bot)
+        assert msg[UniReply, 0].msg
 
 
 @pytest.mark.asyncio()

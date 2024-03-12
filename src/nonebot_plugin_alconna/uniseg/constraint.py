@@ -56,3 +56,6 @@ class SupportAdapterModule(str, Enum):
 UNISEG_MESSAGE: Literal["_alc_uniseg_message"] = "_alc_uniseg_message"
 UNISEG_TARGET: Literal["_alc_uniseg_target"] = "_alc_uniseg_target"
 UNISEG_MESSAGE_ID: Literal["_alc_uniseg_message_id"] = "_alc_uniseg_message_id"
+
+
+class SerializeFailed(Exception): ...

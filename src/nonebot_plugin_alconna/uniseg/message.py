@@ -13,9 +13,10 @@ from nonebot.internal.matcher import current_bot, current_event
 
 from .tools import get_bot
 from .fallback import FallbackMessage
+from .constraint import SerializeFailed
 from .template import UniMessageTemplate
+from .exporter import Target, MessageExporter
 from .adapters import BUILDER_MAPPING, EXPORTER_MAPPING
-from .exporter import Target, MessageExporter, SerializeFailed
 from .segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice, Segment
 
 T = TypeVar("T")
@@ -775,7 +776,7 @@ class UniMessage(List[TS]):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
         result = UniMessage(fn.generate(message))
         if (event and bot) and (_reply := await fn.extract_reply(event, bot)):
-            if result.index(Reply) == 0:
+            if result.has(Reply) and result.index(Reply) == 0:
                 result.pop(0)
             result.insert(0, _reply)
         return result

@@ -19,8 +19,8 @@ from typing import (
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
-from .constraint import SupportAdapter
 from .segment import Other, Reply, Custom, Segment
+from .constraint import SupportAdapter, SerializeFailed
 
 if TYPE_CHECKING:
     from .message import UniMessage
@@ -67,9 +67,6 @@ class Target:
 
             message = await UniMessage.generate(message=message, bot=bot)
         return await message.send(self, bot, fallback, at_sender, reply_to)
-
-
-class SerializeFailed(Exception): ...
 
 
 def export(

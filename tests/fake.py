@@ -36,7 +36,7 @@ def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
         to_me: bool = False
 
         class Config:
-            extra = "forbid"
+            extra = "allow"
 
     return FakeEvent(**field)
 

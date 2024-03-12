@@ -12,6 +12,15 @@ from nonebot.internal.driver.model import Request
 from nonebot.internal.adapter import Bot, Event, Adapter
 
 from .segment import Image
+from .adapters import BUILDER_MAPPING
+
+
+async def reply_fetch(event: Event, bot: Bot):
+    _adapter = bot.adapter
+    adapter = _adapter.get_name()
+    if not (fn := BUILDER_MAPPING.get(adapter)):
+        return
+    return await fn.extract_reply(event, bot)
 
 
 async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwargs):

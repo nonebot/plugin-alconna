@@ -27,17 +27,18 @@ from .segment import Reference as Reference
 from .message import UniMessage as UniMessage
 from .segment import CustomNode as CustomNode
 from .tools import image_fetch as image_fetch
+from .tools import reply_fetch as reply_fetch
 from .params import MessageTarget as MessageTarget
 from .segment import custom_register as custom_register
 from .constraint import SupportAdapter as SupportAdapter
-from .exporter import SerializeFailed as SerializeFailed
 from .fallback import FallbackMessage as FallbackMessage
 from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
+from .constraint import SerializeFailed as SerializeFailed
 from .constraint import SupportAdapterModule as SupportAdapterModule
 
-__version__ = "0.40.0"
+__version__ = "0.40.1"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",
@@ -56,3 +57,6 @@ __plugin_meta__ = PluginMetadata(
 
 def patch_saa():
     from .utils import saa  # noqa: F401
+
+
+reply_handle = reply_fetch  # backward compatibility
