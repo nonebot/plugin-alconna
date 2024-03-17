@@ -110,6 +110,7 @@ from .uniseg import UniversalMessage as UniversalMessage
 from .uniseg import UniversalSegment as UniversalSegment
 from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
+from .uniseg import apply_media_to_url as apply_media_to_url
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .uniseg import SupportAdapterModule as SupportAdapterModule
 from .extension import add_global_extension as add_global_extension

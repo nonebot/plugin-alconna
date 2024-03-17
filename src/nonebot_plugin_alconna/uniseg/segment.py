@@ -464,3 +464,8 @@ env[Segment] = BasePattern(
     origin=Segment,
     accepts=Segment,
 )
+
+
+def apply_media_to_url(func: Callable[[Union[str, Path, bytes, BytesIO], Optional[str]], Awaitable[str]]):
+    """为 Media 对象设置 to_url 方法，用于将文件或数据上传到文件服务器并返回 URL"""
+    Media.to_url = func
