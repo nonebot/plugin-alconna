@@ -120,6 +120,10 @@ class MiraiMessageExporter(MessageExporter[MessageChain]):
             return method(url=seg.url)
         elif seg.path:
             return method(path=str(seg.path))
+        elif seg.__class__.to_url and seg.raw:
+            return method(
+                url=await seg.__class__.to_url(seg.raw, None if seg.name == seg.__default_name__ else seg.name)
+            )
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 

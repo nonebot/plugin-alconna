@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:d49dc133c490bdb49913574e9cc57f0608251081224d9177351a29e79a6fa754"
+content_hash = "sha256:5f5a22e5b593ba7aa288f8c9abcd3d4406408af277d31a2d7d6f96c0c59c7ce0"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -47,7 +47,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.8.5"
+version = "1.8.6"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -56,22 +56,22 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.8.5-py3-none-any.whl", hash = "sha256:b9f0309df53f957a16316155a3e61d1c3ffa33c2eb641b928ad27aa3effd9b2c"},
-    {file = "arclet_alconna-1.8.5.tar.gz", hash = "sha256:d8afc384b4481d6156302bd3e5b89bc511c66357ff49775d3f6d5b74cf6886c0"},
+    {file = "arclet_alconna-1.8.6-py3-none-any.whl", hash = "sha256:bac7f075328365b9727ae75eab83bb3884cbca40a725a6b2367d5af6c30ce6b5"},
+    {file = "arclet_alconna-1.8.6.tar.gz", hash = "sha256:ae0006335c41d1ad847f7a847f99523720c2a3605259833066133f08bc8feaf0"},
 ]
 
 [[package]]
 name = "arclet-alconna-tools"
-version = "0.7.0"
+version = "0.7.1"
 requires_python = ">=3.8"
 summary = "Builtin Tools for Alconna"
 dependencies = [
-    "arclet-alconna>=1.8.1",
+    "arclet-alconna>=1.8.6",
     "nepattern<1.0.0,>=0.6.5",
 ]
 files = [
-    {file = "arclet-alconna-tools-0.7.0.tar.gz", hash = "sha256:361a193239555d243d8738c39e89f536847d49fa9d74c0a2706b58514c8d8a70"},
-    {file = "arclet_alconna_tools-0.7.0-py3-none-any.whl", hash = "sha256:c4835d277c5927a2d036fba44a710471496b8086575fe3699dfbf256ca72bda2"},
+    {file = "arclet-alconna-tools-0.7.1.tar.gz", hash = "sha256:d27d08f76d8ba807aa624725944b5404f86adef94f1536db5de2a40aad2c959b"},
+    {file = "arclet_alconna_tools-0.7.1-py3-none-any.whl", hash = "sha256:0a972f5e843522216cbbfe0e77b715a673dd30e5146d3b235c20d15d1875a1d6"},
 ]
 
 [[package]]
@@ -990,6 +990,20 @@ dependencies = [
 files = [
     {file = "nonebot-adapter-telegram-0.1.0b16.tar.gz", hash = "sha256:04cc84a68efaf2e48682104bb988d6f257eef2557106ca2dfb173abc010112b8"},
     {file = "nonebot_adapter_telegram-0.1.0b16-py3-none-any.whl", hash = "sha256:f15036d6200aceb8a3a00d122dd3dd1641ea1da8970b6953fd42173e82eb6ce9"},
+]
+
+[[package]]
+name = "nonebot-plugin-filehost"
+version = "1.1.1"
+requires_python = ">=3.8"
+summary = "Effortless static file hosting plugin for NoneBot2."
+dependencies = [
+    "anyio>=3",
+    "nonebot2[fastapi]>=2.2.0",
+]
+files = [
+    {file = "nonebot_plugin_filehost-1.1.1-py3-none-any.whl", hash = "sha256:e77a1eb6de1b15aad1f4fa05566fbf05e07822ffcfe3def11a48a84cbb17e022"},
+    {file = "nonebot_plugin_filehost-1.1.1.tar.gz", hash = "sha256:47d677a04321ccc57d4368cb447cc857b964d40b5e09fcdf4ec6a0ac7110b7c4"},
 ]
 
 [[package]]

@@ -90,15 +90,22 @@ with namespace("nbtest") as ns:
         "pip",
         Subcommand(
             "install",
-            Args["pak", str],
-            Option("--upgrade"),
-            Option("--force-reinstall"),
+            Args["pak#安装包的名字", str, Field(completion=lambda: "请输入安装包的名字")],
+            Option("--upgrade", help_text="升级安装包"),
+            Option("--force-reinstall", help_text="强制重新安装"),
         ),
-        Subcommand("list", Option("--out-dated")),
+        Subcommand("list", Option("--out-dated", help_text="列出过期的安装包"), help_text="列出安装包列表"),
+        meta=CommandMeta(
+            description="pip命令",
+            usage="模拟pip命令",
+            example="pip install nonebot\npip list [--out-dated]",
+        ),
     )
 
     # auto_send already set in .env
-    pipcmd = on_alconna(pip, comp_config={"timeout": 10}, block=True)  # , auto_send_output=True)
+    pipcmd = on_alconna(
+        pip, comp_config={"tab": "切换", "enter": "确认", "exit": "退出", "timeout": 30}, block=True
+    )  # , auto_send_output=True)
     i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
     login = on_alconna(
         Alconna(

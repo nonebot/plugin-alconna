@@ -20,8 +20,10 @@ from typing import (
     Literal,
     TypeVar,
     Callable,
+    ClassVar,
     Iterable,
     Optional,
+    Awaitable,
     overload,
 )
 
@@ -274,7 +276,10 @@ class Media(Segment):
     path: Optional[Union[str, Path]] = field(default=None)
     raw: Optional[Union[bytes, BytesIO]] = field(default=None)
     mimetype: Optional[str] = field(default=None)
-    name: Optional[str] = field(default=None)
+    name: str = field(default="media")
+
+    __default_name__ = "media"
+    to_url: ClassVar[Optional[Callable[[Union[str, Path, bytes, BytesIO], Optional[str]], Awaitable[str]]]] = None
 
     def __post_init__(self):
         if self.path:
@@ -301,6 +306,8 @@ class Image(Media):
 
     name: str = field(default="image.png")
 
+    __default_name__ = "image.png"
+
 
 @dataclass
 class Audio(Media):
@@ -308,6 +315,8 @@ class Audio(Media):
 
     duration: Optional[int] = field(default=None)
     name: str = field(default="audio.mp3")
+
+    __default_name__ = "audio.mp3"
 
 
 @dataclass
@@ -317,6 +326,8 @@ class Voice(Media):
     duration: Optional[int] = field(default=None)
     name: str = field(default="voice.wav")
 
+    __default_name__ = "voice.wav"
+
 
 @dataclass
 class Video(Media):
@@ -324,12 +335,16 @@ class Video(Media):
 
     name: str = field(default="video.mp4")
 
+    __default_name__ = "video.mp4"
+
 
 @dataclass
 class File(Media):
     """File对象, 表示一类文件元素"""
 
     name: str = field(default="file.bin")
+
+    __default_name__ = "file.bin"
 
 
 @dataclass

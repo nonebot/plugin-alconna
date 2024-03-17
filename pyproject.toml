@@ -59,6 +59,7 @@ dev = [
     "nonebot-adapter-dodo>=0.2.0",
     "nonebot-plugin-send-anything-anywhere>=0.6.0",
     "pydantic>=2.6.3",
+    "nonebot-plugin-filehost>=1.1.1",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

@@ -46,8 +46,17 @@ class DingMessageExporter(MessageExporter[Message]):
 
     @export
     async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
-        assert seg.url, "ding image segment must have url"
-        return MessageSegment.image(seg.url)
+        if seg.url:
+            return MessageSegment.image(seg.url)
+        if seg.__class__.to_url and seg.path:
+            return MessageSegment.image(
+                await seg.__class__.to_url(seg.path, None if seg.name == seg.__default_name__ else seg.name)
+            )
+        if seg.__class__.to_url and seg.raw:
+            return MessageSegment.image(
+                await seg.__class__.to_url(seg.raw, None if seg.name == seg.__default_name__ else seg.name)
+            )
+        raise ValueError("github image segment must have url")
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         raise NotImplementedError

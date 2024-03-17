@@ -38,7 +38,7 @@ from .params import UniversalSegment as UniversalSegment
 from .constraint import SerializeFailed as SerializeFailed
 from .constraint import SupportAdapterModule as SupportAdapterModule
 
-__version__ = "0.40.1"
+__version__ = "0.41.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",
@@ -57,6 +57,10 @@ __plugin_meta__ = PluginMetadata(
 
 def patch_saa():
     from .utils import saa  # noqa: F401
+
+
+def apply_filehost():
+    from .utils import filehost  # noqa: F401
 
 
 reply_handle = reply_fetch  # backward compatibility

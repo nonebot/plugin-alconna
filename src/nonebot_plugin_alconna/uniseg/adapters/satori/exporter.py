@@ -88,6 +88,10 @@ class SatoriMessageExporter(MessageExporter[Message]):
         }[name]
         if seg.id or seg.url:
             return method(url=seg.id or seg.url)
+        if seg.__class__.to_url and seg.path:
+            return method(await seg.__class__.to_url(seg.path, None if seg.name == seg.__default_name__ else seg.name))
+        if seg.__class__.to_url and seg.raw:
+            return method(await seg.__class__.to_url(seg.raw, None if seg.name == seg.__default_name__ else seg.name))
         if seg.path:
             return method(path=seg.path)
         if seg.raw:

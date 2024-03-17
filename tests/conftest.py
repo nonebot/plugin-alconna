@@ -16,6 +16,9 @@ def pytest_configure(config: pytest.Config):
     config.stash[NONEBOT_INIT_KWARGS] = {
         "driver": "~fastapi+~httpx+~websockets",
         "log_level": "DEBUG",
+        "host": "127.0.0.1",
+        "port": "9555",
+        "filehost_host_override": "http://filehost.example.com",
     }
     os.environ["PLUGIN_ALCONNA_TESTENV"] = "1"
 

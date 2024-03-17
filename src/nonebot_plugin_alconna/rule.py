@@ -201,6 +201,14 @@ class AlconnaRule:
         )
         _futures = self._futures.setdefault(bot.self_id, {})
         _futures[session_id] = asyncio.get_running_loop().create_future()
+
+        def _clear():
+            self._interfaces[session_id].exit()
+            self._matchers[session_id].destroy()
+            del _futures[session_id]
+            del self._matchers[session_id]
+            del self._interfaces[session_id]
+
         while self._interfaces[session_id].available:
             await self.send(f"{str(self._interfaces[session_id])}{self._comp_help}", bot, event, res)
             while True:
@@ -208,11 +216,7 @@ class AlconnaRule:
                     await asyncio.wait_for(_futures[session_id], timeout=self.comp_config.get("timeout", 60))
                 except asyncio.TimeoutError:
                     await self.send(lang.require("comp/nonebot", "timeout"), bot, event, res)
-                    self._interfaces[session_id].exit()
-                    self._matchers[session_id].destroy()
-                    del _futures[session_id]
-                    del self._matchers[session_id]
-                    del self._interfaces[session_id]
+                    _clear()
                     return res
                 finally:
                     if not _futures[session_id].done():
@@ -221,11 +225,7 @@ class AlconnaRule:
                 _futures[session_id] = asyncio.get_running_loop().create_future()
                 if ans is False:
                     await self.send(lang.require("comp/nonebot", "exited"), bot, event, res)
-                    self._interfaces[session_id].exit()
-                    self._matchers[session_id].destroy()
-                    del _futures[session_id]
-                    del self._matchers[session_id]
-                    del self._interfaces[session_id]
+                    _clear()
                     return res
                 elif ans is None:
                     continue
@@ -235,11 +235,7 @@ class AlconnaRule:
                 elif _res.exception and not isinstance(_res.exception, SpecialOptionTriggered):
                     await self.send(str(_res.exception), bot, event, res)
                 break
-        self._interfaces[session_id].exit()
-        self._matchers[session_id].destroy()
-        del _futures[session_id]
-        del self._matchers[session_id]
-        del self._interfaces[session_id]
+        _clear()
         return res
 
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:

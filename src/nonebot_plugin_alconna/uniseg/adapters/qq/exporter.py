@@ -186,6 +186,13 @@ class QQMessageExporter(MessageExporter[Message]):
             "file": MessageSegment.file,
         }[name]
 
+        if seg.url:
+            return method(seg.url)
+        if seg.__class__.to_url and seg.raw:
+            return method(await seg.__class__.to_url(seg.raw, None if seg.name == seg.__default_name__ else seg.name))
+        if seg.__class__.to_url and seg.path:
+            return method(await seg.__class__.to_url(seg.path, None if seg.name == seg.__default_name__ else seg.name))
+
         file_method = {
             "image": MessageSegment.file_image,
             "voice": MessageSegment.file_audio,
@@ -193,10 +200,7 @@ class QQMessageExporter(MessageExporter[Message]):
             "audio": MessageSegment.file_audio,
             "file": MessageSegment.file_file,
         }[name]
-
-        if seg.url:
-            return method(seg.url)
-        elif seg.raw:
+        if seg.raw:
             return file_method(seg.raw_bytes)
         elif seg.path:
             return file_method(Path(seg.path))

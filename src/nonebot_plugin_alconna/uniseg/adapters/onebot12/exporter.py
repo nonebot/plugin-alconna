@@ -71,10 +71,24 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
             resp = await bot.upload_file(type="url", name=seg.name, url=seg.url)
             return method(resp["file_id"])
         elif seg.path:
-            resp = await bot.upload_file(type="path", path=str(seg.path), name=Path(seg.path).name)
+            if seg.__class__.to_url:
+                resp = await bot.upload_file(
+                    type="url",
+                    name=Path(seg.path).name,
+                    url=await seg.__class__.to_url(seg.path, None if seg.name == seg.__default_name__ else seg.name),
+                )
+            else:
+                resp = await bot.upload_file(type="path", path=str(seg.path), name=Path(seg.path).name)
             return method(resp["file_id"])
         elif seg.raw:
-            resp = await bot.upload_file(type="data", data=seg.raw_bytes, name=seg.name)
+            if seg.__class__.to_url:
+                resp = await bot.upload_file(
+                    type="url",
+                    name=seg.name,
+                    url=await seg.__class__.to_url(seg.raw, None if seg.name == seg.__default_name__ else seg.name),
+                )
+            else:
+                resp = await bot.upload_file(type="data", data=seg.raw_bytes, name=seg.name)
             return method(resp["file_id"])
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
