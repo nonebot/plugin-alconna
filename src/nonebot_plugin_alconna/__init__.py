@@ -137,3 +137,7 @@ with contextlib.suppress(ValueError, LookupError):
     for path in _config.alconna_global_extensions:
         log("DEBUG", lang.require("nbp-alc", "log.load_global_extensions").format(path=path))
         load_from_path(path)
+    if _config.alconna_apply_filehost:
+        apply_filehost()
+    if _config.alconna_enable_saa_patch:
+        patch_saa()

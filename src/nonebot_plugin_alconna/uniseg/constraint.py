@@ -30,6 +30,8 @@ class SupportAdapter(str, Enum):
     satori = "Satori"
     telegram = "Telegram"
 
+    nonebug = "fake"
+
 
 class SupportAdapterModule(str, Enum):
     """支持的适配器的模块路径"""

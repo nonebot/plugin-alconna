@@ -128,7 +128,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                 message.append(seg.export(msg_type))
             elif isinstance(seg, Other):
                 message.append(seg.origin)  # type: ignore
-            elif fallback:
+            elif fallback or bot.adapter.get_name() == SupportAdapter.nonebug:
                 message += str(seg)
             else:
                 raise SerializeFailed(

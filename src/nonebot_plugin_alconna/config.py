@@ -25,4 +25,10 @@ class Config(BaseModel):
     """全局加载的扩展, 路径以 . 分隔, 如 foo.bar.baz:DemoExtension"""
 
     alconna_context_style: Optional[Literal["bracket", "parentheses"]] = Field(default=None)
-    "全局命令上下文插值的风格，None 为关闭，bracket 为 {...}，parentheses 为 $(...)"
+    """全局命令上下文插值的风格，None 为关闭，bracket 为 {...}，parentheses 为 $(...)"""
+
+    alconna_enable_saa_patch: bool = False
+    """是否启用 SAA 补丁"""
+
+    alconna_apply_filehost: bool = False
+    """是否启用文件托管"""
