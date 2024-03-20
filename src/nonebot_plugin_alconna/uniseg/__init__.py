@@ -39,7 +39,7 @@ from .constraint import SerializeFailed as SerializeFailed
 from .segment import apply_media_to_url as apply_media_to_url
 from .constraint import SupportAdapterModule as SupportAdapterModule
 
-__version__ = "0.41.0"
+__version__ = "0.41.1"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",

@@ -245,7 +245,9 @@ async def handle_test1(result: MyResult = AlconnaDuplication(MyResult)):
 - ALCONNA_USE_PARAM: 是否使用特制的 Param 提供更好的依赖注入
 - ALCONNA_USE_CMD_SEP: 是否将 COMMAND_SEP 作为全局命令分隔符
 - ALCONNA_GLOBAL_EXTENSIONS: 全局加载的扩展, 路径以 . 分隔, 如 foo.bar.baz:DemoExtension
-
+- ALCONNA_CONTEXT_STYLE: 全局命令上下文插值的风格，None 为关闭，bracket 为 {...}，parentheses 为 $(...)
+- ALCONNA_ENABLE_SAA_PATCH: 是否启用 SAA 补丁
+- ALCONNA_APPLY_FILEHOST: 是否启用文件托管
 ## 参数解释
 
 ```python
