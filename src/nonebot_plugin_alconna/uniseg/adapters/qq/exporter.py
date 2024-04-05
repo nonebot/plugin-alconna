@@ -189,9 +189,13 @@ class QQMessageExporter(MessageExporter[Message]):
         if seg.url:
             return method(seg.url)
         if seg.__class__.to_url and seg.raw:
-            return method(await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name))
+            return method(
+                await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
+            )
         if seg.__class__.to_url and seg.path:
-            return method(await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name))
+            return method(
+                await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
+            )
 
         file_method = {
             "image": MessageSegment.file_image,

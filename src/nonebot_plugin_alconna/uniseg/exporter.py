@@ -17,7 +17,7 @@ from typing import (
 )
 
 from tarina import lang
-from nonebot.adapters import Bot, Event, Message, MessageSegment, Adapter
+from nonebot.adapters import Bot, Event, Adapter, Message, MessageSegment
 
 from .segment import Other, Reply, Custom, Segment
 from .constraint import SupportAdapter, SerializeFailed
@@ -51,13 +51,13 @@ class Target:
 
     @classmethod
     def group(
-        cls, 
-        group_id: str, 
+        cls,
+        group_id: str,
         platform: Union[str, Type[Adapter], SupportAdapter, None] = None,
         self_id: Union[str, None] = None,
     ):
         return cls(group_id, platform=platform, self_id=self_id)
-    
+
     @classmethod
     def channel_(
         cls,
@@ -67,7 +67,7 @@ class Target:
         self_id: Union[str, None] = None,
     ):
         return cls(channel_id, guild_id, channel=True, platform=platform, self_id=self_id)
-    
+
     @classmethod
     def user(
         cls,

@@ -33,13 +33,11 @@ class GithubMessageExporter(MessageExporter["Message"]):
         if seg.url:
             return MessageSegment.text(f"![]({seg.url})")
         if seg.__class__.to_url and seg.path:
-            return MessageSegment.text(
-                f"![]({await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)})"
-            )
+            url = await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
+            return MessageSegment.text(f"![]({url})")
         if seg.__class__.to_url and seg.raw:
-            return MessageSegment.text(
-                f"![]({await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)})"
-            )
+            url = await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
+            return MessageSegment.text(f"![]({url})")
         raise ValueError("github image segment must have url")
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

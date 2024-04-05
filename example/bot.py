@@ -1,6 +1,6 @@
 import nonebot
-from nonebot.adapters.onebot.v12 import Adapter as ONEBOT_V12Adapter
 from nonebot.adapters.satori import Adapter as SatoriAdapter
+from nonebot.adapters.onebot.v12 import Adapter as ONEBOT_V12Adapter
 
 nonebot.init()
 

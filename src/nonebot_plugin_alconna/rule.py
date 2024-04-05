@@ -71,10 +71,7 @@ class AlconnaRule:
             global_config = get_driver().config
             config = get_plugin_config(Config)
             self.auto_send = auto_send_output or config.alconna_auto_send_output
-            if (
-                (use_cmd_start or config.alconna_use_command_start)
-                and global_config.command_start
-            ):
+            if (use_cmd_start or config.alconna_use_command_start) and global_config.command_start:
                 with command_manager.update(command):
                     if command.prefixes:
                         if command.command:

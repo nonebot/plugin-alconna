@@ -23,8 +23,8 @@ from typing import (
     ClassVar,
     Iterable,
     Optional,
-    Awaitable,
     Protocol,
+    Awaitable,
     overload,
 )
 
@@ -271,7 +271,9 @@ class Emoji(Segment):
 
 
 class MediaToUrl(Protocol):
-    def __call__(self, data: Union[str, Path, bytes, BytesIO], bot: Bot, name: Optional[str] = None) -> Awaitable[str]: ...
+    def __call__(
+        self, data: Union[str, Path, bytes, BytesIO], bot: Bot, name: Optional[str] = None
+    ) -> Awaitable[str]: ...
 
 
 @dataclass
