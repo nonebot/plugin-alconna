@@ -922,6 +922,14 @@ class Receipt:
     exporter: MessageExporter
     msg_ids: List[Any]
 
+    @property
+    def recallable(self) -> bool:
+        return self.exporter.__class__.recall != MessageExporter.recall
+
+    @property
+    def editable(self) -> bool:
+        return self.exporter.__class__.edit != MessageExporter.edit
+
     def get_reply(self, index: int = -1) -> Union[Reply, None]:
         if not self.msg_ids:
             return

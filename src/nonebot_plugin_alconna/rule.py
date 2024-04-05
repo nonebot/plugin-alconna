@@ -72,22 +72,29 @@ class AlconnaRule:
             config = get_plugin_config(Config)
             self.auto_send = auto_send_output or config.alconna_auto_send_output
             if (
-                not command.prefixes
-                and (use_cmd_start or config.alconna_use_command_start)
+                (use_cmd_start or config.alconna_use_command_start)
                 and global_config.command_start
             ):
-                command_manager.delete(command)
-                command.prefixes = list(global_config.command_start)
-                command._hash = command._calc_hash()
-                command_manager.register(command)
+                with command_manager.update(command):
+                    if command.prefixes:
+                        if command.command:
+                            command.prefixes = list(command.prefixes) + list(global_config.command_start)
+                        else:
+                            prefixes = list(command.prefixes)
+                            command.command = prefixes[0]
+                            command.prefixes = list(global_config.command_start)
+                            for prefix in prefixes[1:]:
+                                command.shortcut(prefix, prefix=True)  # type: ignore
+                    else:
+                        command.prefixes = list(global_config.command_start)
             if (use_cmd_sep or config.alconna_use_command_sep) and global_config.command_sep:
-                command.separators = tuple(global_config.command_sep)
-                command_manager.resolve(command).separators = tuple(global_config.command_sep)
+                with command_manager.update(command):
+                    command.separators = tuple(global_config.command_sep)
             if config.alconna_auto_completion and not self.comp_config:
                 self.comp_config = cast(CompConfig, {})
             if config.alconna_context_style:
-                self.command.meta.context_style = config.alconna_context_style
-                command_manager.resolve(command).context_style = config.alconna_context_style
+                with command_manager.update(command):
+                    self.command.meta.context_style = config.alconna_context_style
             self.use_origin = use_origin or config.alconna_use_origin
         except ValueError:
             self.auto_send = auto_send_output

@@ -108,6 +108,7 @@ async def test_unimsg_send(app: App):
         receipt = await UniMessage("hello!").send(at_sender=True, reply_to=msg)
         receipt.msg_ids[0] = {"message_id": 2}
         await UniMessage("world!").send(at_sender=True, reply_to=receipt.get_reply())
+        assert receipt.recallable
         await receipt.recall(1)
 
     async with app.test_matcher(matcher) as ctx:

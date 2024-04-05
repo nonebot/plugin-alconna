@@ -167,15 +167,7 @@ class FeishuMessageExporter(MessageExporter[Message]):
             assert isinstance(new, self.get_message_type())
 
         msg_type, content = new.serialize()
-        params = {
-            "method": "PUT",
-            "body": {
-                "content": content,
-                "msg_type": msg_type,
-            },
-        }
-
-        return await bot.call_api(f"im/v1/messages/{mid['message_id']}", **params)
+        return await bot.edit_msg(mid["message_id"], content=content, msg_type=msg_type)
 
     def get_reply(self, mid: Any):
         return Reply(mid["message_id"])

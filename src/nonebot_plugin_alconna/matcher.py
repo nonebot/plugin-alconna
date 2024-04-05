@@ -230,6 +230,7 @@ class AlconnaMatcher(Matcher):
         fuzzy: bool = True,
         prefix: bool = False,
         wrapper: ShortcutRegWrapper | None = None,
+        humanized: str | None = None,
     ) -> str:
         """操作快捷命令
 
@@ -240,6 +241,7 @@ class AlconnaMatcher(Matcher):
             fuzzy (bool, optional): 是否允许命令后随参数, 默认为 `True`
             prefix (bool, optional): 是否调用时保留指令前缀, 默认为 `False`
             wrapper (ShortcutRegWrapper, optional): 快捷指令的正则匹配结果的额外处理函数, 默认为 `None`
+            humanized (str, optional): 快捷指令的人类可读描述, 默认为 `None`
 
         Returns:
             str: 操作结果
@@ -279,6 +281,7 @@ class AlconnaMatcher(Matcher):
             fuzzy (bool, optional): 是否允许命令后随参数, 默认为 `True`
             prefix (bool, optional): 是否调用时保留指令前缀, 默认为 `False`
             wrapper (ShortcutRegWrapper, optional): 快捷指令的正则匹配结果的额外处理函数, 默认为 `None`
+            humanized (str, optional): 快捷指令的人类可读描述, 默认为 `None`
 
         Returns:
             str: 操作结果
