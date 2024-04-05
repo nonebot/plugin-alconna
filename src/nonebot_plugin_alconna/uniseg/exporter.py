@@ -75,7 +75,7 @@ class Target:
         platform: Union[str, Type[Adapter], SupportAdapter, None] = None,
         self_id: Union[str, None] = None,
     ):
-        return cls(user_id, platform=platform, self_id=self_id, private=True)
+        return cls(user_id, private=True, platform=platform, self_id=self_id)
 
     async def send(
         self,

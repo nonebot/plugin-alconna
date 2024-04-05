@@ -1,4 +1,5 @@
 from pathlib import Path
+from dataclasses import asdict
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
@@ -110,7 +111,13 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                     content.extend(await self.export(node.content, bot, True))  # type: ignore
                 else:
                     content.extend(node.content)
-                nodes.append(MessageSegment.node_custom(user_id=node.uid, nickname=node.name, content=content))  # type: ignore
+                nodes.append(
+                    MessageSegment.node_custom(
+                        user_id=int(node.uid),
+                        nickname=node.name,
+                        content=[asdict(m) for m in content],  # type: ignore
+                    )
+                )
         return nodes  # type: ignore
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
@@ -121,6 +128,19 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
         if isinstance(target, Event):
             target = self.get_target(target, bot)
 
+        if msg := message.include("node"):
+            if target.private:
+                return await bot.call_api(
+                    "send_private_forward_msg",
+                    user_id=int(target.id),
+                    messages=[asdict(m) for m in msg],
+                )
+            else:
+                return await bot.call_api(
+                    "send_group_forward_msg",
+                    group_id=int(target.id),
+                    messages=[asdict(m) for m in msg],
+                )
         if target.private:
             return await bot.send_msg(message_type="private", user_id=int(target.id), message=message)
         else:
