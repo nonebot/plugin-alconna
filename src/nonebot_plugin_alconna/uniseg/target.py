@@ -98,7 +98,7 @@ class Target:
                 return False
 
             _selector = self.selector
-            self.selector = lambda bot: _predicate(bot) and (_selector(bot) if _selector else True)
+            self.selector = _predicate if not _selector else lambda bot: _predicate(bot) and _selector(bot)
 
     @classmethod
     def group(

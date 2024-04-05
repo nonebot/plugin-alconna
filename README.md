@@ -30,7 +30,7 @@ _✨ Alconna Usage For NoneBot2 ✨_
 - 现有全部协议的 Segment 标注
 - match_value, match_path 等检查函数
 - 补全会话支持
-- 跨平台的接收与发送消息
+- 跨平台的接收与发送消息(被动+主动)
 
 ## 讨论
 
@@ -198,40 +198,29 @@ async def nonebot(arp: CommandResult = AlconnaResult()):
     ...
 ```
 
-
-### Duplication
+## 跨平台消息
 
 ```python
-...
-from nonebot import require
-require("nonebot_plugin_alconna")
-...
+from nonebot import get_driver
+from nonebot_plugin_alconna import UniMessage, SupportScope, on_alconna
 
-from nonebot_plugin_alconna import (
-    on_alconna, 
-    AlconnaDuplication
-)
-from arclet.alconna import Alconna, Args, Duplication, Option, OptionStub
-
-test = on_alconna(
-    Alconna(
-        "test",
-        Option("foo", Args["bar", int]),
-        Option("baz", Args["qux", bool, False])
-    ),
-    auto_send_output=True
-)
-
-class MyResult(Duplication):
-    bar: int
-    qux: bool
-    foo: OptionStub
+driver = get_driver
+test = on_alconna("test")
 
 @test.handle()
-async def handle_test1(result: MyResult = AlconnaDuplication(MyResult)):
-    await test.send(f"matched: bar={result.bar}, qux={result.qux}")
-    await test.send(f"options: foo={result.foo.origin}")
+async def handle_test():
+    r = await UniMessage.image(path="path/to/img").send()
+    if r.recallable:
+        await r.reply("图片已发送，10秒后撤回")
+        await r.recall(delay=10, index=0)
 
+@test.got("foo", prompt=UniMessage.template("{:Reply($message_id)}请输入图片"))
+async def handle_foo():
+    await test.send("图片已收到")
+
+@driver.on_startup
+async def_():
+    await Target.group("123456789", SupportScope.qq_client).send(UniMessage.image(path="test.png"))
 ```
 
 ## 配置
@@ -248,6 +237,7 @@ async def handle_test1(result: MyResult = AlconnaDuplication(MyResult)):
 - ALCONNA_CONTEXT_STYLE: 全局命令上下文插值的风格，None 为关闭，bracket 为 {...}，parentheses 为 $(...)
 - ALCONNA_ENABLE_SAA_PATCH: 是否启用 SAA 补丁
 - ALCONNA_APPLY_FILEHOST: 是否启用文件托管
+
 ## 参数解释
 
 ```python
@@ -310,24 +300,6 @@ from nonebot_plugin_alconna import funcommand
 @funcommand()
 async def echo(msg: str):
     return msg
-```
-
-## 跨平台消息
-
-```python
-from nonebot_plugin_alconna import UniMessage, on_alconna
-
-test = on_alconna("test")
-
-@test.handle()
-async def handle_test():
-    r = await UniMessage.image(path="path/to/img").send()
-    await r.reply("图片已发送，10秒后撤回")
-    await r.recall(delay=10, index=0)
-
-@test.got("foo", prompt=UniMessage.template("{:Reply($message_id)}请输入图片"))
-async def handle_foo():
-    await test.send("图片已收到")
 ```
 
 ## 体验
