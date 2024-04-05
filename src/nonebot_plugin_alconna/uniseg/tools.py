@@ -1,7 +1,7 @@
 import random
 from pathlib import Path
 from base64 import b64decode
-from typing import TYPE_CHECKING, Callable, List, Type, Union, Literal, Optional, overload
+from typing import TYPE_CHECKING, List, Type, Union, Literal, Callable, Optional, overload
 
 from yarl import URL
 from nonebot import get_bots
@@ -12,7 +12,6 @@ from nonebot.internal.driver.model import Request
 from nonebot.internal.adapter import Bot, Event, Adapter
 
 from .segment import Image
-
 
 
 async def reply_fetch(event: Event, bot: Bot):
@@ -102,17 +101,22 @@ def get_bot(*, rand: Literal[True]) -> Bot: ...
 @overload
 def get_bot(*, bot_id: str) -> Bot: ...
 
+
 @overload
 def get_bot(*, predicate: Callable[[Bot], bool]) -> List[Bot]: ...
+
 
 @overload
 def get_bot(*, predicate: Callable[[Bot], bool], index: int) -> Bot: ...
 
+
 @overload
 def get_bot(*, predicate: Callable[[Bot], bool], rand: Literal[True]) -> Bot: ...
 
+
 @overload
 def get_bot(*, predicate: Callable[[Bot], bool], bot_id: str) -> Bot: ...
+
 
 @overload
 def get_bot(*, adapter: Union[Type[Adapter], str]) -> List[Bot]: ...
@@ -147,11 +151,13 @@ def get_bot(
     bots = []
     for bot in get_bots().values():
         if not predicate:
+
             def _check_adapter(bot: Bot):
                 _adapter = bot.adapter
                 if isinstance(adapter, str):
                     return _adapter.get_name() == adapter
                 return isinstance(_adapter, adapter)  # type: ignore
+
             predicate = _check_adapter
         if predicate(bot):
             bots.append(bot)

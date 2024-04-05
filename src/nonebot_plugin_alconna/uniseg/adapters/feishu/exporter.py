@@ -26,9 +26,7 @@ class FeishuMessageExporter(MessageExporter[Message]):
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         if isinstance(event, GroupMessageEvent):
-            return Target(
-                event.event.message.chat_id, adapter=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(event.event.message.chat_id, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, PrivateMessageEvent):
             return Target(
                 event.get_user_id(),

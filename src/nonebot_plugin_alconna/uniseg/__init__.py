@@ -21,7 +21,6 @@ from .message import Receipt as Receipt
 from .segment import RefNode as RefNode
 from .segment import Segment as Segment
 from .constraint import log  # noqa: F401
-from .constraint import SupportScope as SupportScope
 from .params import MessageId as MessageId
 from .params import MsgTarget as MsgTarget
 from .segment import Reference as Reference
@@ -30,6 +29,7 @@ from .segment import CustomNode as CustomNode
 from .tools import image_fetch as image_fetch
 from .tools import reply_fetch as reply_fetch
 from .params import MessageTarget as MessageTarget
+from .constraint import SupportScope as SupportScope
 from .segment import custom_register as custom_register
 from .constraint import SupportAdapter as SupportAdapter
 from .fallback import FallbackMessage as FallbackMessage

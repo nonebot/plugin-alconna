@@ -56,9 +56,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 self_id=bot.self_id if bot else None,
             )
         if isinstance(event, GuildEvent):
-            return Target(
-                str(event.id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(event.id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         if isinstance(event, GuildMemberEvent):
             return Target(str(event.user.id), str(event.guild_id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)  # type: ignore # noqa: E501
         if isinstance(event, ChannelEvent):

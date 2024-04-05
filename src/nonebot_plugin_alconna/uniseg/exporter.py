@@ -18,9 +18,9 @@ from typing import (
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
+from .target import Target as Target
 from .segment import Other, Custom, Segment
 from .constraint import SupportAdapter, SerializeFailed
-from .target import Target as Target
 
 if TYPE_CHECKING:
     from .message import UniMessage

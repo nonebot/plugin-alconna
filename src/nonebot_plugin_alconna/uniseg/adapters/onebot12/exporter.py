@@ -32,9 +32,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
                 self_id=bot.self_id if bot else None,
             )
         if guild_id := getattr(event, "guild_id", None):
-            return Target(
-                str(guild_id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None
-            )
+            return Target(str(guild_id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         if group_id := getattr(event, "group_id", None):
             return Target(str(group_id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         if user_id := getattr(event, "user_id", None):

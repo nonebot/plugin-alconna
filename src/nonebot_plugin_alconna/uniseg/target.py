@@ -1,24 +1,18 @@
 from functools import partial
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Union,
-    Callable,
-)
+from typing import TYPE_CHECKING, Any, Set, Dict, Type, Union, Callable
 
 from nonebot.adapters import Bot, Adapter, Message
 
-from .tools import get_bot
 from .segment import Reply
-from .constraint import SerializeFailed, SupportAdapter, SupportScope, lang
+from .tools import get_bot
+from .constraint import SupportScope, SupportAdapter, SerializeFailed, lang
 
 if TYPE_CHECKING:
     from .message import UniMessage
 
 
-SCOPES: dict[str, Callable[["Target", Bot], bool]] = {}
-
+SCOPES: Dict[str, Callable[["Target", Bot], bool]] = {}
 
 
 @dataclass(init=False)
@@ -37,7 +31,7 @@ class Target:
     """机器人id，若为 None 则 Bot 对象会随机选择"""
     selector: Union[Callable[[Bot], bool], None]
     """选择器，用于在多个 Bot 对象中选择特定 Bot"""
-    extra: dict[str, Any]
+    extra: Dict[str, Any]
     """额外信息，用于适配器扩展"""
 
     def __init__(
@@ -50,9 +44,9 @@ class Target:
         self_id: Union[str, None] = None,
         selector: Union[Callable[["Target", Bot], bool], None] = None,
         scope: Union[str, None] = None,
-        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, set[str], None] = None,
-        extra: Union[dict[str, Any], None] = None,
+        adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
+        platform: Union[str, Set[str], None] = None,
+        extra: Union[Dict[str, Any], None] = None,
     ):
         """初始化 Target 对象
 
@@ -84,6 +78,7 @@ class Target:
             self.selector = None
         if adapter or platform:
             platforms = platform if isinstance(platform, set) else {platform} if platform else set()
+
             def _predicate(bot: Bot):
                 _adapter = bot.adapter
                 if not adapter:
@@ -101,17 +96,17 @@ class Target:
                         return True
                     return bot.platform in platforms
                 return False
+
             _selector = self.selector
             self.selector = lambda bot: _predicate(bot) and (_selector(bot) if _selector else True)
-
 
     @classmethod
     def group(
         cls,
         group_id: str,
         scope: Union[str, None] = None,
-        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, set[str], None] = None,
+        adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
+        platform: Union[str, Set[str], None] = None,
     ):
         return cls(group_id, scope=scope, adapter=adapter, platform=platform)
 
@@ -121,8 +116,8 @@ class Target:
         channel_id: str,
         guild_id: str = "",
         scope: Union[str, None] = None,
-        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, set[str], None] = None,
+        adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
+        platform: Union[str, Set[str], None] = None,
     ):
         return cls(channel_id, guild_id, channel=True, scope=scope, adapter=adapter, platform=platform)
 
@@ -131,11 +126,11 @@ class Target:
         cls,
         user_id: str,
         scope: Union[str, None] = None,
-        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, set[str], None] = None,
+        adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
+        platform: Union[str, Set[str], None] = None,
     ):
         return cls(user_id, private=True, scope=scope, adapter=adapter, platform=platform)
-    
+
     def select(self):
         if self.self_id:
             return get_bot(bot_id=self.self_id)
@@ -167,6 +162,7 @@ def _register(scope: SupportScope):
     def decorator(func: Callable[["Target", Bot], bool]):
         SCOPES[scope] = func
         return func
+
     return decorator
 
 
@@ -175,9 +171,14 @@ def select_qq_client(target: "Target", bot: Bot):
     adapter_name = bot.adapter.get_name()
     if target.channel:
         return False
-    if adapter_name not in {SupportAdapter.mirai, SupportAdapter.onebot12, SupportAdapter.onebot11, SupportAdapter.satori}:
+    if adapter_name not in {
+        SupportAdapter.mirai,
+        SupportAdapter.onebot12,
+        SupportAdapter.onebot11,
+        SupportAdapter.satori,
+    }:
         return False
-    if hasattr(bot, "platform"): 
+    if hasattr(bot, "platform"):
         if adapter_name == SupportAdapter.satori and bot.platform not in {"chronocat", "onebot"}:
             return False
         if adapter_name == SupportAdapter.onebot12 and bot.platform != "qq":
@@ -240,6 +241,7 @@ def select_kook(target: "Target", bot: Bot):
         return False
     return True
 
+
 @_register(SupportScope.minecraft)
 def select_minecraft(target: "Target", bot: Bot):
     if target.channel or target.private:
@@ -253,17 +255,20 @@ def select_github(target: "Target", bot: Bot):
         return False
     return bot.adapter.get_name() == SupportAdapter.github
 
+
 @_register(SupportScope.bilibili)
 def select_bilibili(target: "Target", bot: Bot):
     if target.channel or target.private:
         return False
     return bot.adapter.get_name() == SupportAdapter.bilibili
 
+
 @_register(SupportScope.console)
 def select_console(target: "Target", bot: Bot):
     if target.channel:
         return False
     return bot.adapter.get_name() == SupportAdapter.console
+
 
 @_register(SupportScope.ding)
 def select_ding(target: "Target", bot: Bot):
@@ -275,6 +280,7 @@ def select_ding(target: "Target", bot: Bot):
         return False
     return True
 
+
 @_register(SupportScope.wechat)
 def select_wechat(target: "Target", bot: Bot):
     if target.channel:
@@ -285,6 +291,7 @@ def select_wechat(target: "Target", bot: Bot):
         return False
     return True
 
+
 @_register(SupportScope.wechat_oap)
 def select_wechat_oap(target: "Target", bot: Bot):
     if target.channel:
@@ -294,6 +301,7 @@ def select_wechat_oap(target: "Target", bot: Bot):
     if hasattr(bot, "platform") and bot.platform != "wechat-official":
         return False
     return True
+
 
 @_register(SupportScope.wecom)
 def select_wecom(target: "Target", bot: Bot):

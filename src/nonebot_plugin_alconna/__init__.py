@@ -40,7 +40,6 @@ from .config import Config
 from .uniseg import At as At
 from .uniseg import File as File
 from .uniseg import Text as Text
-from .uniseg import SupportScope as SupportScope
 from .model import Match as Match
 from .model import Query as Query
 from .typings import AtID as AtID
@@ -92,6 +91,7 @@ from .params import match_value as match_value
 from .uniseg import image_fetch as image_fetch
 from .params import AlconnaMatch as AlconnaMatch
 from .params import AlconnaQuery as AlconnaQuery
+from .uniseg import SupportScope as SupportScope
 from .model import CommandResult as CommandResult
 from .params import AlcExecResult as AlcExecResult
 from .params import AlconnaResult as AlconnaResult

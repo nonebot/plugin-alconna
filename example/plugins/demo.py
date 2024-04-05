@@ -1,4 +1,4 @@
-from typing import Union, Literal
+from typing import Tuple, Union, Literal
 
 from tarina import lang
 from nonebot import require
@@ -521,5 +521,5 @@ setu.shortcut(
 
 
 @setu.handle()
-async def setu_h(count: int, tags: Match[tuple[str, ...]]):
+async def setu_h(count: int, tags: Match[Tuple[str, ...]]):
     await setu.send(f"数量: {count}\n标签: {tags.result}")

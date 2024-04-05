@@ -11,7 +11,7 @@ dependencies = [
     "nonebot2>=2.2.1",
 ]
 dynamic = ["version"]
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "MIT"}
 keywords = [
@@ -30,13 +30,12 @@ build-backend = "pdm.backend"
 [tool.pdm]
 [tool.pdm.dev-dependencies]
 dev = [
-    "fix-future-annotations>=0.5.0",
     "isort>=5.13.2",
     "black>=24.3.0",
     "loguru>=0.7.2",
     "ruff>=0.3.5",
     "nonemoji>=0.1.4",
-    "pre-commit>=3.7.0",
+    "pre-commit==3.5.0",
     "nonebug>=0.3.6",
     "pytest-xdist>=3.5.0",
     "pytest-asyncio>=0.23.6",
@@ -70,7 +69,7 @@ path = "src/nonebot_plugin_alconna/__init__.py"
 
 [tool.black]
 line-length = 120
-target-version = ["py38", "py39", "py310", "py311"]
+target-version = ["py38", "py39", "py310", "py311", "py312"]
 include = '\.pyi?$'
 extend-exclude = '''
 '''
@@ -92,7 +91,7 @@ select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
 ignore = ["C901", "T201", "E731", "E402"]
 
 [tool.pyright]
-pythonVersion = "3.9"
+pythonVersion = "3.8"
 pythonPlatform = "All"
 defineConstant = { PYDANTIC_V2 = true }
 typeCheckingMode = "basic"
