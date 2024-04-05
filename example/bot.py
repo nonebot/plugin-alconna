@@ -13,9 +13,9 @@ nonebot.load_plugin("plugins.demo")
 
 
 async def _():
-    from nonebot_plugin_alconna import Target, UniMessage
+    from nonebot_plugin_alconna import Target, UniMessage, SupportScope
 
-    await Target.group("123456789", platform=ONEBOT_V12Adapter).send(UniMessage.image(path="test.png"))
+    await Target.group("123456789", SupportScope.qq_client).send(UniMessage.image(path="test.png"))
 
 
 if __name__ == "__main__":

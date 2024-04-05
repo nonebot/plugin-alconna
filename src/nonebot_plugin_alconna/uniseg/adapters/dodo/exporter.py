@@ -30,7 +30,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
                 channel_id,
                 island_id or "",
                 True,
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         else:
@@ -39,7 +39,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
                 island_id or "",
                 True,
                 True,
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
 

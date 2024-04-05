@@ -40,6 +40,7 @@ from .config import Config
 from .uniseg import At as At
 from .uniseg import File as File
 from .uniseg import Text as Text
+from .uniseg import SupportScope as SupportScope
 from .model import Match as Match
 from .model import Query as Query
 from .typings import AtID as AtID

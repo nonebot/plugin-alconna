@@ -44,7 +44,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     channel=True,
                     private=True,
                     source=str(event.id),
-                    platform=self.get_adapter(),
+                    adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                 )  # noqa: E501
             return Target(
@@ -52,21 +52,21 @@ class QQMessageExporter(MessageExporter[Message]):
                 str(event.guild_id),
                 channel=True,
                 source=str(event.id),
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         if isinstance(event, GuildEvent):
             return Target(
-                str(event.id), channel=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None
+                str(event.id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None
             )
         if isinstance(event, GuildMemberEvent):
-            return Target(str(event.user.id), str(event.guild_id), channel=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None)  # type: ignore # noqa: E501
+            return Target(str(event.user.id), str(event.guild_id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)  # type: ignore # noqa: E501
         if isinstance(event, ChannelEvent):
             return Target(
                 str(event.id),
                 str(event.guild_id),
                 channel=True,
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         if isinstance(event, MessageAuditEvent):
@@ -74,7 +74,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 str(event.channel_id),
                 str(event.guild_id),
                 channel=True,
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         if isinstance(event, MessageReactionEvent):
@@ -82,7 +82,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 str(event.channel_id),
                 str(event.guild_id),
                 channel=True,
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         if isinstance(event, ForumEvent):
@@ -90,7 +90,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 str(event.channel_id),
                 str(event.guild_id),
                 channel=True,
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         if isinstance(event, C2CMessageCreateEvent):
@@ -98,7 +98,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 str(event.author.id),
                 private=True,
                 source=str(event.id),
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 extra={"qq.reply_seq": event._reply_seq},
             )
@@ -106,7 +106,7 @@ class QQMessageExporter(MessageExporter[Message]):
             return Target(
                 event.group_openid,
                 source=str(event.id),
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 extra={"qq.reply_seq": event._reply_seq},
             )
@@ -115,7 +115,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 return Target(
                     event.group_openid,
                     source=str(event.id),
-                    platform=self.get_adapter(),
+                    adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                 )
             elif event.channel_id:
@@ -124,7 +124,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     event.guild_id or "",
                     channel=True,
                     source=str(event.id),
-                    platform=self.get_adapter(),
+                    adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                 )
             else:
@@ -132,13 +132,13 @@ class QQMessageExporter(MessageExporter[Message]):
                     event.get_user_id(),
                     private=True,
                     source=str(event.id),
-                    platform=self.get_adapter(),
+                    adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                 )
         if isinstance(event, FriendRobotEvent):
-            return Target(event.openid, private=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(event.openid, private=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         if isinstance(event, GroupRobotEvent):
-            return Target(event.group_openid, platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(event.group_openid, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

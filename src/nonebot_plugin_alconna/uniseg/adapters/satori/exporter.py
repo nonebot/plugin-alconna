@@ -9,7 +9,8 @@ from nonebot.adapters.satori.message import STYLE_TYPE_MAP
 from nonebot.adapters.satori.event import NoticeEvent, MessageEvent
 from nonebot.adapters.satori.message import Message, MessageSegment
 
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.target import Target
+from nonebot_plugin_alconna.uniseg.exporter import SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
     File,
@@ -39,14 +40,14 @@ class SatoriMessageExporter(MessageExporter[Message]):
                 return Target(
                     event.channel.id,
                     event.guild.id if event.guild else event.channel.parent_id or "",
-                    platform=self.get_adapter(),
+                    adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                 )
             elif event.user:
                 return Target(
                     event.user.id,
                     private=True,
-                    platform=self.get_adapter(),
+                    adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                 )
         raise NotImplementedError

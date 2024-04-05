@@ -40,7 +40,7 @@ class RedMessageExporter(MessageExporter[Message]):
         return Target(
             str(event.peerUin or event.peerUid),
             private=event.chatType == ChatType.FRIEND,
-            platform=self.get_adapter(),
+            adapter=self.get_adapter(),
             self_id=bot.self_id if bot else None,
         )
 

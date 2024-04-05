@@ -33,6 +33,31 @@ class SupportAdapter(str, Enum):
     nonebug = "fake"
 
 
+class SupportScope(str, Enum):
+    """支持的平台范围"""
+
+    qq_client = "QQClient"
+    """QQ 协议端"""
+    qq_api = "QQAPI"
+    """QQ 官方接口"""
+    telegram = "Telegram"
+    discord = "Discord"
+    feishu = "Feishu"
+    dodo = "DoDo"
+    kook = "Kaiheila"
+    minecraft = "Minecraft"
+    github = "GitHub"
+    bilibili = "Bilibili"
+    console = "Console"
+    ding = "Ding"
+    wechat = "WeChat"
+    """微信平台"""
+    wechat_oap = "WeChatOfficialAccountPlatform"
+    """微信公众号平台"""
+    wecom = "WeCom"
+    """企业微信平台"""
+
+
 class SupportAdapterModule(str, Enum):
     """支持的适配器的模块路径"""
 

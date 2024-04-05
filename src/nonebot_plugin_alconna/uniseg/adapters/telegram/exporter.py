@@ -48,7 +48,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         assert isinstance(event, EventWithChat)
-        return Target(str(event.chat.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+        return Target(str(event.chat.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
 
     def get_message_id(self, event: Event) -> str:
         assert isinstance(event, MessageEvent)

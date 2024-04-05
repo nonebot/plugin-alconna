@@ -32,18 +32,18 @@ class DiscordMessageExporter(MessageExporter[Message]):
                     str(event.channel_id),
                     str(event.guild_id),
                     channel=True,
-                    platform=self.get_adapter(),
+                    adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                 )
             return Target(
                 str(event.channel_id),
                 channel=True,
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         elif isinstance(event, Channel):
             return Target(
-                str(event.id), channel=True, platform=self.get_adapter(), self_id=bot.self_id if bot else None
+                str(event.id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None
             )
         raise NotImplementedError
 

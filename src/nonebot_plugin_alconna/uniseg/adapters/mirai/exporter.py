@@ -54,36 +54,36 @@ class MiraiMessageExporter(MessageExporter[MessageChain]):
             return Target(
                 str(event.sender.id),
                 private=True,
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         elif isinstance(event, GroupMessage):
-            return Target(str(event.sender.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(str(event.sender.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, (BotMuteEvent, BotUnmuteEvent)):
             return Target(
                 str(event.operator.group.id),
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         elif isinstance(event, (MemberMuteEvent, MemberUnmuteEvent)):
-            return Target(str(event.member.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(str(event.member.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, (BotJoinGroupEvent, BotLeaveEventActive, BotLeaveEventKick)):
-            return Target(str(event.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(str(event.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, (MemberJoinEvent, MemberLeaveEventKick, MemberLeaveEventQuit)):
-            return Target(str(event.member.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(str(event.member.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, MemberStateChangeEvent):
-            return Target(str(event.member.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(str(event.member.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, GroupStateChangeEvent):
-            return Target(str(event.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(str(event.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         elif isinstance(event, FriendRecallEvent):
             return Target(
                 str(event.author_id),
                 private=True,
-                platform=self.get_adapter(),
+                adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
             )
         elif isinstance(event, GroupRecallEvent):
-            return Target(str(event.group.id), platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(str(event.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

@@ -23,7 +23,7 @@ class NTChatMessageExporter(MessageExporter[Message]):
         from_wxid = getattr(event, "from_wxid", None)
         room_wxid = getattr(event, "room_wxid", "")
         if from_wxid:
-            return Target(from_wxid, room_wxid, platform=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(from_wxid, room_wxid, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

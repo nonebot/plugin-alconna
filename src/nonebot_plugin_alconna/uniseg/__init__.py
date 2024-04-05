@@ -21,6 +21,7 @@ from .message import Receipt as Receipt
 from .segment import RefNode as RefNode
 from .segment import Segment as Segment
 from .constraint import log  # noqa: F401
+from .constraint import SupportScope as SupportScope
 from .params import MessageId as MessageId
 from .params import MsgTarget as MsgTarget
 from .segment import Reference as Reference

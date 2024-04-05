@@ -11,11 +11,11 @@ from tarina import lang
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
 
-from .tools import get_bot
 from .fallback import FallbackMessage
 from .constraint import SerializeFailed
 from .template import UniMessageTemplate
-from .exporter import Target, MessageExporter
+from .target import Target
+from .exporter import MessageExporter
 from .adapters import BUILDER_MAPPING, EXPORTER_MAPPING
 from .segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice, Segment
 
@@ -883,12 +883,9 @@ class UniMessage(List[TS]):
             try:
                 bot = current_bot.get()
             except LookupError as e:
-                if not isinstance(target, Target) or not target.platform:
+                if not isinstance(target, Target):
                     raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-                if target.self_id:
-                    bot = get_bot(bot_id=target.self_id)
-                else:
-                    bot = get_bot(adapter=target.platform, rand=True)
+                bot = target.select()
         if at_sender:
             if isinstance(at_sender, str):
                 self.insert(0, At("user", at_sender))  # type: ignore

@@ -1,7 +1,7 @@
 import random
 from pathlib import Path
 from base64 import b64decode
-from typing import TYPE_CHECKING, List, Type, Union, Literal, Optional, overload
+from typing import TYPE_CHECKING, Callable, List, Type, Union, Literal, Optional, overload
 
 from yarl import URL
 from nonebot import get_bots
@@ -12,10 +12,12 @@ from nonebot.internal.driver.model import Request
 from nonebot.internal.adapter import Bot, Event, Adapter
 
 from .segment import Image
-from .adapters import BUILDER_MAPPING
+
 
 
 async def reply_fetch(event: Event, bot: Bot):
+    from .adapters import BUILDER_MAPPING
+
     _adapter = bot.adapter
     adapter = _adapter.get_name()
     if not (fn := BUILDER_MAPPING.get(adapter)):
@@ -100,6 +102,17 @@ def get_bot(*, rand: Literal[True]) -> Bot: ...
 @overload
 def get_bot(*, bot_id: str) -> Bot: ...
 
+@overload
+def get_bot(*, predicate: Callable[[Bot], bool]) -> List[Bot]: ...
+
+@overload
+def get_bot(*, predicate: Callable[[Bot], bool], index: int) -> Bot: ...
+
+@overload
+def get_bot(*, predicate: Callable[[Bot], bool], rand: Literal[True]) -> Bot: ...
+
+@overload
+def get_bot(*, predicate: Callable[[Bot], bool], bot_id: str) -> Bot: ...
 
 @overload
 def get_bot(*, adapter: Union[Type[Adapter], str]) -> List[Bot]: ...
@@ -123,8 +136,9 @@ def get_bot(
     bot_id: Optional[str] = None,
     index: Optional[int] = None,
     rand: bool = False,
+    predicate: Union[Callable[[Bot], bool], None] = None,
 ) -> Union[List[Bot], Bot]:
-    if not adapter:
+    if not predicate and not adapter:
         if rand:
             return random.choice(list(get_bots().values()))
         if index is not None:
@@ -132,11 +146,14 @@ def get_bot(
         return _get_bot(bot_id)
     bots = []
     for bot in get_bots().values():
-        _adapter = bot.adapter
-        if isinstance(adapter, str):
-            if _adapter.get_name() == adapter:
-                bots.append(bot)
-        elif isinstance(_adapter, adapter):
+        if not predicate:
+            def _check_adapter(bot: Bot):
+                _adapter = bot.adapter
+                if isinstance(adapter, str):
+                    return _adapter.get_name() == adapter
+                return isinstance(_adapter, adapter)  # type: ignore
+            predicate = _check_adapter
+        if predicate(bot):
             bots.append(bot)
     if not bot_id:
         if rand:

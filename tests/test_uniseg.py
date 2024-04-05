@@ -145,5 +145,5 @@ async def test_unimsg_send(app: App):
                 "message": Message("hello!"),
             },
         )
-        target = Target("456", platform=adapter.get_name())
+        target = Target("456", adapter=adapter.get_name())
         await target.send("hello!")
