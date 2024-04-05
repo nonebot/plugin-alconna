@@ -17,7 +17,7 @@ from typing import (
 )
 
 from tarina import lang
-from nonebot.adapters import Bot, Event, Message, MessageSegment
+from nonebot.adapters import Bot, Event, Message, MessageSegment, Adapter
 
 from .segment import Other, Reply, Custom, Segment
 from .constraint import SupportAdapter, SerializeFailed
@@ -42,12 +42,40 @@ class Target:
     """是否为私聊"""
     source: str = ""
     """可能的事件id"""
-    platform: Union[str, None] = None
-    """平台(适配器)名称，若为None则需要明确指定 Bot 对象"""
+    platform: Union[str, Type[Adapter], SupportAdapter, None] = None
+    """平台(适配器)名称，若为 None 则需要明确指定 Bot 对象"""
     self_id: Union[str, None] = None
-    """机器人id，若为None则需要明确指定 Bot 对象"""
+    """机器人id，若为 None 则 Bot 对象会随机选择"""
     extra: Dict[str, Any] = field(default_factory=dict)
     """额外信息，用于适配器扩展"""
+
+    @classmethod
+    def group(
+        cls, 
+        group_id: str, 
+        platform: Union[str, Type[Adapter], SupportAdapter, None] = None,
+        self_id: Union[str, None] = None,
+    ):
+        return cls(group_id, platform=platform, self_id=self_id)
+    
+    @classmethod
+    def channel_(
+        cls,
+        channel_id: str,
+        guild_id: str = "",
+        platform: Union[str, Type[Adapter], SupportAdapter, None] = None,
+        self_id: Union[str, None] = None,
+    ):
+        return cls(channel_id, guild_id, channel=True, platform=platform, self_id=self_id)
+    
+    @classmethod
+    def user(
+        cls,
+        user_id: str,
+        platform: Union[str, Type[Adapter], SupportAdapter, None] = None,
+        self_id: Union[str, None] = None,
+    ):
+        return cls(user_id, platform=platform, self_id=self_id, private=True)
 
     async def send(
         self,

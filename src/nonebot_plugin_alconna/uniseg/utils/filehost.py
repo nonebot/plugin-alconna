@@ -13,10 +13,10 @@ except ImportError:
     raise ImportError("You need to install nonebot_plugin_filehost to use this module.")
 
 
-async def to_url(img: Union[str, Path, bytes, BytesIO], name: Union[str, None] = None) -> str:
-    if isinstance(img, str):
-        img = Path(img)
-    return await FileHost(img, filename=name).to_url()
+async def to_url(data: Union[str, Path, bytes, BytesIO], bot: ..., name: Union[str, None] = None) -> str:
+    if isinstance(data, str):
+        data = Path(data)
+    return await FileHost(data, filename=name).to_url()
 
 
 Media.to_url = to_url

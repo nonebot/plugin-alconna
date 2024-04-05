@@ -73,9 +73,9 @@ class KookMessageExporter(MessageExporter["Message"]):
         if seg.id or seg.url:
             return method(seg.id or seg.url)
         if seg.__class__.to_url and seg.raw:
-            return method(await seg.__class__.to_url(seg.raw, None if seg.name == seg.__default_name__ else seg.name))
+            return method(await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name))
         if seg.__class__.to_url and seg.path:
-            return method(await seg.__class__.to_url(seg.path, None if seg.name == seg.__default_name__ else seg.name))
+            return method(await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name))
         local_method = {
             "image": MessageSegment.local_image,
             "voice": MessageSegment.local_audio,

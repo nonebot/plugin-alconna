@@ -50,11 +50,11 @@ class DingMessageExporter(MessageExporter[Message]):
             return MessageSegment.image(seg.url)
         if seg.__class__.to_url and seg.path:
             return MessageSegment.image(
-                await seg.__class__.to_url(seg.path, None if seg.name == seg.__default_name__ else seg.name)
+                await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
             )
         if seg.__class__.to_url and seg.raw:
             return MessageSegment.image(
-                await seg.__class__.to_url(seg.raw, None if seg.name == seg.__default_name__ else seg.name)
+                await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
             )
         raise ValueError("github image segment must have url")
 

@@ -24,11 +24,12 @@ from typing import (
     Iterable,
     Optional,
     Awaitable,
+    Protocol,
     overload,
 )
 
 from nonebot.compat import PYDANTIC_V2, ConfigDict
-from nonebot.internal.adapter import Message, MessageSegment
+from nonebot.internal.adapter import Bot, Message, MessageSegment
 from nepattern import MatchMode, BasePattern, create_local_patterns
 
 from .utils import fleep
@@ -269,6 +270,10 @@ class Emoji(Segment):
     name: Optional[str] = field(default=None)
 
 
+class MediaToUrl(Protocol):
+    def __call__(self, data: Union[str, Path, bytes, BytesIO], bot: Bot, name: Optional[str] = None) -> Awaitable[str]: ...
+
+
 @dataclass
 class Media(Segment):
     id: Optional[str] = field(default=None)
@@ -279,7 +284,7 @@ class Media(Segment):
     name: str = field(default="media")
 
     __default_name__ = "media"
-    to_url: ClassVar[Optional[Callable[[Union[str, Path, bytes, BytesIO], Optional[str]], Awaitable[str]]]] = None
+    to_url: ClassVar[Optional[MediaToUrl]] = None
 
     def __post_init__(self):
         if self.path:
@@ -466,6 +471,6 @@ env[Segment] = BasePattern(
 )
 
 
-def apply_media_to_url(func: Callable[[Union[str, Path, bytes, BytesIO], Optional[str]], Awaitable[str]]):
+def apply_media_to_url(func: MediaToUrl):
     """为 Media 对象设置 to_url 方法，用于将文件或数据上传到文件服务器并返回 URL"""
     Media.to_url = func

@@ -437,7 +437,7 @@ async def handle(event: Event, name: str, phone: int, at: Union[str, At]):
     r = await UniMessage(f"姓名：{name}").send(reply_to=True)
     await r.reply(f"手机号：{phone}")
     await r.reply(f"教师号：{at!r}")
-    # await r.recall(delay=5)
+    await r.recall(delay=5)
 
     await cmd.send("请回复验证码：")
 
