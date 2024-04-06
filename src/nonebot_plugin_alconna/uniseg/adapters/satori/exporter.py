@@ -35,13 +35,16 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return SupportAdapter.satori
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+        if TYPE_CHECKING:
+            assert isinstance(bot, SatoriBot)
         if isinstance(event, (MessageEvent, NoticeEvent)):
             if event.channel:
                 return Target(
                     event.channel.id,
-                    event.guild.id if event.guild else event.channel.parent_id or "",
+                    (event.guild.id if event.guild else event.channel.parent_id) or "",
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
+                    platform=bot.platform if bot else None,
                 )
             elif event.user:
                 return Target(
@@ -49,6 +52,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
                     private=True,
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
+                    platform=bot.platform if bot else None,
                 )
         raise NotImplementedError
 

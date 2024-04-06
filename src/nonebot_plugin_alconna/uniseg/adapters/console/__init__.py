@@ -3,18 +3,15 @@ from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 
 
 class Loader(BaseLoader):
-    @classmethod
-    def get_adapter(cls) -> SupportAdapter:
+    def get_adapter(self) -> SupportAdapter:
         return SupportAdapter.console
 
-    @classmethod
-    def get_builder(cls):
+    def get_builder(self):
         from .builder import ConsoleMessageBuilder
 
         return ConsoleMessageBuilder()
 
-    @classmethod
-    def get_exporter(cls):
+    def get_exporter(self):
         from .exporter import ConsoleMessageExporter
 
         return ConsoleMessageExporter()

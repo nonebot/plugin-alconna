@@ -1,19 +1,20 @@
 from abc import ABCMeta, abstractmethod
 
+from .target import TargetFetcher
 from .builder import MessageBuilder
 from .exporter import MessageExporter
 from .constraint import SupportAdapter
 
 
 class BaseLoader(metaclass=ABCMeta):
-    @classmethod
     @abstractmethod
-    def get_adapter(cls) -> SupportAdapter: ...
+    def get_adapter(self) -> SupportAdapter: ...
 
-    @classmethod
     @abstractmethod
-    def get_builder(cls) -> MessageBuilder: ...
+    def get_builder(self) -> MessageBuilder: ...
 
-    @classmethod
     @abstractmethod
-    def get_exporter(cls) -> MessageExporter: ...
+    def get_exporter(self) -> MessageExporter: ...
+
+    def get_fetcher(self) -> TargetFetcher:
+        raise NotImplementedError

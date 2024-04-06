@@ -60,6 +60,7 @@ from .typings import Style as Style
 from .params import assign as assign
 from .rule import alconna as alconna
 from .uniseg import Custom as Custom
+from .uniseg import SCOPES as SCOPES
 from .uniseg import Target as Target
 from .uniseg import UniMsg as UniMsg
 from .typings import Italic as Italic
@@ -113,6 +114,7 @@ from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .uniseg import apply_media_to_url as apply_media_to_url
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
+from .uniseg import apply_fetch_targets as apply_fetch_targets
 from .uniseg import SupportAdapterModule as SupportAdapterModule
 from .extension import add_global_extension as add_global_extension
 
@@ -142,3 +144,5 @@ with contextlib.suppress(ValueError, LookupError):
         apply_filehost()
     if _config.alconna_enable_saa_patch:
         patch_saa()
+    if _config.alconna_apply_fetch_targets:
+        apply_fetch_targets()

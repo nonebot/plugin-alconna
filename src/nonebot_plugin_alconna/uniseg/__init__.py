@@ -1,8 +1,13 @@
+import asyncio
+
+from nonebot.adapters import Bot
 from nonebot.plugin import PluginMetadata
 
 from .segment import At as At
+from .constraint import log, lang
 from .segment import File as File
 from .segment import Text as Text
+from .target import TARGET_RECORD
 from .params import MsgId as MsgId
 from .segment import AtAll as AtAll
 from .segment import Audio as Audio
@@ -14,13 +19,14 @@ from .segment import Reply as Reply
 from .segment import Video as Video
 from .segment import Voice as Voice
 from .params import UniMsg as UniMsg
+from .target import SCOPES as SCOPES
+from .target import Target as Target
+from .adapters import FETCHER_MAPPING
 from .segment import Custom as Custom
 from .tools import get_bot as get_bot
-from .exporter import Target as Target
 from .message import Receipt as Receipt
 from .segment import RefNode as RefNode
 from .segment import Segment as Segment
-from .constraint import log  # noqa: F401
 from .params import MessageId as MessageId
 from .params import MsgTarget as MsgTarget
 from .segment import Reference as Reference
@@ -66,3 +72,47 @@ def apply_filehost():
 
 
 reply_handle = reply_fetch  # backward compatibility
+
+_enable_fetch_targets = False
+FETCH_LOCK = asyncio.Lock()
+
+
+def _register_hook():
+    from nonebot import get_driver
+
+    driver = get_driver()
+
+    @driver.on_bot_connect
+    async def _(bot: Bot):
+        log("DEBUG", f"cache or refresh targets for {bot.self_id}")
+        async with FETCH_LOCK:
+            await _refresh_bot(bot)
+
+    @driver.on_bot_disconnect
+    async def _(bot: Bot):
+        async with FETCH_LOCK:
+            TARGET_RECORD.pop(bot.self_id, None)
+            if fn := FETCHER_MAPPING.get(bot.adapter.get_name()):
+                fn.cache.pop(bot.self_id, None)
+
+
+def apply_fetch_targets():
+    global _enable_fetch_targets
+
+    if _enable_fetch_targets:
+        return
+
+    _register_hook()
+    _enable_fetch_targets = True
+
+
+async def _refresh_bot(bot: Bot):
+    TARGET_RECORD.pop(bot.self_id, None)
+    if not (fn := FETCHER_MAPPING.get(bot.adapter.get_name())):
+        log("WARNING", lang.require("nbp-uniseg", "unsupported").format(adapter=bot.adapter.get_name()))
+        return
+    try:
+        await fn.refresh(bot)
+    except Exception as e:
+        log("ERROR", f"{bot} fetch targets failed: {e}")
+    TARGET_RECORD[bot.self_id] = fn.get_selector(bot)

@@ -4,10 +4,11 @@ from typing import TYPE_CHECKING, Any, Union, cast
 from tarina import lang
 from nonebot.adapters import Bot, Event
 from nonebot.internal.driver import Request
+from nonebot.adapters.discord.api.types import ChannelType
 from nonebot.adapters.discord.bot import Bot as DiscordBot
 from nonebot.adapters.discord.api.model import Channel, MessageGet
-from nonebot.adapters.discord.event import MessageEvent, GuildMessageCreateEvent
 from nonebot.adapters.discord.message import Message, MessageSegment, parse_message
+from nonebot.adapters.discord.event import MessageEvent, GuildMessageCreateEvent, DirectMessageCreateEvent
 
 from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
@@ -35,6 +36,14 @@ class DiscordMessageExporter(MessageExporter[Message]):
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                 )
+            if isinstance(event, DirectMessageCreateEvent):
+                return Target(
+                    str(event.channel_id),
+                    channel=True,
+                    private=True,
+                    adapter=self.get_adapter(),
+                    self_id=bot.self_id if bot else None,
+                )
             return Target(
                 str(event.channel_id),
                 channel=True,
@@ -42,7 +51,13 @@ class DiscordMessageExporter(MessageExporter[Message]):
                 self_id=bot.self_id if bot else None,
             )
         elif isinstance(event, Channel):
-            return Target(str(event.id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(event.id),
+                channel=True,
+                private=event.type == ChannelType.DM,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+            )
         raise NotImplementedError
 
     @export
@@ -96,7 +111,9 @@ class DiscordMessageExporter(MessageExporter[Message]):
 
         if isinstance(target, Event):
             target = self.get_target(target, bot)
-
+        if target.private:
+            dm = await bot.create_DM(recipient_id=int(target.id))
+            return await bot.send_to(channel_id=dm.id, message=message)
         return await bot.send_to(channel_id=int(target.id), message=message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):

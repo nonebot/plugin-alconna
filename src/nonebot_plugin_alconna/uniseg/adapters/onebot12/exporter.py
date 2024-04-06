@@ -30,13 +30,31 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
                 channel=True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                platform=bot.platform if bot else None,
             )
         if guild_id := getattr(event, "guild_id", None):
-            return Target(str(guild_id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(guild_id),
+                channel=True,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                platform=bot.platform if bot else None,
+            )
         if group_id := getattr(event, "group_id", None):
-            return Target(str(group_id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(group_id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                platform=bot.platform if bot else None,
+            )
         if user_id := getattr(event, "user_id", None):
-            return Target(str(user_id), private=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(user_id),
+                private=True,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                platform=bot.platform if bot else None,
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

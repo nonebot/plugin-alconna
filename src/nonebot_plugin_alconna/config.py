@@ -32,3 +32,6 @@ class Config(BaseModel):
 
     alconna_apply_filehost: bool = False
     """是否启用文件托管"""
+
+    alconna_apply_fetch_targets: bool = False
+    """是否启动时拉取一次发送对象列表"""

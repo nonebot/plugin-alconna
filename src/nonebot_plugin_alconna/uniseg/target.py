@@ -1,35 +1,43 @@
 from functools import partial
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Set, Dict, Type, Union, Callable
+from abc import ABCMeta, abstractmethod
+from typing import TYPE_CHECKING, Any, Set, Dict, List, Type, Union, Callable, Awaitable, AsyncIterator
 
 from nonebot.adapters import Bot, Adapter, Message
 
 from .segment import Reply
 from .tools import get_bot
-from .constraint import SupportScope, SupportAdapter, SerializeFailed, lang
+from .constraint import SupportScope, SupportAdapter, SerializeFailed, log, lang
 
 if TYPE_CHECKING:
     from .message import UniMessage
 
 
-SCOPES: Dict[str, Callable[["Target", Bot], bool]] = {}
+SCOPES: Dict[str, Callable[["Target", Bot], Awaitable[bool]]] = {}
+TARGET_RECORD: Dict[str, Callable[["Target"], Awaitable[bool]]] = {}
+
+
+async def _selector(target: "Target", bot: Bot):
+    if bot.self_id in TARGET_RECORD:
+        return await TARGET_RECORD[bot.self_id](target)
+    return True
 
 
 @dataclass(init=False)
 class Target:
     id: str
     """目标id；若为群聊则为group_id或者channel_id，若为私聊则为user_id"""
-    parent_id: str = ""
-    """父级id；若为频道则为guild_id，其他情况为空字符串"""
-    channel: bool = False
+    parent_id: str
+    """父级id；若为频道则为guild_id，其他情况下可能为空字符串（例如 Feishu 下可作为部门 id）"""
+    channel: bool
     """是否为频道，仅当目标平台符合频道概念时"""
-    private: bool = False
+    private: bool
     """是否为私聊"""
-    source: str = ""
+    source: str
     """可能的事件id"""
     self_id: Union[str, None]
     """机器人id，若为 None 则 Bot 对象会随机选择"""
-    selector: Union[Callable[[Bot], bool], None]
+    selector: Union[Callable[[Bot], Awaitable[bool]], None]
     """选择器，用于在多个 Bot 对象中选择特定 Bot"""
     extra: Dict[str, Any]
     """额外信息，用于适配器扩展"""
@@ -42,7 +50,7 @@ class Target:
         private: bool = False,
         source: str = "",
         self_id: Union[str, None] = None,
-        selector: Union[Callable[["Target", Bot], bool], None] = None,
+        selector: Union[Callable[["Target", Bot], Awaitable[bool]], None] = _selector,
         scope: Union[str, None] = None,
         adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
         platform: Union[str, Set[str], None] = None,
@@ -52,7 +60,7 @@ class Target:
 
         Args:
             id: 目标id；若为群聊则为 group_id 或者 channel_id，若为私聊则为user_id
-            parent_id: 父级id；若为频道则为guild_id，其他情况为空字符串
+            parent_id: 若为频道则为guild_id，其他情况下可能为空字符串（例如 Feishu 下可作为部门 id）
             channel: 是否为频道，仅当目标平台符合频道概念时
             private: 是否为私聊
             source: 可能的事件id
@@ -70,14 +78,28 @@ class Target:
         self.source = source
         self.self_id = self_id
         self.extra = extra if extra else {}
-        if selector:
-            self.selector = partial(selector, self)
-        elif scope:
+        self.selector = None
+        if scope:
             self.selector = partial(SCOPES[scope], self)
-        else:
-            self.selector = None
+            self.extra["scope"] = scope
+        if selector:
+            if self.selector:
+                _scope_selector = self.selector
+
+                async def _(bot: Bot):
+                    return await _scope_selector(bot) and await selector(self, bot)
+
+                self.selector = _
+            else:
+                self.selector = partial(selector, self)
         if adapter or platform:
             platforms = platform if isinstance(platform, set) else {platform} if platform else set()
+            if platforms:
+                self.extra["platforms"] = list(platforms)
+            if isinstance(adapter, str):
+                self.extra["adapter"] = adapter
+            elif adapter:
+                self.extra["adapter"] = adapter.get_name()
 
             def _predicate(bot: Bot):
                 _adapter = bot.adapter
@@ -98,7 +120,44 @@ class Target:
                 return False
 
             _selector = self.selector
-            self.selector = _predicate if not _selector else lambda bot: _predicate(bot) and _selector(bot)
+
+            async def _(bot: Bot):
+                if not _predicate(bot):
+                    return False
+                if not _selector:
+                    return True
+                return await _selector(bot)
+
+            self.selector = _
+
+    def __hash__(self):
+        args = (self.id, self.parent_id, self.channel, self.private, self.self_id)
+        if self.extra.get("scope"):
+            args += (self.extra["scope"],)
+        if self.extra.get("adapter"):
+            args += (self.extra["adapter"],)
+        if self.extra.get("platforms"):
+            args += (tuple(self.extra["platforms"]),)
+        return hash(args)
+
+    def verify(self, other: "Target"):
+        if other.id != self.id or other.channel != self.channel or other.private != self.private:
+            return False
+        if self.parent_id and other.parent_id and self.parent_id != other.parent_id:
+            return False
+        return True
+
+    @property
+    def scope(self) -> Union[str, None]:
+        return self.extra.get("scope")
+
+    @property
+    def adapter(self) -> Union[str, None]:
+        return self.extra.get("adapter")
+
+    @property
+    def platform(self) -> Union[List[str], None]:
+        return self.extra.get("platforms")
 
     @classmethod
     def group(
@@ -131,11 +190,14 @@ class Target:
     ):
         return cls(user_id, private=True, scope=scope, adapter=adapter, platform=platform)
 
-    def select(self):
+    async def select(self):
         if self.self_id:
-            return get_bot(bot_id=self.self_id)
+            try:
+                return await get_bot(bot_id=self.self_id)
+            except KeyError:
+                pass
         if self.selector:
-            return get_bot(predicate=self.selector, rand=True)
+            return await get_bot(predicate=self.selector, rand=True)
         raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing"))
 
     async def send(
@@ -157,9 +219,73 @@ class Target:
             message = await UniMessage.generate(message=message, bot=bot)
         return await message.send(self, bot, fallback, at_sender, reply_to)
 
+    def dump(self, dump_self_id: bool = True):
+        data = {
+            "id": self.id,
+            "parent_id": self.parent_id,
+            "channel": self.channel,
+            "private": self.private,
+            "self_id": self.self_id,
+            "extra": self.extra,
+        }
+        if not dump_self_id:
+            data.pop("self_id")
+        return data
+
+    @classmethod
+    def load(cls, data: Dict[str, Any]):
+        extra = data.pop("extra", {})
+        scope = extra.pop("scope", None)
+        adapter = extra.pop("adapter", None)
+        platform = extra.pop("platforms", None)
+        if platform:
+            platform = set(platform)
+        return cls(extra=extra, scope=scope, adapter=adapter, platform=platform, **data)
+
+
+class TargetFetcher(metaclass=ABCMeta):
+    def __init__(self) -> None:
+        self.cache: Dict[str, Set[Target]] = {}
+
+    @classmethod
+    @abstractmethod
+    def get_adapter(cls) -> SupportAdapter: ...
+
+    @abstractmethod
+    def fetch(self, bot: Bot, target: Union[Target, None] = None) -> AsyncIterator[Target]: ...
+
+    async def refresh(self, bot: Bot, target: Union[Target, None] = None):
+        if bot.self_id in self.cache:
+            del self.cache[bot.self_id]
+        _cache = self.cache.setdefault(bot.self_id, set())
+        async for tg in self.fetch(bot, target):
+            _cache.add(tg)
+
+    def get_selector(self, bot: Bot):
+        if bot.self_id in self.cache:
+            targets = self.cache[bot.self_id]
+
+            async def _(target: Target):
+                return target in targets
+
+            return _
+        _cache = self.cache.setdefault(bot.self_id, set())
+
+        async def _check(target: Target):
+            try:
+                async for tg in self.fetch(bot, target):
+                    if target.verify(tg):
+                        _cache.add(target)
+                        return True
+            except Exception as e:
+                log("WARNING", f"Failed to fetch for bot {bot.self_id}: {e}")
+            return False
+
+        return _check
+
 
 def _register(scope: SupportScope):
-    def decorator(func: Callable[["Target", Bot], bool]):
+    def decorator(func: Callable[["Target", Bot], Awaitable[bool]]):
         SCOPES[scope] = func
         return func
 
@@ -167,7 +293,7 @@ def _register(scope: SupportScope):
 
 
 @_register(SupportScope.qq_client)
-def select_qq_client(target: "Target", bot: Bot):
+async def select_qq_client(target: "Target", bot: Bot):
     adapter_name = bot.adapter.get_name()
     if target.channel:
         return False
@@ -186,8 +312,17 @@ def select_qq_client(target: "Target", bot: Bot):
     return True
 
 
+@_register(SupportScope.qq_guild)
+async def select_qq_guild(target: "Target", bot: Bot):
+    if bot.adapter.get_name() != SupportAdapter.onebot12:
+        return False
+    if hasattr(bot, "platform") and bot.platform != "qqguild":
+        return False
+    return True
+
+
 @_register(SupportScope.qq_api)
-def select_qq_api(target: "Target", bot: Bot):
+async def select_qq_api(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {SupportAdapter.qq, SupportAdapter.satori}:
         return False
     if hasattr(bot, "platform") and bot.platform != "qq":
@@ -196,7 +331,7 @@ def select_qq_api(target: "Target", bot: Bot):
 
 
 @_register(SupportScope.telegram)
-def select_telegram(target: "Target", bot: Bot):
+async def select_telegram(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {SupportAdapter.telegram, SupportAdapter.satori}:
         return False
     if hasattr(bot, "platform") and bot.platform != "telegram":
@@ -205,7 +340,7 @@ def select_telegram(target: "Target", bot: Bot):
 
 
 @_register(SupportScope.discord)
-def select_discord(target: "Target", bot: Bot):
+async def select_discord(target: "Target", bot: Bot):
     if not target.channel:
         return False
     if bot.adapter.get_name() not in {SupportAdapter.discord, SupportAdapter.satori, SupportAdapter.onebot12}:
@@ -216,7 +351,7 @@ def select_discord(target: "Target", bot: Bot):
 
 
 @_register(SupportScope.feishu)
-def select_feishu(target: "Target", bot: Bot):
+async def select_feishu(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {SupportAdapter.feishu, SupportAdapter.satori}:
         return False
     if hasattr(bot, "platform") and bot.platform != "feishu":
@@ -225,14 +360,14 @@ def select_feishu(target: "Target", bot: Bot):
 
 
 @_register(SupportScope.dodo)
-def select_dodo(target: "Target", bot: Bot):
+async def select_dodo(target: "Target", bot: Bot):
     if not target.channel:
         return False
     return bot.adapter.get_name() == SupportAdapter.dodo
 
 
 @_register(SupportScope.kook)
-def select_kook(target: "Target", bot: Bot):
+async def select_kook(target: "Target", bot: Bot):
     if not target.channel:
         return False
     if bot.adapter.get_name() not in {SupportAdapter.kook, SupportAdapter.satori, SupportAdapter.onebot12}:
@@ -243,35 +378,35 @@ def select_kook(target: "Target", bot: Bot):
 
 
 @_register(SupportScope.minecraft)
-def select_minecraft(target: "Target", bot: Bot):
+async def select_minecraft(target: "Target", bot: Bot):
     if target.channel or target.private:
         return False
     return bot.adapter.get_name() == SupportAdapter.minecraft
 
 
 @_register(SupportScope.github)
-def select_github(target: "Target", bot: Bot):
+async def select_github(target: "Target", bot: Bot):
     if target.channel or target.private:
         return False
     return bot.adapter.get_name() == SupportAdapter.github
 
 
 @_register(SupportScope.bilibili)
-def select_bilibili(target: "Target", bot: Bot):
+async def select_bilibili(target: "Target", bot: Bot):
     if target.channel or target.private:
         return False
     return bot.adapter.get_name() == SupportAdapter.bilibili
 
 
 @_register(SupportScope.console)
-def select_console(target: "Target", bot: Bot):
+async def select_console(target: "Target", bot: Bot):
     if target.channel:
         return False
     return bot.adapter.get_name() == SupportAdapter.console
 
 
 @_register(SupportScope.ding)
-def select_ding(target: "Target", bot: Bot):
+async def select_ding(target: "Target", bot: Bot):
     if target.channel:
         return False
     if bot.adapter.get_name() not in {SupportAdapter.ding, SupportAdapter.satori}:
@@ -282,7 +417,7 @@ def select_ding(target: "Target", bot: Bot):
 
 
 @_register(SupportScope.wechat)
-def select_wechat(target: "Target", bot: Bot):
+async def select_wechat(target: "Target", bot: Bot):
     if target.channel:
         return False
     if bot.adapter.get_name() != SupportAdapter.onebot12:
@@ -293,7 +428,7 @@ def select_wechat(target: "Target", bot: Bot):
 
 
 @_register(SupportScope.wechat_oap)
-def select_wechat_oap(target: "Target", bot: Bot):
+async def select_wechat_oap(target: "Target", bot: Bot):
     if target.channel:
         return False
     if bot.adapter.get_name() != SupportAdapter.satori:
@@ -304,7 +439,7 @@ def select_wechat_oap(target: "Target", bot: Bot):
 
 
 @_register(SupportScope.wecom)
-def select_wecom(target: "Target", bot: Bot):
+async def select_wecom(target: "Target", bot: Bot):
     if target.channel:
         return False
     if bot.adapter.get_name() != SupportAdapter.satori:

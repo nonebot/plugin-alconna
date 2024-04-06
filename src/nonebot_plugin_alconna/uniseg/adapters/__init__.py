@@ -3,10 +3,12 @@ import importlib
 from pathlib import Path
 from warnings import warn
 from typing import Dict, cast
+from contextlib import suppress
 
 from nonebot import get_adapters
 
 from ..loader import BaseLoader
+from ..target import TargetFetcher
 from ..builder import MessageBuilder
 from ..exporter import MessageExporter
 
@@ -16,13 +18,14 @@ _adapters = [path.stem for path in root.iterdir() if path.is_dir() and not path.
 for name in _adapters:
     try:
         module = importlib.import_module(f".{name}", __package__)
-        loader = cast(BaseLoader, getattr(module, "Loader"))
+        loader = cast(BaseLoader, getattr(module, "Loader")())
         loaders[loader.get_adapter().value] = loader
     except Exception as e:
         warn(f"Failed to import uniseg adapter {name}: {e}", RuntimeWarning, 15)
 
 EXPORTER_MAPPING: Dict[str, MessageExporter] = {}
 BUILDER_MAPPING: Dict[str, MessageBuilder] = {}
+FETCHER_MAPPING: Dict[str, TargetFetcher] = {}
 
 try:
     adapters = get_adapters()
@@ -40,6 +43,8 @@ else:
             try:
                 EXPORTER_MAPPING[adapter] = loaders[adapter].get_exporter()
                 BUILDER_MAPPING[adapter] = loaders[adapter].get_builder()
+                with suppress(NotImplementedError):
+                    FETCHER_MAPPING[adapter] = loaders[adapter].get_fetcher()
             except Exception as e:
                 warn(f"Failed to load uniseg adapter {adapter}: {e}", RuntimeWarning, 15)
     else:
@@ -48,6 +53,8 @@ else:
                 try:
                     EXPORTER_MAPPING[adapter] = loaders[adapter].get_exporter()
                     BUILDER_MAPPING[adapter] = loaders[adapter].get_builder()
+                    with suppress(NotImplementedError):
+                        FETCHER_MAPPING[adapter] = loaders[adapter].get_fetcher()
                 except Exception as e:
                     warn(f"Failed to load uniseg adapter {adapter}: {e}", RuntimeWarning, 15)
             else:

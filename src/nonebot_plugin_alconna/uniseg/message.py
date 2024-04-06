@@ -885,7 +885,7 @@ class UniMessage(List[TS]):
             except LookupError as e:
                 if not isinstance(target, Target):
                     raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-                bot = target.select()
+                bot = await target.select()
         if at_sender:
             if isinstance(at_sender, str):
                 self.insert(0, At("user", at_sender))  # type: ignore

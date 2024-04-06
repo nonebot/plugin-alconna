@@ -3,18 +3,20 @@ from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 
 
 class Loader(BaseLoader):
-    @classmethod
-    def get_adapter(cls) -> SupportAdapter:
+    def get_adapter(self) -> SupportAdapter:
         return SupportAdapter.feishu
 
-    @classmethod
-    def get_builder(cls):
+    def get_builder(self):
         from .builder import FeishuMessageBuilder
 
         return FeishuMessageBuilder()
 
-    @classmethod
-    def get_exporter(cls):
+    def get_exporter(self):
         from .exporter import FeishuMessageExporter
 
         return FeishuMessageExporter()
+
+    def get_fetcher(self):
+        from .target import FeishuTargetFetcher
+
+        return FeishuTargetFetcher()

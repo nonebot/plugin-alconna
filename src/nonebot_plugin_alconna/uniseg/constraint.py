@@ -38,6 +38,8 @@ class SupportScope(str, Enum):
 
     qq_client = "QQClient"
     """QQ 协议端"""
+    qq_guild = "QQGuild"
+    """QQ 用户频道，非官方接口"""
     qq_api = "QQAPI"
     """QQ 官方接口"""
     telegram = "Telegram"

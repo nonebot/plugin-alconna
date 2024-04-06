@@ -31,8 +31,8 @@ async def test_bots(app: App):
             base=Onebot12Bot, adapter=onebot12_adapter, self_id="5", platform="qq", impl="mock"
         )
 
-        assert Target("0", scope=SupportScope.qq_client).select() in (satori_bot_cc, onebot11_bot, onebot12_bot)
-        assert Target("0", scope=SupportScope.qq_api).select() in (satori_bot_qq, qq_bot)
+        assert await Target("0", scope=SupportScope.qq_client).select() in (satori_bot_cc, onebot11_bot, onebot12_bot)
+        assert await Target("0", scope=SupportScope.qq_api).select() in (satori_bot_qq, qq_bot)
 
         target1 = Target("123", adapter=Onebot11Adapter)
         target2 = Target.group("456", scope=SupportScope.qq_client, platform="chronocat")

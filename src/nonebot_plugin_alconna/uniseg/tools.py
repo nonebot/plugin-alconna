@@ -1,7 +1,7 @@
 import random
 from pathlib import Path
 from base64 import b64decode
-from typing import TYPE_CHECKING, List, Type, Union, Literal, Callable, Optional, overload
+from typing import TYPE_CHECKING, List, Type, Union, Literal, Callable, Optional, Awaitable, overload
 
 from yarl import URL
 from nonebot import get_bots
@@ -91,56 +91,56 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
 
 
 @overload
-def get_bot(*, index: int) -> Bot: ...
+async def get_bot(*, index: int) -> Bot: ...
 
 
 @overload
-def get_bot(*, rand: Literal[True]) -> Bot: ...
+async def get_bot(*, rand: Literal[True]) -> Bot: ...
 
 
 @overload
-def get_bot(*, bot_id: str) -> Bot: ...
+async def get_bot(*, bot_id: str) -> Bot: ...
 
 
 @overload
-def get_bot(*, predicate: Callable[[Bot], bool]) -> List[Bot]: ...
+async def get_bot(*, predicate: Callable[[Bot], Awaitable[bool]]) -> List[Bot]: ...
 
 
 @overload
-def get_bot(*, predicate: Callable[[Bot], bool], index: int) -> Bot: ...
+async def get_bot(*, predicate: Callable[[Bot], Awaitable[bool]], index: int) -> Bot: ...
 
 
 @overload
-def get_bot(*, predicate: Callable[[Bot], bool], rand: Literal[True]) -> Bot: ...
+async def get_bot(*, predicate: Callable[[Bot], Awaitable[bool]], rand: Literal[True]) -> Bot: ...
 
 
 @overload
-def get_bot(*, predicate: Callable[[Bot], bool], bot_id: str) -> Bot: ...
+async def get_bot(*, predicate: Callable[[Bot], Awaitable[bool]], bot_id: str) -> Bot: ...
 
 
 @overload
-def get_bot(*, adapter: Union[Type[Adapter], str]) -> List[Bot]: ...
+async def get_bot(*, adapter: Union[Type[Adapter], str]) -> List[Bot]: ...
 
 
 @overload
-def get_bot(*, adapter: Union[Type[Adapter], str], index: int) -> Bot: ...
+async def get_bot(*, adapter: Union[Type[Adapter], str], index: int) -> Bot: ...
 
 
 @overload
-def get_bot(*, adapter: Union[Type[Adapter], str], rand: Literal[True]) -> Bot: ...
+async def get_bot(*, adapter: Union[Type[Adapter], str], rand: Literal[True]) -> Bot: ...
 
 
 @overload
-def get_bot(*, adapter: Union[Type[Adapter], str], bot_id: str) -> Bot: ...
+async def get_bot(*, adapter: Union[Type[Adapter], str], bot_id: str) -> Bot: ...
 
 
-def get_bot(
+async def get_bot(
     *,
     adapter: Union[Type[Adapter], str, None] = None,
     bot_id: Optional[str] = None,
     index: Optional[int] = None,
     rand: bool = False,
-    predicate: Union[Callable[[Bot], bool], None] = None,
+    predicate: Union[Callable[[Bot], Awaitable[bool]], None] = None,
 ) -> Union[List[Bot], Bot]:
     if not predicate and not adapter:
         if rand:
@@ -152,14 +152,14 @@ def get_bot(
     for bot in get_bots().values():
         if not predicate:
 
-            def _check_adapter(bot: Bot):
+            async def _check_adapter(bot: Bot):
                 _adapter = bot.adapter
                 if isinstance(adapter, str):
                     return _adapter.get_name() == adapter
                 return isinstance(_adapter, adapter)  # type: ignore
 
             predicate = _check_adapter
-        if predicate(bot):
+        if await predicate(bot):
             bots.append(bot)
     if not bot_id:
         if rand:
