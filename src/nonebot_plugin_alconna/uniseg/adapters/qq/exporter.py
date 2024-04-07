@@ -68,7 +68,7 @@ class QQMessageExporter(MessageExporter[Message]):
             )
         if isinstance(event, GuildMemberEvent):
             return Target(
-                str(event.user.id),   # type: ignore
+                str(event.user.id),  # type: ignore
                 str(event.guild_id),
                 channel=True,
                 adapter=self.get_adapter(),
