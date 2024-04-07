@@ -101,7 +101,7 @@ async def test_enable(app: App, mocker: MockerFixture):
         assert await target2.select() is satori_bot2
         target3 = Target("23", parent_id="22")
         assert await target3.select() is satori_bot2
-        target4 = Target("13", parent_id="12")
+        target4 = Target("13")
         assert await target4.select() in (satori_bot1, satori_bot2)
 
         with pytest.raises(IndexError):

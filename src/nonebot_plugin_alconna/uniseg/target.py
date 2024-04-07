@@ -131,7 +131,12 @@ class Target:
             self.selector = _
 
     def __hash__(self):
-        return hash((self.id, self.parent_id, self.channel, self.private))
+        args = (self.id, self.parent_id, self.channel, self.private, self.self_id)
+        if self.extra.get("scope"):
+            args += (self.extra["scope"],)
+        if self.extra.get("adapter"):
+            args += (str(self.extra["adapter"]),)
+        return hash(args)
 
     def verify(self, other: "Target"):
         if other.id != self.id or other.channel != self.channel or other.private != self.private:
@@ -266,7 +271,15 @@ class TargetFetcher(metaclass=ABCMeta):
             targets = self.cache[bot.self_id]
 
             async def _(target: Target):
-                return target in targets
+                if target not in targets:
+                    target.self_id = bot.self_id
+                    target.extra["adapter"] = self.get_adapter()
+                if target not in targets:
+                    for tg in targets:
+                        if target.verify(tg):
+                            return True
+                    return False
+                return True
 
             return _
         _cache = self.cache.setdefault(bot.self_id, set())
