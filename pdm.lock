@@ -951,15 +951,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-satori"
-version = "0.10.3"
+version = "0.10.4"
 requires_python = ">=3.8"
 summary = "Satori Protocol Adapter for Nonebot2"
 dependencies = [
     "nonebot2>=2.2.0",
 ]
 files = [
-    {file = "nonebot_adapter_satori-0.10.3-py3-none-any.whl", hash = "sha256:33e7fa44966a5e9a4c1e27a6da777554db69e86cd0124ef41c87718014c59ca0"},
-    {file = "nonebot_adapter_satori-0.10.3.tar.gz", hash = "sha256:e73c2572f1608caeaf98c7bf260fbc24cccec5ca05242a585dd3db554a15eb9d"},
+    {file = "nonebot_adapter_satori-0.10.4-py3-none-any.whl", hash = "sha256:4e22ea8551ccbdd3d463c3d7c6f8efdd2b23fa4b8b61afbfac70140ebc730e01"},
+    {file = "nonebot_adapter_satori-0.10.4.tar.gz", hash = "sha256:1b42e1cf8b874769921ffdeb46b67c6983af169c238d290c3766a093b1ffdb88"},
 ]
 
 [[package]]

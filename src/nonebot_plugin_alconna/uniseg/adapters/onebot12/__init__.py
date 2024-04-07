@@ -15,3 +15,8 @@ class Loader(BaseLoader):
         from .exporter import Onebot12MessageExporter
 
         return Onebot12MessageExporter()
+
+    def get_fetcher(self):
+        from .target import Onebot12TargetFetcher
+
+        return Onebot12TargetFetcher()

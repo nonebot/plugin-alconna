@@ -159,9 +159,20 @@ class QQMessageExporter(MessageExporter[Message]):
                     scope=SupportScope.qq_api,
                 )
         if isinstance(event, FriendRobotEvent):
-            return Target(event.openid, private=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                event.openid,
+                private=True,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
+            )
         if isinstance(event, GroupRobotEvent):
-            return Target(event.group_openid, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                event.group_openid,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

@@ -1,6 +1,5 @@
 from datetime import datetime
 from functools import partial
-from dataclasses import dataclass
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Any, Set, Dict, List, Type, Union, Callable, Awaitable, AsyncIterator
 
@@ -24,7 +23,6 @@ async def _cache_selector(target: "Target", bot: Bot):
     return True
 
 
-@dataclass(init=False)
 class Target:
     id: str
     """目标id；若为群聊则为group_id或者channel_id，若为私聊则为user_id"""
@@ -226,16 +224,17 @@ class Target:
         return await message.send(self, bot, fallback, at_sender, reply_to)
 
     def dump(self, only_scope: bool = False, save_self_id: bool = True):
-        scope = self.extra.pop("scope", None)
-        adapter = self.extra.pop("adapter", None)
-        platforms = self.extra.pop("platforms", None)
+        extra = self.extra.copy()
+        scope = extra.pop("scope", None)
+        adapter = extra.pop("adapter", None)
+        platforms = extra.pop("platforms", None)
         data = {
             "id": self.id,
             "parent_id": self.parent_id,
             "channel": self.channel,
             "private": self.private,
             "self_id": self.self_id,
-            "extra": self.extra,
+            "extra": extra,
             "scope": scope,
         }
         if not save_self_id:
@@ -253,6 +252,9 @@ class Target:
         if platform:
             platform = set(platform)
         return cls(scope=scope, adapter=adapter, platform=platform, **data)
+
+    def __repr__(self):
+        return f"Target({self.dump()})"
 
 
 class TargetFetcher(metaclass=ABCMeta):

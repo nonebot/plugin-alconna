@@ -12,11 +12,25 @@ from nonebot.adapters.satori.message import Audio as AudioSegment
 from nonebot.adapters.satori.message import Image as ImageSegment
 from nonebot.adapters.satori.message import Sharp as SharpSegment
 from nonebot.adapters.satori.message import Video as VideoSegment
+from nonebot.adapters.satori.message import Button as ButtonSegment
+from nonebot.adapters.satori.message import Custom as CustomSegment
 from nonebot.adapters.satori.message import RenderMessage as RenderMessageSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Reference
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Emoji,
+    Image,
+    Other,
+    Reply,
+    Video,
+    Reference,
+)
 
 STYLE_TYPE_MAP = {
     "b": "bold",
@@ -128,6 +142,14 @@ class SatoriMessageBuilder(MessageBuilder):
     @build("message")
     def message(self, seg: RenderMessageSegment):
         return Reference(seg.data.get("id"), seg.data.get("content"))
+
+    @build("button")
+    def button(self, seg: ButtonSegment):
+        return Other(seg)
+
+    @build("chronocat:face")
+    def emoji(self, seg: CustomSegment):
+        return Emoji(seg.data["id"], seg.data.get("name"))  # type: ignore
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:
