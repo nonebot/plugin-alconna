@@ -4,6 +4,7 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.github.event import MessageEvent  # type: ignore
 from nonebot.adapters.github.message import Message, MessageSegment  # type: ignore
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, Text, Image
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
 
@@ -15,6 +16,14 @@ class GithubMessageExporter(MessageExporter["Message"]):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.github
+
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+        return Target(
+            event.get_user_id(),
+            adapter=self.get_adapter(),
+            self_id=bot.self_id if bot else None,
+            scope=SupportScope.github,
+        )
 
     def get_message_id(self, event: Event) -> str:
         assert isinstance(event, MessageEvent)

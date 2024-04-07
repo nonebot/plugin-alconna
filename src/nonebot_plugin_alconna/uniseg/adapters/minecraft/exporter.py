@@ -7,6 +7,7 @@ from nonebot.adapters.minecraft.event.base import MessageEvent
 from nonebot.adapters.minecraft.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.segment import Text
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
 
 STYLE_TYPE_MAP = {
@@ -42,6 +43,14 @@ class MinecraftMessageExporter(MessageExporter[Message]):
     def get_message_id(self, event: Event) -> str:
         assert isinstance(event, MessageEvent)
         return str(id(event))
+
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+        return Target(
+            event.get_user_id(),
+            adapter=self.get_adapter(),
+            self_id=bot.self_id if bot else None,
+            scope=SupportScope.minecraft,
+        )
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":

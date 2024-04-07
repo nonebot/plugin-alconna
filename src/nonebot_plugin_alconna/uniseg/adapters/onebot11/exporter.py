@@ -9,6 +9,7 @@ from nonebot.adapters.onebot.v11.event import MessageEvent
 from nonebot.adapters.onebot.v11.bot import Bot as OnebotBot
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
@@ -36,9 +37,20 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         if group_id := getattr(event, "group_id", None):
-            return Target(str(group_id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(group_id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
         if user_id := getattr(event, "user_id", None):
-            return Target(str(user_id), private=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(user_id),
+                private=True,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

@@ -23,6 +23,7 @@ from nonebot.adapters.qq.event import (
     GroupAtMessageCreateEvent,
 )
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
@@ -46,6 +47,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     source=str(event.id),
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
+                    scope=SupportScope.qq_api,
                 )  # noqa: E501
             return Target(
                 str(event.channel_id),
@@ -54,11 +56,25 @@ class QQMessageExporter(MessageExporter[Message]):
                 source=str(event.id),
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
             )
         if isinstance(event, GuildEvent):
-            return Target(str(event.id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(event.id),
+                channel=True,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
+            )
         if isinstance(event, GuildMemberEvent):
-            return Target(str(event.user.id), str(event.guild_id), channel=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)  # type: ignore # noqa: E501
+            return Target(
+                str(event.user.id),   # type: ignore
+                str(event.guild_id),
+                channel=True,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
+            )
         if isinstance(event, ChannelEvent):
             return Target(
                 str(event.id),
@@ -66,6 +82,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 channel=True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
             )
         if isinstance(event, MessageAuditEvent):
             return Target(
@@ -74,6 +91,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 channel=True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
             )
         if isinstance(event, MessageReactionEvent):
             return Target(
@@ -82,6 +100,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 channel=True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
             )
         if isinstance(event, ForumEvent):
             return Target(
@@ -90,6 +109,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 channel=True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
             )
         if isinstance(event, C2CMessageCreateEvent):
             return Target(
@@ -99,6 +119,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 extra={"qq.reply_seq": event._reply_seq},
+                scope=SupportScope.qq_api,
             )
         if isinstance(event, GroupAtMessageCreateEvent):
             return Target(
@@ -107,6 +128,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 extra={"qq.reply_seq": event._reply_seq},
+                scope=SupportScope.qq_api,
             )
         if isinstance(event, InteractionCreateEvent):
             if event.group_openid:
@@ -115,6 +137,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     source=str(event.id),
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
+                    scope=SupportScope.qq_api,
                 )
             elif event.channel_id:
                 return Target(
@@ -124,6 +147,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     source=str(event.id),
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
+                    scope=SupportScope.qq_api,
                 )
             else:
                 return Target(
@@ -132,6 +156,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     source=str(event.id),
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
+                    scope=SupportScope.qq_api,
                 )
         if isinstance(event, FriendRobotEvent):
             return Target(event.openid, private=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)

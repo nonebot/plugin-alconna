@@ -14,6 +14,7 @@ from nonebot.adapters.telegram.message import Message as TgMessage
 from nonebot.adapters.telegram.model import Message as MessageModel
 from nonebot.adapters.telegram.event import MessageEvent, EventWithChat
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, File, Text, Audio, Emoji, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
@@ -48,7 +49,12 @@ class TelegramMessageExporter(MessageExporter[Message]):
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         assert isinstance(event, EventWithChat)
-        return Target(str(event.chat.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+        return Target(
+            str(event.chat.id),
+            adapter=self.get_adapter(),
+            self_id=bot.self_id if bot else None,
+            scope=SupportScope.telegram,
+        )
 
     def get_message_id(self, event: Event) -> str:
         assert isinstance(event, MessageEvent)

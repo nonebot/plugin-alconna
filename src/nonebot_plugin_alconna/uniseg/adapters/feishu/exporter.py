@@ -8,6 +8,7 @@ from nonebot.adapters.feishu.bot import Bot as FeishuBot
 from nonebot.adapters.feishu.message import Message, MessageSegment
 from nonebot.adapters.feishu.event import MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
@@ -26,12 +27,18 @@ class FeishuMessageExporter(MessageExporter[Message]):
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         if isinstance(event, GroupMessageEvent):
-            return Target(event.event.message.chat_id, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                event.event.message.chat_id,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.feishu,
+            )
         elif isinstance(event, PrivateMessageEvent):
             return Target(
                 event.get_user_id(),
                 private=True,
                 adapter=self.get_adapter(),
+                scope=SupportScope.feishu,
                 self_id=bot.self_id if bot else None,
             )
         raise NotImplementedError

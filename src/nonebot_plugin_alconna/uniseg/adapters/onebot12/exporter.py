@@ -7,6 +7,7 @@ from nonebot.adapters.onebot.v12.event import MessageEvent
 from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
 from nonebot.adapters.onebot.v12.message import Message, MessageSegment
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
@@ -31,6 +32,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 platform=bot.platform if bot else None,
+                scope=SupportScope.ensure_ob12(bot.platform) if bot else SupportScope.onebot12_other,
             )
         if guild_id := getattr(event, "guild_id", None):
             return Target(
@@ -39,6 +41,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 platform=bot.platform if bot else None,
+                scope=SupportScope.ensure_ob12(bot.platform) if bot else SupportScope.onebot12_other,
             )
         if group_id := getattr(event, "group_id", None):
             return Target(
@@ -46,6 +49,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 platform=bot.platform if bot else None,
+                scope=SupportScope.ensure_ob12(bot.platform) if bot else SupportScope.onebot12_other,
             )
         if user_id := getattr(event, "user_id", None):
             return Target(
@@ -54,6 +58,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 platform=bot.platform if bot else None,
+                scope=SupportScope.ensure_ob12(bot.platform) if bot else SupportScope.onebot12_other,
             )
         raise NotImplementedError
 

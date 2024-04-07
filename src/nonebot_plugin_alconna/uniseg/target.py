@@ -225,7 +225,10 @@ class Target:
             message = await UniMessage.generate(message=message, bot=bot)
         return await message.send(self, bot, fallback, at_sender, reply_to)
 
-    def dump(self, dump_self_id: bool = True):
+    def dump(self, only_scope: bool = False, save_self_id: bool = True):
+        scope = self.extra.pop("scope", None)
+        adapter = self.extra.pop("adapter", None)
+        platforms = self.extra.pop("platforms", None)
         data = {
             "id": self.id,
             "parent_id": self.parent_id,
@@ -233,20 +236,23 @@ class Target:
             "private": self.private,
             "self_id": self.self_id,
             "extra": self.extra,
+            "scope": scope,
         }
-        if not dump_self_id:
+        if not save_self_id:
             data.pop("self_id")
+        if not only_scope:
+            data["adapter"] = adapter
+            data["platforms"] = platforms
         return data
 
     @classmethod
     def load(cls, data: Dict[str, Any]):
-        extra = data.pop("extra", {})
-        scope = extra.pop("scope", None)
-        adapter = extra.pop("adapter", None)
-        platform = extra.pop("platforms", None)
+        scope = data.pop("scope", None)
+        adapter = data.pop("adapter", None)
+        platform = data.pop("platforms", None)
         if platform:
             platform = set(platform)
-        return cls(extra=extra, scope=scope, adapter=adapter, platform=platform, **data)
+        return cls(scope=scope, adapter=adapter, platform=platform, **data)
 
 
 class TargetFetcher(metaclass=ABCMeta):
@@ -316,6 +322,7 @@ async def select_qq_client(target: "Target", bot: Bot):
         SupportAdapter.onebot12,
         SupportAdapter.onebot11,
         SupportAdapter.satori,
+        SupportAdapter.red,
     }:
         return False
     if hasattr(bot, "platform"):
@@ -342,6 +349,16 @@ async def select_qq_api(target: "Target", bot: Bot):
     if hasattr(bot, "platform") and bot.platform != "qq":
         return False
     return True
+
+
+@_register(SupportScope.onebot12_other)
+async def select_onebot12_other(target: "Target", bot: Bot):
+    return bot.adapter.get_name() == SupportAdapter.onebot12
+
+
+@_register(SupportScope.satori_other)
+async def select_satori_other(target: "Target", bot: Bot):
+    return bot.adapter.get_name() == SupportAdapter.satori
 
 
 @_register(SupportScope.telegram)

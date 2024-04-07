@@ -6,6 +6,7 @@ from nonebot.adapters.console.event import MessageEvent
 from nonebot.adapters.console.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.segment import Text, Emoji
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
 
 
@@ -16,6 +17,14 @@ class ConsoleMessageExporter(MessageExporter[Message]):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.console
+
+    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+        return Target(
+            event.get_user_id(),
+            adapter=self.get_adapter(),
+            self_id=bot.self_id if bot else None,
+            scope=SupportScope.console,
+        )
 
     def get_message_id(self, event: Event) -> str:
         assert isinstance(event, MessageEvent)

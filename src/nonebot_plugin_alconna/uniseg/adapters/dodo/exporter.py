@@ -9,6 +9,7 @@ from nonebot.adapters.dodo.event import MessageEvent
 from nonebot.adapters.dodo.event import Event as DoDoEvent
 from nonebot.adapters.dodo.message import Message, MessageSegment
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, Text, Image, Reply, Video
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
@@ -32,6 +33,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
                 True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.dodo,
             )
         else:
             return Target(
@@ -41,6 +43,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
                 True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.dodo,
             )
 
     def get_message_id(self, event: Event) -> str:

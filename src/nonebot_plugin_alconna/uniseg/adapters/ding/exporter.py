@@ -4,6 +4,7 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.ding.message import Message, MessageSegment
 from nonebot.adapters.ding.event import MessageEvent, ConversationType
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, Text, AtAll, Image
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
 
@@ -24,8 +25,14 @@ class DingMessageExporter(MessageExporter[Message]):
                     private=True,
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
+                    scope=SupportScope.ding,
                 )
-            return Target(event.conversationId, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                event.conversationId,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.ding,
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

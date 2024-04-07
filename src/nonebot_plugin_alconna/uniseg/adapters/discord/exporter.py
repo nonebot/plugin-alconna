@@ -10,6 +10,7 @@ from nonebot.adapters.discord.api.model import Channel, MessageGet
 from nonebot.adapters.discord.message import Message, MessageSegment, parse_message
 from nonebot.adapters.discord.event import MessageEvent, GuildMessageCreateEvent, DirectMessageCreateEvent
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
@@ -35,6 +36,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
                     channel=True,
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
+                    scope=SupportScope.discord,
                 )
             if isinstance(event, DirectMessageCreateEvent):
                 return Target(
@@ -43,12 +45,14 @@ class DiscordMessageExporter(MessageExporter[Message]):
                     private=True,
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
+                    scope=SupportScope.discord,
                 )
             return Target(
                 str(event.channel_id),
                 channel=True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.discord,
             )
         elif isinstance(event, Channel):
             return Target(
@@ -57,6 +61,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
                 private=event.type == ChannelType.DM,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.discord,
             )
         raise NotImplementedError
 

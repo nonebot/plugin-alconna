@@ -7,6 +7,7 @@ from nonebot.adapters.ntchat.event import MessageEvent
 from nonebot.adapters.ntchat.bot import Bot as NTChatBot
 from nonebot.adapters.ntchat.message import Message, MessageSegment
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import File, Text, Hyper, Image, Video
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
@@ -23,7 +24,13 @@ class NTChatMessageExporter(MessageExporter[Message]):
         from_wxid = getattr(event, "from_wxid", None)
         room_wxid = getattr(event, "room_wxid", "")
         if from_wxid:
-            return Target(from_wxid, room_wxid, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                from_wxid,
+                room_wxid,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.wechat,
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:

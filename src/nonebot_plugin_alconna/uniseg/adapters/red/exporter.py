@@ -10,6 +10,7 @@ from nonebot.adapters.red.event import MessageEvent
 from nonebot.adapters.red.api.model import Message as MessageModel
 from nonebot.adapters.red.message import Message, ForwardNode, MessageSegment
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
@@ -42,6 +43,7 @@ class RedMessageExporter(MessageExporter[Message]):
             private=event.chatType == ChatType.FRIEND,
             adapter=self.get_adapter(),
             self_id=bot.self_id if bot else None,
+            scope=SupportScope.qq_client,
         )
 
     def get_message_id(self, event: Event) -> str:

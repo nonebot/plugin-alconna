@@ -10,6 +10,7 @@ from nonebot.adapters.satori.event import NoticeEvent, MessageEvent
 from nonebot.adapters.satori.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.target import Target
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
@@ -45,6 +46,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                     platform=bot.platform if bot else None,
+                    scope=SupportScope.ensure_satori(bot.platform) if bot else SupportScope.satori_other,
                 )
             elif event.user:
                 return Target(
@@ -53,6 +55,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                     platform=bot.platform if bot else None,
+                    scope=SupportScope.ensure_satori(bot.platform) if bot else SupportScope.satori_other,
                 )
         raise NotImplementedError
 

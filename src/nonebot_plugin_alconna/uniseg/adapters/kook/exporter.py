@@ -7,6 +7,7 @@ from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
 from nonebot.adapters.kaiheila.event import MessageEvent, PrivateMessageEvent
 from nonebot.adapters.kaiheila.message import Message, MessageSegment, MessageSerializer
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice
 
@@ -25,9 +26,17 @@ class KookMessageExporter(MessageExporter["Message"]):
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         if group_id := getattr(event, "group_id", None):
-            return Target(str(group_id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(group_id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None, scope=SupportScope.kook
+            )
         if user_id := getattr(event, "user_id", None):
-            return Target(str(user_id), private=True, adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(user_id),
+                private=True,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.kook,
+            )
         raise NotImplementedError
 
     @export

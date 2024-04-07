@@ -59,6 +59,36 @@ class SupportScope(str, Enum):
     wecom = "WeCom"
     """企业微信平台"""
 
+    onebot12_other = "Onebot12"
+    """ob12 的其他平台"""
+    satori_other = "satori"
+    """satori 的其他平台"""
+
+    @staticmethod
+    def ensure_ob12(platform: str):
+        return {
+            "qq": SupportScope.qq_client,
+            "qqguild": SupportScope.qq_guild,
+            "discord": SupportScope.discord,
+            "wechat": SupportScope.wechat,
+            "kaiheila": SupportScope.kook,
+        }.get(platform, SupportScope.onebot12_other)
+
+    @staticmethod
+    def ensure_satori(platform: str):
+        return {
+            "chronocat": SupportScope.qq_client,
+            "onebot": SupportScope.qq_client,
+            "qq": SupportScope.qq_guild,
+            "telegram": SupportScope.telegram,
+            "discord": SupportScope.discord,
+            "feishu": SupportScope.feishu,
+            "wechat-official": SupportScope.wechat_oap,
+            "wecom": SupportScope.wecom,
+            "kook": SupportScope.kook,
+            "dingtalk": SupportScope.ding,
+        }.get(platform, SupportScope.satori_other)
+
 
 class SupportAdapterModule(str, Enum):
     """支持的适配器的模块路径"""

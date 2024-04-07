@@ -24,6 +24,7 @@ from nonebot.adapters.mirai2.event import (
     MemberStateChangeEvent,
 )
 
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
@@ -56,34 +57,72 @@ class MiraiMessageExporter(MessageExporter[MessageChain]):
                 private=True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
             )
         elif isinstance(event, GroupMessage):
-            return Target(str(event.sender.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(event.sender.group.id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
         elif isinstance(event, (BotMuteEvent, BotUnmuteEvent)):
             return Target(
                 str(event.operator.group.id),
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
             )
         elif isinstance(event, (MemberMuteEvent, MemberUnmuteEvent)):
-            return Target(str(event.member.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(event.member.group.id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
         elif isinstance(event, (BotJoinGroupEvent, BotLeaveEventActive, BotLeaveEventKick)):
-            return Target(str(event.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(event.group.id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
         elif isinstance(event, (MemberJoinEvent, MemberLeaveEventKick, MemberLeaveEventQuit)):
-            return Target(str(event.member.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(event.member.group.id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
         elif isinstance(event, MemberStateChangeEvent):
-            return Target(str(event.member.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(event.member.group.id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
         elif isinstance(event, GroupStateChangeEvent):
-            return Target(str(event.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(event.group.id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
         elif isinstance(event, FriendRecallEvent):
             return Target(
                 str(event.author_id),
                 private=True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
             )
         elif isinstance(event, GroupRecallEvent):
-            return Target(str(event.group.id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
+            return Target(
+                str(event.group.id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
