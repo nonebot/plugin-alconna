@@ -59,6 +59,7 @@ dev = [
     "nonebot-adapter-telegram>=0.1.0b16",
     "nonebot-plugin-filehost>=1.1.1",
     "nonebot-plugin-send-anything-anywhere>=0.6.0",
+    "pytest-mock>=3.14.0",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

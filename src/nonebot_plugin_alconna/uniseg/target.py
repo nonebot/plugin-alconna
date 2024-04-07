@@ -17,7 +17,7 @@ SCOPES: Dict[str, Callable[["Target", Bot], Awaitable[bool]]] = {}
 TARGET_RECORD: Dict[str, Callable[["Target"], Awaitable[bool]]] = {}
 
 
-async def _selector(target: "Target", bot: Bot):
+async def _cache_selector(target: "Target", bot: Bot):
     if bot.self_id in TARGET_RECORD:
         return await TARGET_RECORD[bot.self_id](target)
     return True
@@ -50,7 +50,7 @@ class Target:
         private: bool = False,
         source: str = "",
         self_id: Union[str, None] = None,
-        selector: Union[Callable[["Target", Bot], Awaitable[bool]], None] = _selector,
+        selector: Union[Callable[["Target", Bot], Awaitable[bool]], None] = _cache_selector,
         scope: Union[str, None] = None,
         adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
         platform: Union[str, Set[str], None] = None,
@@ -131,21 +131,21 @@ class Target:
             self.selector = _
 
     def __hash__(self):
-        args = (self.id, self.parent_id, self.channel, self.private, self.self_id)
-        if self.extra.get("scope"):
-            args += (self.extra["scope"],)
-        if self.extra.get("adapter"):
-            args += (self.extra["adapter"],)
-        if self.extra.get("platforms"):
-            args += (tuple(self.extra["platforms"]),)
-        return hash(args)
+        return hash((self.id, self.parent_id, self.channel, self.private))
 
     def verify(self, other: "Target"):
         if other.id != self.id or other.channel != self.channel or other.private != self.private:
             return False
         if self.parent_id and other.parent_id and self.parent_id != other.parent_id:
             return False
+        if self.self_id and other.self_id and self.self_id != other.self_id:
+            return False
+        if self.extra.get("adapter") and other.extra.get("adapter") and self.extra["adapter"] != other.extra["adapter"]:
+            return False
         return True
+
+    def __eq__(self, other):
+        return isinstance(other, Target) and self.verify(other)
 
     @property
     def scope(self) -> Union[str, None]:

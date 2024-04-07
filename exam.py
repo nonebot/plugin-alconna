@@ -3,8 +3,9 @@ from arclet.alconna import Args, Alconna
 
 require("nonebot_plugin_alconna")
 
-from nonebot_plugin_alconna import Extension, UniMessage, on_alconna
 from nonebot_plugin_alconna.uniseg import reply_fetch
+from nonebot_plugin_alconna import Extension, UniMessage, on_alconna
+
 
 class ReplyExtension(Extension):
     @property
