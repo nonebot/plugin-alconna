@@ -21,7 +21,6 @@ from .segment import Voice as Voice
 from .params import UniMsg as UniMsg
 from .target import SCOPES as SCOPES
 from .target import Target as Target
-from .adapters import FETCHER_MAPPING
 from .segment import Custom as Custom
 from .tools import get_bot as get_bot
 from .message import Receipt as Receipt
@@ -45,8 +44,9 @@ from .params import UniversalSegment as UniversalSegment
 from .constraint import SerializeFailed as SerializeFailed
 from .segment import apply_media_to_url as apply_media_to_url
 from .constraint import SupportAdapterModule as SupportAdapterModule
+from .adapters import BUILDER_MAPPING, FETCHER_MAPPING, EXPORTER_MAPPING
 
-__version__ = "0.42.0"
+__version__ = "0.42.1"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",
@@ -84,7 +84,7 @@ def _register_hook():
 
     @driver.on_bot_connect
     async def _(bot: Bot):
-        log("DEBUG", f"cache or refresh targets for {bot.self_id}")
+        log("DEBUG", f"cache or refresh targets for bot:{bot.self_id}")
         async with FETCH_LOCK:
             await _refresh_bot(bot)
 
@@ -114,5 +114,26 @@ async def _refresh_bot(bot: Bot):
     try:
         await fn.refresh(bot)
     except Exception as e:
-        log("ERROR", f"{bot} fetch targets failed: {e}")
+        log("ERROR", f"bot:{bot} fetch targets failed: {e}")
     TARGET_RECORD[bot.self_id] = fn.get_selector(bot)
+
+
+def get_fetcher(bot: Bot):
+    if not (fn := FETCHER_MAPPING.get(bot.adapter.get_name())):
+        log("WARNING", lang.require("nbp-uniseg", "unsupported").format(adapter=bot.adapter.get_name()))
+        return None
+    return fn
+
+
+def get_builder(bot: Bot):
+    if not (fn := BUILDER_MAPPING.get(bot.adapter.get_name())):
+        log("WARNING", lang.require("nbp-uniseg", "unsupported").format(adapter=bot.adapter.get_name()))
+        return None
+    return fn
+
+
+def get_exporter(bot: Bot):
+    if not (fn := EXPORTER_MAPPING.get(bot.adapter.get_name())):
+        log("WARNING", lang.require("nbp-uniseg", "unsupported").format(adapter=bot.adapter.get_name()))
+        return None
+    return fn

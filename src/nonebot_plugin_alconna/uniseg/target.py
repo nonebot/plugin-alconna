@@ -1,3 +1,4 @@
+from datetime import datetime
 from functools import partial
 from dataclasses import dataclass
 from abc import ABCMeta, abstractmethod
@@ -7,7 +8,7 @@ from nonebot.adapters import Bot, Adapter, Message
 
 from .segment import Reply
 from .tools import get_bot
-from .constraint import SupportScope, SupportAdapter, SerializeFailed, log, lang
+from .constraint import SupportScope, SupportAdapter, SerializeFailed, lang
 
 if TYPE_CHECKING:
     from .message import UniMessage
@@ -131,7 +132,7 @@ class Target:
             self.selector = _
 
     def __hash__(self):
-        args = (self.id, self.parent_id, self.channel, self.private, self.self_id)
+        args = (self.id, self.channel, self.private, self.self_id)
         if self.extra.get("scope"):
             args += (self.extra["scope"],)
         if self.extra.get("adapter"):
@@ -200,7 +201,7 @@ class Target:
             try:
                 return await get_bot(bot_id=self.self_id)
             except KeyError:
-                pass
+                self.self_id = None
         if self.selector:
             return await get_bot(predicate=self.selector, rand=True)
         raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing"))
@@ -251,6 +252,7 @@ class Target:
 class TargetFetcher(metaclass=ABCMeta):
     def __init__(self) -> None:
         self.cache: Dict[str, Set[Target]] = {}
+        self.last_refresh: Dict[str, datetime] = {}
 
     @classmethod
     @abstractmethod
@@ -262,37 +264,36 @@ class TargetFetcher(metaclass=ABCMeta):
     async def refresh(self, bot: Bot, target: Union[Target, None] = None):
         if bot.self_id in self.cache:
             del self.cache[bot.self_id]
+        self.last_refresh[bot.self_id] = datetime.now()
         _cache = self.cache.setdefault(bot.self_id, set())
         async for tg in self.fetch(bot, target):
             _cache.add(tg)
 
     def get_selector(self, bot: Bot):
-        if bot.self_id in self.cache:
-            targets = self.cache[bot.self_id]
-
-            async def _(target: Target):
-                if target not in targets:
-                    target.self_id = bot.self_id
-                    target.extra["adapter"] = self.get_adapter()
-                if target not in targets:
-                    for tg in targets:
-                        if target.verify(tg):
-                            return True
-                    return False
-                return True
-
-            return _
-        _cache = self.cache.setdefault(bot.self_id, set())
-
         async def _check(target: Target):
-            try:
-                async for tg in self.fetch(bot, target):
+            if bot.self_id in self.cache:
+                targets = self.cache[bot.self_id]
+                if target in targets:
+                    return True
+                target.self_id = bot.self_id
+                target.extra["adapter"] = self.get_adapter()
+                if target in targets:
+                    return True
+                for tg in targets:
                     if target.verify(tg):
-                        _cache.add(target)
                         return True
-            except Exception as e:
-                log("WARNING", f"Failed to fetch for bot {bot.self_id}: {e}")
-            return False
+            now = datetime.now()
+            if bot.self_id in self.last_refresh and (now - self.last_refresh[bot.self_id]).seconds < 600:
+                return False
+            self.cache.pop(bot.self_id, None)
+            _cache = self.cache.setdefault(bot.self_id, set())
+            self.last_refresh[bot.self_id] = now
+            count = 0
+            async for tg in self.fetch(bot, target):
+                _cache.add(tg)
+                if target.verify(tg):
+                    count += 1
+            return count > 0
 
         return _check
 
