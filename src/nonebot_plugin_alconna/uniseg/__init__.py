@@ -46,7 +46,7 @@ from .segment import apply_media_to_url as apply_media_to_url
 from .constraint import SupportAdapterModule as SupportAdapterModule
 from .adapters import BUILDER_MAPPING, FETCHER_MAPPING, EXPORTER_MAPPING
 
-__version__ = "0.42.3"
+__version__ = "0.42.4"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",

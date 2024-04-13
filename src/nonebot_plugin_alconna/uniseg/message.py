@@ -421,12 +421,13 @@ class UniMessage(List[TS]):
     ):
         super().__init__()
         if isinstance(message, str):
-            self.__iadd__(Text(message))
+            self.__iadd__(Text(message), _merge=False)
         elif isinstance(message, Iterable):
             for i in message:
-                self.__iadd__(Text(i) if isinstance(i, str) else i)
+                self.__iadd__(Text(i) if isinstance(i, str) else i, _merge=False)
         elif isinstance(message, Segment):
-            self.__iadd__(message)
+            self.__iadd__(message, _merge=False)
+        self.__merge_text__()
 
     def __str__(self) -> str:
         return "".join(str(seg) for seg in self)
@@ -453,8 +454,8 @@ class UniMessage(List[TS]):
         if not self:
             return self
         result = []
-        last = self[0]
-        for seg in self[1:]:
+        last = list.__getitem__(self, 0)
+        for seg in list.__getitem__(self, slice(1, None)):
             if isinstance(seg, Text) and isinstance(last, Text):
                 _len = len(last.text)
                 last.text += seg.text
@@ -507,7 +508,7 @@ class UniMessage(List[TS]):
         result = UniMessage(other)
         return result + self
 
-    def __iadd__(self, other: Union[str, TS, Iterable[TS]]) -> Self:
+    def __iadd__(self, other: Union[str, TS, Iterable[TS]], _merge: bool = True) -> Self:
         if isinstance(other, str):
             if self and isinstance(text := self[-1], Text):
                 text.text += other
@@ -517,10 +518,11 @@ class UniMessage(List[TS]):
             self.append(other)
         elif isinstance(other, Iterable):
             for seg in other:
-                self.__iadd__(seg)
+                self.__iadd__(seg, _merge)
         else:
             raise TypeError(f"Unsupported type {type(other)!r}")
-        self.__merge_text__()
+        if _merge:
+            self.__merge_text__()
         return self
 
     @overload
