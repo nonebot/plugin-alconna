@@ -1,4 +1,4 @@
-from nonebot.adapters.ntchat.message import MessageSegment
+from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
 
 from nonebot_plugin_alconna.uniseg import Hyper
 from nonebot_plugin_alconna.uniseg import Other

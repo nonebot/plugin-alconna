@@ -1,19 +1,20 @@
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.ntchat.bot import send
-from nonebot.adapters.ntchat.event import MessageEvent
-from nonebot.adapters.ntchat.bot import Bot as NTChatBot
-from nonebot.adapters.ntchat.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import File, Text, Hyper, Image, Video
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
+if TYPE_CHECKING:
+    from nonebot.adapters.ntchat.message import Message, MessageSegment  # type: ignore
 
-class NTChatMessageExporter(MessageExporter[Message]):
+
+class NTChatMessageExporter(MessageExporter["Message"]):
     def get_message_type(self):
+        from nonebot.adapters.ntchat.message import Message  # type: ignore
+
         return Message
 
     @classmethod
@@ -34,15 +35,21 @@ class NTChatMessageExporter(MessageExporter[Message]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
+        from nonebot.adapters.ntchat.event import MessageEvent  # type: ignore
+
         assert isinstance(event, MessageEvent)
-        return str(event.msgid)
+        return str(event.msgid)  # type: ignore
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+        from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
+
         return MessageSegment.text(seg.text)
 
     @export
     async def res(self, seg: Union[Image, File, Video], bot: Bot) -> "MessageSegment":
+        from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
+
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -60,6 +67,8 @@ class NTChatMessageExporter(MessageExporter[Message]):
 
     @export
     async def hyper(self, seg: Hyper, bot: Bot) -> "MessageSegment":
+        from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
+
         if seg.format == "json" and seg.content and "card_wxid" in seg.content:
             return MessageSegment.card(seg.content["card_wxid"])  # type: ignore
         if seg.format != "xml" or not seg.raw:
@@ -67,6 +76,9 @@ class NTChatMessageExporter(MessageExporter[Message]):
         return MessageSegment.xml(seg.raw)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+        from nonebot.adapters.ntchat.bot import send  # type: ignore
+        from nonebot.adapters.ntchat.bot import Bot as NTChatBot  # type: ignore
+
         assert isinstance(bot, NTChatBot)
 
         if isinstance(target, Event):

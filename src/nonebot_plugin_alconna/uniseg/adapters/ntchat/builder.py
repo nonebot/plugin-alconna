@@ -1,12 +1,13 @@
 from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.ntchat.message import MessageSegment
-from nonebot.adapters.ntchat.event import QuoteMessageEvent
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
 from nonebot_plugin_alconna.uniseg.segment import File, Text, Hyper, Image, Reply, Video, Voice
+
+if TYPE_CHECKING:
+    from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
 
 
 class NTChatMessageBuilder(MessageBuilder):
@@ -47,7 +48,9 @@ class NTChatMessageBuilder(MessageBuilder):
         return Hyper("xml", seg.data["xml"])
 
     async def extract_reply(self, event: Event, bot: Bot):
+        from nonebot.adapters.ntchat.event import QuoteMessageEvent  # type: ignore
+
         if TYPE_CHECKING:
             assert isinstance(event, QuoteMessageEvent)
-        if event.type == 11061:
-            return Reply(event.quote_message_id, origin=event)
+        if event.type == 11061:  # type: ignore
+            return Reply(event.quote_message_id, origin=event)  # type: ignore
