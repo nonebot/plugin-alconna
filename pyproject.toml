@@ -5,13 +5,13 @@ authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "arclet-alconna>=1.8.7",
-    "arclet-alconna-tools>=0.7.2",
-    "nepattern>=0.6.5",
+    "arclet-alconna>=1.8.10",
+    "arclet-alconna-tools>=0.7.3",
+    "nepattern<0.8.0, >=0.7.0",
     "nonebot2>=2.2.1",
 ]
 dynamic = ["version"]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "MIT"}
 keywords = [

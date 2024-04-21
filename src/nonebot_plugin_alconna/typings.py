@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing_extensions import Self, ParamSpec, TypeAlias
-from typing import Any, Union, Generic, TypeVar, Callable, Awaitable
+from typing import Any, Union, Generic, Literal, TypeVar, Callable, Awaitable
 
 from tarina import lang
 from arclet.alconna import Arparma
@@ -20,7 +20,7 @@ TCallable = TypeVar("TCallable", bound=Callable[..., Any])
 P = ParamSpec("P")
 
 
-class _Text(BasePattern[Text, str]):
+class _Text(BasePattern[Text, str, Literal[MatchMode.TYPE_CONVERT]]):
     def __init__(self):
         super().__init__(
             mode=MatchMode.TYPE_CONVERT,
@@ -109,7 +109,7 @@ AtID = (
 """
 
 
-class SegmentPattern(BasePattern[TMS, TS], Generic[TS, TMS, P]):
+class SegmentPattern(BasePattern[TMS, TS, Literal[MatchMode.TYPE_CONVERT]], Generic[TS, TMS, P]):
     def __init__(
         self,
         name: str,
@@ -144,7 +144,7 @@ class SegmentPattern(BasePattern[TMS, TS], Generic[TS, TMS, P]):
         return self.call(*args, **kwargs)  # type: ignore
 
 
-class TextSegmentPattern(BasePattern[TMS, Union[str, Text]], Generic[TMS, P]):
+class TextSegmentPattern(BasePattern[TMS, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]], Generic[TMS, P]):
     def __init__(
         self,
         name: str,
@@ -167,7 +167,7 @@ class TextSegmentPattern(BasePattern[TMS, Union[str, Text]], Generic[TMS, P]):
         return self.call(*args, **kwargs)  # type: ignore
 
 
-class Style(BasePattern[Text, Union[str, Text]], Generic[TMS, P]):
+class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]], Generic[TMS, P]):
     def __init__(
         self,
         expect: str,
