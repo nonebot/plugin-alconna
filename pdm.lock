@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:5c37c7ccee5387a9b992cf058d93cb763f5b71f31f58b6b3a37135991e7f1f80"
+content_hash = "sha256:f1348a14138833a609041025d7a3cc6a5d4ee27b991533660eaee200d254703f"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -95,6 +95,20 @@ dependencies = [
 ]
 files = [
     {file = "async-asgi-testclient-1.4.11.tar.gz", hash = "sha256:4449ac85d512d661998ec61f91c9ae01851639611d748d81ae7f816736551792"},
+]
+
+[[package]]
+name = "betterproto"
+version = "2.0.0b6"
+requires_python = ">=3.7,<4.0"
+summary = "A better Protobuf / gRPC generator & library"
+dependencies = [
+    "grpclib<0.5.0,>=0.4.1",
+    "python-dateutil<3.0,>=2.8",
+]
+files = [
+    {file = "betterproto-2.0.0b6-py3-none-any.whl", hash = "sha256:a0839ec165d110a69d0d116f4d0e2bec8d186af4db826257931f0831dab73fcf"},
+    {file = "betterproto-2.0.0b6.tar.gz", hash = "sha256:720ae92697000f6fcf049c69267d957f0871654c8b0d7458906607685daee784"},
 ]
 
 [[package]]
@@ -331,6 +345,19 @@ summary = "Infer file type and MIME type of any file/buffer. No external depende
 files = [
     {file = "filetype-1.2.0-py2.py3-none-any.whl", hash = "sha256:7ce71b6880181241cf7ac8697a2f1eb6a8bd9b429f7ad6d27b8db9ba5f1c2d25"},
     {file = "filetype-1.2.0.tar.gz", hash = "sha256:66b56cd6474bf41d8c54660347d37afcc3f7d1970648de365c102ef77548aadb"},
+]
+
+[[package]]
+name = "grpclib"
+version = "0.4.7"
+requires_python = ">=3.7"
+summary = "Pure-Python gRPC implementation for asyncio"
+dependencies = [
+    "h2<5,>=3.1.0",
+    "multidict",
+]
+files = [
+    {file = "grpclib-0.4.7.tar.gz", hash = "sha256:2988ef57c02b22b7a2e8e961792c41ccf97efc2ace91ae7a5b0de03c363823c3"},
 ]
 
 [[package]]
@@ -855,6 +882,20 @@ files = [
 ]
 
 [[package]]
+name = "nonebot-adapter-kritor"
+version = "0.1.1"
+requires_python = ">=3.9"
+summary = "Nonebot Adapter for Kritor Protocol"
+dependencies = [
+    "betterproto>=2.0.0b6",
+    "nonebot2>=2.2.1",
+]
+files = [
+    {file = "nonebot_adapter_kritor-0.1.1-py3-none-any.whl", hash = "sha256:4a93461b357c97bc08d6082c6277d59d8308f8f093143d9230e45ab057429aac"},
+    {file = "nonebot_adapter_kritor-0.1.1.tar.gz", hash = "sha256:fd9d8eb2805a202a171dd0c25918c123c1afe2d89488f9b8f173b405520f1caa"},
+]
+
+[[package]]
 name = "nonebot-adapter-minecraft"
 version = "1.1.2"
 requires_python = "<4.0,>=3.9"
@@ -1364,6 +1405,19 @@ files = [
 ]
 
 [[package]]
+name = "python-dateutil"
+version = "2.9.0.post0"
+requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+summary = "Extensions to the standard Python datetime module"
+dependencies = [
+    "six>=1.5",
+]
+files = [
+    {file = "python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3"},
+    {file = "python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"},
+]
+
+[[package]]
 name = "python-dotenv"
 version = "1.0.0"
 requires_python = ">=3.8"
@@ -1482,6 +1536,16 @@ summary = "Easily download, build, install, upgrade, and uninstall Python packag
 files = [
     {file = "setuptools-69.0.2-py3-none-any.whl", hash = "sha256:1e8fdff6797d3865f37397be788a4e3cba233608e9b509382a2777d25ebde7f2"},
     {file = "setuptools-69.0.2.tar.gz", hash = "sha256:735896e78a4742605974de002ac60562d286fa8051a7e2299445e8e8fbb01aa6"},
+]
+
+[[package]]
+name = "six"
+version = "1.16.0"
+requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+summary = "Python 2 and 3 compatibility utilities"
+files = [
+    {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
+    {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 
 [[package]]

@@ -325,6 +325,7 @@ async def select_qq_client(target: "Target", bot: Bot):
         SupportAdapter.onebot11,
         SupportAdapter.satori,
         SupportAdapter.red,
+        SupportAdapter.kritor,
     }:
         return False
     if hasattr(bot, "platform"):
@@ -337,7 +338,9 @@ async def select_qq_client(target: "Target", bot: Bot):
 
 @_register(SupportScope.qq_guild)
 async def select_qq_guild(target: "Target", bot: Bot):
-    if bot.adapter.get_name() != SupportAdapter.onebot12:
+    if bot.adapter.get_name() not in (SupportAdapter.onebot12, SupportAdapter.kritor):
+        return False
+    if not target.channel:
         return False
     if hasattr(bot, "platform") and bot.platform != "qqguild":
         return False

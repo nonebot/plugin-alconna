@@ -56,6 +56,7 @@ dev = [
     "nonebot-adapter-red>=0.9.0",
     "nonebot-adapter-satori>=0.10.4",
     "nonebot-adapter-telegram>=0.1.0b17",
+    "nonebot-adapter-kritor>=0.1.0",
     "nonebot-plugin-filehost>=1.1.1",
     "nonebot-plugin-send-anything-anywhere>=0.6.1",
     "pytest-mock>=3.14.0",
