@@ -11,11 +11,11 @@ from tests.fake import fake_message_event_satori
 async def test_satori(app: App):
     from nonebot.adapters.satori import Message
 
-    from nonebot_plugin_alconna import Bold, Text, Underline, on_alconna
+    from nonebot_plugin_alconna import Bold, Text, Italic, Underline, on_alconna
 
-    msg = Message("/com<b>mand s<i>ome</i>_arg</b> <u>some_arg</u> some_arg")
+    msg = Message("/com<b>mand s<i>ome</i>_arg</b> <u>some_arg</u> <b><i>some_arg</i></b>")
 
-    alc = Alconna("/command", Args["some_arg", Bold]["some_arg1", Underline]["some_arg2", str])
+    alc = Alconna("/command", Args["some_arg", Bold]["some_arg1", Underline]["some_arg2", Bold + Italic])
 
     res = alc.parse(msg, {"$adapter.name": "Satori"})
     assert res.matched
@@ -25,7 +25,9 @@ async def test_satori(app: App):
     some_arg1 = res.some_arg1
     assert some_arg1.type == "text"
     assert some_arg1.data["styles"] == {(0, 8): ["underline"]}
-    assert isinstance(res.some_arg2, str)
+    some_arg2 = res.some_arg2
+    assert some_arg2.type == "text"
+    assert some_arg2.data["styles"] == {(0, 8): ["bold", "italic"]}
 
     msg1 = "/command " + Bold("foo bar baz")
 

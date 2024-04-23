@@ -423,7 +423,8 @@ async def handle():
 |[Discord](https://github.com/nonebot/adapter-discord)|adapters.discord|
 |[Red 协议](https://github.com/nonebot/adapter-red)|adapters.red|
 |[Satori](https://github.com/nonebot/adapter-satori)|adapters.satori|
-|[Dodo IM](https://github.com/nonebot/adapter-dodo)|adapters.dodo|  
+|[Dodo IM](https://github.com/nonebot/adapter-dodo)|adapters.dodo|
+| [Kritor](https://github.com/nonebot/adapter-kritor)|adapters.kritor|  
 
 
 ##### 构造

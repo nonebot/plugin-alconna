@@ -118,7 +118,7 @@ from .uniseg import apply_fetch_targets as apply_fetch_targets
 from .uniseg import SupportAdapterModule as SupportAdapterModule
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.42.5"
+__version__ = "0.43.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

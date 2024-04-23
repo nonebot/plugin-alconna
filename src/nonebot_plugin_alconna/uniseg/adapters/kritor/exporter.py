@@ -103,6 +103,8 @@ class KritorMessageExporter(MessageExporter["Message"]):
 
     @export
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+        if seg.extract_most_style() == "markdown":
+            return MessageSegment.markdown(seg.text)
         return MessageSegment.text(seg.text)
 
     @export
@@ -147,7 +149,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
     @export
     async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
         if seg.id:
-            return MessageSegment("$forward", {"res_id": seg.id})
+            return MessageSegment("$kritor:forward", {"res_id": seg.id})
 
         if not seg.content or not isinstance(seg.content, list):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
@@ -173,7 +175,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
                         )
                     )
                 )
-        return MessageSegment("$forward", {"nodes": nodes})
+        return MessageSegment("$kritor:forward", {"nodes": nodes})
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, KritorBot)
@@ -183,7 +185,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
         if isinstance(target, Event):
             target = self.get_target(target, bot)
 
-        if msg := message.include("$forward"):
+        if msg := message.include("$kritor:forward"):
             seg = msg[0]
             if target.private:
                 contact = Contact(scene=SceneType.FRIEND, peer=target.id, sub_peer=None)

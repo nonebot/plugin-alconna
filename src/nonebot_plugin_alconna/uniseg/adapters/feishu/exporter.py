@@ -138,7 +138,7 @@ class FeishuMessageExporter(MessageExporter[Message]):
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
-        return MessageSegment("$reply", {"message_id": seg.id})  # type: ignore
+        return MessageSegment("$feishu:reply", {"message_id": seg.id})  # type: ignore
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, FeishuBot)
@@ -152,9 +152,9 @@ class FeishuMessageExporter(MessageExporter[Message]):
             receive_id, receive_id_type = target.id, "open_id"
         else:
             receive_id, receive_id_type = target.id, "chat_id"
-        if message.has("$reply"):
-            reply = message["$reply", 0]
-            message = message.exclude("$reply")
+        if message.has("$feishu:reply"):
+            reply = message["$feishu:reply", 0]
+            message = message.exclude("$feishu:reply")
             msg_type, content = message.serialize()
             return await bot.reply_msg(reply.data["message_id"], content, msg_type)
         msg_type, content = message.serialize()

@@ -1,15 +1,17 @@
 from nonebot.adapters.kritor.message import MessageSegment
+from nonebot.adapters.kritor.message import Markdown as _Markdown
 
+from nonebot_plugin_alconna.uniseg import Text
 from nonebot_plugin_alconna.uniseg import Other
 from nonebot_plugin_alconna.uniseg import Reference
 from nonebot_plugin_alconna.uniseg import At as UniAt
 from nonebot_plugin_alconna.uniseg import Emoji, Hyper
-from nonebot_plugin_alconna.typings import SegmentPattern
 from nonebot_plugin_alconna.uniseg import AtAll as UniAtAll
 from nonebot_plugin_alconna.uniseg import Image as UniImage
 from nonebot_plugin_alconna.uniseg import Reply as UniReply
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.uniseg import Voice as UniVoice
+from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
 At = SegmentPattern("at", MessageSegment, UniAt, MessageSegment.at, additional=lambda x: x.origin.data["qq"] != "all")
 AtAll = SegmentPattern(
@@ -34,3 +36,11 @@ Xml = SegmentPattern("xml", MessageSegment, Hyper, MessageSegment.xml)
 Location = SegmentPattern("location", MessageSegment, Other, MessageSegment.location)
 Weather = SegmentPattern("weather", MessageSegment, Other, MessageSegment.weather)
 Keyboard = SegmentPattern("keyboard", MessageSegment, Other, MessageSegment.keyboard)
+
+
+def markdown(self, x: Text):
+    if x.extract_most_style() == "markdown":
+        return MessageSegment.markdown(x.text)
+
+
+Markdown = TextSegmentPattern("markdown", _Markdown, MessageSegment.markdown, markdown)

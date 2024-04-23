@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing_extensions import Self, ParamSpec, TypeAlias
+from typing_extensions import ParamSpec, TypeAlias
 from typing import Any, Union, Generic, Literal, TypeVar, Callable, Awaitable
 
 from tarina import lang
 from arclet.alconna import Arparma
 from nonebot.typing import T_State
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
-from nepattern import URL, INTEGER, MatchMode, BasePattern, MatchFailed, UnionPattern
+from nepattern import URL, MatchMode, BasePattern, MatchFailed, UnionPattern
 
 from .argv import argv_ctx
 from .uniseg.segment import env
@@ -20,13 +20,13 @@ TCallable = TypeVar("TCallable", bound=Callable[..., Any])
 P = ParamSpec("P")
 
 
-class _Text(BasePattern[Text, str, Literal[MatchMode.TYPE_CONVERT]]):
+class _Text(BasePattern[Text, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]]):
     def __init__(self):
         super().__init__(
             mode=MatchMode.TYPE_CONVERT,
             origin=Text,
             alias="text",
-            accepts=str,
+            accepts=Union[str, Text],
         )
 
     def spliter(self, x: str):
@@ -81,31 +81,18 @@ ImageOrUrl = (
 内置类型, 允许传入图片元素(Image)或者链接(URL)，返回链接
 """
 
-AtID = (
-    UnionPattern[Union[str, At]](
-        [
-            BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=int,
-                alias="At",
-                accepts=At,
-                converter=lambda _, x: int(x.target),  # type: ignore
-            ),
-            BasePattern(
-                r"@(\d+)",
-                mode=MatchMode.REGEX_CONVERT,
-                origin=int,
-                alias="@xxx",
-                accepts=str,
-                converter=lambda _, x: int(x[1]),  # type: ignore
-            ),
-            INTEGER,
-        ]
-    )
-    @ "notice_id"
+_AtID = BasePattern(mode=MatchMode.TYPE_CONVERT, origin=str, alias="At", accepts=At, converter=lambda _, x: x.target)
+_AtText = BasePattern(
+    r"@(.+)",
+    mode=MatchMode.REGEX_CONVERT,
+    origin=str,
+    alias="@xxx",
+    converter=lambda _, x: x[1],
 )
+
+AtID = UnionPattern[Union[str, At]]([_AtID, _AtText]) @ "notice_id"  # type: ignore
 """
-内置类型，允许传入@元素(At)或者'@xxxx'式样的字符串或者数字, 返回数字
+内置类型，允许传入@元素(At)或者'@xxxx'式样的字符串, 返回字符串形式的 id
 """
 
 
@@ -133,7 +120,7 @@ class SegmentPattern(BasePattern[TMS, TS, Literal[MatchMode.TYPE_CONVERT]], Gene
         )
         self.handle = handle or (lambda s: s.origin)
 
-    def match(self, input_: Segment) -> TMS:
+    def match(self, input_: TS) -> TMS:
         if not isinstance(input_, self.target):
             raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
         if self.validator(input_):
@@ -167,7 +154,7 @@ class TextSegmentPattern(BasePattern[TMS, Union[str, Text], Literal[MatchMode.TY
         return self.call(*args, **kwargs)  # type: ignore
 
 
-class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]], Generic[TMS, P]):
+class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]]):
     def __init__(
         self,
         expect: str,
@@ -185,14 +172,16 @@ class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]
     def __call__(self, text: str):
         return Text(text).mark(0, len(text), *self.expected)
 
-    def __add__(self, other: Style) -> Self:
+    def __add__(self, other: Style) -> Style:
+        obj = Style(self.pattern)
+        obj.expected = self.expected.copy()
         if not isinstance(other, Style):
             raise TypeError(other)
         if other.pattern not in self.expected:
-            self.expected.append(other.pattern)
-        self.alias = "+".join(self.expected)
-        self.refresh()
-        return self
+            obj.expected.append(other.pattern)
+        obj.alias = "+".join(obj.expected)
+        obj.refresh()
+        return obj
 
 
 Bold = Style("bold")

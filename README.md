@@ -237,6 +237,7 @@ async def_():
 - ALCONNA_CONTEXT_STYLE: 全局命令上下文插值的风格，None 为关闭，bracket 为 {...}，parentheses 为 $(...)
 - ALCONNA_ENABLE_SAA_PATCH: 是否启用 SAA 补丁
 - ALCONNA_APPLY_FILEHOST: 是否启用文件托管
+- ALCONNA_APPLY_FETCH_TARGETS: 是否启动时拉取一次发送对象列表
 
 ## 参数解释
 
@@ -288,6 +289,7 @@ def on_alconna(
 | [Red 协议](https://github.com/nonebot/adapter-red)                    | adapters.red                         |
 | [Satori](https://github.com/nonebot/adapter-satori)                 | adapters.satori                      |
 | [Dodo IM](https://github.com/nonebot/adapter-dodo)                  | adapters.dodo                        |
+| [Kritor](https://github.com/nonebot/adapter-kritor)                 | adapters.kritor                        |
 
 
 ## 便捷装饰器
