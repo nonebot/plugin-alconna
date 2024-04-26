@@ -17,7 +17,7 @@ AtAll = SegmentPattern(
     MessageSegment,
     UniAtAll,
     lambda: MessageSegment.at("all"),
-    additional=lambda x: x.origin.data["user_id"] == "all",
+    additional=lambda x: (x.origin is not None and x.origin.data["user_id"] == "all"),
 )
 Post = SegmentPattern("post", MessageSegment, Hyper, MessageSegment.post)
 Image = SegmentPattern("image", MessageSegment, UniImage, MessageSegment.image)

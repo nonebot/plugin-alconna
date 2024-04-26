@@ -315,7 +315,8 @@ class Text(Segment):
         left = scales[0][0]
         result.append(Text(text[:left]))
         for scale in scales:
-            result.append(Text(text[scale[0] : scale[1]], {scale: styles[scale]}))
+            result.append(Text(text[scale[0] : scale[1]], {(scale[0] - left, scale[1] - left): styles[scale]}))
+            left = scale[0]
         right = scales[-1][1]
         result.append(Text(text[right:]))
         return result

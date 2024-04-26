@@ -105,13 +105,13 @@ class SatoriMessageExporter(MessageExporter[Message]):
             return method(
                 await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
             )(
-                await self.export(seg.children, bot, True)
+                await self.export(seg.children, bot, True)  # type: ignore
             )  # type: ignore
         if seg.__class__.to_url and seg.raw:
             return method(
                 await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
             )(
-                await self.export(seg.children, bot, True)
+                await self.export(seg.children, bot, True)  # type: ignore
             )  # type: ignore
         if seg.path:
             return method(path=seg.path)(await self.export(seg.children, bot, True))  # type: ignore

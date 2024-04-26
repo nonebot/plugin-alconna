@@ -151,11 +151,11 @@ class KritorMessageExporter(MessageExporter["Message"]):
         if seg.id:
             return MessageSegment("$kritor:forward", {"res_id": seg.id})
 
-        if not seg.content or not isinstance(seg.content, list):
+        if not seg.children:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
 
         nodes = []
-        for node in seg.content:
+        for node in seg.children:
             if isinstance(node, RefNode):
                 nodes.append(ForwardMessageBody(message_id=node.id))
             else:

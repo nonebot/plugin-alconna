@@ -12,9 +12,19 @@ from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.uniseg import Voice as UniVoice
 
 Anonymous = SegmentPattern("anonymous", MessageSegment, Other, MessageSegment.anonymous)
-At = SegmentPattern("at", MessageSegment, UniAt, MessageSegment.at, additional=lambda x: x.origin.data["qq"] != "all")
+At = SegmentPattern(
+    "at",
+    MessageSegment,
+    UniAt,
+    MessageSegment.at,
+    additional=lambda x: x.origin is not None and x.origin.data["qq"] != "all",
+)
 AtAll = SegmentPattern(
-    "at", MessageSegment, UniAtAll, lambda: MessageSegment.at("all"), additional=lambda x: x.origin.data["qq"] == "all"
+    "at",
+    MessageSegment,
+    UniAtAll,
+    lambda: MessageSegment.at("all"),
+    additional=lambda x: x.origin is not None and x.origin.data["qq"] == "all",
 )
 Contact = SegmentPattern("contact", MessageSegment, Other, MessageSegment.contact)
 Dice = SegmentPattern("dice", MessageSegment, Other, MessageSegment.dice)

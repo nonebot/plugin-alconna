@@ -78,7 +78,7 @@ class UniMessageTemplate(Formatter):
         factory: 消息类型工厂，默认为 `str`
     """
 
-    def __init__(self, template: Union[str, "UniMessage"], factory: Type["UniMessage"]) -> None:
+    def __init__(self, template: Union[str, "UniMessage[Any]"], factory: Type["UniMessage[Any]"]) -> None:
         self.template = template
         self.factory = factory
         self.format_specs: Dict[str, FormatSpecFunc] = {}

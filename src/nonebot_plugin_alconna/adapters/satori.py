@@ -21,10 +21,16 @@ from nonebot_plugin_alconna.uniseg import Reply as UniReply
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
-At = SegmentPattern("at", _At, UniAt, MessageSegment.at, lambda x: "id" in x.origin.data)
-AtRole = SegmentPattern("at", _At, UniAt, MessageSegment.at_role, lambda x: "role" in x.origin.data)
+At = SegmentPattern("at", _At, UniAt, MessageSegment.at, lambda x: x.origin is not None and "id" in x.origin.data)
+AtRole = SegmentPattern(
+    "at", _At, UniAt, MessageSegment.at_role, lambda x: x.origin is not None and "role" in x.origin.data
+)
 AtAll = SegmentPattern(
-    "at", _At, UniAtAll, MessageSegment.at_all, lambda x: x.origin.data.get("type") in ("all", "here")
+    "at",
+    _At,
+    UniAtAll,
+    MessageSegment.at_all,
+    lambda x: x.origin is not None and x.origin.data.get("type") in ("all", "here"),
 )
 Sharp = SegmentPattern("sharp", _Sharp, UniAt, MessageSegment.sharp)
 
