@@ -8,6 +8,7 @@ from io import BytesIO
 from pathlib import Path
 from datetime import datetime
 from urllib.parse import urlparse
+from typing_extensions import Self
 from dataclasses import field, asdict
 from typing import (
     TYPE_CHECKING,
@@ -36,6 +37,8 @@ from .utils import fleep
 
 if TYPE_CHECKING:
     from .message import UniMessage
+    from .builder import MessageBuilder
+    from .exporter import MessageExporter
 
 if TYPE_CHECKING:
     from dataclasses import dataclass
@@ -61,7 +64,63 @@ class Segment:
     """基类标注"""
 
     if TYPE_CHECKING:
-        origin: MessageSegment  # = field(init=False, repr=False, compare=False)
+        origin: MessageSegment
+        _children: List["Segment"]
+
+    @classmethod
+    @overload
+    def from_(
+        cls: type[TS], source: BasePattern[TS1, Any, Any], *, fetch_all: Literal[True]
+    ) -> BasePattern[list[TS], TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+    @classmethod
+    @overload
+    def from_(
+        cls: type[TS], source: type[TS1], *, fetch_all: Literal[True]
+    ) -> BasePattern[list[TS], TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+    @classmethod
+    @overload
+    def from_(
+        cls: type[TS], source: BasePattern[TS1, Any, Any], *, index: int = 0
+    ) -> BasePattern[TS, TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+    @classmethod
+    @overload
+    def from_(
+        cls: type[TS], source: type[TS1], *, index: int = 0
+    ) -> BasePattern[TS, TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+
+    @classmethod
+    def from_(  # type: ignore
+        cls: type[TS],
+        source: Union[type[TS1], BasePattern[TS1, Any, Any]],
+        fetch_all: bool = False,
+        index: int = 0,
+    ) -> BasePattern[Union[list[TS], TS], TS1, Literal[MatchMode.TYPE_CONVERT]]:
+
+        def converter(_, seg: Segment) -> Union[TS, list[TS], None]:
+            children = [s for s in getattr(seg, "_children", []) if isinstance(s, cls)]
+            if not children:
+                return None
+            if fetch_all:
+                return children
+            if len(children) <= index:
+                return None
+            return children[index]
+
+        if isinstance(source, BasePattern):
+            return BasePattern(
+                mode=MatchMode.TYPE_CONVERT,
+                # origin=cls,
+                alias=f"{cls.__name__}",
+                previous=source,
+                converter=converter,
+            )
+        return BasePattern(
+            mode=MatchMode.TYPE_CONVERT,
+            # origin=cls,
+            alias=f"{cls.__name__}In{source.__name__}",
+            accepts=source,
+            converter=converter,
+        )
 
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
@@ -112,6 +171,20 @@ class Segment:
         except TypeError:
             return vars(self)
 
+    def __call__(self, *segments: Union[str, "Segment"]) -> Self:
+        if not segments:
+            return self
+        if not hasattr(self, "_children"):
+            self._children = []
+        self._children.extend(Text(s) if isinstance(s, str) else s for s in segments)
+        return self
+
+    @property
+    def children(self):
+        if not hasattr(self, "_children"):
+            self._children = []
+        return self._children
+
 
 STYLE_TYPE_MAP = {
     "bold": "\033[1m",
@@ -121,6 +194,7 @@ STYLE_TYPE_MAP = {
     "obfuscated": "\033[47m",
     "code": "\033[7m",
     "spoiler": "\033[8m",
+    "link": "\033[96m",
     "reset": "\033[0m",
     "black": "\033[30m",
     "dark_blue": "\033[34m",
@@ -166,7 +240,7 @@ class Text(Segment):
                 else:
                     data[i].extend(s for s in _styles if s not in data[i])
         styles.clear()
-        data1 = {}
+        data1: dict[str, list] = {}
         for i, _styles in data.items():
             key = "\x01".join(_styles)
             data1.setdefault(key, []).append(i)
@@ -244,6 +318,22 @@ class Text(Segment):
             return []
         max_scale = max(self.styles, key=lambda x: x[1] - x[0], default=(0, 0))
         return self.styles[max_scale]
+
+    def split(self):
+        result: list[Text] = []
+        text = self.text
+        styles = self.styles
+        if not styles:
+            return [self]
+        self.__merge__()
+        scales = sorted(styles.keys(), key=lambda x: x[0])
+        left = scales[0][0]
+        result.append(Text(text[:left]))
+        for scale in scales:
+            result.append(Text(text[scale[0] : scale[1]], {scale: styles[scale]}))
+        right = scales[-1][1]
+        result.append(Text(text[right:]))
+        return result
 
 
 @dataclass
@@ -369,7 +459,9 @@ class RefNode:
     """表示转发消息的引用消息元素"""
 
     id: str
+    """消息id"""
     context: Optional[str] = None
+    """可能的群聊id"""
 
 
 @dataclass
@@ -377,9 +469,15 @@ class CustomNode:
     """表示转发消息的自定义消息元素"""
 
     uid: str
+    """消息发送者id"""
     name: str
+    """消息发送者昵称"""
     time: datetime
+    """消息发送时间"""
     content: Union[str, List[Segment], Message]
+    """消息内容"""
+    context: Optional[str] = None
+    """可能的群聊id"""
 
 
 @dataclass
@@ -388,7 +486,11 @@ class Reference(Segment):
 
     id: Optional[str] = field(default=None)
     """此处不一定是消息ID，可能是其他ID，如消息序号等"""
-    content: Optional[Union[Message, str, List[Union[RefNode, CustomNode]]]] = field(default=None)
+    _children: List[Union[RefNode, CustomNode]] = field(init=False, default_factory=list)
+
+    @property
+    def children(self):
+        return self._children
 
 
 @dataclass
@@ -429,7 +531,7 @@ class Custom(Segment, abc.ABC):
     content: Any
 
     @abc.abstractmethod
-    def export(self, msg_type: Type[TM]) -> MessageSegment[TM]: ...
+    async def export(self, exporter: "MessageExporter[TM]", bot: Bot, fallback: bool) -> MessageSegment[TM]: ...
 
     @property
     def type(self) -> str:
@@ -440,23 +542,25 @@ TCustom = TypeVar("TCustom", bound=Custom)
 
 
 class _CustomBuilder:
-    BUILDERS: Dict[Union[str, Callable[[MessageSegment], bool]], Callable[[MessageSegment], Union[Custom, None]]] = {}
+    BUILDERS: Dict[
+        Union[str, Callable[[MessageSegment], bool]], Callable[["MessageBuilder", MessageSegment], Union[Custom, None]]
+    ] = {}
 
     @classmethod
     def custom_register(cls, custom_type: Type[TCustom], condition: Union[str, Callable[[MessageSegment], bool]]):
-        def _register(func: Callable[[MessageSegment], Union[TCustom, None]]):
+        def _register(func: Callable[["MessageBuilder", MessageSegment], Union[TCustom, None]]):
             cls.BUILDERS[condition] = func
             return func
 
         return _register
 
-    def solve(self, seg: MessageSegment):
+    def solve(self, builder: "MessageBuilder", seg: MessageSegment):
         for condition, func in self.BUILDERS.items():
             if isinstance(condition, str):
                 if seg.type == condition:
-                    return func(seg)
+                    return func(builder, seg)
             elif condition(seg):
-                return func(seg)
+                return func(builder, seg)
 
 
 custom = _CustomBuilder()

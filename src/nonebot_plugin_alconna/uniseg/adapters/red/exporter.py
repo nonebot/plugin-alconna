@@ -106,10 +106,10 @@ class RedMessageExporter(MessageExporter[Message]):
 
     @export
     async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
-        if not seg.content or not isinstance(seg.content, list):
+        if not seg.children:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
         nodes = []
-        for node in seg.content:
+        for node in seg.children:
             if not isinstance(node, CustomNode):
                 raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
             content = self.get_message_type()()

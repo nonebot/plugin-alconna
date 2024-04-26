@@ -66,7 +66,7 @@ class TelegramMessageBuilder(MessageBuilder):
 
     @build("url")
     def url(self, seg: Entity):
-        return Text(seg.data["text"])
+        return Text(seg.data["text"]).mark(0, len(seg.data["text"]), "link")
 
     @build("email")
     def email(self, seg: Entity):
@@ -102,7 +102,9 @@ class TelegramMessageBuilder(MessageBuilder):
 
     @build("text_link")
     def text_link(self, seg: Entity):
-        return Text(seg.data["url"]).mark(0, len(seg.data["url"]), f"link:{seg.data['text']}")
+        text = Text(seg.data["url"]).mark(0, len(seg.data["url"]), "link")
+        text._children = [Text(seg.data["text"])]
+        return text
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:

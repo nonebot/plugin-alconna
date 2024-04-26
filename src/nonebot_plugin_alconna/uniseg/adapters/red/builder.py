@@ -63,7 +63,7 @@ class RedMessageBuilder(MessageBuilder):
 
     @build("forward")
     def forward(self, seg: MessageSegment):
-        return Reference(seg.data["id"], seg.data["xml"])
+        return Reference(seg.data["id"])
 
     @build("ark")
     def ark(self, seg: MessageSegment):

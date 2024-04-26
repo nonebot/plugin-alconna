@@ -67,6 +67,11 @@ class SatoriMessageExporter(MessageExporter[Message]):
     async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
         if not seg.styles:
             return MessageSegment.text(seg.text)
+        if seg.extract_most_style() == "link":
+            if not getattr(seg, "_children", []):
+                return MessageSegment.link(seg.text)
+            else:
+                return MessageSegment.link(seg.text, seg._children[0].text)  # type: ignore
         styles = seg.styles.copy()
         for scale, style in seg.styles.items():
             styles[scale] = [STYLE_TYPE_MAP.get(s, s) for s in style]
@@ -95,21 +100,25 @@ class SatoriMessageExporter(MessageExporter[Message]):
             "file": MessageSegment.file,
         }[name]
         if seg.id or seg.url:
-            return method(url=seg.id or seg.url)
+            return method(url=seg.id or seg.url)(await self.export(seg.children, bot, True))  # type: ignore
         if seg.__class__.to_url and seg.path:
             return method(
                 await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
-            )
+            )(
+                await self.export(seg.children, bot, True)
+            )  # type: ignore
         if seg.__class__.to_url and seg.raw:
             return method(
                 await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
-            )
+            )(
+                await self.export(seg.children, bot, True)
+            )  # type: ignore
         if seg.path:
-            return method(path=seg.path)
+            return method(path=seg.path)(await self.export(seg.children, bot, True))  # type: ignore
         if seg.raw:
             data = seg.raw_bytes
             if seg.mimetype:
-                return method(raw=data, mime=seg.mimetype)
+                return method(raw=data, mime=seg.mimetype)(await self.export(seg.children, bot, True))  # type: ignore
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
@@ -118,26 +127,22 @@ class SatoriMessageExporter(MessageExporter[Message]):
 
     @export
     async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
-        if isinstance(seg.content, str):
-            content = self.get_message_type()(seg.content)
-        elif isinstance(seg.content, list):
-            content = self.get_message_type()()
-            for node in seg.content:
-                if isinstance(node, RefNode):
-                    content.append(MessageSegment.message(node.id))
+        content = self.get_message_type()()
+        for node in seg.children:
+            if isinstance(node, RefNode):
+                content.append(MessageSegment.message(node.id))
+            else:
+                _content = self.get_message_type()()
+                _content.append(MessageSegment.author(node.uid, node.name))
+                if isinstance(node.content, str):
+                    _content.extend(self.get_message_type()(node.content))
+                elif isinstance(node.content, list):
+                    _content.extend(await self.export(node.content, bot, True))  # type: ignore
                 else:
-                    _content = self.get_message_type()()
-                    _content.append(MessageSegment.author(node.uid, node.name))
-                    if isinstance(node.content, str):
-                        _content.extend(self.get_message_type()(node.content))
-                    elif isinstance(node.content, list):
-                        _content.extend(await self.export(node.content, bot, True))  # type: ignore
-                    else:
-                        _content.extend(node.content)
-                    content.append(MessageSegment.message(content=_content))
-        else:
-            content = seg.content
-        return MessageSegment.message(seg.id, bool(seg.content), content)
+                    _content.extend(node.content)
+                content.append(MessageSegment.message(content=_content))
+
+        return MessageSegment.message(seg.id, bool(seg.children), content)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, SatoriBot)
@@ -162,7 +167,9 @@ class SatoriMessageExporter(MessageExporter[Message]):
             else:
                 await bot.message_delete(channel_id=context.id, message_id=_mid.id)
         else:
-            channel = _mid.channel or context.channel  # type: ignore
+            if TYPE_CHECKING:
+                assert isinstance(context, MessageEvent)
+            channel = _mid.channel or context.channel
             await bot.message_delete(channel_id=channel.id, message_id=_mid.id)
         return
 
@@ -177,7 +184,9 @@ class SatoriMessageExporter(MessageExporter[Message]):
                 channel = await bot.user_channel_create(user_id=context.id)
                 return await bot.update_message(channel.id, _mid.id, new)
             return await bot.update_message(context.id, _mid.id, new)
-        channel = mid.channel or context.channel  # type: ignore
+        if TYPE_CHECKING:
+            assert isinstance(context, MessageEvent)
+        channel = mid.channel or context.channel
         return await bot.update_message(channel.id, _mid.id, new)
 
     def get_reply(self, mid: Any):

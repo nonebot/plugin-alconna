@@ -1,16 +1,41 @@
 import pytest
 from nonebug import App
+from nepattern import Dot
 from nonebot import get_adapter
 from arclet.alconna import Args, Alconna
+from nonebot.adapters.satori.element import parse
 from nonebot.adapters.satori import Bot, Adapter, Message, MessageSegment
 
 from tests.fake import fake_message_event_satori
 
 
+def test_message_rollback():
+    from nonebot_plugin_alconna import Image, select_first
+
+    text = """\
+捏<chronocat:marketface tab-id="237834" face-id="a651cf5813ba41587b22d273682e01ae" key="e08787120cade0a5">
+  <img src="http://127.0.0.1:5500/v1/assets/eyJ0eXBlIjoibWF..."/>
+</chronocat:marketface>
+    """
+    msg = Message.from_satori_element(parse(text))
+
+    text1 = '捏<img src="http://127.0.0.1:5500/v1/assets/eyJ0eXBlIjoibWF..." />'
+
+    msg1 = Message.from_satori_element(parse(text1))
+
+    alc = Alconna("捏", Args["img", Dot(select_first(Image), str, "url")])
+
+    res = alc.parse(msg, {"$adapter.name": "Satori"})
+    assert res.matched
+    assert res.query[str]("img") == "http://127.0.0.1:5500/v1/assets/eyJ0eXBlIjoibWF..."
+
+    res1 = alc.parse(msg1, {"$adapter.name": "Satori"})
+    assert res1.matched
+    assert res1.query[str]("img") == "http://127.0.0.1:5500/v1/assets/eyJ0eXBlIjoibWF..."
+
+
 @pytest.mark.asyncio()
 async def test_satori(app: App):
-    from nonebot.adapters.satori import Message
-
     from nonebot_plugin_alconna import Bold, Text, Italic, Underline, on_alconna
 
     msg = Message("/com<b>mand s<i>ome</i>_arg</b> <u>some_arg</u> <b><i>some_arg</i></b>")

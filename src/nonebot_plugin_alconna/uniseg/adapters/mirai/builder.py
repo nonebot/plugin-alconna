@@ -70,7 +70,7 @@ class MiraiMessageBuilder(MessageBuilder):
                 nodes.append(RefNode(node["messageRef"]["messageId"], node["messageRef"]["target"]))
             else:
                 nodes.append(CustomNode(node["senderId"], node["senderName"], node["time"], node["messageChain"]))
-        return Reference(seg.data.get("messageId"), nodes)
+        return Reference(seg.data.get("messageId"))(*nodes)
 
     @build(MessageType.APP)
     def app(self, seg: MessageSegment):

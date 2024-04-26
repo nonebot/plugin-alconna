@@ -38,6 +38,7 @@ from arclet.alconna import SubcommandResult as SubcommandResult
 from .consts import log
 from .config import Config
 from .uniseg import At as At
+from . import pattern as pattern
 from .uniseg import File as File
 from .uniseg import Text as Text
 from .model import Match as Match
@@ -63,6 +64,7 @@ from .uniseg import Custom as Custom
 from .uniseg import SCOPES as SCOPES
 from .uniseg import Target as Target
 from .uniseg import UniMsg as UniMsg
+from .pattern import select as select
 from .typings import Italic as Italic
 from .uniseg import RefNode as RefNode
 from .uniseg import Segment as Segment
@@ -90,10 +92,12 @@ from .matcher import on_alconna as on_alconna
 from .typings import ImageOrUrl as ImageOrUrl
 from .params import match_value as match_value
 from .uniseg import image_fetch as image_fetch
+from .pattern import select_last as select_last
 from .params import AlconnaMatch as AlconnaMatch
 from .params import AlconnaQuery as AlconnaQuery
 from .uniseg import SupportScope as SupportScope
 from .model import CommandResult as CommandResult
+from .pattern import select_first as select_first
 from .params import AlcExecResult as AlcExecResult
 from .params import AlconnaResult as AlconnaResult
 from .uniseg import MessageTarget as MessageTarget

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing_extensions import ParamSpec, TypeAlias
-from typing import Any, Union, Generic, Literal, TypeVar, Callable, Awaitable
+from typing import Any, Union, Generic, Literal, TypeVar, Callable, Awaitable, overload
 
 from tarina import lang
 from arclet.alconna import Arparma
@@ -15,6 +15,7 @@ from .uniseg import At, Text, Image, Segment, UniMessage
 
 T = TypeVar("T")
 TS = TypeVar("TS", bound=Segment)
+TS1 = TypeVar("TS1", bound=Segment)
 TMS = TypeVar("TMS", bound=MessageSegment)
 TCallable = TypeVar("TCallable", bound=Callable[..., Any])
 P = ParamSpec("P")
@@ -25,7 +26,7 @@ class _Text(BasePattern[Text, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]]
         super().__init__(
             mode=MatchMode.TYPE_CONVERT,
             origin=Text,
-            alias="text",
+            alias="Text",
             accepts=Union[str, Text],
         )
 
@@ -130,6 +131,38 @@ class SegmentPattern(BasePattern[TMS, TS, Literal[MatchMode.TYPE_CONVERT]], Gene
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> TMS:
         return self.call(*args, **kwargs)  # type: ignore
 
+    @overload
+    def from_(
+        self, source: type[TS1], *, fetch_all: Literal[True]
+    ) -> BasePattern[list[TMS], TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+
+    @overload
+    def from_(self, source: type[TS1], *, index: int = 0) -> BasePattern[TMS, TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+
+    def from_(  # type: ignore
+        self, source: type[TS1], fetch_all: bool = False, index: int = 0
+    ) -> BasePattern[TMS, TS1, Literal[MatchMode.TYPE_CONVERT]]:
+        prev = self.target.from_(source, fetch_all=True)
+        _new = self.copy()
+
+        _match = _new.match
+
+        def match(_, input_):
+            temp = prev.match(input_)
+            matches = [_match(i) for i in temp]
+            if not matches:
+                raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
+            if fetch_all:
+                return matches
+            if len(matches) > index:
+                return matches[index]
+            raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
+
+        _new.match = match.__get__(_new)
+        _new.alias = f"{_new.alias}In{source.__name__}"
+        _new.refresh()
+        return _new  # type: ignore
+
 
 class TextSegmentPattern(BasePattern[TMS, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]], Generic[TMS, P]):
     def __init__(
@@ -153,6 +186,52 @@ class TextSegmentPattern(BasePattern[TMS, Union[str, Text], Literal[MatchMode.TY
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> TMS:
         return self.call(*args, **kwargs)  # type: ignore
 
+    def __calc_repr__(self):
+        return self.pattern
+
+    @overload
+    def from_(
+        self, source: type[TS1], *, fetch_all: Literal[True]
+    ) -> BasePattern[list[TMS], TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+
+    @overload
+    def from_(self, source: type[TS1], *, index: int = 0) -> BasePattern[TMS, TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+
+    def from_(  # type: ignore
+        self, source: type[TS1], fetch_all: bool = False, index: int = 0
+    ) -> BasePattern[TMS, TS1, Literal[MatchMode.TYPE_CONVERT]]:
+        prev = Text.from_(source, fetch_all=True)
+        _new = self.copy()
+
+        _match = _new.match
+
+        def match(_, input_):
+            temp = prev.match(input_)
+            count = -1
+            results = []
+            for _text in temp:
+                for _t in _text.split():
+                    try:
+                        results.append(_match(_t))
+                        count += 1
+                    except MatchFailed:
+                        pass
+                    else:
+                        if not fetch_all and count == index:
+                            return results[count]
+            if not results:
+                raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
+            if fetch_all:
+                return results
+            if count < index:
+                raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
+            return results[index]
+
+        _new.match = match.__get__(_new)
+        _new.alias = f"{_new.alias}In{source.__name__}"
+        _new.refresh()
+        return _new  # type: ignore
+
 
 class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]]):
     def __init__(
@@ -163,11 +242,14 @@ class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]
         super().__init__(
             mode=MatchMode.VALUE_OPERATE,
             origin=Text,
-            converter=lambda _, x: x if all(set(style).issuperset(_.expected) for style in x.styles.values()) else None,  # type: ignore
-            alias=expect,
+            converter=lambda _, x: x if x.styles and all(set(style).issuperset(_.expected) for style in x.styles.values()) else None,  # type: ignore  # noqa: E501
+            alias=expect.capitalize(),
             previous=text,
         )
         self.pattern = expect
+
+    def __calc_repr__(self):
+        return self.alias
 
     def __call__(self, text: str):
         return Text(text).mark(0, len(text), *self.expected)
@@ -180,10 +262,57 @@ class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]
         if other.pattern not in self.expected:
             obj.expected.append(other.pattern)
         obj.alias = "+".join(obj.expected)
+        obj.alias = obj.alias.capitalize()
         obj.refresh()
         return obj
 
+    @overload
+    def from_(
+        self, source: type[TS1], *, fetch_all: Literal[True]
+    ) -> BasePattern[list[Text], TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
 
+    @overload
+    def from_(
+        self, source: type[TS1], *, index: int = 0
+    ) -> BasePattern[Text, TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+
+    def from_(  # type: ignore
+        self, source: type[TS1], fetch_all: bool = False, index: int = 0
+    ) -> BasePattern[Text, TS1, Literal[MatchMode.TYPE_CONVERT]]:
+        prev = Text.from_(source, fetch_all=True)
+        _new = self.copy()
+
+        _match = _new.match
+
+        def match(_, input_):
+            temp = prev.match(input_)
+            count = -1
+            results = []
+            for _text in temp:
+                for _t in _text.split():
+                    try:
+                        results.append(_match(_t))
+                        count += 1
+                    except MatchFailed:
+                        pass
+                    else:
+                        if not fetch_all and count == index:
+                            return results[count]
+            if not results:
+                raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
+            if fetch_all:
+                return results
+            if count < index:
+                raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_))
+            return results[index]
+
+        _new.match = match.__get__(_new)
+        _new.alias = f"{_new.alias}In{source.__name__}"
+        _new.refresh()
+        return _new  # type: ignore
+
+
+Link = Style("link")
 Bold = Style("bold")
 Italic = Style("italic")
 Underline = Style("underline")

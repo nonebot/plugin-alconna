@@ -108,8 +108,9 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
             extra = "allow"
 
     _message = field.pop("message", Message("test"))
-    event = FakeEvent(**field)
+    event = FakeEvent(message={"id": "1", "content": "text"}, **field)  # type: ignore
     event._message = _message
+    event.original_message = _message
     return event
 
 

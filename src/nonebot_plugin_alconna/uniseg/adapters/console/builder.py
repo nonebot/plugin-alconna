@@ -12,11 +12,11 @@ class ConsoleMessageBuilder(MessageBuilder):
 
     @build("markup")
     def markup(self, seg: MessageSegment):
-        return Text(seg.data["markup"]).mark(0, len(seg.data["markup"]), f"markdown:{seg.data['style']}")
+        return Text(seg.data["markup"]).mark(0, len(seg.data["markup"]), "markup", seg.data["style"])
 
     @build("markdown")
     def markdown(self, seg: MessageSegment):
-        return Text(seg.data["markup"]).mark(0, len(seg.data["markup"]), f"markdown:{seg.data['code_theme']}")
+        return Text(seg.data["markup"]).mark(0, len(seg.data["markup"]), "markdown", seg.data["code_theme"])
 
     @build("emoji")
     def emoji(self, seg: MessageSegment):

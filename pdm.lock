@@ -771,7 +771,7 @@ files = [
 
 [[package]]
 name = "nepattern"
-version = "0.7.1"
+version = "0.7.2"
 requires_python = ">=3.8"
 summary = "a complex pattern, support typing"
 dependencies = [
@@ -779,8 +779,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "nepattern-0.7.1-py3-none-any.whl", hash = "sha256:e5190a79d398dce72f972ffafc413653414cca12a1dac56d38fcf070d2f034bc"},
-    {file = "nepattern-0.7.1.tar.gz", hash = "sha256:14bae0dfa93241f3c2d8371cfc5e51072a186a295a7d35fbd7a60b08e83b2605"},
+    {file = "nepattern-0.7.2-py3-none-any.whl", hash = "sha256:75406623a4a533628a6fb1996a7cc79d7b535a268e2a8bf4b405197175baecca"},
+    {file = "nepattern-0.7.2.tar.gz", hash = "sha256:7869e7998d870c920611b7a25649fb451c57bf2de450fb5d2e87408ff2917885"},
 ]
 
 [[package]]
@@ -971,15 +971,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-satori"
-version = "0.10.4"
+version = "0.11.1"
 requires_python = ">=3.8"
 summary = "Satori Protocol Adapter for Nonebot2"
 dependencies = [
     "nonebot2>=2.2.0",
 ]
 files = [
-    {file = "nonebot_adapter_satori-0.10.4-py3-none-any.whl", hash = "sha256:4e22ea8551ccbdd3d463c3d7c6f8efdd2b23fa4b8b61afbfac70140ebc730e01"},
-    {file = "nonebot_adapter_satori-0.10.4.tar.gz", hash = "sha256:1b42e1cf8b874769921ffdeb46b67c6983af169c238d290c3766a093b1ffdb88"},
+    {file = "nonebot_adapter_satori-0.11.1-py3-none-any.whl", hash = "sha256:e4225da341525c317e6ad6f44ff3311710b3ad75b81a9485f01c5211836f2034"},
+    {file = "nonebot_adapter_satori-0.11.1.tar.gz", hash = "sha256:a2bf7c31d69cb07cb94d67f3fdcbdcc0fbd16ad756aee6a2f92dcebb66f1f3e4"},
 ]
 
 [[package]]

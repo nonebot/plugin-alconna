@@ -181,10 +181,10 @@ class MiraiMessageExporter(MessageExporter[MessageChain]):
 
     @export
     async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
-        if not seg.content or not isinstance(seg.content, list):
+        if not seg.children:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
         nodes = []
-        for node in seg.content:
+        for node in seg.children:
             if isinstance(node, RefNode):
                 if node.context:
                     nodes.append({"messageRef": {"messageId": node.id, "target": node.context}})

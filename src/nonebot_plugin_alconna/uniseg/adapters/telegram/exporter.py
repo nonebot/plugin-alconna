@@ -66,6 +66,11 @@ class TelegramMessageExporter(MessageExporter[Message]):
             return Entity.text(seg.text)
         else:
             style = seg.extract_most_style()
+            if style == "link":
+                if not getattr(seg, "_children", []):
+                    return Entity.url(seg.text)
+                else:
+                    return Entity.text_link(seg._children[0].text, seg.text)  # type: ignore
             return Entity(STYLE_TYPE_MAP.get(style, style), {"text": seg.text})
 
     @export

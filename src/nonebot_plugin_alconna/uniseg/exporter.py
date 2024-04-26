@@ -86,7 +86,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                 else:
                     message.append(res)
             elif isinstance(seg, Custom):
-                message.append(seg.export(msg_type))
+                message.append(await seg.export(self, bot, fallback))
             elif isinstance(seg, Other):
                 message.append(seg.origin)  # type: ignore
             elif fallback or bot.adapter.get_name() == SupportAdapter.nonebug:

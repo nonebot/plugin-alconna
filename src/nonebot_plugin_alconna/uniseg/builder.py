@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Union, TypeVar, Callable, Optional
+from typing import Any, Dict, List, Union, Generic, TypeVar, Callable, Optional
 
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
@@ -18,7 +18,7 @@ def build(*types: str):
     return wrapper
 
 
-class MessageBuilder(metaclass=ABCMeta):
+class MessageBuilder(Generic[TS], metaclass=ABCMeta):
     _mapping: Dict[
         str,
         Union[Callable[[MessageSegment], Optional[Segment]], Callable[[MessageSegment], List[Segment]]],
@@ -27,6 +27,9 @@ class MessageBuilder(metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def get_adapter(cls) -> SupportAdapter: ...
+
+    def wildcard_build(self, seg: TS) -> Union[Optional[Segment], List[Segment]]:
+        return None
 
     def __init__(self):
         self._mapping = {}
@@ -40,12 +43,12 @@ class MessageBuilder(metaclass=ABCMeta):
     def preprocess(self, source: Message[TS]) -> Message[TS]:
         return source
 
-    def convert(self, seg: MessageSegment) -> Union[Segment, List[Segment]]:
+    def convert(self, seg: TS) -> Union[Segment, List[Segment]]:
         seg_type = seg.type
         if seg_type in self._mapping:
             res = self._mapping[seg_type](seg)
             if not res:
-                return custom.solve(seg) or Other(seg)
+                return custom.solve(self, seg) or self.wildcard_build(seg) or Other(seg)
             if isinstance(res, list):
                 for _seg in res:
                     _seg.origin = seg
@@ -62,9 +65,9 @@ class MessageBuilder(metaclass=ABCMeta):
                 res = Text(seg.data["text"]).mark(0, len(seg.data["text"]), seg.type)
             res.origin = seg
             return res
-        return custom.solve(seg) or Other(seg)
+        return custom.solve(self, seg) or self.wildcard_build(seg) or Other(seg)
 
-    def generate(self, source: Message[MessageSegment]) -> List[Segment]:
+    def generate(self, source: Message[TS]) -> List[Segment]:
         result = []
         for ms in self.preprocess(source):
             seg = self.convert(ms)
