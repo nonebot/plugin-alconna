@@ -9,7 +9,7 @@ from pathlib import Path
 from datetime import datetime
 from urllib.parse import urlparse
 from typing_extensions import Self
-from dataclasses import field, asdict
+from dataclasses import field, asdict, dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -29,7 +29,6 @@ from typing import (
     overload,
 )
 
-from nonebot.compat import PYDANTIC_V2, ConfigDict
 from nonebot.internal.adapter import Bot, Message, MessageSegment
 from nepattern import MatchMode, BasePattern, create_local_patterns
 
@@ -40,32 +39,17 @@ if TYPE_CHECKING:
     from .builder import MessageBuilder
     from .exporter import MessageExporter
 
-if TYPE_CHECKING:
-    from dataclasses import dataclass
-else:
-    from pydantic.dataclasses import dataclass as _dataclass
-
-    if PYDANTIC_V2:
-        config = ConfigDict(arbitrary_types_allowed=True)
-    else:
-
-        class config:
-            arbitrary_types_allowed = True
-
-    def dataclass(*args, **kwargs):
-        return _dataclass(*args, config=config, **kwargs)
-
 
 TS = TypeVar("TS", bound="Segment")
 TS1 = TypeVar("TS1", bound="Segment")
 
 
+@dataclass
 class Segment:
     """基类标注"""
 
-    if TYPE_CHECKING:
-        origin: MessageSegment
-        _children: List["Segment"]
+    origin: Optional[MessageSegment] = field(init=False, hash=False, repr=False, compare=False, default=None)
+    _children: List["Segment"] = field(init=False, default_factory=list, repr=False, hash=False)
 
     @classmethod
     @overload
@@ -125,10 +109,6 @@ class Segment:
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
 
-    def __repr__(self):
-        attrs = ", ".join(f"{k}={v!r}" for k, v in self.data.items())
-        return f"{self.__class__.__name__}({attrs})"
-
     @overload
     def __add__(self: TS, item: str) -> "UniMessage[Union[TS, Text]]": ...
 
@@ -166,24 +146,27 @@ class Segment:
 
     @property
     def data(self) -> Dict[str, Any]:
-        try:
-            return asdict(self)  # type: ignore
-        except TypeError:
-            return vars(self)
+        return asdict(self)
 
     def __call__(self, *segments: Union[str, "Segment"]) -> Self:
         if not segments:
             return self
-        if not hasattr(self, "_children"):
-            self._children = []
         self._children.extend(Text(s) if isinstance(s, str) else s for s in segments)
         return self
 
     @property
     def children(self):
-        if not hasattr(self, "_children"):
-            self._children = []
         return self._children
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls._validate
+
+    @classmethod
+    def _validate(cls, value, _) -> Self:
+        if isinstance(value, cls):
+            return value
+        raise ValueError(f"Type {type(value)} can not be converted to {cls}")
 
 
 STYLE_TYPE_MAP = {
@@ -444,14 +427,26 @@ class File(Media):
     __default_name__ = "file.bin"
 
 
-@dataclass
+@dataclass(init=False)
 class Reply(Segment):
     """Reply对象，表示一类回复消息"""
 
     id: str
     """此处不一定是消息ID，可能是其他ID，如消息序号等"""
-    msg: Optional[Union[Message, str]] = field(default=None)
-    origin: Optional[Any] = field(default=None)
+    msg: Optional[Union[Message, str]]
+    origin: Optional[Any]
+
+    def __init__(
+        self,
+        id: str,
+        msg: Optional[Union[Message, str]] = None,
+        origin: Optional[Any] = None,
+    ):
+        self.id = id
+        self.msg = msg
+        self.origin = origin
+        if not hasattr(self, "_children"):
+            self._children = []
 
 
 @dataclass
