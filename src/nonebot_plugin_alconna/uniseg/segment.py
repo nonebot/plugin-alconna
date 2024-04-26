@@ -29,6 +29,7 @@ from typing import (
     overload,
 )
 
+from nonebot.compat import custom_validation
 from nonebot.internal.adapter import Bot, Message, MessageSegment
 from nepattern import MatchMode, BasePattern, create_local_patterns
 
@@ -44,6 +45,7 @@ TS = TypeVar("TS", bound="Segment")
 TS1 = TypeVar("TS1", bound="Segment")
 
 
+@custom_validation
 @dataclass
 class Segment:
     """基类标注"""
@@ -163,7 +165,7 @@ class Segment:
         yield cls._validate
 
     @classmethod
-    def _validate(cls, value, _) -> Self:
+    def _validate(cls, value) -> Self:
         if isinstance(value, cls):
             return value
         raise ValueError(f"Type {type(value)} can not be converted to {cls}")

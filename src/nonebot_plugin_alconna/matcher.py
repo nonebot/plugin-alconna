@@ -48,6 +48,7 @@ from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecke
 from .rule import alconna
 from .typings import MReturn
 from .model import CompConfig
+from .pattern import patterns
 from .uniseg import Text, Segment, UniMessage
 from .uniseg.template import UniMessageTemplate
 from .extension import Extension, ExtensionExecutor
@@ -1050,6 +1051,10 @@ def funcommand(
 
 
 class Command(AlconnaString):
+    @staticmethod
+    def args_gen(pattern: str, types: dict):
+        return AlconnaString.args_gen(pattern, {**types, **patterns})
+
     def build(
         self,
         rule: Rule | T_RuleChecker | None = None,
@@ -1083,7 +1088,7 @@ class Command(AlconnaString):
             @matcher.handle()
             async def handle_actions(results: AlcExecResult):
                 for res in results.values():
-                    if isinstance(res, Hashable) and is_awaitable(res):
+                    if is_awaitable(res):
                         res = await res
                     if isinstance(res, (str, Message, MessageSegment, Segment, UniMessage, UniMessageTemplate)):
                         await matcher.send(res, fallback=True)
