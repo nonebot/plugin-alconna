@@ -1,9 +1,10 @@
-from arclet.alconna import Alconna
-from arclet.alconna.tools.formatter import MarkdownTextFormatter
 import re
 
-from nonebot_plugin_alconna import Extension, UniMessage, Text
+from arclet.alconna import Alconna
+from arclet.alconna.tools.formatter import MarkdownTextFormatter
+
 from nonebot_plugin_alconna.extension import OutputType
+from nonebot_plugin_alconna import Text, Extension, UniMessage
 
 
 class MarkdownOutputExtension(Extension):

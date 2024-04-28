@@ -41,6 +41,7 @@ class DiscordSlashExtension(Extension):
             await ext.send_response("Hello, world!")
         ```
     """
+
     application_command: ApplicationCommandConfig
 
     @property
