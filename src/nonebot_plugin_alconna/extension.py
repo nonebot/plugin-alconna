@@ -291,6 +291,10 @@ def load_from_path(path: str) -> None:
         path = f"nonebot_plugin_alconna{path[1:]}"
     elif path.startswith("~"):
         path = f"nonebot_plugin_alconna.{path[1:]}"
+    elif path.startswith("@."):
+        path = f"nonebot_plugin_alconna.builtins.extensions{path[1:]}"
+    elif path.startswith("@"):
+        path = f"nonebot_plugin_alconna.builtins.extensions.{path[1:]}"
     match = pattern.match(path)
     if not match:
         raise ValueError(lang.require("nbp-alc", "error.extension_path_invalid").format(path=path))

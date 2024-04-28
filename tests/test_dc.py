@@ -27,7 +27,7 @@ async def test_dc_ext(app: App):
         meta=CommandMeta(description="权限管理"),
     )
     matcher = on_alconna(alc)  # , extensions=[DiscordSlashExtension()])
-    load_from_path("~adapters.discord")
+    load_from_path("@discord")
 
     @matcher.assign("add")
     async def add(plugin: Match[str], priority: Match[int]):
