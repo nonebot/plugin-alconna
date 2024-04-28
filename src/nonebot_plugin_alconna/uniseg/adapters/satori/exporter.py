@@ -72,6 +72,8 @@ class SatoriMessageExporter(MessageExporter[Message]):
                 return MessageSegment.link(seg.text)
             else:
                 return MessageSegment.link(seg.text, seg._children[0].text)  # type: ignore
+        if seg.extract_most_style() == "markdown":
+            return _Text("text", {"text": seg.text, "styles": {(0, len(seg.text)): ["chronocat:markdown"]}})
         styles = seg.styles.copy()
         for scale, style in seg.styles.items():
             styles[scale] = [STYLE_TYPE_MAP.get(s, s) for s in style]

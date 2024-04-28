@@ -14,8 +14,8 @@ class ReplyRecordExtension(Extension):
 
     Example:
         ```python
-        from nonebot_plugin_alconna import on_alconna, MsgId
-        from nonebot_plugin_alconna_ext import ReplyRecordExtension
+        from nonebot_plugin_alconna import MsgId, on_alconna
+        from nonebot_plugin_alconna.builtins.extensions import ReplyRecordExtension
 
         matcher = on_alconna(..., extensions=[ReplyRecordExtension()])
 

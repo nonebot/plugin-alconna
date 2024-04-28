@@ -26,6 +26,21 @@ from nonebot_plugin_alconna.adapters.discord import _translate_args, _translate_
 
 
 class DiscordSlashExtension(Extension):
+    """
+    用于将 Alconna 的命令自动转换为 Discord 的 Slash Command，并将 Slash Command 的交互事件转换为消息交给 Alconna 处理。
+
+    Example:
+        ```python
+        from nonebot_plugin_alconna import on_alconna
+        from nonebot_plugin_alconna.builtins.extensions import DiscordSlashExtension
+
+        matcher = on_alconna(..., extensions=[DiscordSlashExtension(...)])
+
+        @matcher.handle()
+        async def handle(ext: DiscordSlashExtension):
+            await ext.send_response("Hello, world!")
+        ```
+    """
     application_command: ApplicationCommandConfig
 
     @property

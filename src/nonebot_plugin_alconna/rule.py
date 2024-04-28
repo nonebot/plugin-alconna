@@ -292,7 +292,7 @@ class AlconnaRule:
         return True
 
     async def send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Message:
-        _t = str(arp.error_info) if isinstance(arp.error_info, SpecialOptionTriggered) else "help"
+        _t = str(arp.error_info) if isinstance(arp.error_info, SpecialOptionTriggered) else "error"
         try:
             msg = await self.executor.output_converter(_t, text)  # type: ignore
             if not msg:

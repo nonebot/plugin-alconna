@@ -18,7 +18,7 @@ from nonebot.adapters import Bot, Event, Message
 
 from .uniseg import UniMessage, FallbackMessage
 
-OutputType = Literal["help", "shortcut", "completion"]
+OutputType = Literal["help", "shortcut", "completion", "error"]
 TM = TypeVar("TM", bound=Union[str, Message, UniMessage])
 TE = TypeVar("TE", bound=Event)
 
