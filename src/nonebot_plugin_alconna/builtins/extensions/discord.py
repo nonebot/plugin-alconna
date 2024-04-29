@@ -75,7 +75,7 @@ class DiscordSlashExtension(Extension):
         self.using = False
 
     def post_init(self, alc: Alconna) -> None:
-        if alc.prefixes != ["/"] or (
+        if "/" not in alc.prefixes or (
             not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")
         ):
             return

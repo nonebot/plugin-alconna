@@ -41,7 +41,7 @@ class TelegramSlashExtension(Extension):
 
     @property
     def priority(self) -> int:
-        return 10
+        return 12
 
     @property
     def id(self) -> str:
@@ -51,15 +51,15 @@ class TelegramSlashExtension(Extension):
         self.using = False
 
     def post_init(self, alc: Alconna) -> None:
-        if alc.prefixes != ["/"] or (
+        if "/" not in alc.prefixes or (
             not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")
         ):
             return
         self.using = True
-        if alc.prefixes == ["/"]:
-            command = alc.command
-        else:
+        if alc.command.startswith("/"):
             command = alc.command[1:]
+        else:
+            command = alc.command
         commands.append(BotCommand(command=command, description=alc.meta.description))
 
     def validate(self, bot, event) -> bool:

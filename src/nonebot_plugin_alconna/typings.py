@@ -9,7 +9,7 @@ from nonebot.typing import T_State
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
 from nepattern import URL, MatchMode, BasePattern, MatchFailed, UnionPattern
 
-from .argv import argv_ctx
+from .argv import text
 from .uniseg.segment import env
 from .uniseg import At, Text, Image, Segment, UniMessage
 
@@ -21,46 +21,6 @@ TCallable = TypeVar("TCallable", bound=Callable[..., Any])
 P = ParamSpec("P")
 
 
-class _Text(BasePattern[Text, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]]):
-    def __init__(self):
-        super().__init__(
-            mode=MatchMode.TYPE_CONVERT,
-            origin=Text,
-            alias="Text",
-            accepts=Union[str, Text],
-        )
-
-    def spliter(self, x: str):
-        current_argv = argv_ctx.get()
-        styles = current_argv.context["__styles__"]
-        start = styles["msg"].find(x, styles["index"])
-        if start == -1:
-            return Text(x)
-        styles["index"] = start + len(x)
-        if maybe := styles["record"].get((start, styles["index"])):
-            return Text(x, {(0, len(x)): maybe})
-        _styles = {}
-        _len = len(x)
-        for scale, style in styles["record"].items():
-            if start <= scale[0] < styles["index"] <= scale[1]:
-                _styles[(scale[0] - start, scale[1] - start)] = style
-            elif scale[0] <= start < scale[1] <= styles["index"]:
-                _styles[(0, scale[1] - start)] = style
-            elif start <= scale[0] < scale[1] <= styles["index"]:
-                _styles[(scale[0] - start, scale[1] - start)] = style
-            elif scale[0] <= start < styles["index"] <= scale[1]:
-                _styles[(scale[0] - start, _len)] = style
-        return Text(x, _styles)
-
-    def match(self, input_: str | Text) -> Text:
-        if not isinstance(input_, (str, self.origin)):
-            raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
-        if isinstance(input_, str):
-            return self.spliter(input_)
-        return input_
-
-
-text = _Text()
 env[Text] = text
 
 ImageOrUrl = (

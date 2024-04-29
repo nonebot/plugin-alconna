@@ -5,7 +5,6 @@ import nonebot
 nonebot.load_plugin("nonebot_plugin_alconna.uniseg")
 
 from tarina import lang
-from nonebot import get_plugin_config
 from arclet.alconna import Args as Args
 from arclet.alconna import Field as Field
 from arclet.alconna import count as count
@@ -34,6 +33,7 @@ from arclet.alconna import output_manager as output_manager
 from arclet.alconna import ArparmaBehavior as ArparmaBehavior
 from arclet.alconna import command_manager as command_manager
 from arclet.alconna import SubcommandResult as SubcommandResult
+from nonebot import load_plugin, load_all_plugins, get_plugin_config
 
 from .consts import log
 from .config import Config
@@ -150,3 +150,21 @@ with contextlib.suppress(ValueError, LookupError):
         patch_saa()
     if _config.alconna_apply_fetch_targets:
         apply_fetch_targets()
+
+
+def load_builtin_plugin(name: str):
+    """导入 Nonebot Plugin Alconna 内置插件。
+
+    参数:
+        name: 插件名称
+    """
+    return load_plugin(f"nonebot_plugin_alconna.builtins.plugins.{name}")
+
+
+def load_builtin_plugins(*plugins: str):
+    """导入多个 Nonebot Plugin Alconna 内置插件。
+
+    参数:
+        plugins: 插件名称列表
+    """
+    return load_all_plugins([f"nonebot_plugin_alconna.builtins.plugins.{p}" for p in plugins], [])

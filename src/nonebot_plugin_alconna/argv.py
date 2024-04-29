@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from contextvars import ContextVar
 from typing_extensions import Self
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Union, Literal, Iterable
 
 from tarina import lang
 from nonebot.adapters import Message
 from arclet.alconna import NullMessage
-from arclet.alconna.argv import Argv, set_default_argv_type
+from nepattern import MatchMode, BasePattern, MatchFailed
+from arclet.alconna.argv import Argv, argv_config, set_default_argv_type
 
 from .uniseg import Text, Segment, UniMessage
 
@@ -54,7 +55,6 @@ class MessageArgv(Argv[UniMessage]):
             data = UniMessage.generate_without_reply(message=data, adapter=self.context.get("$adapter.name"))
         else:
             data = UniMessage(data)
-        self.converter = lambda x: UniMessage(x)
         self.origin = data
         styles = self.context.setdefault("__styles__", {"record": {}, "index": 0, "msg": ""})
         styles["msg"] = data.extract_plain_text()
@@ -126,4 +126,60 @@ class MessageArgv(Argv[UniMessage]):
         return self
 
 
+class _Text(BasePattern[Text, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]]):
+    def __init__(self):
+        super().__init__(
+            mode=MatchMode.TYPE_CONVERT,
+            origin=Text,
+            alias="Text",
+            accepts=Union[str, Text],
+        )
+
+    def spliter(self, x: str):
+        current_argv = argv_ctx.get()
+        styles = current_argv.context["__styles__"]
+        start = styles["msg"].find(x, styles["index"])
+        if start == -1:
+            return Text(x)
+        styles["index"] = start + len(x)
+        if maybe := styles["record"].get((start, styles["index"])):
+            return Text(x, {(0, len(x)): maybe})
+        _styles = {}
+        _len = len(x)
+        for scale, style in styles["record"].items():
+            if start <= scale[0] < styles["index"] <= scale[1]:
+                _styles[(scale[0] - start, scale[1] - start)] = style
+            elif scale[0] <= start < scale[1] <= styles["index"]:
+                _styles[(0, scale[1] - start)] = style
+            elif start <= scale[0] < scale[1] <= styles["index"]:
+                _styles[(scale[0] - start, scale[1] - start)] = style
+            elif scale[0] <= start < styles["index"] <= scale[1]:
+                _styles[(scale[0] - start, _len)] = style
+        return Text(x, _styles)
+
+    def match(self, input_: str | Text) -> Text:
+        if not isinstance(input_, (str, self.origin)):
+            raise MatchFailed(lang.require("nepattern", "type_error").format(target=type(input_)))
+        if isinstance(input_, str):
+            return self.spliter(input_)
+        return input_
+
+
+text = _Text()
+
+
+def converter(data: str | list[str | Segment]) -> UniMessage:
+    if isinstance(data, str):
+        return UniMessage(data)
+    msg = UniMessage()
+    for i in data:
+        if isinstance(i, str):
+            msg.append(text.match(i))
+        else:
+            msg.append(i)
+    msg.__merge_text__()
+    return msg
+
+
+argv_config(MessageArgv, converter=converter)
 set_default_argv_type(MessageArgv)
