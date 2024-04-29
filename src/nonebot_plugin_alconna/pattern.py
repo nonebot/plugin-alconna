@@ -17,7 +17,6 @@ Other = BasePattern.of(segment.Other)
 Reply = BasePattern.of(segment.Reply)
 File = BasePattern.of(segment.File)
 Reference = BasePattern.of(segment.Reference)
-Custom = BasePattern.of(segment.Custom)
 
 
 @overload
@@ -158,7 +157,6 @@ patterns = {
     "Reply": segment.Reply,
     "File": segment.File,
     "Reference": segment.Reference,
-    "Custom": segment.Custom,
     "select": select,
     "select_first": select_first,
     "select_last": select_last,

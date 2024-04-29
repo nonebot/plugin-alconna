@@ -60,7 +60,6 @@ from .uniseg import Voice as Voice
 from .typings import Style as Style
 from .params import assign as assign
 from .rule import alconna as alconna
-from .uniseg import Custom as Custom
 from .uniseg import SCOPES as SCOPES
 from .uniseg import Target as Target
 from .uniseg import UniMsg as UniMsg
@@ -107,6 +106,7 @@ from .params import AlconnaContext as AlconnaContext
 from .params import AlconnaMatches as AlconnaMatches
 from .uniseg import SupportAdapter as SupportAdapter
 from .uniseg import apply_filehost as apply_filehost
+from .uniseg import custom_handler as custom_handler
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
 from .uniseg import SerializeFailed as SerializeFailed

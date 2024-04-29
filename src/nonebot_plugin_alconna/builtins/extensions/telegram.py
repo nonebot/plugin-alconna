@@ -78,9 +78,4 @@ async def on_bot_connect(bot: TelegramBot):
     )
 
 
-@driver.on_bot_disconnect
-async def on_bot_disconnect(bot: TelegramBot):
-    await bot.delete_my_commands(scope=TelegramSlashExtension.SCOPE, language_code=TelegramSlashExtension.LANGUAGE_CODE)
-
-
 __extension__ = TelegramSlashExtension

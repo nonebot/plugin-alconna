@@ -21,7 +21,6 @@ from .segment import Voice as Voice
 from .params import UniMsg as UniMsg
 from .target import SCOPES as SCOPES
 from .target import Target as Target
-from .segment import Custom as Custom
 from .tools import get_bot as get_bot
 from .message import Receipt as Receipt
 from .segment import RefNode as RefNode
@@ -35,6 +34,7 @@ from .tools import image_fetch as image_fetch
 from .tools import reply_fetch as reply_fetch
 from .params import MessageTarget as MessageTarget
 from .constraint import SupportScope as SupportScope
+from .segment import custom_handler as custom_handler
 from .segment import custom_register as custom_register
 from .constraint import SupportAdapter as SupportAdapter
 from .fallback import FallbackMessage as FallbackMessage

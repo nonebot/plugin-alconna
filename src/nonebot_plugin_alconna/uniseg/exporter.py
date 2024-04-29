@@ -19,7 +19,7 @@ from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
 from .target import Target as Target
-from .segment import Other, Custom, Segment
+from .segment import Other, Segment, custom
 from .constraint import SupportAdapter, SerializeFailed
 
 if TYPE_CHECKING:
@@ -85,8 +85,11 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                     message.extend(res)
                 else:
                     message.append(res)
-            elif isinstance(seg, Custom):
-                message.append(await seg.export(self, bot, fallback))
+            elif res := await custom.export(self, seg, bot, fallback):
+                if isinstance(res, list):
+                    message.extend(res)
+                else:
+                    message.append(res)
             elif isinstance(seg, Other):
                 message.append(seg.origin)  # type: ignore
             elif fallback or bot.adapter.get_name() == SupportAdapter.nonebug:

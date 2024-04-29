@@ -1,7 +1,6 @@
 """通用标注, 无法用于创建 MS对象"""
 
 import re
-import abc
 import json
 import contextlib
 from io import BytesIO
@@ -519,40 +518,30 @@ class Other(Segment):
 
 
 TM = TypeVar("TM", bound=Message)
+TMS = TypeVar("TMS", bound=MessageSegment)
 
 
-@dataclass
-class Custom(Segment, abc.ABC):
-    """Custom对象，表示一类自定义消息"""
-
-    mstype: str
-    content: Any
-
-    @abc.abstractmethod
-    async def export(self, exporter: "MessageExporter[TM]", bot: Bot, fallback: bool) -> MessageSegment[TM]: ...
-
-    @property
-    def type(self) -> str:
-        return self.mstype
-
-
-TCustom = TypeVar("TCustom", bound=Custom)
-
-
-class _CustomBuilder:
+class _CustomMounter:
     BUILDERS: Dict[
-        Union[str, Callable[[MessageSegment], bool]], Callable[["MessageBuilder", MessageSegment], Union[Custom, None]]
+        Union[str, Callable[[MessageSegment], bool]], Callable[["MessageBuilder", MessageSegment], Union[Segment, None]]
+    ] = {}
+    EXPORTERS: Dict[
+        Type[Segment],
+        Union[
+            Callable[["MessageExporter", Segment, Bot, bool], Awaitable[Optional[MessageSegment]]],
+            Callable[["MessageExporter", Segment, Bot, bool], Awaitable[List[MessageSegment]]],
+        ],
     ] = {}
 
     @classmethod
-    def custom_register(cls, custom_type: Type[TCustom], condition: Union[str, Callable[[MessageSegment], bool]]):
-        def _register(func: Callable[["MessageBuilder", MessageSegment], Union[TCustom, None]]):
+    def custom_register(cls, custom_type: Type[TS], condition: Union[str, Callable[[MessageSegment], bool]]):
+        def _register(func: Callable[["MessageBuilder", MessageSegment], Union[TS, None]]):
             cls.BUILDERS[condition] = func
             return func
 
         return _register
 
-    def solve(self, builder: "MessageBuilder", seg: MessageSegment):
+    def solve(self, builder: "MessageBuilder[TMS]", seg: TMS):
         for condition, func in self.BUILDERS.items():
             if isinstance(condition, str):
                 if seg.type == condition:
@@ -560,9 +549,28 @@ class _CustomBuilder:
             elif condition(seg):
                 return func(builder, seg)
 
+    @classmethod
+    def custom_handler(cls, custom_type: Type[TS]):
+        def _handler(
+            func: Union[
+                Callable[["MessageExporter", TS, Bot, bool], Awaitable[Optional[MessageSegment]]],
+                Callable[["MessageExporter", TS, Bot, bool], Awaitable[List[MessageSegment]]],
+            ]
+        ):
+            cls.EXPORTERS[custom_type] = func  # type: ignore
+            return func
 
-custom = _CustomBuilder()
+        return _handler
+
+    async def export(self, exporter: "MessageExporter[TM]", seg: Segment, bot: Bot, fallback: bool):
+        if seg.__class__ in self.EXPORTERS:
+            return await self.EXPORTERS[seg.__class__](exporter, seg, bot, fallback)
+        return None
+
+
+custom = _CustomMounter()
 custom_register = custom.custom_register
+custom_handler = custom.custom_handler
 
 
 env = create_local_patterns("nonebot")

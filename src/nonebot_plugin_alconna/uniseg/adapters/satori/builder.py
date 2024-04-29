@@ -10,31 +10,15 @@ from nonebot.adapters.satori.message import At as AtSegment
 from nonebot.adapters.satori.message import File as FileSegment
 from nonebot.adapters.satori.message import Link as LinkSegment
 from nonebot.adapters.satori.message import Text as TextSegment
-from nonebot.adapters import MessageSegment as BaseMessageSegment
 from nonebot.adapters.satori.message import Audio as AudioSegment
 from nonebot.adapters.satori.message import Image as ImageSegment
 from nonebot.adapters.satori.message import Sharp as SharpSegment
 from nonebot.adapters.satori.message import Video as VideoSegment
-from nonebot.adapters.satori.message import Custom as CustomSegment
 from nonebot.adapters.satori.message import RenderMessage as RenderMessageSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import (
-    At,
-    File,
-    Text,
-    AtAll,
-    Audio,
-    Emoji,
-    Image,
-    Other,
-    Reply,
-    Video,
-    Custom,
-    Reference,
-    custom_register,
-)
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Other, Reply, Video, Reference
 
 STYLE_TYPE_MAP = {
     "b": "bold",
@@ -60,21 +44,6 @@ STYLE_TYPE_MAP = {
     "p": "paragraph",
     "paragraph": "paragraph",
 }
-
-
-class MarketFace(Custom):
-
-    async def export(self, exporter, bot: Bot, fallback: bool) -> MessageSegment:
-        if exporter.get_message_type() is not Message:
-            raise ValueError("MarketFace can only be exported to Satori Message")
-        return MessageSegment(self.mstype, self.data)(await exporter.export(self.children, bot, fallback))  # type: ignore
-
-
-@custom_register(MarketFace, "chronocat:marketface")
-def mfbuild(builder: MessageBuilder, seg: BaseMessageSegment):
-    if not isinstance(seg, CustomSegment):
-        raise ValueError("MarketFace can only be built from Satori Message")
-    return MarketFace(seg.type, seg.data)(*builder.generate(seg.children))
 
 
 class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
@@ -169,10 +138,6 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
     @build("message")
     def message(self, seg: RenderMessageSegment):
         return Reference(seg.data.get("id"))(*self.generate(seg.children))
-
-    @build("chronocat:face")
-    def emoji(self, seg: CustomSegment):
-        return Emoji(seg.data["id"], seg.data.get("name"))(*self.generate(seg.children))  # type: ignore
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:
