@@ -31,6 +31,7 @@ _✨ Alconna Usage For NoneBot2 ✨_
 - match_value, match_path 等检查函数
 - 补全会话支持
 - 跨平台的接收与发送消息(被动+主动)
+- 多种内建工具
 
 ## 讨论
 
