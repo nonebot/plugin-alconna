@@ -45,6 +45,7 @@ from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecke
 
 from .rule import alconna
 from .typings import MReturn
+from .util import annotation
 from .model import CompConfig
 from .pattern import patterns
 from .uniseg import Text, Segment, UniMessage
@@ -63,7 +64,6 @@ from .params import (
     _Dispatch,
     merge_path,
 )
-from .util import annotation
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
 
