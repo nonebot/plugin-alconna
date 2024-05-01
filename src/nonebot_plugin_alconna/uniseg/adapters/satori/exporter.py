@@ -2,12 +2,12 @@ from typing import TYPE_CHECKING, Any, Union, cast
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.satori.models import InnerMessage
 from nonebot.adapters.satori.bot import Bot as SatoriBot
 from nonebot.adapters.satori.message import Text as _Text
 from nonebot.adapters.satori.message import STYLE_TYPE_MAP
 from nonebot.adapters.satori.event import NoticeEvent, MessageEvent
 from nonebot.adapters.satori.message import Message, MessageSegment
+from nonebot.adapters.satori.models import ChannelType, InnerMessage
 
 from nonebot_plugin_alconna.uniseg.target import Target
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
@@ -40,6 +40,16 @@ class SatoriMessageExporter(MessageExporter[Message]):
             assert isinstance(bot, SatoriBot)
         if isinstance(event, (MessageEvent, NoticeEvent)):
             if event.channel:
+                if event.channel.type == ChannelType.DIRECT:
+                    return Target(
+                        event.user.id,  # type: ignore
+                        parent_id=event.channel.id,
+                        private=True,
+                        adapter=self.get_adapter(),
+                        self_id=bot.self_id if bot else None,
+                        platform=bot.platform if bot else None,
+                        scope=SupportScope.ensure_satori(bot.platform) if bot else SupportScope.satori_other,
+                    )
                 return Target(
                     event.channel.id,
                     (event.guild.id if event.guild else event.channel.parent_id) or "",

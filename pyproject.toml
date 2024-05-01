@@ -9,6 +9,7 @@ dependencies = [
     "arclet-alconna-tools>=0.7.3",
     "nepattern>=0.7.2",
     "nonebot2>=2.3.0",
+    "importlib-metadata>=4.13.0",
 ]
 dynamic = ["version"]
 requires-python = ">=3.9"
