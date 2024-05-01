@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - 'README.md'
+      - 'docs.md'
+      - 'example/**'
+      - 'intro.md'
   pull_request:
 
 jobs:
