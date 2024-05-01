@@ -1,5 +1,5 @@
 from collections import deque
-from typing import Deque, ClassVar, Optional, final
+from typing import ClassVar, Optional, final
 
 from nonebot import get_driver
 from arclet.alconna import Alconna
@@ -8,7 +8,7 @@ from nonebot.adapters.telegram.model import BotCommand, BotCommandScope, BotComm
 
 from nonebot_plugin_alconna import Extension
 
-commands: "Deque[BotCommand]" = deque(maxlen=100)
+commands: "deque[BotCommand]" = deque(maxlen=100)
 
 
 @final

@@ -5,10 +5,10 @@ authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "arclet-alconna>=1.8.10",
+    "arclet-alconna>=1.8.11",
     "arclet-alconna-tools>=0.7.3",
-    "nepattern>=0.7.0",
-    "nonebot2>=2.2.1",
+    "nepattern>=0.7.2",
+    "nonebot2>=2.3.0",
 ]
 dynamic = ["version"]
 requires-python = ">=3.9"
@@ -31,32 +31,32 @@ build-backend = "pdm.backend"
 [tool.pdm.dev-dependencies]
 dev = [
     "isort>=5.13.2",
-    "black>=24.4.0",
+    "black>=24.4.2",
     "loguru>=0.7.2",
-    "ruff>=0.4.1",
+    "ruff>=0.4.2",
     "nonemoji>=0.1.4",
     "pre-commit>=3.7.0",
     "nonebug>=0.3.7",
-    "pytest-xdist>=3.5.0",
+    "pytest-xdist>=3.6.1",
     "pytest-asyncio>=0.23.6",
     "fastapi>=0.110.2",
     "uvicorn[standard]>=0.28.1",
     "pydantic>=2.7.0",
-    "nonebot2[httpx,websockets]>=2.2.1",
+    "nonebot2[httpx,websockets]>=2.3.0",
     "nonebot-adapter-console>=0.5.0",
     "nonebot-adapter-ding>=2.0.0a16",
     "nonebot-adapter-discord>=0.1.7",
     "nonebot-adapter-dodo>=0.2.1",
-    "nonebot-adapter-feishu>=2.5.0",
-    "nonebot-adapter-kaiheila>=0.3.3",
+    "nonebot-adapter-feishu>=2.6.0",
+    "nonebot-adapter-kaiheila>=0.3.4",
     "nonebot-adapter-mirai2>=0.0.22",
     "nonebot-adapter-minecraft>=1.1.2",
     "nonebot-adapter-onebot>=2.4.3",
-    "nonebot-adapter-qq>=1.4.3",
+    "nonebot-adapter-qq>=1.4.4",
     "nonebot-adapter-red>=0.9.0",
-    "nonebot-adapter-satori>=0.10.4",
+    "nonebot-adapter-satori>=0.11.4",
     "nonebot-adapter-telegram>=0.1.0b17",
-    "nonebot-adapter-kritor>=0.1.0",
+    "nonebot-adapter-kritor>=0.1.1",
     "nonebot-plugin-filehost>=1.1.1",
     "nonebot-plugin-send-anything-anywhere>=0.6.1",
     "pytest-mock>=3.14.0",
@@ -70,7 +70,7 @@ path = "src/nonebot_plugin_alconna/__init__.py"
 
 [tool.black]
 line-length = 120
-target-version = ["py38", "py39", "py310", "py311", "py312"]
+target-version = ["py39", "py310", "py311", "py312"]
 include = '\.pyi?$'
 extend-exclude = '''
 '''
@@ -85,7 +85,7 @@ extra_standard_library = ["typing_extensions"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]

@@ -2,7 +2,7 @@ import random
 
 from tarina import lang
 from nonebot.plugin import PluginMetadata
-from arclet.alconna import Args, Field, Option, Alconna, Arparma, CommandMeta, store_true, command_manager
+from arclet.alconna import Args, Field, Option, Alconna, Arparma, CommandMeta, namespace, store_true, command_manager
 
 from nonebot_plugin_alconna import referent, on_alconna
 
@@ -16,25 +16,27 @@ __plugin_meta__ = PluginMetadata(
     supported_adapters=None,
 )
 
+with namespace("builtin/help") as ns:
+    ns.disable_builtin_options = {"shortcut"}
 
-help_cmd = Alconna(
-    "help",
-    Args[
-        "query#选择某条命令的id或者名称查看具体帮助;/?",
-        str,
-        Field(
-            "-1",
-            completion=lambda: f"试试 {random.randint(0, len(command_manager.get_commands()))}",
-            unmatch_tips=lambda x: f"预期输入为某个命令的id或者名称，而不是 {x}\n例如：/帮助 0",
+    help_cmd = Alconna(
+        "help",
+        Args[
+            "query#选择某条命令的id或者名称查看具体帮助;/?",
+            str,
+            Field(
+                "-1",
+                completion=lambda: f"试试 {random.randint(0, len(command_manager.get_commands()))}",
+                unmatch_tips=lambda x: f"预期输入为某个命令的id或者名称，而不是 {x}\n例如：/帮助 0",
+            ),
+        ],
+        Option("--hide", help_text="是否列出隐藏命令", action=store_true, default=False),
+        meta=CommandMeta(
+            description="显示所有命令帮助",
+            usage="可以使用 --hide 参数来显示隐藏命令",
+            example="$help 1",
         ),
-    ],
-    Option("--hide", help_text="是否列出隐藏命令", action=store_true, default=False),
-    meta=CommandMeta(
-        description="显示所有命令帮助",
-        usage="可以使用 --hide 参数来显示隐藏命令",
-        example="$help 1",
-    ),
-)
+    )
 
 help_matcher = on_alconna(help_cmd, use_cmd_start=True, auto_send_output=True)
 help_matcher.shortcut("帮助", {"prefix": True, "fuzzy": False})

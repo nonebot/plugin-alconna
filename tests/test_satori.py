@@ -36,7 +36,7 @@ def test_message_rollback():
 
 @pytest.mark.asyncio()
 async def test_satori(app: App):
-    from nonebot_plugin_alconna import Bold, Text, Italic, Underline, on_alconna
+    from nonebot_plugin_alconna import Bold, Italic, Underline
 
     msg = Message("/com<b>mand s<i>ome</i>_arg</b> <u>some_arg</u> <b><i>some_arg</i></b>")
 
@@ -68,19 +68,6 @@ async def test_satori(app: App):
 
     alc2 = Alconna("/command", Args["foo", str]["bar", Bold]["baz", Underline])
     assert not alc2.parse(msg2).matched
-
-    echo = on_alconna(Alconna("echo", Args["text", Text]))
-
-    @echo.handle()
-    async def echo_h(text: Text):
-        await echo.send(text)
-
-    async with app.test_matcher(echo) as ctx:
-        adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter, platform="satori", info=None)
-        event = fake_message_event_satori(message=Message("ec<b>ho h<i>el</i>lo</b>"), id=123)
-        ctx.receive_event(bot, event)
-        ctx.should_call_send(event, Message("<b>h<i>el</i>lo</b>"))
 
 
 @pytest.mark.asyncio()

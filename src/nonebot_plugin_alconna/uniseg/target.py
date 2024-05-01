@@ -1,7 +1,8 @@
 from datetime import datetime
 from functools import partial
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Set, Dict, List, Type, Union, Callable, Awaitable, AsyncIterator
+from collections.abc import Awaitable, AsyncIterator
+from typing import TYPE_CHECKING, Any, Union, Callable
 
 from nonebot.adapters import Bot, Adapter, Message
 
@@ -13,8 +14,8 @@ if TYPE_CHECKING:
     from .message import UniMessage
 
 
-SCOPES: Dict[str, Callable[["Target", Bot], Awaitable[bool]]] = {}
-TARGET_RECORD: Dict[str, Callable[["Target"], Awaitable[bool]]] = {}
+SCOPES: dict[str, Callable[["Target", Bot], Awaitable[bool]]] = {}
+TARGET_RECORD: dict[str, Callable[["Target"], Awaitable[bool]]] = {}
 
 
 async def _cache_selector(target: "Target", bot: Bot):
@@ -38,7 +39,7 @@ class Target:
     """机器人id，若为 None 则 Bot 对象会随机选择"""
     selector: Union[Callable[[Bot], Awaitable[bool]], None]
     """选择器，用于在多个 Bot 对象中选择特定 Bot"""
-    extra: Dict[str, Any]
+    extra: dict[str, Any]
     """额外信息，用于适配器扩展"""
 
     def __init__(
@@ -51,9 +52,9 @@ class Target:
         self_id: Union[str, None] = None,
         selector: Union[Callable[["Target", Bot], Awaitable[bool]], None] = _cache_selector,
         scope: Union[str, None] = None,
-        adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, Set[str], None] = None,
-        extra: Union[Dict[str, Any], None] = None,
+        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
+        platform: Union[str, set[str], None] = None,
+        extra: Union[dict[str, Any], None] = None,
     ):
         """初始化 Target 对象
 
@@ -160,7 +161,7 @@ class Target:
         return self.extra.get("adapter")
 
     @property
-    def platform(self) -> Union[List[str], None]:
+    def platform(self) -> Union[list[str], None]:
         return self.extra.get("platforms")
 
     @classmethod
@@ -168,8 +169,8 @@ class Target:
         cls,
         group_id: str,
         scope: Union[str, None] = None,
-        adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, Set[str], None] = None,
+        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
+        platform: Union[str, set[str], None] = None,
     ):
         return cls(group_id, scope=scope, adapter=adapter, platform=platform)
 
@@ -179,8 +180,8 @@ class Target:
         channel_id: str,
         guild_id: str = "",
         scope: Union[str, None] = None,
-        adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, Set[str], None] = None,
+        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
+        platform: Union[str, set[str], None] = None,
     ):
         return cls(channel_id, guild_id, channel=True, scope=scope, adapter=adapter, platform=platform)
 
@@ -189,8 +190,8 @@ class Target:
         cls,
         user_id: str,
         scope: Union[str, None] = None,
-        adapter: Union[str, Type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, Set[str], None] = None,
+        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
+        platform: Union[str, set[str], None] = None,
     ):
         return cls(user_id, private=True, scope=scope, adapter=adapter, platform=platform)
 
@@ -245,7 +246,7 @@ class Target:
         return data
 
     @classmethod
-    def load(cls, data: Dict[str, Any]):
+    def load(cls, data: dict[str, Any]):
         scope = data.pop("scope", None)
         adapter = data.pop("adapter", None)
         platform = data.pop("platforms", None)
@@ -259,8 +260,8 @@ class Target:
 
 class TargetFetcher(metaclass=ABCMeta):
     def __init__(self) -> None:
-        self.cache: Dict[str, Set[Target]] = {}
-        self.last_refresh: Dict[str, datetime] = {}
+        self.cache: dict[str, set[Target]] = {}
+        self.last_refresh: dict[str, datetime] = {}
 
     @classmethod
     @abstractmethod

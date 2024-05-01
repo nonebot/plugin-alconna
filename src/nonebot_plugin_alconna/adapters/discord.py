@@ -1,5 +1,5 @@
+from typing import Union, Optional
 from datetime import datetime, timedelta
-from typing import Dict, List, Type, Union, Optional
 
 from tarina import lang
 from nonebot.rule import Rule
@@ -59,7 +59,7 @@ MentionEveryone = SegmentPattern("mention_everyone", MentionEveryoneSegment, AtA
 Reference = SegmentPattern("reference", ReferenceSegment, Reply, MessageSegment.reference)
 
 
-def _translate_args(args: Args) -> List[AnyCommandOption]:
+def _translate_args(args: Args) -> list[AnyCommandOption]:
     result = []
     for arg in args:
         if isinstance(arg.value, UnionPattern):
@@ -224,20 +224,20 @@ def translate(
     rule: Union[Rule, T_RuleChecker, None] = None,
     permission: Union[Permission, T_PermissionChecker, None] = None,
     *,
-    name_localizations: Optional[Dict[str, str]] = None,
-    description_localizations: Optional[Dict[str, str]] = None,
+    name_localizations: Optional[dict[str, str]] = None,
+    description_localizations: Optional[dict[str, str]] = None,
     default_member_permissions: Optional[str] = None,
     dm_permission: Optional[bool] = None,
     default_permission: Optional[bool] = None,
     nsfw: Optional[bool] = None,
-    handlers: Optional[List[Union[T_Handler, Dependent]]] = None,
+    handlers: Optional[list[Union[T_Handler, Dependent]]] = None,
     temp: bool = False,
     expire_time: Union[datetime, timedelta, None] = None,
     priority: int = 1,
     block: bool = True,
     state: Optional[T_State] = None,
     _depth: int = 0,
-) -> Type[SlashCommandMatcher]:
+) -> type[SlashCommandMatcher]:
     if alc.prefixes != ["/"] or (not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")):
         raise ValueError(lang.require("nbp-alc", "error.discord_prefix"))
     allow_opt = [

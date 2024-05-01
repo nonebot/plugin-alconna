@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from pydantic import Field, BaseModel
 
@@ -21,7 +21,7 @@ class Config(BaseModel):
     alconna_use_command_sep: bool = False
     """是否将 COMMAND_SEP 作为全局命令分隔符"""
 
-    alconna_global_extensions: List[str] = Field(default_factory=list)
+    alconna_global_extensions: list[str] = Field(default_factory=list)
     """全局加载的扩展, 路径以 . 分隔, 如 foo.bar.baz:DemoExtension"""
 
     alconna_context_style: Optional[Literal["bracket", "parentheses"]] = Field(default=None)

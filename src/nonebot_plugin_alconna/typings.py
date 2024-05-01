@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable
 from typing_extensions import ParamSpec, TypeAlias
-from typing import Any, Union, Generic, Literal, TypeVar, Callable, Awaitable, overload
+from typing import Any, Union, Generic, Literal, TypeVar, Callable, overload
 
 from tarina import lang
 from arclet.alconna import Arparma

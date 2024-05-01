@@ -1,5 +1,5 @@
 from typing_extensions import NotRequired
-from typing import Set, Type, Union, Generic, Literal, TypeVar, Optional, TypedDict
+from typing import Union, Generic, Literal, TypeVar, Optional, TypedDict
 
 from pydantic import Field, BaseModel
 from arclet.alconna import Empty, Alconna, Arparma
@@ -43,7 +43,7 @@ class Query(Generic[T]):
     available: bool
     path: str
 
-    def __init__(self, path: str, default: Union[T, Type[Empty]] = Empty):
+    def __init__(self, path: str, default: Union[T, type[Empty]] = Empty):
         self.path = path
         self.result = default  # type: ignore
         self.available = False
@@ -76,6 +76,6 @@ class CompConfig(TypedDict):
     exit: NotRequired[str]
     timeout: NotRequired[int]
     hide_tabs: NotRequired[bool]
-    hides: NotRequired[Set[Literal["tab", "enter", "exit"]]]
-    disables: NotRequired[Set[Literal["tab", "enter", "exit"]]]
+    hides: NotRequired[set[Literal["tab", "enter", "exit"]]]
+    disables: NotRequired[set[Literal["tab", "enter", "exit"]]]
     lite: NotRequired[bool]

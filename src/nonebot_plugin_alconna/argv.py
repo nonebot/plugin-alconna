@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from contextvars import ContextVar
 from typing_extensions import Self
-from typing import TYPE_CHECKING, Any, Union, Literal, Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any, Union, Literal
 
 from tarina import lang
 from nonebot.adapters import Message

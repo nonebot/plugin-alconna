@@ -1,4 +1,4 @@
-from typing import Any, List, Type, Union, Literal, Optional, overload
+from typing import Any, Union, Literal, Optional, overload
 
 from nepattern import MatchMode, BasePattern, func
 
@@ -21,26 +21,26 @@ Reference = BasePattern.of(segment.Reference)
 
 @overload
 def select(
-    seg: Union[Type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]],
-) -> BasePattern[List[segment.TS], segment.Segment, Literal[MatchMode.TYPE_CONVERT]]: ...
+    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]],
+) -> BasePattern[list[segment.TS], segment.Segment, Literal[MatchMode.TYPE_CONVERT]]: ...
 
 
 @overload
 def select(
-    seg: Union[Type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]], index: int = 0
+    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]], index: int = 0
 ) -> BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]]: ...
 
 
 def select(
-    seg: Union[Type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]], index: Optional[int] = None
+    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]], index: Optional[int] = None
 ) -> Union[
-    BasePattern[List[segment.TS], segment.Segment, Literal[MatchMode.TYPE_CONVERT]],
+    BasePattern[list[segment.TS], segment.Segment, Literal[MatchMode.TYPE_CONVERT]],
     BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]],
 ]:
     if isinstance(seg, BasePattern):
         _type = seg.origin
 
-        def query(segs: List[segment.Segment]):
+        def query(segs: list[segment.Segment]):
             for s in segs:
                 res = seg.validate(s)
                 if res.success:
@@ -61,7 +61,7 @@ def select(
 
             return BasePattern(
                 mode=MatchMode.TYPE_CONVERT,
-                origin=List[segment.TS],
+                origin=list[segment.TS],
                 converter=converter,
                 accepts=segment.Segment,
                 alias=f"select({_type.__name__})",
@@ -88,7 +88,7 @@ def select(
     else:
         _type = seg
 
-        def query1(segs: List[segment.Segment]):
+        def query1(segs: list[segment.Segment]):
             for s in segs:
                 if isinstance(s, _type):
                     yield s
@@ -107,7 +107,7 @@ def select(
 
             return BasePattern(
                 mode=MatchMode.TYPE_CONVERT,
-                origin=List[segment.TS],
+                origin=list[segment.TS],
                 converter=converter,
                 accepts=segment.Segment,
                 alias=f"select({_type.__name__})",
@@ -132,13 +132,13 @@ def select(
 
 
 def select_first(
-    seg: Union[Type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]]
+    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]]
 ) -> BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]]:
     return select(seg, 0)
 
 
 def select_last(
-    seg: Union[Type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]]
+    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]]
 ) -> BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]]:
     return select(seg, -1)
 

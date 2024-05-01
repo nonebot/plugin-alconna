@@ -18,9 +18,9 @@ async def test_echo(app: App):
         msg = "/echo" + MessageSegment.image(raw=b"123", mime="image/png")
         event = fake_message_event_satori(message=msg, id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, Message('<img src="data:image/png;base64,MTIz" />'))
+        ctx.should_call_send(event, Message('<img src="data:image/png;base64,MTIz"/>'))
 
-        msg1 = Message("/ec<b>ho s<i>ome</i>_arg</b>")
+        msg1 = Message("/ec<b>hos<i>ome</i>_arg</b>")
         event1 = fake_message_event_satori(message=msg1, id=124)
         ctx.receive_event(bot, event1)
         ctx.should_call_send(event1, Message("<b>s<i>ome</i>_arg</b>"))

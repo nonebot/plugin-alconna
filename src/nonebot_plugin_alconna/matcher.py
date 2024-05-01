@@ -6,6 +6,7 @@ from weakref import ref
 from types import FunctionType
 from typing_extensions import Self
 from datetime import datetime, timedelta
+from collections.abc import Hashable, Iterable, Awaitable
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -15,11 +16,8 @@ from typing import (
     TypeVar,
     Callable,
     ClassVar,
-    Hashable,
-    Iterable,
     NoReturn,
     Protocol,
-    Awaitable,
     cast,
     overload,
 )
@@ -65,6 +63,7 @@ from .params import (
     _Dispatch,
     merge_path,
 )
+from .util import annotation
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
 
@@ -147,6 +146,7 @@ class Waiter(Generic[R]):
         self.future = asyncio.Future()
         _handler = Dependent[Any].parse(call=handler, parameterless=parameterless, allow_types=params)
 
+        @annotation(matcher=Matcher, bot=Bot, event=Event, state=T_State)
         async def wrapper(matcher: Matcher, bot: Bot, event: Event, state: T_State):
             if self.future.done():
                 matcher.skip()
@@ -524,6 +524,7 @@ class AlconnaMatcher(Matcher):
             override: 是否定制优先级
         """
 
+        @annotation(event=Event, matcher=AlconnaMatcher, bot=Bot, state=T_State)
         async def _key_getter(event: Event, matcher: AlconnaMatcher, bot: Bot, state: T_State):
             matcher.set_target(ARG_KEY.format(key=key))
             if matcher.get_target() == ARG_KEY.format(key=key):
@@ -594,6 +595,7 @@ class AlconnaMatcher(Matcher):
         if not (arg := extract_arg(path, cls.command)):
             raise ValueError(lang.require("nbp-alc", "error.matcher_got_path").format(path=path, cmd=cls.command.path))
 
+        @annotation(event=Event, bot=Bot, matcher=AlconnaMatcher, state=T_State)
         async def _key_getter(event: Event, bot: Bot, matcher: AlconnaMatcher, state: T_State):
             matcher.set_target(ALCONNA_ARG_KEY.format(key=path))
             if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
@@ -1038,6 +1040,7 @@ def funcommand(
         )
 
         @matcher.handle()
+        @annotation(results=AlcExecResult)
         async def handle_func(results: AlcExecResult):
             if res := results.get(func.__name__):
                 if isinstance(res, Hashable) and is_awaitable(res):
@@ -1086,9 +1089,10 @@ class Command(AlconnaString):
         if self.actions:
 
             @matcher.handle()
+            @annotation(results=AlcExecResult)
             async def handle_actions(results: AlcExecResult):
                 for res in results.values():
-                    if is_awaitable(res):
+                    if isinstance(res, Hashable) and is_awaitable(res):
                         res = await res
                     if isinstance(res, (str, Message, MessageSegment, Segment, UniMessage, UniMessageTemplate)):
                         await matcher.send(res, fallback=True)

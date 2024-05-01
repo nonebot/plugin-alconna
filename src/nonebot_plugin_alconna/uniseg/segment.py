@@ -8,25 +8,9 @@ from pathlib import Path
 from datetime import datetime
 from urllib.parse import urlparse
 from typing_extensions import Self
+from collections.abc import Iterable, Awaitable
 from dataclasses import field, asdict, dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    List,
-    Type,
-    Tuple,
-    Union,
-    Literal,
-    TypeVar,
-    Callable,
-    ClassVar,
-    Iterable,
-    Optional,
-    Protocol,
-    Awaitable,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload
 
 from nonebot.compat import custom_validation
 from nonebot.internal.adapter import Bot, Message, MessageSegment
@@ -50,7 +34,7 @@ class Segment:
     """基类标注"""
 
     origin: Optional[MessageSegment] = field(init=False, hash=False, repr=False, compare=False, default=None)
-    _children: List["Segment"] = field(init=False, default_factory=list, repr=False, hash=False)
+    _children: list["Segment"] = field(init=False, default_factory=list, repr=False, hash=False)
 
     @classmethod
     @overload
@@ -146,7 +130,7 @@ class Segment:
         return self.__class__.__name__.lower()
 
     @property
-    def data(self) -> Dict[str, Any]:
+    def data(self) -> dict[str, Any]:
         return asdict(self)
 
     def __call__(self, *segments: Union[str, "Segment"]) -> Self:
@@ -204,7 +188,7 @@ class Text(Segment):
     """Text对象, 表示一类文本元素"""
 
     text: str
-    styles: Dict[Tuple[int, int], List[str]] = field(default_factory=dict)
+    styles: dict[tuple[int, int], list[str]] = field(default_factory=dict)
 
     def __post_init__(self):
         self.text = str(self.text)
@@ -297,7 +281,7 @@ class Text(Segment):
         max_scale = max(self.styles, key=lambda x: x[1] - x[0], default=(0, 0))
         return self.styles[max_scale][0]
 
-    def extract_most_styles(self) -> List[str]:
+    def extract_most_styles(self) -> list[str]:
         if not self.styles:
             return []
         max_scale = max(self.styles, key=lambda x: x[1] - x[0], default=(0, 0))
@@ -471,7 +455,7 @@ class CustomNode:
     """消息发送者昵称"""
     time: datetime
     """消息发送时间"""
-    content: Union[str, List[Segment], Message]
+    content: Union[str, list[Segment], Message]
     """消息内容"""
     context: Optional[str] = None
     """可能的群聊id"""
@@ -483,7 +467,7 @@ class Reference(Segment):
 
     id: Optional[str] = field(default=None)
     """此处不一定是消息ID，可能是其他ID，如消息序号等"""
-    _children: List[Union[RefNode, CustomNode]] = field(init=False, default_factory=list)
+    _children: list[Union[RefNode, CustomNode]] = field(init=False, default_factory=list)
 
     @property
     def children(self):
@@ -522,19 +506,19 @@ TMS = TypeVar("TMS", bound=MessageSegment)
 
 
 class _CustomMounter:
-    BUILDERS: Dict[
+    BUILDERS: dict[
         Union[str, Callable[[MessageSegment], bool]], Callable[["MessageBuilder", MessageSegment], Union[Segment, None]]
     ] = {}
-    EXPORTERS: Dict[
-        Type[Segment],
+    EXPORTERS: dict[
+        type[Segment],
         Union[
             Callable[["MessageExporter", Segment, Bot, bool], Awaitable[Optional[MessageSegment]]],
-            Callable[["MessageExporter", Segment, Bot, bool], Awaitable[List[MessageSegment]]],
+            Callable[["MessageExporter", Segment, Bot, bool], Awaitable[list[MessageSegment]]],
         ],
     ] = {}
 
     @classmethod
-    def custom_register(cls, custom_type: Type[TS], condition: Union[str, Callable[[MessageSegment], bool]]):
+    def custom_register(cls, custom_type: type[TS], condition: Union[str, Callable[[MessageSegment], bool]]):
         def _register(func: Callable[["MessageBuilder", MessageSegment], Union[TS, None]]):
             cls.BUILDERS[condition] = func
             return func
@@ -550,11 +534,11 @@ class _CustomMounter:
                 return func(builder, seg)
 
     @classmethod
-    def custom_handler(cls, custom_type: Type[TS]):
+    def custom_handler(cls, custom_type: type[TS]):
         def _handler(
             func: Union[
                 Callable[["MessageExporter", TS, Bot, bool], Awaitable[Optional[MessageSegment]]],
-                Callable[["MessageExporter", TS, Bot, bool], Awaitable[List[MessageSegment]]],
+                Callable[["MessageExporter", TS, Bot, bool], Awaitable[list[MessageSegment]]],
             ]
         ):
             cls.EXPORTERS[custom_type] = func  # type: ignore

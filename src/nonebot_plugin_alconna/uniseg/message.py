@@ -4,8 +4,9 @@ from pathlib import Path
 from copy import deepcopy
 from types import FunctionType
 from dataclasses import dataclass
+from collections.abc import Iterable
 from typing_extensions import Self, SupportsIndex
-from typing import TYPE_CHECKING, Any, List, Type, Tuple, Union, Literal, TypeVar, Iterable, Optional, overload
+from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Optional, overload
 
 from tarina import lang
 from nonebot.internal.adapter import Bot, Event, Message
@@ -34,7 +35,7 @@ class _method:
         return self.__func__.__get__(instance, owner)
 
 
-class UniMessage(List[TS]):
+class UniMessage(list[TS]):
     """通用消息序列
 
     参数:
@@ -45,7 +46,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def text(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], text: str  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]], text: str  # type: ignore
         ) -> "UniMessage[Union[TS1, Text]]":
             """创建纯文本消息
 
@@ -59,7 +60,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def at(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], user_id: str  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]], user_id: str  # type: ignore
         ) -> "UniMessage[Union[TS1, At]]":
             """创建 @用户 消息
 
@@ -73,7 +74,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def at_role(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], role_id: str  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]], role_id: str  # type: ignore
         ) -> "UniMessage[Union[TS1, At]]":
             """创建 @角色组 消息
 
@@ -87,7 +88,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def at_channel(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], channel_id: str  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]], channel_id: str  # type: ignore
         ) -> "UniMessage[Union[TS1, At]]":
             """创建 #频道 消息
 
@@ -101,7 +102,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def at_all(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             online: bool = False,
         ) -> "UniMessage[Union[TS1, AtAll]]":
             """创建 @全体成员 消息
@@ -116,7 +117,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def emoji(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             id: str,
             name: Optional[str] = None,
         ) -> "UniMessage[Union[TS1, Emoji]]":
@@ -133,7 +134,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def image(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
@@ -157,7 +158,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def video(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
@@ -181,7 +182,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def voice(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
@@ -205,7 +206,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def audio(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
@@ -229,7 +230,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def file(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             id: Optional[str] = None,
             url: Optional[str] = None,
             path: Optional[Union[str, Path]] = None,
@@ -253,7 +254,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def reply(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]], id: str  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]], id: str  # type: ignore
         ) -> "UniMessage[Union[TS1, Reply]]":
             """创建回复消息
 
@@ -267,7 +268,7 @@ class UniMessage(List[TS]):
 
         @classmethod
         def card(
-            cls_or_self: Union["UniMessage[TS1]", Type["UniMessage[TS1]"]],  # type: ignore
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             flag: Literal["xml", "json"],
             content: str,
         ) -> "UniMessage[Union[TS1, Hyper]]":
@@ -526,7 +527,7 @@ class UniMessage(List[TS]):
         return self
 
     @overload
-    def __getitem__(self, args: Type[TS1]) -> "UniMessage[TS1]":
+    def __getitem__(self, args: type[TS1]) -> "UniMessage[TS1]":
         """获取仅包含指定消息段类型的消息
 
         参数:
@@ -537,7 +538,7 @@ class UniMessage(List[TS]):
         """
 
     @overload
-    def __getitem__(self, args: Tuple[Type[TS1], int]) -> TS1:
+    def __getitem__(self, args: tuple[type[TS1], int]) -> TS1:
         """索引指定类型的消息段
 
         参数:
@@ -548,7 +549,7 @@ class UniMessage(List[TS]):
         """
 
     @overload
-    def __getitem__(self, args: Tuple[Type[TS1], slice]) -> "UniMessage[TS1]":
+    def __getitem__(self, args: tuple[type[TS1], slice]) -> "UniMessage[TS1]":
         """切片指定类型的消息段
 
         参数:
@@ -583,9 +584,9 @@ class UniMessage(List[TS]):
     def __getitem__(
         self,
         args: Union[
-            Type[TS1],
-            Tuple[Type[TS1], int],
-            Tuple[Type[TS1], slice],
+            type[TS1],
+            tuple[type[TS1], int],
+            tuple[type[TS1], slice],
             int,
             slice,
         ],
@@ -605,7 +606,7 @@ class UniMessage(List[TS]):
             return UniMessage([seg for seg in self if isinstance(seg, arg1)][arg2])
         raise ValueError("Incorrect arguments to slice")  # pragma: no cover
 
-    def __contains__(self, value: Union[str, Segment, Type[Segment]]) -> bool:
+    def __contains__(self, value: Union[str, Segment, type[Segment]]) -> bool:
         """检查消息段是否存在
 
         参数:
@@ -619,11 +620,11 @@ class UniMessage(List[TS]):
             value = Text(value)
         return super().__contains__(value)
 
-    def has(self, value: Union[str, Segment, Type[Segment]]) -> bool:
+    def has(self, value: Union[str, Segment, type[Segment]]) -> bool:
         """与 {ref}``__contains__` <nonebot.adapters.Message.__contains__>` 相同"""
         return value in self
 
-    def index(self, value: Union[str, Segment, Type[Segment]], *args: SupportsIndex) -> int:
+    def index(self, value: Union[str, Segment, type[Segment]], *args: SupportsIndex) -> int:
         """索引消息段
 
         参数:
@@ -645,7 +646,7 @@ class UniMessage(List[TS]):
             value = Text(value)
         return super().index(value, *args)  # type: ignore
 
-    def get(self, type_: Type[TS], count: Optional[int] = None) -> "UniMessage[TS]":
+    def get(self, type_: type[TS], count: Optional[int] = None) -> "UniMessage[TS]":
         """获取指定类型的消息段
 
         参数:
@@ -666,7 +667,7 @@ class UniMessage(List[TS]):
             filtered.append(seg)
         return filtered
 
-    def count(self, value: Union[Type[Segment], str, Segment]) -> int:
+    def count(self, value: Union[type[Segment], str, Segment]) -> int:
         """计算指定消息段的个数
 
         参数:
@@ -683,7 +684,7 @@ class UniMessage(List[TS]):
             else super().count(value)  # type: ignore
         )
 
-    def only(self, value: Union[Type[Segment], str, Segment]) -> bool:
+    def only(self, value: Union[type[Segment], str, Segment]) -> bool:
         """检查消息中是否仅包含指定消息段
 
         参数:
@@ -721,7 +722,7 @@ class UniMessage(List[TS]):
         """深拷贝消息"""
         return deepcopy(self)
 
-    def include(self, *types: Type[Segment]) -> "UniMessage[TS]":
+    def include(self, *types: type[Segment]) -> "UniMessage[TS]":
         """过滤消息
 
         参数:
@@ -732,7 +733,7 @@ class UniMessage(List[TS]):
         """
         return UniMessage(seg for seg in self if seg.__class__ in types)
 
-    def exclude(self, *types: Type[Segment]) -> "UniMessage[TS]":
+    def exclude(self, *types: type[Segment]) -> "UniMessage[TS]":
         """过滤消息
 
         参数:
@@ -922,7 +923,7 @@ class Receipt:
     bot: Bot
     context: Union[Event, Target]
     exporter: MessageExporter
-    msg_ids: List[Any]
+    msg_ids: list[Any]
 
     @property
     def recallable(self) -> bool:

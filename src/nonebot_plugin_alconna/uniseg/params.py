@@ -1,5 +1,4 @@
-from typing import Type
-from typing_extensions import Annotated
+from typing import Annotated
 
 from nonebot.typing import T_State
 from nonebot.internal.params import Depends
@@ -40,7 +39,7 @@ def MessageId() -> str:
     return Depends(_msg_id, use_cache=True)
 
 
-def UniversalSegment(t: Type[TS], index: int = 0) -> TS:
+def UniversalSegment(t: type[TS], index: int = 0) -> TS:
     async def _uni_seg(bot: Bot, event: Event, state: T_State) -> TS:
         message = await _uni_msg(bot, event, state)
         return message[t, index]

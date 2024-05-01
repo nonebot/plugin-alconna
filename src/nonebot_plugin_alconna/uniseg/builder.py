@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Union, Generic, TypeVar, Callable, Optional
+from typing import Any, Union, Generic, TypeVar, Callable, Optional
 
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
@@ -10,7 +10,7 @@ TS = TypeVar("TS", bound=MessageSegment)
 
 
 def build(*types: str):
-    def wrapper(func: Union[Callable[[Any, TS], Optional[Segment]], Callable[[Any, TS], List[Segment]]]):
+    def wrapper(func: Union[Callable[[Any, TS], Optional[Segment]], Callable[[Any, TS], list[Segment]]]):
         if types:
             func.__build_target__ = types
         return func
@@ -19,16 +19,16 @@ def build(*types: str):
 
 
 class MessageBuilder(Generic[TS], metaclass=ABCMeta):
-    _mapping: Dict[
+    _mapping: dict[
         str,
-        Union[Callable[[MessageSegment], Optional[Segment]], Callable[[MessageSegment], List[Segment]]],
+        Union[Callable[[MessageSegment], Optional[Segment]], Callable[[MessageSegment], list[Segment]]],
     ]
 
     @classmethod
     @abstractmethod
     def get_adapter(cls) -> SupportAdapter: ...
 
-    def wildcard_build(self, seg: TS) -> Union[Optional[Segment], List[Segment]]:
+    def wildcard_build(self, seg: TS) -> Union[Optional[Segment], list[Segment]]:
         return None
 
     def __init__(self):
@@ -43,7 +43,7 @@ class MessageBuilder(Generic[TS], metaclass=ABCMeta):
     def preprocess(self, source: Message[TS]) -> Message[TS]:
         return source
 
-    def convert(self, seg: TS) -> Union[Segment, List[Segment]]:
+    def convert(self, seg: TS) -> Union[Segment, list[Segment]]:
         seg_type = seg.type
         if seg_type in self._mapping:
             res = self._mapping[seg_type](seg)
@@ -67,7 +67,7 @@ class MessageBuilder(Generic[TS], metaclass=ABCMeta):
             return res
         return custom.solve(self, seg) or self.wildcard_build(seg) or Other(seg)
 
-    def generate(self, source: Message[TS]) -> List[Segment]:
+    def generate(self, source: Message[TS]) -> list[Segment]:
         result = []
         for ms in self.preprocess(source):
             seg = self.convert(ms)

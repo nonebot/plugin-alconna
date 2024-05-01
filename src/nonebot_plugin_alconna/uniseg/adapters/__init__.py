@@ -1,8 +1,8 @@
 import os
 import importlib
+from typing import cast
 from pathlib import Path
 from warnings import warn
-from typing import Dict, cast
 from contextlib import suppress
 
 from nonebot import get_adapters
@@ -13,7 +13,7 @@ from ..builder import MessageBuilder
 from ..exporter import MessageExporter
 
 root = Path(__file__).parent
-loaders: Dict[str, BaseLoader] = {}
+loaders: dict[str, BaseLoader] = {}
 _adapters = [path.stem for path in root.iterdir() if path.is_dir() and not path.stem.startswith("_")]
 for name in _adapters:
     try:
@@ -23,9 +23,9 @@ for name in _adapters:
     except Exception as e:
         warn(f"Failed to import uniseg adapter {name}: {e}", RuntimeWarning, 15)
 
-EXPORTER_MAPPING: Dict[str, MessageExporter] = {}
-BUILDER_MAPPING: Dict[str, MessageBuilder] = {}
-FETCHER_MAPPING: Dict[str, TargetFetcher] = {}
+EXPORTER_MAPPING: dict[str, MessageExporter] = {}
+BUILDER_MAPPING: dict[str, MessageBuilder] = {}
+FETCHER_MAPPING: dict[str, TargetFetcher] = {}
 
 try:
     adapters = get_adapters()

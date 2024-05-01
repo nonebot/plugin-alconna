@@ -1,6 +1,6 @@
 import inspect
-from typing_extensions import Annotated, get_args
-from typing import Any, Dict, Type, Tuple, Union, Literal, TypeVar, ClassVar, Optional, overload
+from typing_extensions import get_args
+from typing import Any, Union, Literal, TypeVar, ClassVar, Optional, Annotated, overload
 
 from nonebot.typing import T_State
 from tarina import run_always_await
@@ -33,11 +33,11 @@ def AlconnaResult() -> CommandResult:
     return Depends(_alconna_result, use_cache=False)
 
 
-def _alconna_exec_result(state: T_State) -> Dict[str, Any]:
+def _alconna_exec_result(state: T_State) -> dict[str, Any]:
     return state[ALCONNA_EXEC_RESULT]
 
 
-def AlconnaExecResult() -> Dict[str, Any]:
+def AlconnaExecResult() -> dict[str, Any]:
     return Depends(_alconna_exec_result, use_cache=False)
 
 
@@ -53,7 +53,7 @@ def _alconna_ctx(state: T_State):
     return state[ALCONNA_RESULT].context
 
 
-def AlconnaContext() -> Dict[str, Any]:
+def AlconnaContext() -> dict[str, Any]:
     return Depends(_alconna_ctx, use_cache=False)
 
 
@@ -103,10 +103,10 @@ def AlconnaDuplication() -> Duplication: ...
 
 
 @overload
-def AlconnaDuplication(__t: Type[T_Duplication]) -> T_Duplication: ...
+def AlconnaDuplication(__t: type[T_Duplication]) -> T_Duplication: ...
 
 
-def AlconnaDuplication(__t: Optional[Type[T_Duplication]] = None) -> Duplication:
+def AlconnaDuplication(__t: Optional[type[T_Duplication]] = None) -> Duplication:
     def _alconna_match(state: T_State) -> Duplication:
         res = _alconna_result(state)
         gt = __t or generate_duplication(res.source)
@@ -123,9 +123,9 @@ def AlconnaArg(path: str) -> Any:
 
 
 AlcResult = Annotated[CommandResult, AlconnaResult()]
-AlcExecResult = Annotated[Dict[str, Any], AlconnaExecResult()]
+AlcExecResult = Annotated[dict[str, Any], AlconnaExecResult()]
 AlcMatches = Annotated[Arparma, AlconnaMatches()]
-AlcContext = Annotated[Dict[str, Any], AlconnaContext()]
+AlcContext = Annotated[dict[str, Any], AlconnaContext()]
 
 
 def match_path(
@@ -203,7 +203,7 @@ def Check(fn: CHECK) -> bool:
     return Depends(_arparma_check, use_cache=False)
 
 
-def AlconnaExtension(target: Type[T_Extension]) -> T_Extension:
+def AlconnaExtension(target: type[T_Extension]) -> T_Extension:
     def _alconna_extension(state: T_State):
         exts = state[ALCONNA_EXTENSION]
         return next((i for i in exts if isinstance(i, target)), None)  # type: ignore
@@ -228,7 +228,7 @@ class ExtensionParam(Param):
         )
 
     @classmethod
-    def _check_param(cls, param: inspect.Parameter, allow_types: Tuple[Type[Param], ...]) -> Optional["ExtensionParam"]:
+    def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Optional["ExtensionParam"]:
         if cls.executor.before_catch(param.name, param.annotation, param.default):
             return cls(param.default, name=param.name, type=param.annotation, validate=True)
 
@@ -249,7 +249,7 @@ class AlconnaParam(Param):
         return f"AlconnaParam(type={self.extra['type']!r})"
 
     @classmethod
-    def _check_param(cls, param: inspect.Parameter, allow_types: Tuple[Type[Param], ...]) -> Optional["AlconnaParam"]:
+    def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Optional["AlconnaParam"]:
         annotation = get_origin(param.annotation)
         if annotation in _Contents:
             annotation = get_args(param.annotation)[0]

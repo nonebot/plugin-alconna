@@ -1,19 +1,7 @@
 import inspect
+from collections.abc import Awaitable
 from abc import ABCMeta, abstractmethod
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    List,
-    Type,
-    Union,
-    Generic,
-    TypeVar,
-    Callable,
-    Awaitable,
-    get_args,
-    get_origin,
-)
+from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar, Callable, get_args, get_origin
 
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
@@ -32,7 +20,7 @@ TM = TypeVar("TM", bound=Message)
 
 def export(
     func: Union[
-        Callable[[Any, TS, Bot], Awaitable[MessageSegment]], Callable[[Any, TS, Bot], Awaitable[List[MessageSegment]]]
+        Callable[[Any, TS, Bot], Awaitable[MessageSegment]], Callable[[Any, TS, Bot], Awaitable[list[MessageSegment]]]
     ]
 ):
     sig = inspect.signature(func)
@@ -41,11 +29,11 @@ def export(
 
 
 class MessageExporter(Generic[TM], metaclass=ABCMeta):
-    _mapping: Dict[
-        Type[Segment],
+    _mapping: dict[
+        type[Segment],
         Union[
             Callable[[Segment, Bot], Awaitable[MessageSegment]],
-            Callable[[Segment, Bot], Awaitable[List[MessageSegment]]],
+            Callable[[Segment, Bot], Awaitable[list[MessageSegment]]],
         ],
     ]
 
@@ -54,7 +42,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
     def get_adapter(cls) -> SupportAdapter: ...
 
     @abstractmethod
-    def get_message_type(self) -> Type[TM]: ...
+    def get_message_type(self) -> type[TM]: ...
 
     @abstractmethod
     def get_message_id(self, event: Event) -> str: ...

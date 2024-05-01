@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Optional
 
 from tarina import lang
 from arclet.alconna import Alconna
@@ -55,9 +55,9 @@ class DiscordSlashExtension(Extension):
     def __init__(
         self,
         internal_id: Optional[str] = None,
-        name_localizations: Optional[Dict[str, str]] = None,
+        name_localizations: Optional[dict[str, str]] = None,
         description: Optional[str] = None,
-        description_localizations: Optional[Dict[str, str]] = None,
+        description_localizations: Optional[dict[str, str]] = None,
         default_member_permissions: Optional[str] = None,
         dm_permission: Optional[bool] = None,
         default_permission: Optional[bool] = None,
@@ -128,7 +128,7 @@ class DiscordSlashExtension(Extension):
         data = event.data
         cmd = f"/{data.name}"
 
-        def _handle_options(options: List[ApplicationCommandInteractionDataOption]):
+        def _handle_options(options: list[ApplicationCommandInteractionDataOption]):
             for opt in options:
                 if opt.type in (
                     ApplicationCommandOptionType.SUB_COMMAND,

@@ -2,21 +2,8 @@ import re
 import functools
 from string import Formatter
 from typing_extensions import TypeAlias
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Set,
-    Dict,
-    Type,
-    Tuple,
-    Union,
-    Mapping,
-    TypeVar,
-    Callable,
-    Optional,
-    Sequence,
-    cast,
-)
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING, Any, Union, TypeVar, Callable, Optional, cast
 
 import _string  # type: ignore
 from tarina.tools import gen_subclass
@@ -78,10 +65,10 @@ class UniMessageTemplate(Formatter):
         factory: 消息类型工厂，默认为 `str`
     """
 
-    def __init__(self, template: Union[str, "UniMessage[Any]"], factory: Type["UniMessage[Any]"]) -> None:
+    def __init__(self, template: Union[str, "UniMessage[Any]"], factory: type["UniMessage[Any]"]) -> None:
         self.template = template
         self.factory = factory
-        self.format_specs: Dict[str, FormatSpecFunc] = {}
+        self.format_specs: dict[str, FormatSpecFunc] = {}
 
     def __repr__(self) -> str:
         return f"UniMessageTemplate({self.template!r})"
@@ -145,9 +132,9 @@ class UniMessageTemplate(Formatter):
         format_string: str,
         args: Sequence[Any],
         kwargs: Mapping[str, Any],
-        used_args: Set[Union[int, str]],
+        used_args: set[Union[int, str]],
         auto_arg_index: int = 0,
-    ) -> Tuple["UniMessage", int]:
+    ) -> tuple["UniMessage", int]:
         results: list = [self.factory()]
 
         for literal_text, field_name, format_spec, conversion in self.parse(format_string):

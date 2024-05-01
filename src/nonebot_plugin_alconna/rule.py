@@ -1,6 +1,6 @@
 import asyncio
 import importlib
-from typing import Set, Dict, List, Type, Tuple, Union, Literal, Optional, cast
+from typing import Union, Literal, Optional, cast
 
 from nonebot.typing import T_State
 from tarina import lang, init_spec
@@ -58,12 +58,12 @@ class AlconnaRule:
         skip_for_unmatch: bool = True,
         auto_send_output: bool = False,
         comp_config: Optional[CompConfig] = None,
-        extensions: Optional[List[Union[Type[Extension], Extension]]] = None,
-        exclude_ext: Optional[List[Union[Type[Extension], str]]] = None,
+        extensions: Optional[list[Union[type[Extension], Extension]]] = None,
+        exclude_ext: Optional[list[Union[type[Extension], str]]] = None,
         use_origin: bool = False,
         use_cmd_start: bool = False,
         use_cmd_sep: bool = False,
-        _aliases: Optional[Union[Set[str], Tuple[str, ...]]] = None,
+        _aliases: Optional[Union[set[str], tuple[str, ...]]] = None,
     ):
         self.comp_config = comp_config
         self.use_origin = use_origin
@@ -102,9 +102,9 @@ class AlconnaRule:
         self.skip = skip_for_unmatch
         self.executor = ExtensionExecutor(self, extensions, exclude_ext)
         self.executor.post_init()
-        self._futures: Dict[str, Dict[str, asyncio.Future]] = {}
-        self._matchers: Dict[str, Type[Matcher]] = {}
-        self._interfaces: Dict[str, CompSession] = {}
+        self._futures: dict[str, dict[str, asyncio.Future]] = {}
+        self._matchers: dict[str, type[Matcher]] = {}
+        self._interfaces: dict[str, CompSession] = {}
 
         self._comp_help = ""
         if self.comp_config is not None:
