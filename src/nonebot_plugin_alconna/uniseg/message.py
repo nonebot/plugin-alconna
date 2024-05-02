@@ -6,9 +6,10 @@ from types import FunctionType
 from dataclasses import dataclass
 from collections.abc import Iterable
 from typing_extensions import Self, SupportsIndex
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Optional, overload
+from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, NoReturn, Optional, overload
 
 from tarina import lang
+from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
 
@@ -665,7 +666,7 @@ class UniMessage(list[TS]):
             if seg is None:
                 break
             filtered.append(seg)
-        return filtered
+        return filtered  # type: ignore
 
     def count(self, value: Union[type[Segment], str, Segment]) -> int:
         """计算指定消息段的个数
@@ -716,7 +717,7 @@ class UniMessage(list[TS]):
                 ret.append(msg)
             else:
                 ret.extend(msg.copy())
-        return ret
+        return ret  # type: ignore
 
     def copy(self) -> "UniMessage[TS]":
         """深拷贝消息"""
@@ -917,6 +918,17 @@ class UniMessage(list[TS]):
         res = await fn.send_to(target, bot, msg)
         return Receipt(bot, target, fn, res if isinstance(res, list) else [res])
 
+    async def finish(
+        self,
+        target: Union[Event, Target, None] = None,
+        bot: Optional[Bot] = None,
+        fallback: bool = True,
+        at_sender: Union[str, bool] = False,
+        reply_to: Union[str, bool, Reply, None] = False,
+    ) -> NoReturn:
+        await self.send(target, bot, fallback, at_sender, reply_to)
+        raise FinishedException
+
 
 @dataclass
 class Receipt:
@@ -1037,3 +1049,14 @@ class Receipt:
         delay: float = 0,
     ):
         return await self.send(message, fallback, at_sender, self.get_reply(index), delay)
+
+    async def finish(
+        self,
+        message: Union[UniMessage, str, Iterable[Union[str, Segment]], Segment],
+        fallback: bool = True,
+        at_sender: Union[str, bool] = False,
+        reply_to: Union[str, bool, Reply, None] = False,
+        delay: float = 0,
+    ):
+        await self.send(message, fallback, at_sender, reply_to, delay)
+        raise FinishedException

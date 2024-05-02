@@ -32,7 +32,7 @@ class DiscordSlashExtension(Extension):
     Example:
         ```python
         from nonebot_plugin_alconna import on_alconna
-        from nonebot_plugin_alconna.builtins.extensions import DiscordSlashExtension
+        from nonebot_plugin_alconna.builtins.extensions.discord import DiscordSlashExtension
 
         matcher = on_alconna(..., extensions=[DiscordSlashExtension(...)])
 

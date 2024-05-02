@@ -19,8 +19,8 @@ class TelegramSlashExtension(Extension):
     Example:
         ```python
         from nonebot_plugin_alconna import on_alconna
-        from nonebot.adapters.telegram import BotCommandScopeAllChat
-        from nonebot_plugin_alconna.builtins.extensions import TelegramCommandExtension
+        from nonebot.adapters.telegram.model import BotCommandScopeChat
+        from nonebot_plugin_alconna.builtins.extensions.telegram import TelegramCommandExtension
 
         TelegramCommandExtension.set_scope(BotCommandScopeAllChat())
 
