@@ -64,7 +64,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
 
     async def export(self, source: "UniMessage", bot: Bot, fallback: bool):
         msg_type = self.get_message_type()
-        message = msg_type()
+        message = msg_type([])
         for seg in source:
             seg_type = seg.__class__
             if seg_type in self._mapping:
