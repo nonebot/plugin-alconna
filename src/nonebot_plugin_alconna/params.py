@@ -271,7 +271,7 @@ class AlconnaParam(Param):
             return cls(param.default, type=Query)
         if param.name in ("ctx", "context") and annotation is dict:
             return cls(..., type=Literal["context"])
-        return cls(param.default, name=param.name, type=param.annotation, validate=True)
+        return cls(param.default, validate=True, name=param.name, type=param.annotation)
 
     async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
         t = self.extra["type"]

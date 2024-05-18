@@ -4,7 +4,7 @@ from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 
 class Loader(BaseLoader):
     def get_adapter(self) -> SupportAdapter:
-        return SupportAdapter.mirai
+        return SupportAdapter.mirai_official
 
     def get_builder(self):
         from .builder import MiraiMessageBuilder

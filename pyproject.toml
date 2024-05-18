@@ -61,6 +61,9 @@ dev = [
     "nonebot-plugin-filehost>=1.1.1",
     "nonebot-plugin-send-anything-anywhere>=0.6.1",
     "pytest-mock>=3.14.0",
+    "nonebot-adapter-tailchat>=0.1.0b7",
+    "nonebot-adapter-rocketchat>=0.1.0",
+    "nonebot-adapter-mirai>=2.3.0",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

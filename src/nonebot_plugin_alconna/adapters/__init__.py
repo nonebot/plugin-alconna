@@ -1,5 +1,5 @@
 MAPPING = {
-    "mirai2": "mirai",
+    "mirai2": "mirai2",
     "BilibiliLive": "bilibili",
     "Console": "console",
     "Ding": "ding",
@@ -10,6 +10,7 @@ MAPPING = {
     "Kritor": "kritor",
     "Kaiheila": "kook",
     "Minecraft": "minecraft",
+    "Mirai": "mirai",
     "ntchat": "ntchat",
     "OneBot V11": "onebot11",
     "OneBot V12": "onebot12",
