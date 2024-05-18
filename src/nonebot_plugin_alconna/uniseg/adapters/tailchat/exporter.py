@@ -66,6 +66,8 @@ class TailChatMessageExporter(MessageExporter["Message"]):
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+        if seg.type == "channel" and seg.display:
+            return MessageSegment.url(url=f"/main/group/{seg.target}", text=seg.display)
         return MessageSegment.at(uid=seg.target, nickname=seg.display)
 
     @export

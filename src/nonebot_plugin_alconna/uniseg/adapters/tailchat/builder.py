@@ -64,7 +64,10 @@ class TailChatMessageBuilder(MessageBuilder):
 
     @build("url")
     def url(self, seg: MessageSegment):
-        text = Text(seg.data["extra"]["url"]).link()
+        _url = seg.data["extra"]["url"]
+        if _url.startswith("/main/group/"):
+            return At("channel", _url[12:], seg.data["text"])
+        text = Text(_url).link()
         text._children = [Text(seg.data["text"])]
         return text
 

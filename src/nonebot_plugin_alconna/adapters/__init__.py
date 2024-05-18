@@ -16,6 +16,7 @@ MAPPING = {
     "OneBot V12": "onebot12",
     "QQ": "qq",
     "RedProtocol": "red",
+    "Tailchat": "tailchat",
     "Telegram": "telegram",
     "Satori": "satori",
 }

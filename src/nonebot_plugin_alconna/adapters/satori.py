@@ -44,11 +44,11 @@ Author = SegmentPattern("author", _Author, Other, MessageSegment.author)
 
 
 def link(self, x: Text):
-    style = x.extract_most_style()
-    if style == "link":
-        return MessageSegment.link(x.text)
-    elif style.startswith("link"):
-        return MessageSegment.link(x.text, style.split(":")[1])
+    if x.extract_most_style() == "link":
+        if not getattr(x, "_children", []):
+            return MessageSegment.link(x.text)
+        else:
+            return MessageSegment.link(x.text, x._children[0].text)  # type: ignore
 
 
 Link = TextSegmentPattern("link", _Link, MessageSegment.link, link)

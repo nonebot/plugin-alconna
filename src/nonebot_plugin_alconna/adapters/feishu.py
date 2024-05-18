@@ -19,6 +19,13 @@ AtAll = SegmentPattern(
     lambda: MessageSegment.at("all"),
     additional=lambda x: (x.origin is not None and x.origin.data["user_id"] == "all"),
 )
+AtHere = SegmentPattern(
+    "at",
+    MessageSegment,
+    UniAtAll,
+    lambda: MessageSegment.at("here"),
+    additional=lambda x: (x.origin is not None and x.origin.data["user_id"] == "here"),
+)
 Post = SegmentPattern("post", MessageSegment, Hyper, MessageSegment.post)
 Image = SegmentPattern("image", MessageSegment, UniImage, MessageSegment.image)
 Interactive = SegmentPattern("interactive", MessageSegment, Other, MessageSegment.interactive)
