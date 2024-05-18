@@ -31,6 +31,7 @@ class SupportAdapter(str, Enum):
     red = "RedProtocol"
     satori = "Satori"
     telegram = "Telegram"
+    tail_chat = "Tailchat"
 
     nonebug = "fake"
 
@@ -60,6 +61,8 @@ class SupportScope(str, Enum):
     """微信公众号平台"""
     wecom = "WeCom"
     """企业微信平台"""
+    tail_chat = "TailChat"
+    """Tailchat平台"""
 
     onebot12_other = "Onebot12"
     """ob12 的其他平台"""
@@ -114,6 +117,7 @@ class SupportAdapterModule(str, Enum):
     red = "nonebot.adapters.red"
     satori = "nonebot.adapters.satori"
     telegram = "nonebot.adapters.telegram"
+    tail_chat = "nonebot_adapter_tailchat"
 
 
 UNISEG_MESSAGE: Literal["_alc_uniseg_message"] = "_alc_uniseg_message"

@@ -251,7 +251,7 @@ class Target:
         adapter = data.pop("adapter", None)
         platform = data.pop("platforms", None)
         if platform:
-            platform = set(platform)
+            platform = set(platform)  # type: ignore
         return cls(scope=scope, adapter=adapter, platform=platform, **data)
 
     def __repr__(self):
@@ -483,5 +483,14 @@ async def select_wecom(target: "Target", bot: Bot):
     if bot.adapter.get_name() != SupportAdapter.satori:
         return False
     if hasattr(bot, "platform") and bot.platform != "wecom":
+        return False
+    return True
+
+
+@_register(SupportScope.tail_chat)
+async def select_tailchat(target: "Target", bot: Bot):
+    if not target.channel:
+        return False
+    if bot.adapter.get_name() not in {SupportAdapter.tail_chat}:
         return False
     return True

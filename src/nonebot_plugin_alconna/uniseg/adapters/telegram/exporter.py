@@ -51,6 +51,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         assert isinstance(event, EventWithChat)
         return Target(
             str(event.chat.id),
+            private=event.chat.type == "private",
             adapter=self.get_adapter(),
             self_id=bot.self_id if bot else None,
             scope=SupportScope.telegram,

@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:2f72215f6add6b941ed03c690db1a8d2c768f74509c32a32251df85f1fa0a686"
+content_hash = "sha256:b97f2cb8aeaeb58eecd87634c26aea4a86fec4ff873616fc6ddec6e869a016df"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -1190,7 +1190,7 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-tailchat"
-version = "0.1.0b7"
+version = "0.1.0b10"
 requires_python = "<4.0,>=3.9"
 summary = "NoneBot2 Tailchat 适配器 / Tailchat adapter for nonebot2"
 dependencies = [
@@ -1200,8 +1200,8 @@ dependencies = [
     "python-socketio[asyncio-client]<6.0.0,>=5.11.2",
 ]
 files = [
-    {file = "nonebot_adapter_tailchat-0.1.0b7-py3-none-any.whl", hash = "sha256:99c444b8bf87afcd5f85f9d9cddf7124c56b00120573bea80a62cae4578617ff"},
-    {file = "nonebot_adapter_tailchat-0.1.0b7.tar.gz", hash = "sha256:ed632dc17dd6cbb017752268d77830833f703650e36354d917ef7087bee02718"},
+    {file = "nonebot_adapter_tailchat-0.1.0b10-py3-none-any.whl", hash = "sha256:ba84146e4bf72f81bd53fde67b638bd8cb12bf809ba5d9b7e8acd8e602667813"},
+    {file = "nonebot_adapter_tailchat-0.1.0b10.tar.gz", hash = "sha256:b35e2328e7f4344b4c401ca482fe4440d888bd60df32176e312b716c7353b535"},
 ]
 
 [[package]]

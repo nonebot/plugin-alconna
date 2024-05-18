@@ -235,6 +235,30 @@ class Text(Segment):
         self.__merge__()
         return self
 
+    def bold(self, start: int = 0, end: int = -1):
+        return self.mark(start, end if end != -1 else len(self.text), "bold")
+
+    def italic(self, start: int = 0, end: int = -1):
+        return self.mark(start, end if end != -1 else len(self.text), "italic")
+
+    def underline(self, start: int = 0, end: int = -1):
+        return self.mark(start, end if end != -1 else len(self.text), "underline")
+
+    def strikethrough(self, start: int = 0, end: int = -1):
+        return self.mark(start, end if end != -1 else len(self.text), "strikethrough")
+
+    def spoiler(self, start: int = 0, end: int = -1):
+        return self.mark(start, end if end != -1 else len(self.text), "spoiler")
+
+    def link(self, start: int = 0, end: int = -1):
+        return self.mark(start, end if end != -1 else len(self.text), "link")
+
+    def code(self, start: int = 0, end: int = -1):
+        return self.mark(start, end if end != -1 else len(self.text), "code")
+
+    def markdown(self, start: int = 0, end: int = -1):
+        return self.mark(start, end if end != -1 else len(self.text), "markdown")
+
     def __str__(self) -> str:
         result = []
         text = self.text
