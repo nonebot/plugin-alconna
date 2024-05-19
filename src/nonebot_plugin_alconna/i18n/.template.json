@@ -13,7 +13,7 @@
         "exited"
       ]
     },
-{
+    {
       "scope": "nbp-alc",
       "types": [
         "log.load_global_extensions",
@@ -28,6 +28,13 @@
         "error.extension_path_invalid",
         "error.matcher_got_path"
       ]
+    },
+    {
+      "scope": "nbp-alc/builtin",
+        "types": [
+          "lang.list",
+          "lang.switch"
+        ]
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "$schema": "./.lang.schema.json",
+  "$schema": ".lang.schema.json",
   "comp/nonebot": {
     "tab": "Send a {cmd} to toggle prompt",
     "enter": "Send {cmd} to confirm the prompt as the input",
@@ -20,5 +20,9 @@
     "error.extension_path_load": "Value of {path} is not a subclass of Extension",
     "error.extension_path_invalid": "{path} is not a valid extension path",
     "error.matcher_got_path": "Path {path} not found in Alconna {cmd}"
+  },
+  "nbp-alc/builtin": {
+    "lang.list": "Following languages are supported:",
+    "lang.switch": "Switch to '{locale}' successfully"
   }
 }

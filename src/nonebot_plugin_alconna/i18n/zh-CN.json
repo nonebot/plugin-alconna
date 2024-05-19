@@ -1,5 +1,5 @@
 {
-  "$schema": "./.lang.schema.json",
+  "$schema": ".lang.schema.json",
   "comp/nonebot": {
     "tab": "发送 {cmd} 切换提示",
     "enter": "发送 {cmd} 以使用提示内容作为输入",
@@ -20,5 +20,9 @@
     "error.extension_path_load": "{path} 的值不是扩展的子类",
     "error.extension_path_invalid": "{path} 不是有效的扩展路径",
     "error.matcher_got_path": "在 Alconna {cmd} 中找不到路径 {path}"
+  },
+  "nbp-alc/builtin": {
+    "lang.list": "支持的语言列表:",
+    "lang.switch": "切换语言成功: '{locale}'"
   }
 }

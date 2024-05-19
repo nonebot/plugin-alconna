@@ -21,6 +21,7 @@ async def test_send(app: App):
                 "command.test.1": "测试!",
                 "command.test.2": "{:At(user, $event.get_user_id())} 你好!",
                 "command.test.3": "这是 {abcd} 测试!",
+                "command.test.4": "这是嵌套: {:I18n(test-i18n, command.test.1)}"
             }
         },
     )
@@ -31,6 +32,7 @@ async def test_send(app: App):
                 "command.test.1": "test!",
                 "command.test.2": "{:At(user, $event.get_user_id())} hello!",
                 "command.test.3": "This is {abcd} test!",
+                "command.test.4": "This is nested: {:I18n(test-i18n, command.test.1)}"
             }
         },
     )
@@ -39,7 +41,8 @@ async def test_send(app: App):
     async def _():
         await cmd.send(I18n("test-i18n", "command.test.1"))
         await cmd.send(I18n("test-i18n", "command.test.2"))
-        await cmd.send(I18n("test-i18n", "command.test.3", abcd="test"))
+        await cmd.send(cmd.i18n("test-i18n", "command.test.3", abcd="test"))
+        await cmd.finish(cmd.i18n("test-i18n", "command.test.4"))
 
     lang.select("zh-CN")
     async with app.test_matcher(cmd) as ctx:
@@ -50,6 +53,7 @@ async def test_send(app: App):
         ctx.should_call_send(event, Message("测试!"))
         ctx.should_call_send(event, MessageSegment.mention_user("5678") + " 你好!")
         ctx.should_call_send(event, Message("这是 test 测试!"))
+        ctx.should_call_send(event, Message("这是嵌套: 测试!"))
         ctx.should_finished()
 
     lang.select("en-US")
@@ -61,6 +65,7 @@ async def test_send(app: App):
         ctx.should_call_send(event, Message("test!"))
         ctx.should_call_send(event, MessageSegment.mention_user("5678") + " hello!")
         ctx.should_call_send(event, Message("This is test test!"))
+        ctx.should_call_send(event, Message("This is nested: test!"))
         ctx.should_finished()
 
     lang.select("zh-CN")

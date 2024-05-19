@@ -882,6 +882,19 @@ class UniMessage(list[TS]):
             return fn.get_target(event, bot)
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
+    def _handle_i18n(self, extra: dict, *args, **kwargs):
+        segments = [*self]
+        self.clear()
+        for seg in segments:
+            if not isinstance(seg, I18n):
+                self.append(seg)
+            else:
+                msg = seg.tp().format(*args, *seg.args, **kwargs, **seg.kwargs, **extra)
+                if msg.has(I18n):
+                    msg._handle_i18n(extra, *seg.args, **seg.kwargs)
+                self.extend(msg)  # type: ignore
+        self.__merge_text__()
+
     async def export(self, bot: Optional[Bot] = None, fallback: bool = True) -> Message:
         if not bot:
             try:
@@ -900,13 +913,7 @@ class UniMessage(list[TS]):
                 extra["$message_id"] = msg_id
             except (LookupError, NotImplementedError, SerializeFailed):
                 pass
-            segments = [*self]
-            self.clear()
-            for seg in segments:
-                if not isinstance(seg, I18n):
-                    self.append(seg)
-                else:
-                    self.extend(seg.tp().format(*seg.args, **seg.kwargs, **extra))  # type: ignore
+            self._handle_i18n(extra)
         try:
             if fn := EXPORTER_MAPPING.get(adapter_name):
                 return await fn.export(self, bot, fallback)

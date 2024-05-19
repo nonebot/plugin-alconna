@@ -25,6 +25,7 @@ from typing import (
 from nonebot.rule import Rule
 from nonebot.params import Depends
 from nonebot.utils import escape_tag
+from tarina.lang.model import LangItem
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from nepattern import ANY, STRING, AnyString
@@ -673,6 +674,35 @@ class AlconnaMatcher(Matcher):
         if isinstance(message, MessageSegment):
             return message.get_message_class()(message)
         return message
+
+    @classmethod
+    def i18n(
+        cls,
+        item_or_scope: LangItem | str,
+        type_: str | None = None,
+        /,
+        *args,
+        mapping: dict | None = None,
+        **kwargs,
+    ) -> UniMessage:
+        bot = current_bot.get()
+        event = current_event.get()
+        state = current_matcher.get().state
+        msg = UniMessage.i18n(item_or_scope, type_, *args, mapping=mapping, **kwargs)
+        extra = {
+            **state[ALCONNA_RESULT].result.all_matched_args,
+            **state,
+            "$event": event,
+            "$target": UniMessage.get_target(event, bot),
+        }
+        try:
+            msg_id = UniMessage.get_message_id(event, bot)
+        except Exception:
+            pass
+        else:
+            extra["$message_id"] = msg_id
+        msg._handle_i18n(extra)
+        return msg
 
     @classmethod
     async def send(

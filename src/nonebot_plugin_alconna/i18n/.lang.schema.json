@@ -2,8 +2,8 @@
   "title": "Lang Schema",
   "description": "Schema for lang file",
   "type": "object",
-  "minProperties": 3,
-  "maxProperties": 3,
+  "minProperties": 4,
+  "maxProperties": 4,
   "properties": {
     "comp/nonebot": {
       "title": "Comp/nonebot",
@@ -102,6 +102,24 @@
         "error.matcher_got_path": {
           "title": "error.matcher_got_path",
           "description": "value of lang item type 'error.matcher_got_path'",
+          "type": "string"
+        }
+      }
+    },
+    "nbp-alc/builtin": {
+      "title": "Nbp-alc/builtin",
+      "description": "Scope 'nbp-alc/builtin' of lang item",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lang.list": {
+          "title": "lang.list",
+          "description": "value of lang item type 'lang.list'",
+          "type": "string"
+        },
+        "lang.switch": {
+          "title": "lang.switch",
+          "description": "value of lang item type 'lang.switch'",
           "type": "string"
         }
       }
