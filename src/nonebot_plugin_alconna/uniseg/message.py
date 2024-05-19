@@ -9,6 +9,7 @@ from typing_extensions import Self, SupportsIndex
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, NoReturn, Optional, overload
 
 from tarina import lang
+from tarina.lang.model import LangItem
 from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
@@ -19,7 +20,7 @@ from .fallback import FallbackMessage
 from .constraint import SerializeFailed
 from .template import UniMessageTemplate
 from .adapters import BUILDER_MAPPING, EXPORTER_MAPPING
-from .segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice, Segment
+from .segment import At, File, I18n, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice, Segment
 
 T = TypeVar("T")
 TS = TypeVar("TS", bound=Segment)
@@ -268,7 +269,7 @@ class UniMessage(list[TS]):
             ...
 
         @classmethod
-        def card(
+        def hyper(
             cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             flag: Literal["xml", "json"],
             content: str,
@@ -282,6 +283,19 @@ class UniMessage(list[TS]):
             返回:
                 构建的消息
             """
+            ...
+
+        @classmethod
+        def i18n(
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
+            item_or_scope: Union[LangItem, str],
+            type_: Optional[str] = None,
+            /,
+            *args,
+            mapping: Optional[dict] = None,
+            **kwargs,
+        ) -> "UniMessage[Union[TS1, I18n]]":
+            """创建 i18n 消息"""
             ...
 
     else:
@@ -411,11 +425,26 @@ class UniMessage(list[TS]):
             return UniMessage(Reply(id))
 
         @_method
-        def card(cls_or_self, flag: Literal["xml", "json"], content: str) -> "UniMessage[Union[TS1, Hyper]]":
+        def hyper(cls_or_self, flag: Literal["xml", "json"], content: str) -> "UniMessage[Union[TS1, Hyper]]":
             if isinstance(cls_or_self, UniMessage):
                 cls_or_self.append(Hyper(flag, content))
                 return cls_or_self
             return UniMessage(Hyper(flag, content))
+
+        @_method
+        def i18n(
+            cls_or_self,
+            item_or_scope: Union[LangItem, str],
+            type_: Optional[str] = None,
+            /,
+            *args,
+            mapping: Optional[dict] = None,
+            **kwargs,
+        ) -> "UniMessage[Union[TS1, I18n]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self.append(I18n(item_or_scope, type_, *args, mapping=mapping, **kwargs))  # type: ignore
+                return cls_or_self
+            return UniMessage(I18n(item_or_scope, type_, *args, mapping=mapping, **kwargs))  # type: ignore
 
     def __init__(
         self: "UniMessage[Segment]",
@@ -861,6 +890,23 @@ class UniMessage(list[TS]):
                 raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
         adapter = bot.adapter
         adapter_name = adapter.get_name()
+        if self.has(I18n):
+            extra = {}
+            try:
+                event = current_event.get()
+                extra["$event"] = event
+                extra["$target"] = self.get_target(event, bot)
+                msg_id = UniMessage.get_message_id(event, bot)
+                extra["$message_id"] = msg_id
+            except (LookupError, NotImplementedError, SerializeFailed):
+                pass
+            segments = [*self]
+            self.clear()
+            for seg in segments:
+                if not isinstance(seg, I18n):
+                    self.append(seg)
+                else:
+                    self.extend(seg.tp().format(*seg.args, **seg.kwargs, **extra))  # type: ignore
         try:
             if fn := EXPORTER_MAPPING.get(adapter_name):
                 return await fn.export(self, bot, fallback)

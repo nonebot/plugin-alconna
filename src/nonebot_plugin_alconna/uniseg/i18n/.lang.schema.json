@@ -1,0 +1,47 @@
+{
+  "title": "Lang Schema",
+  "description": "Schema for lang file",
+  "type": "object",
+  "minProperties": 2,
+  "maxProperties": 2,
+  "properties": {
+    "nbp-uniseg": {
+      "title": "Nbp-uniseg",
+      "description": "Scope 'nbp-uniseg' of lang item",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "invalid_segment": {
+          "title": "invalid_segment",
+          "description": "value of lang item type 'invalid_segment'",
+          "type": "string"
+        },
+        "failed_segment": {
+          "title": "failed_segment",
+          "description": "value of lang item type 'failed_segment'",
+          "type": "string"
+        },
+        "failed": {
+          "title": "failed",
+          "description": "value of lang item type 'failed'",
+          "type": "string"
+        },
+        "bot_missing": {
+          "title": "bot_missing",
+          "description": "value of lang item type 'bot_missing'",
+          "type": "string"
+        },
+        "event_missing": {
+          "title": "event_missing",
+          "description": "value of lang item type 'event_missing'",
+          "type": "string"
+        },
+        "unsupported": {
+          "title": "unsupported",
+          "description": "value of lang item type 'unsupported'",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

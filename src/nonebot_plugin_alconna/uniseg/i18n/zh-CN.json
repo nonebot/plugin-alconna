@@ -1,4 +1,5 @@
 {
+  "$schema": "./.lang.schema.json",
   "nbp-uniseg": {
     "invalid_segment": "无效的 {type} 类型消息段: {seg!r}",
     "failed_segment": "无法将 {seg!r} 序列化为适配器 {adapter} 下的 {target} 消息段",

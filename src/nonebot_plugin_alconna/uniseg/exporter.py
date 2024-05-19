@@ -73,7 +73,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                     message.extend(res)
                 else:
                     message.append(res)
-            elif res := await custom.export(self, seg, bot, fallback):
+            elif res := await custom.export(self, seg, bot, fallback):  # type: ignore
                 if isinstance(res, list):
                     message.extend(res)
                 else:

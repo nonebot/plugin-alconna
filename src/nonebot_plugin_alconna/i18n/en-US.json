@@ -1,4 +1,5 @@
 {
+  "$schema": "./.lang.schema.json",
   "comp/nonebot": {
     "tab": "Send a {cmd} to toggle prompt",
     "enter": "Send {cmd} to confirm the prompt as the input",

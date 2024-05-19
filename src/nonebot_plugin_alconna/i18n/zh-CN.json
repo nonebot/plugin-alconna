@@ -1,4 +1,5 @@
 {
+  "$schema": "./.lang.schema.json",
   "comp/nonebot": {
     "tab": "发送 {cmd} 切换提示",
     "enter": "发送 {cmd} 以使用提示内容作为输入",

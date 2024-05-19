@@ -1,0 +1,110 @@
+{
+  "title": "Lang Schema",
+  "description": "Schema for lang file",
+  "type": "object",
+  "minProperties": 3,
+  "maxProperties": 3,
+  "properties": {
+    "comp/nonebot": {
+      "title": "Comp/nonebot",
+      "description": "Scope 'comp/nonebot' of lang item",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tab": {
+          "title": "tab",
+          "description": "value of lang item type 'tab'",
+          "type": "string"
+        },
+        "enter": {
+          "title": "enter",
+          "description": "value of lang item type 'enter'",
+          "type": "string"
+        },
+        "exit": {
+          "title": "exit",
+          "description": "value of lang item type 'exit'",
+          "type": "string"
+        },
+        "other": {
+          "title": "other",
+          "description": "value of lang item type 'other'",
+          "type": "string"
+        },
+        "timeout": {
+          "title": "timeout",
+          "description": "value of lang item type 'timeout'",
+          "type": "string"
+        },
+        "exited": {
+          "title": "exited",
+          "description": "value of lang item type 'exited'",
+          "type": "string"
+        }
+      }
+    },
+    "nbp-alc": {
+      "title": "Nbp-alc",
+      "description": "Scope 'nbp-alc' of lang item",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "log.load_global_extensions": {
+          "title": "log.load_global_extensions",
+          "description": "value of lang item type 'log.load_global_extensions'",
+          "type": "string"
+        },
+        "log.got_path/ms": {
+          "title": "log.got_path/ms",
+          "description": "value of lang item type 'log.got_path/ms'",
+          "type": "string"
+        },
+        "log.got_path/validate": {
+          "title": "log.got_path/validate",
+          "description": "value of lang item type 'log.got_path/validate'",
+          "type": "string"
+        },
+        "log.discord_ambiguous_command": {
+          "title": "log.discord_ambiguous_command",
+          "description": "value of lang item type 'log.discord_ambiguous_command'",
+          "type": "string"
+        },
+        "log.discord_ambiguous_subcommand": {
+          "title": "log.discord_ambiguous_subcommand",
+          "description": "value of lang item type 'log.discord_ambiguous_subcommand'",
+          "type": "string"
+        },
+        "log.parse": {
+          "title": "log.parse",
+          "description": "value of lang item type 'log.parse'",
+          "type": "string"
+        },
+        "error.discord_prefix": {
+          "title": "error.discord_prefix",
+          "description": "value of lang item type 'error.discord_prefix'",
+          "type": "string"
+        },
+        "error.extension_forbid_exclude": {
+          "title": "error.extension_forbid_exclude",
+          "description": "value of lang item type 'error.extension_forbid_exclude'",
+          "type": "string"
+        },
+        "error.extension_path_load": {
+          "title": "error.extension_path_load",
+          "description": "value of lang item type 'error.extension_path_load'",
+          "type": "string"
+        },
+        "error.extension_path_invalid": {
+          "title": "error.extension_path_invalid",
+          "description": "value of lang item type 'error.extension_path_invalid'",
+          "type": "string"
+        },
+        "error.matcher_got_path": {
+          "title": "error.matcher_got_path",
+          "description": "value of lang item type 'error.matcher_got_path'",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+
+{
+  "$schema": "./.template.schema.json",
+  "scopes": [
+    {
+      "scope": "nbp-uniseg",
+      "types": [
+        "invalid_segment",
+        "failed_segment",
+        "failed",
+        "bot_missing",
+        "event_missing",
+        "unsupported"
+      ]
+    }
+  ]
+}

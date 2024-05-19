@@ -1,11 +1,10 @@
 from enum import Enum
-from pathlib import Path
 from typing import Literal
 
-from tarina import lang
 from nonebot.utils import logger_wrapper
 
-lang.load(Path(__file__).parent / "i18n")
+from .i18n import lang as lang  # noqa: F401
+
 log = logger_wrapper("Plugin-Uniseg")
 
 

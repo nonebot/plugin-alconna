@@ -5,9 +5,9 @@ authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "arclet-alconna>=1.8.11",
-    "arclet-alconna-tools>=0.7.3",
-    "nepattern>=0.7.2",
+    "arclet-alconna>=1.8.12",
+    "arclet-alconna-tools>=0.7.4",
+    "nepattern>=0.7.3",
     "nonebot2>=2.3.0",
     "importlib-metadata>=4.13.0",
 ]
@@ -59,7 +59,6 @@ dev = [
     "nonebot-adapter-telegram>=0.1.0b17",
     "nonebot-adapter-kritor>=0.1.1",
     "nonebot-adapter-tailchat>=0.1.0b7",
-    "nonebot-adapter-rocketchat>=0.1.0",
     "nonebot-adapter-mirai>=2.3.0",
     "nonebot-plugin-filehost>=1.1.1",
     "nonebot-plugin-send-anything-anywhere>=0.6.1",

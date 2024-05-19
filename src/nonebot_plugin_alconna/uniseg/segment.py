@@ -12,11 +12,13 @@ from collections.abc import Iterable, Awaitable
 from dataclasses import field, asdict, dataclass
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload
 
+from tarina.lang.model import LangItem
 from nonebot.compat import custom_validation
 from nonebot.internal.adapter import Bot, Message, MessageSegment
 from nepattern import MatchMode, BasePattern, create_local_patterns
 
 from .utils import fleep
+from .constraint import lang
 
 if TYPE_CHECKING:
     from .message import UniMessage
@@ -524,6 +526,41 @@ class Other(Segment):
 
     def __str__(self):
         return f"[{self.origin.type}]"
+
+
+@dataclass
+class I18n(Segment):
+    """特殊的 Segment，用于 i18n 消息"""
+
+    @overload
+    def __init__(self, item: LangItem, /, *args, mapping: Optional[dict] = None, **kwargs): ...
+    @overload
+    def __init__(self, scope: str, type_: str, /, *args, mapping: Optional[dict] = None, **kwargs): ...
+
+    def __init__(
+        self,
+        item_or_scope: Union[LangItem, str],
+        type_: Optional[str] = None,
+        /,
+        *args,
+        mapping: Optional[dict] = None,
+        **kwargs,
+    ):
+        self._children = []
+        if isinstance(item_or_scope, LangItem):
+            self.item = item_or_scope
+        elif type_:
+            self.item = LangItem(item_or_scope, type_)
+        else:
+            raise ValueError("I18n must have lang item or scope and type")
+        self.args = args
+        self.kwargs = mapping or {}
+        self.kwargs.update(kwargs)
+
+    def tp(self):
+        from .message import UniMessage
+
+        return UniMessage.template(lang.require(self.item.scope, self.item.type))
 
 
 TM = TypeVar("TM", bound=Message)

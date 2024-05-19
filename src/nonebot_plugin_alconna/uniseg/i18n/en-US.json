@@ -1,4 +1,5 @@
 {
+  "$schema": "./.lang.schema.json",
   "nbp-uniseg": {
     "invalid_segment": "Invalid {type} segment: {seg!r}",
     "failed_segment": "Cannot serialize {seg!r} to {target} segment of adatper {adapter}",
