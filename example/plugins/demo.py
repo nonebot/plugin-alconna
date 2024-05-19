@@ -44,7 +44,10 @@ from nonebot_plugin_alconna import (
     on_alconna,
     image_fetch,
     add_global_extension,
+    load_builtin_plugins,
 )
+
+load_builtin_plugins("echo", "lang", "help")
 
 
 class DemoExtension(Extension):

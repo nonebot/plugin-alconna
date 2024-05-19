@@ -28,10 +28,10 @@ _✨ Alconna Usage For NoneBot2 ✨_
 - 基本的 rule, matcher 与 依赖注入
 - 自动回复命令帮助信息 (help, shortcut, completion) 选项
 - 现有全部协议的 Segment 标注
-- match_value, match_path 等检查函数
 - 补全会话支持
 - 跨平台的接收与发送消息(被动+主动)
-- 多种内建工具
+- 多种内置插件
+- i18n 支持
 
 ## 讨论
 
@@ -281,7 +281,7 @@ def on_alconna(
 | [钉钉](https://open.dingtalk.com/document/)                           | adapters.ding                        |
 | [Console](https://github.com/nonebot/adapter-console)               | adapters.console                     |
 | [开黑啦](https://developer.kookapp.cn/)                                | adapters.kook                        |
-| [Mirai](https://docs.mirai.mamoe.net/mirai-api-http/)               | adapters.mirai                       |
+| [Mirai](https://docs.mirai.mamoe.net/mirai-api-http/)               | adapters.mirai, adapters.mirai2      |
 | [Ntchat](https://github.com/JustUndertaker/adapter-ntchat)          | adapters.ntchat                      |
 | [MineCraft](https://github.com/17TheWord/nonebot-adapter-minecraft) | adapters.minecraft                   |
 | [BiliBili Live](https://github.com/wwweww/adapter-bilibili)         | adapters.bilibili                    |
@@ -290,7 +290,8 @@ def on_alconna(
 | [Red 协议](https://github.com/nonebot/adapter-red)                    | adapters.red                         |
 | [Satori](https://github.com/nonebot/adapter-satori)                 | adapters.satori                      |
 | [Dodo IM](https://github.com/nonebot/adapter-dodo)                  | adapters.dodo                        |
-| [Kritor](https://github.com/nonebot/adapter-kritor)                 | adapters.kritor                        |
+| [Kritor](https://github.com/nonebot/adapter-kritor)                 | adapters.kritor                      |
+| [Tailchat](https://github.com/eya46/nonebot-adapter-tailchat)       | adapters.tailchat                    |
 
 
 ## 便捷装饰器

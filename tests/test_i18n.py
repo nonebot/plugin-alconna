@@ -21,7 +21,7 @@ async def test_send(app: App):
                 "command.test.1": "测试!",
                 "command.test.2": "{:At(user, $event.get_user_id())} 你好!",
                 "command.test.3": "这是 {abcd} 测试!",
-                "command.test.4": "这是嵌套: {:I18n(test-i18n, command.test.1)}"
+                "command.test.4": "这是嵌套: {:I18n(test-i18n, command.test.1)}",
             }
         },
     )
@@ -32,7 +32,7 @@ async def test_send(app: App):
                 "command.test.1": "test!",
                 "command.test.2": "{:At(user, $event.get_user_id())} hello!",
                 "command.test.3": "This is {abcd} test!",
-                "command.test.4": "This is nested: {:I18n(test-i18n, command.test.1)}"
+                "command.test.4": "This is nested: {:I18n(test-i18n, command.test.1)}",
             }
         },
     )
