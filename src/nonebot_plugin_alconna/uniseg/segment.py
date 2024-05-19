@@ -9,8 +9,8 @@ from datetime import datetime
 from urllib.parse import urlparse
 from typing_extensions import Self
 from collections.abc import Iterable, Awaitable
-from dataclasses import field, asdict, dataclass
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload
+from dataclasses import field, asdict, dataclass, InitVar
+from typing import TYPE_CHECKING, Any, Sequence, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload
 
 from tarina.lang.model import LangItem
 from nonebot.compat import custom_validation
@@ -480,10 +480,10 @@ class CustomNode:
     """消息发送者id"""
     name: str
     """消息发送者昵称"""
-    time: datetime
-    """消息发送时间"""
-    content: Union[str, list[Segment], Message]
+    content: Union[str, "UniMessage", Message]
     """消息内容"""
+    time: datetime = field(default_factory=datetime.now)
+    """消息发送时间"""
     context: Optional[str] = None
     """可能的群聊id"""
 
@@ -494,12 +494,21 @@ class Reference(Segment):
 
     id: Optional[str] = field(default=None)
     """此处不一定是消息ID，可能是其他ID，如消息序号等"""
+    nodes: Union[list[RefNode], list[CustomNode], list[Union[RefNode, CustomNode]]] = field(default_factory=list)
     _children: list[Union[RefNode, CustomNode]] = field(init=False, default_factory=list)
+
+    def __post_init__(self):
+        self._children.extend(self.nodes)
 
     @property
     def children(self):
         return self._children
 
+    def __call__(self, *segments: Union[Segment, RefNode, CustomNode]) -> Self:
+        if not segments:
+            return self
+        self._children.extend(segments)  # type: ignore
+        return self
 
 @dataclass
 class Hyper(Segment):

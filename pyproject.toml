@@ -7,7 +7,7 @@ authors = [
 dependencies = [
     "arclet-alconna>=1.8.12",
     "arclet-alconna-tools>=0.7.4",
-    "nepattern>=0.7.3",
+    "nepattern>=0.7.4",
     "nonebot2>=2.3.0",
     "importlib-metadata>=4.13.0",
 ]

@@ -950,7 +950,7 @@ files = [
 
 [[package]]
 name = "nepattern"
-version = "0.7.3"
+version = "0.7.4"
 requires_python = ">=3.8"
 summary = "a complex pattern, support typing"
 dependencies = [
@@ -958,8 +958,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "nepattern-0.7.3-py3-none-any.whl", hash = "sha256:3b07e337cc222c4011f1b5334d2aa82cd648b2225b1ed7eb1e34cbfa8b6c7418"},
-    {file = "nepattern-0.7.3.tar.gz", hash = "sha256:14f23f1436ccaa11a38b31a4b15190b14f5692da3fd20322cd8cb77f51cc490d"},
+    {file = "nepattern-0.7.4-py3-none-any.whl", hash = "sha256:ad7287ee2ff46f010b8c758bf9ed8fd8141aa1afce29c5d5a4f94cc85d277e6e"},
+    {file = "nepattern-0.7.4.tar.gz", hash = "sha256:255a042b45e9d2b04f3c2d73b81912c6b856fae1a10a6e4df30b08ed892d2f9c"},
 ]
 
 [[package]]
