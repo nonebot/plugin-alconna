@@ -112,6 +112,7 @@ from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
 from .uniseg import SerializeFailed as SerializeFailed
 from .uniseg import custom_register as custom_register
 from .extension import load_from_path as load_from_path
+from .uniseg import FallbackStrategy as FallbackStrategy
 from .uniseg import UniversalMessage as UniversalMessage
 from .uniseg import UniversalSegment as UniversalSegment
 from .params import AlconnaExecResult as AlconnaExecResult
@@ -122,7 +123,7 @@ from .uniseg import apply_fetch_targets as apply_fetch_targets
 from .uniseg import SupportAdapterModule as SupportAdapterModule
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.46.0"
+__version__ = "0.46.1"
 
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

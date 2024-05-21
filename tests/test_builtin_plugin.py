@@ -50,9 +50,9 @@ async def test_help(app: App):
             event,
             """\
 # 当前可用的命令有:
- [0] /echo : echo 指令
- [1] /help : 显示所有命令帮助
- [2] test : test
+ 【0】/echo : echo 指令
+ 【1】/help : 显示所有命令帮助
+ 【2】test : test
 # 输入'命令名 -h|--help' 查看特定命令的语法""",
         )
 
@@ -63,7 +63,7 @@ async def test_help(app: App):
             event1,
             """\
 # 当前可用的命令有:
- [2] test : test
+ 【2】test : test
 # 输入'命令名 -h|--help' 查看特定命令的语法""",
         )
 

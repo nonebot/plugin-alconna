@@ -37,17 +37,17 @@ from .constraint import SupportScope as SupportScope
 from .segment import custom_handler as custom_handler
 from .segment import custom_register as custom_register
 from .constraint import SupportAdapter as SupportAdapter
-from .fallback import FallbackStrategy as FallbackStrategy
 from .fallback import FallbackMessage as FallbackMessage
 from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 from .constraint import SerializeFailed as SerializeFailed
+from .fallback import FallbackStrategy as FallbackStrategy
 from .segment import apply_media_to_url as apply_media_to_url
 from .constraint import SupportAdapterModule as SupportAdapterModule
 from .adapters import BUILDER_MAPPING, FETCHER_MAPPING, EXPORTER_MAPPING
 
-__version__ = "0.46.0"
+__version__ = "0.46.1"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",

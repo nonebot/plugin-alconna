@@ -57,7 +57,7 @@ async def help_cmd_handle(arp: Arparma):
                 msg = slot.get_help()
             return await help_matcher.finish(msg)
         command_string = "\n".join(
-            f" [{str(index).rjust(len(str(len(cmds))), '0')}] {slot.header_display} : {slot.meta.description}"
+            f" 【{str(index).rjust(len(str(len(cmds))), '0')}】{slot.header_display} : {slot.meta.description}"
             for index, slot in enumerate(cmds)
             if query in slot.header_display
         )
@@ -65,7 +65,7 @@ async def help_cmd_handle(arp: Arparma):
             return await help_matcher.finish("查询失败！")
     else:
         command_string = "\n".join(
-            f" [{str(index).rjust(len(str(len(cmds))), '0')}] {slot.header_display} : {slot.meta.description}"
+            f" 【{str(index).rjust(len(str(len(cmds))), '0')}】{slot.header_display} : {slot.meta.description}"
             for index, slot in enumerate(cmds)
         )
     help_names = set()
