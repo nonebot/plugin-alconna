@@ -17,7 +17,8 @@ with namespace("builtin/echo") as ns:
     ns.disable_builtin_options = {"shortcut", "completion"}
 
     echo = (
-        Command("echo <...content>", meta=CommandMeta("echo 指令", usage="重复你说的话", compact=True))
+        Command("echo <...content>", "echo 指令", CommandMeta(compact=True))
+        .usage("重复你说的话")
         .action(lambda content: content)
         .build(auto_send_output=True, use_cmd_start=True)
     )

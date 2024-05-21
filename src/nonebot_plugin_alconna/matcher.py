@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import weakref
 from weakref import ref
+from dataclasses import asdict
 from types import FunctionType
 from typing_extensions import Self
 from datetime import datetime, timedelta
@@ -1095,7 +1096,19 @@ class Command(AlconnaString):
             meta (Optional[CommandMeta], optional): 选填的命令元数据.
         """
         super().__init__(command, help_text)
-        self.meta = meta or self.meta
+        if meta:
+            meta = CommandMeta(**asdict(meta))
+            if meta.description == "Unknown":
+                meta.description = help_text or self.meta.description
+            self.meta = meta or self.meta
+
+    def example(self, content: str):
+        """设置命令的使用示例"""
+        if not self.meta.example:
+            self.meta.example = content
+        else:
+            self.meta.example += f"\n{content}"
+        return self
 
     def build(
         self,
@@ -1122,9 +1135,13 @@ class Command(AlconnaString):
         params = locals().copy()
         params["_depth"] += 1
         params.pop("self")
-        params.pop("__class__")
-        alc = super().build()
+        params.pop("__class__", None)
+        alc = Alconna(*self.buffer.values(), *self.options, meta=self.meta)
+        for action in self.actions:
+            alc.bind()(action)
         matcher = on_alconna(alc, **params)
+        for key, args in self.shortcuts.items():
+            matcher.shortcut(key, args)
         if self.actions:
 
             @matcher.handle()
@@ -1134,7 +1151,7 @@ class Command(AlconnaString):
                     if isinstance(res, Hashable) and is_awaitable(res):
                         res = await res
                     if isinstance(res, (str, Message, MessageSegment, Segment, UniMessage, UniMessageTemplate)):
-                        await matcher.send(res, fallback=True)
+                        await matcher.send(res, fallback=FallbackStrategy.rollback)
 
         return matcher
 
