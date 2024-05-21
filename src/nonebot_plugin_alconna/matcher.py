@@ -50,6 +50,7 @@ from .util import annotation
 from .model import CompConfig
 from .pattern import patterns
 from .uniseg import Text, Segment, UniMessage
+from .uniseg.fallback import FallbackStrategy
 from .uniseg.template import UniMessageTemplate
 from .extension import Extension, ExtensionExecutor
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, log
@@ -511,6 +512,7 @@ class AlconnaMatcher(Matcher):
         key: str,
         prompt: _M | None = None,
         parameterless: Iterable[Any] | None = None,
+        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
         override: tuple[Literal["insert", "replace"], int] | None = None,
     ) -> Callable[[T_Handler], T_Handler]:
         """装饰一个函数来指示 NoneBot 获取一个参数 `key`
@@ -522,6 +524,7 @@ class AlconnaMatcher(Matcher):
             key: 参数名
             prompt: 在参数不存在时向用户发送的消息, 支持 `UniMessage`
             parameterless: 非参数类型依赖列表
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时的策略
             override: 是否定制优先级
         """
 
@@ -531,14 +534,14 @@ class AlconnaMatcher(Matcher):
             if matcher.get_target() == ARG_KEY.format(key=key):
                 msg = await cls.executor.select(bot, event).message_provider(event, state, bot)
                 if not msg:
-                    await matcher.reject(prompt, fallback=True)
+                    await matcher.reject(prompt, fallback=fallback)
                 if isinstance(msg, UniMessage):
                     msg = await msg.export(bot, True)
                 matcher.set_arg(key, msg)
                 return
             if matcher.get_arg(key, ...) is not ...:
                 return
-            await matcher.reject(prompt, fallback=True)
+            await matcher.reject(prompt, fallback=fallback)
 
         _parameterless = (Depends(_key_getter), *(parameterless or ()))
 
@@ -576,6 +579,7 @@ class AlconnaMatcher(Matcher):
         prompt: _M | None = None,
         middleware: MIDDLEWARE | None = None,
         parameterless: Iterable[Any] | None = None,
+        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
         override: tuple[Literal["insert", "replace"], int] | None = None,
     ) -> Callable[[T_Handler], T_Handler]:
         """装饰一个函数来指示 NoneBot 获取一个路径下的参数 `path`
@@ -590,6 +594,7 @@ class AlconnaMatcher(Matcher):
             path: 参数路径名; "~XX" 时会把 "~" 替换为父级 assign 的 path
             prompt: 在参数不存在时向用户发送的消息，支持 `UniMessage`
             parameterless: 非参数类型依赖列表
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时的策略
             override: 是否定制优先级
         """
         path = merge_path(path, cls.basepath)
@@ -602,26 +607,26 @@ class AlconnaMatcher(Matcher):
             if matcher.get_target() == ALCONNA_ARG_KEY.format(key=path):
                 msg = await cls.executor.select(bot, event).message_provider(event, state, bot)
                 if not msg:
-                    await matcher.reject(prompt, fallback=True)
+                    await matcher.reject(prompt, fallback=fallback)
                 if not isinstance(msg, UniMessage):
                     msg = await UniMessage.generate(message=msg, event=event, bot=bot)
                 ms = msg[0]
                 if isinstance(ms, Text) and not ms.text.strip():
-                    await matcher.reject(prompt, fallback=True)
+                    await matcher.reject(prompt, fallback=fallback)
                 log("DEBUG", escape_tag(lang.require("nbp-alc", "log.got_path/ms").format(path=path, ms=ms)))
                 if (res := _validate(arg, ms)) is None:  # type: ignore
                     log(
                         "TRACE",
                         escape_tag(lang.require("nbp-alc", "log.got_path/validate").format(path=path, validate=res)),
                     )
-                    await matcher.reject(prompt, fallback=True)
+                    await matcher.reject(prompt, fallback=fallback)
                 if middleware:
                     res = await run_always_await(middleware, event, bot, matcher.state, res)
                 matcher.set_path_arg(path, res)
                 return
             if matcher.state.get(ALCONNA_ARG_KEY.format(key=path), ...) is not ...:
                 return
-            await matcher.reject(prompt, fallback=True)
+            await matcher.reject(prompt, fallback=fallback)
 
         _parameterless = (*(parameterless or ()), Depends(_key_getter))
 
@@ -708,7 +713,7 @@ class AlconnaMatcher(Matcher):
     async def send(
         cls,
         message: _M,
-        fallback: bool = False,
+        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
         **kwargs: Any,
     ) -> Any:
         """发送一条消息给当前交互用户
@@ -717,8 +722,7 @@ class AlconnaMatcher(Matcher):
 
         参数:
             message: 消息内容, 支持 `UniMessage`
-            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
-                是否转为字符串
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时的策略
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
                 请参考对应 adapter 的 bot 对象 api
         """
@@ -735,15 +739,14 @@ class AlconnaMatcher(Matcher):
     async def finish(
         cls,
         message: _M | None = None,
-        fallback: bool = False,
+        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
         **kwargs,
     ) -> NoReturn:
         """发送一条消息给当前交互用户并结束当前事件响应器
 
         参数:
             message: 消息内容, 支持 `UniMessage`
-            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
-                是否转为字符串
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时的策略
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
                 请参考对应 adapter 的 bot 对象 api
         """
@@ -755,15 +758,14 @@ class AlconnaMatcher(Matcher):
     async def pause(
         cls,
         prompt: _M | None = None,
-        fallback: bool = False,
+        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
         **kwargs,
     ) -> NoReturn:
         """发送一条消息给当前交互用户并暂停事件响应器，在接收用户新的一条消息后继续下一个处理函数
 
         参数:
             prompt: 消息内容, 支持 `UniMessage`
-            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
-                是否转为字符串
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时的策略
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
                 请参考对应 adapter 的 bot 对象 api
         """
@@ -775,7 +777,7 @@ class AlconnaMatcher(Matcher):
     async def reject(
         cls,
         prompt: _M | None = None,
-        fallback: bool = False,
+        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
         **kwargs,
     ) -> NoReturn:
         """最近使用 `got` / `receive` 接收的消息不符合预期，
@@ -783,8 +785,7 @@ class AlconnaMatcher(Matcher):
 
         参数:
             prompt: 消息内容, 支持 `UniMessage`
-            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
-                是否转为字符串
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时的策略
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
                 请参考对应 adapter 的 bot 对象 api
         """
@@ -797,7 +798,7 @@ class AlconnaMatcher(Matcher):
         cls,
         path: str,
         prompt: _M | None = None,
-        fallback: bool = False,
+        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
         **kwargs,
     ) -> NoReturn:
         """最近使用 `got_path` 接收的消息不符合预期，
@@ -806,8 +807,7 @@ class AlconnaMatcher(Matcher):
         参数:
             path: 参数路径名; "~XX" 时会把 "~" 替换为父级 assign 的 path
             prompt: 消息内容, 支持 `UniMessage`
-            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
-                是否转为字符串
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时的策略
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
                 请参考对应 adapter 的 bot 对象 api
         """
@@ -822,7 +822,7 @@ class AlconnaMatcher(Matcher):
         cls,
         key: str,
         prompt: _M | None = None,
-        fallback: bool = False,
+        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
         **kwargs,
     ) -> NoReturn:
         """最近使用 `got` 接收的消息不符合预期，
@@ -831,8 +831,7 @@ class AlconnaMatcher(Matcher):
         参数:
             key: 参数名
             prompt: 消息内容, 支持 `UniMessage`
-            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
-                是否转为字符串
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时的策略
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
                 请参考对应 adapter 的 bot 对象 api
         """
@@ -847,7 +846,7 @@ class AlconnaMatcher(Matcher):
         cls,
         id: str = "",
         prompt: _M | None = None,
-        fallback: bool = False,
+        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
         **kwargs,
     ) -> NoReturn:
         """最近使用 `receive` 接收的消息不符合预期，
@@ -856,8 +855,7 @@ class AlconnaMatcher(Matcher):
         参数:
             id: 消息 id
             prompt: 消息内容, 支持 `UniMessage`
-            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时，
-                是否转为字符串
+            fallback: 若 UniMessage 中的元素无法被解析为当前 adapter 的消息元素时的策略
             kwargs: {ref}`nonebot.adapters.Bot.send` 的参数，
                 请参考对应 adapter 的 bot 对象 api
         """

@@ -1,18 +1,15 @@
 import inspect
-from collections.abc import Awaitable
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Union, Generic, TypeVar, Callable, get_args, get_origin
+from collections.abc import Sequence, Awaitable
+from typing import Any, Union, Generic, TypeVar, Callable, get_args, get_origin
 
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
 from .target import Target as Target
-from .segment import Other, Segment, custom
+from .fallback import FallbackStrategy
 from .constraint import SupportAdapter, SerializeFailed
-
-if TYPE_CHECKING:
-    from .message import UniMessage
-
+from .segment import Other, Segment, Reference, CustomNode, custom
 
 TS = TypeVar("TS", bound=Segment)
 TM = TypeVar("TM", bound=Message)
@@ -62,7 +59,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                 else:
                     self._mapping[target] = method
 
-    async def export(self, source: "UniMessage", bot: Bot, fallback: bool):
+    async def export(self, source: Sequence[Segment], bot: Bot, fallback: Union[bool, FallbackStrategy]):
         msg_type = self.get_message_type()
         message = msg_type([])
         for seg in source:
@@ -80,7 +77,27 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                     message.append(res)
             elif isinstance(seg, Other):
                 message.append(seg.origin)  # type: ignore
-            elif fallback or bot.adapter.get_name() == SupportAdapter.nonebug:
+            elif bot.adapter.get_name() == SupportAdapter.nonebug:
+                message += str(seg)
+            elif isinstance(fallback, FallbackStrategy) and fallback != FallbackStrategy.forbid:
+                if fallback == FallbackStrategy.ignore:
+                    continue
+                elif fallback == FallbackStrategy.text or not seg.children:
+                    message += str(seg)
+                elif isinstance(seg, Reference):
+                    for node in seg.children:
+                        if isinstance(node, CustomNode):
+                            if isinstance(node.content, str):
+                                message.extend(msg_type(node.content))
+                            elif isinstance(node.content, Message):
+                                message.extend(node.content)
+                            else:
+                                message.extend(await self.export(node.content, bot, fallback))
+                        else:
+                            ...
+                else:
+                    message.extend(await self.export(seg.children, bot, fallback))
+            elif fallback is True:
                 message += str(seg)
             else:
                 raise SerializeFailed(

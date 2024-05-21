@@ -25,7 +25,7 @@ def mfbuild(builder: MessageBuilder, seg: BaseMessageSegment):
 
 
 @custom_handler(MarketFace)
-async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Bot, fallback: bool):
+async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Bot, fallback):
     if exporter.get_message_type() is Message:
         return MessageSegment("chronocat:marketface", seg.data)(await exporter.export(seg.children, bot, fallback))  # type: ignore
 
@@ -38,6 +38,6 @@ def fbuild(builder: MessageBuilder, seg: BaseMessageSegment):
 
 
 @custom_handler(Emoji)
-async def fexport(exporter: MessageExporter, seg: Emoji, bot: Bot, fallback: bool):
+async def fexport(exporter: MessageExporter, seg: Emoji, bot: Bot, fallback):
     if exporter.get_message_type() is Message:
         return MessageSegment("chronocat:face", seg.data)(await exporter.export(seg.children, bot, fallback))  # type: ignore

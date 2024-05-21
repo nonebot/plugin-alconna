@@ -37,6 +37,7 @@ from .constraint import SupportScope as SupportScope
 from .segment import custom_handler as custom_handler
 from .segment import custom_register as custom_register
 from .constraint import SupportAdapter as SupportAdapter
+from .fallback import FallbackStrategy as FallbackStrategy
 from .fallback import FallbackMessage as FallbackMessage
 from .fallback import FallbackSegment as FallbackSegment
 from .params import UniversalMessage as UniversalMessage

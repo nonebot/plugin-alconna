@@ -79,7 +79,7 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
         display = seg.data.get("display")
         text = Text(seg.data["text"]).mark(0, len(seg.data["text"]), "link")
         if display:
-            text._children = [Text(display)]
+            text.cover(display)
         return text(*self.generate(seg.children))
 
     @build("img", "image")

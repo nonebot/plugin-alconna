@@ -16,10 +16,10 @@ from nonebot.internal.matcher import current_bot, current_event
 
 from .target import Target
 from .exporter import MessageExporter
-from .fallback import FallbackMessage
 from .constraint import SerializeFailed
 from .template import UniMessageTemplate
 from .adapters import BUILDER_MAPPING, EXPORTER_MAPPING
+from .fallback import FallbackMessage, FallbackStrategy
 from .segment import At, File, I18n, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice, Segment
 
 T = TypeVar("T")
@@ -133,8 +133,6 @@ class UniMessage(list[TS]):
                 构建的消息
             """
             ...
-
-
 
         @classmethod
         def image(
@@ -447,6 +445,30 @@ class UniMessage(list[TS]):
                 cls_or_self.append(I18n(item_or_scope, type_, *args, mapping=mapping, **kwargs))  # type: ignore
                 return cls_or_self
             return UniMessage(I18n(item_or_scope, type_, *args, mapping=mapping, **kwargs))  # type: ignore
+
+    @overload
+    def __init__(self): ...
+
+    @overload
+    def __init__(self: "UniMessage[Text]", message: str): ...
+
+    @overload
+    def __init__(self, message: TS): ...
+
+    @overload
+    def __init__(self: "UniMessage[TS1]", message: TS1): ...
+
+    @overload
+    def __init__(self, message: Iterable[TS]): ...
+
+    @overload
+    def __init__(self: "UniMessage[TS1]", message: Iterable[TS1]): ...
+
+    @overload
+    def __init__(self: "UniMessage[Text]", message: Iterable[str]): ...
+
+    @overload
+    def __init__(self: "UniMessage[Union[Text, TS1]]", message: Iterable[Union[str, TS1]]): ...
 
     def __init__(
         self: "UniMessage[Segment]",
@@ -897,7 +919,9 @@ class UniMessage(list[TS]):
                 self.extend(msg)  # type: ignore
         self.__merge_text__()
 
-    async def export(self, bot: Optional[Bot] = None, fallback: bool = True) -> Message:
+    async def export(
+        self, bot: Optional[Bot] = None, fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback
+    ) -> Message:
         if not bot:
             try:
                 bot = current_bot.get()
@@ -929,7 +953,7 @@ class UniMessage(list[TS]):
         self,
         target: Union[Event, Target, None] = None,
         bot: Optional[Bot] = None,
-        fallback: bool = True,
+        fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
     ) -> "Receipt":
@@ -977,7 +1001,7 @@ class UniMessage(list[TS]):
         self,
         target: Union[Event, Target, None] = None,
         bot: Optional[Bot] = None,
-        fallback: bool = True,
+        fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
     ) -> NoReturn:
@@ -1034,7 +1058,7 @@ class Receipt:
 
     async def edit(
         self,
-        message: Union[UniMessage, str, Iterable[Union[str, Segment]], Segment],
+        message: Union[str, Iterable[str], Iterable[Segment], Iterable[Union[str, Segment]], Segment],
         delay: float = 0,
         index: int = -1,
     ):
@@ -1064,8 +1088,8 @@ class Receipt:
 
     async def send(
         self,
-        message: Union[UniMessage, str, Iterable[Union[str, Segment]], Segment],
-        fallback: bool = True,
+        message: Union[str, Iterable[str], Iterable[Segment], Iterable[Union[str, Segment]], Segment],
+        fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
         delay: float = 0,
@@ -1097,8 +1121,8 @@ class Receipt:
 
     async def reply(
         self,
-        message: Union[UniMessage, str, Iterable[Union[str, Segment]], Segment],
-        fallback: bool = True,
+        message: Union[str, Iterable[str], Iterable[Segment], Iterable[Union[str, Segment]], Segment],
+        fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
         at_sender: Union[str, bool] = False,
         index: int = -1,
         delay: float = 0,
@@ -1107,8 +1131,8 @@ class Receipt:
 
     async def finish(
         self,
-        message: Union[UniMessage, str, Iterable[Union[str, Segment]], Segment],
-        fallback: bool = True,
+        message: Union[str, Iterable[str], Iterable[Segment], Iterable[Union[str, Segment]], Segment],
+        fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
         delay: float = 0,

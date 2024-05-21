@@ -13,6 +13,7 @@ from nonebot.internal.driver.model import Request
 from nonebot.internal.adapter import Bot, Event, Adapter
 
 from .segment import Image
+from .constraint import log
 
 
 async def reply_fetch(event: Event, bot: Bot):
@@ -162,6 +163,7 @@ async def get_bot(
             predicate = _check_adapter
         if await predicate(bot):
             bots.append(bot)
+    log("TRACE", f"get bots: {bots}")
     if not bot_id:
         if rand:
             return random.choice(bots)

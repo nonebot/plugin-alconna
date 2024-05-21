@@ -9,8 +9,8 @@ from datetime import datetime
 from urllib.parse import urlparse
 from typing_extensions import Self
 from collections.abc import Iterable, Awaitable
-from dataclasses import field, asdict, dataclass, InitVar
-from typing import TYPE_CHECKING, Any, Sequence, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload
+from dataclasses import field, asdict, dataclass
+from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload
 
 from tarina.lang.model import LangItem
 from nonebot.compat import custom_validation
@@ -19,6 +19,7 @@ from nepattern import MatchMode, BasePattern, create_local_patterns
 
 from .utils import fleep
 from .constraint import lang
+from .fallback import FallbackStrategy
 
 if TYPE_CHECKING:
     from .message import UniMessage
@@ -43,16 +44,19 @@ class Segment:
     def from_(
         cls: type[TS], source: BasePattern[TS1, Any, Any], *, fetch_all: Literal[True]
     ) -> BasePattern[list[TS], TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+
     @classmethod
     @overload
     def from_(
         cls: type[TS], source: type[TS1], *, fetch_all: Literal[True]
     ) -> BasePattern[list[TS], TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+
     @classmethod
     @overload
     def from_(
         cls: type[TS], source: BasePattern[TS1, Any, Any], *, index: int = 0
     ) -> BasePattern[TS, TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
+
     @classmethod
     @overload
     def from_(
@@ -228,6 +232,10 @@ class Text(Segment):
                 data[(start, end + 1)] = key.split("\x01")
         for scale in sorted(data.keys()):
             styles[scale] = data[scale]
+
+    def cover(self, text: str):
+        self._children = [Text(text)]
+        return self
 
     def mark(self, start: int, end: int, *styles: str):
         _styles = self.styles.setdefault((start, end), [])
@@ -510,6 +518,7 @@ class Reference(Segment):
         self._children.extend(segments)  # type: ignore
         return self
 
+
 @dataclass
 class Hyper(Segment):
     """Hyper对象，表示一类超级消息。如卡片消息、ark消息、小程序等"""
@@ -583,8 +592,10 @@ class _CustomMounter:
     EXPORTERS: dict[
         type[Segment],
         Union[
-            Callable[["MessageExporter", Segment, Bot, bool], Awaitable[Optional[MessageSegment]]],
-            Callable[["MessageExporter", Segment, Bot, bool], Awaitable[list[MessageSegment]]],
+            Callable[
+                ["MessageExporter", Segment, Bot, Union[bool, FallbackStrategy]], Awaitable[Optional[MessageSegment]]
+            ],
+            Callable[["MessageExporter", Segment, Bot, Union[bool, FallbackStrategy]], Awaitable[list[MessageSegment]]],
         ],
     ] = {}
 
@@ -608,8 +619,10 @@ class _CustomMounter:
     def custom_handler(cls, custom_type: type[TS]):
         def _handler(
             func: Union[
-                Callable[["MessageExporter", TS, Bot, bool], Awaitable[Optional[MessageSegment]]],
-                Callable[["MessageExporter", TS, Bot, bool], Awaitable[list[MessageSegment]]],
+                Callable[
+                    ["MessageExporter", TS, Bot, Union[bool, FallbackStrategy]], Awaitable[Optional[MessageSegment]]
+                ],
+                Callable[["MessageExporter", TS, Bot, Union[bool, FallbackStrategy]], Awaitable[list[MessageSegment]]],
             ]
         ):
             cls.EXPORTERS[custom_type] = func  # type: ignore
@@ -617,7 +630,9 @@ class _CustomMounter:
 
         return _handler
 
-    async def export(self, exporter: "MessageExporter[TM]", seg: Segment, bot: Bot, fallback: bool):
+    async def export(
+        self, exporter: "MessageExporter[TM]", seg: Segment, bot: Bot, fallback: Union[bool, FallbackStrategy]
+    ):
         if seg.__class__ in self.EXPORTERS:
             return await self.EXPORTERS[seg.__class__](exporter, seg, bot, fallback)
         return None

@@ -192,6 +192,9 @@ class QQMessageExporter(MessageExporter[Message]):
 
     @export
     async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+        assert isinstance(bot, QQBot)
+        if bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 at
+            return MessageSegment.text(" ")
         if seg.flag == "channel":
             return MessageSegment.mention_channel(seg.target)
         elif seg.flag == "user":
@@ -203,6 +206,9 @@ class QQMessageExporter(MessageExporter[Message]):
 
     @export
     async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+        assert isinstance(bot, QQBot)
+        if bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 at
+            return MessageSegment.text(" ")
         return MessageSegment.mention_everyone()
 
     @export
