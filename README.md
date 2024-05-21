@@ -108,3 +108,12 @@ async def_():
 ## 插件示例
 
 [demo bot](./example/plugins/demo.py)
+
+```python
+# echo 插件
+from nonebot_plugin_alconna import UniMessage, Command
+
+@Command("echo <...content>").build(auto_send_output=True).handle()
+async def _(content: UniMessage):
+    await content.finish()
+```

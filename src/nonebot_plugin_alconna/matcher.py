@@ -38,8 +38,8 @@ from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from nonebot.plugin.on import on_message, store_matcher, get_matcher_source
-from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
 from nonebot.exception import PausedException, FinishedException, RejectedException
+from arclet.alconna import Arg, Args, Alconna, CommandMeta, ShortcutArgs, command_manager
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker, _DependentCallable
@@ -1085,6 +1085,17 @@ class Command(AlconnaString):
     @staticmethod
     def args_gen(pattern: str, types: dict):
         return AlconnaString.args_gen(pattern, {**types, **patterns})
+
+    def __init__(self, command: str, help_text: str | None = None, meta: CommandMeta | None = None):
+        """创建 Command 对象
+
+        Args:
+            command (str): 命令字符串, 例如 `test <message:str:hello> #HELP_STRING`
+            help_text (Optional[str], optional): 选填的命令的帮助文本.
+            meta (Optional[CommandMeta], optional): 选填的命令元数据.
+        """
+        super().__init__(command, help_text)
+        self.meta = meta or self.meta
 
     def build(
         self,
