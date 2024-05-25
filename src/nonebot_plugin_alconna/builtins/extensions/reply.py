@@ -37,7 +37,7 @@ class ReplyRecordExtension(Extension):
         return "builtins.extensions.reply:ReplyRecordExtension"
 
     def __init__(self):
-        self.cache: "LRU[str, Reply]" = LRU(20)
+        self.cache: LRU[str, Reply] = LRU(20)
 
     def get_reply(self, message_id: str) -> Optional[Reply]:
         return self.cache.get(message_id, None)
