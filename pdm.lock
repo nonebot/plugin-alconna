@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:e9f0b6e96c97c224dfafb9d778215bd8d2f421c37a14d867f0c15bde7c6a4591"
+content_hash = "sha256:3b8d5185ce2416894cd710de2d39e35db61b35d75864a42ea8a32f558bd50505"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -1234,6 +1234,19 @@ dependencies = [
 files = [
     {file = "nonebot_plugin_send_anything_anywhere-0.6.1-py3-none-any.whl", hash = "sha256:d1ac0df520f950b61ff27d3abda39c4bb2023797f3b7df2a23517ad53f3a7f29"},
     {file = "nonebot_plugin_send_anything_anywhere-0.6.1.tar.gz", hash = "sha256:89a695c5e356a423b8641f79082353b50ee431585988de2c2ae77f8ea00ac3e9"},
+]
+
+[[package]]
+name = "nonebot-plugin-waiter"
+version = "0.6.0"
+requires_python = ">=3.9"
+summary = "An alternative for got-and-reject in Nonebot"
+dependencies = [
+    "nonebot2>=2.3.0",
+]
+files = [
+    {file = "nonebot_plugin_waiter-0.6.0-py3-none-any.whl", hash = "sha256:7d337f0c1609f861d0398539086b21b5e17e94025f07ffb7d22484773f03f5a6"},
+    {file = "nonebot_plugin_waiter-0.6.0.tar.gz", hash = "sha256:09a820846dd5ca0e45070884bcd583f9b29744628d98361a6b1edcdd4e54c19e"},
 ]
 
 [[package]]

@@ -10,6 +10,7 @@ dependencies = [
     "nepattern>=0.7.4",
     "nonebot2>=2.3.0",
     "importlib-metadata>=4.13.0",
+    "nonebot-plugin-waiter>=0.6.0",
 ]
 dynamic = ["version"]
 requires-python = ">=3.9"

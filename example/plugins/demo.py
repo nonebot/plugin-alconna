@@ -2,7 +2,6 @@ from typing import Union, Literal
 
 from tarina import lang
 from nonebot import require
-from nonebot.adapters import Event
 from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
 from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
@@ -23,6 +22,9 @@ from arclet.alconna import (
 )
 
 require("nonebot_plugin_alconna")
+require("nonebot_plugin_waiter")
+
+from nonebot_plugin_waiter import waiter
 
 from nonebot_plugin_alconna import (
     At,
@@ -436,7 +438,7 @@ cmd = on_alconna(alc, comp_config={"lite": True}, skip_for_unmatch=False)
 
 
 @cmd.handle()
-async def handle(event: Event, name: str, phone: int, at: Union[str, At]):
+async def handle(name: str, phone: int, at: Union[str, At]):
     r = await UniMessage(f"姓名：{name}").send(reply_to=True)
     await r.reply(f"手机号：{phone}")
     await r.reply(f"教师号：{at!r}")
@@ -444,11 +446,9 @@ async def handle(event: Event, name: str, phone: int, at: Union[str, At]):
 
     await cmd.send("请回复验证码：")
 
-    @cmd.waiter()
-    async def receive(event1: Event, msg: UniMsg):
-        if event.get_session_id() == event1.get_session_id() and msg:
-            return msg
-        return False
+    @waiter(["message"], keep_session=True)
+    async def receive(msg: UniMsg):
+        return msg
 
     async for res in receive(timeout=10):
         if not res:

@@ -810,7 +810,7 @@ class UniMessage(list[TS]):
         event: Optional[Event] = None,
         bot: Optional[Bot] = None,
         adapter: Optional[str] = None,
-    ):
+    ) -> "UniMessage":
         if not message:
             if not event:
                 try:
@@ -845,7 +845,7 @@ class UniMessage(list[TS]):
         event: Optional[Event] = None,
         bot: Optional[Bot] = None,
         adapter: Optional[str] = None,
-    ):
+    ) -> "UniMessage":
         if not message:
             if not event:
                 try:
