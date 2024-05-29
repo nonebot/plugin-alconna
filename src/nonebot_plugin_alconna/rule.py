@@ -297,6 +297,7 @@ class AlconnaRule:
             msg = await self.executor.output_converter(_t, text)  # type: ignore
             if not msg:
                 return await bot.send(event, text)
+            msg = await self.executor.send_wrapper(bot, event, msg)
             if isinstance(msg, UniMessage):
                 msg = await msg.export(bot, fallback=True)
             return await bot.send(event, msg)  # type: ignore

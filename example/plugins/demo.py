@@ -1,6 +1,5 @@
 from typing import Union, Literal
 
-from tarina import lang
 from nonebot import require
 from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
@@ -111,7 +110,6 @@ with namespace("nbtest") as ns:
     pipcmd = on_alconna(
         pip, comp_config={"tab": "切换", "enter": "确认", "exit": "退出", "timeout": 30}, block=True
     )  # , auto_send_output=True)
-    i18n = on_alconna(Alconna("lang", Args["lang", ["zh_CN", "en_US"]]))
     login = on_alconna(
         Alconna(
             "login",
@@ -120,15 +118,6 @@ with namespace("nbtest") as ns:
         )
     )
     bind = on_alconna(Alconna("bind"))
-
-
-@i18n.handle()
-async def _i18n(arp: Arparma):
-    try:
-        lang.select(arp["lang"])
-    except ValueError as e:
-        await i18n.finish(str(e))
-    await i18n.send("ok")
 
 
 @pipcmd.handle([Check(assign("list"))])
@@ -530,9 +519,9 @@ async def setu_h(count: int, tags: Match[tuple[str, ...]]):
 
 from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
 
-preview = Command("preview <content:any>", "预览").build(auto_send_output=True, extensions=[ReplyMergeExtension()])
+preview = Command("preview <...content>", "预览").build(auto_send_output=True, extensions=[ReplyMergeExtension()])
 
 
 @preview.handle()
-async def preview_h(content):
+async def preview_h(content: UniMessage):
     await preview.finish("rendering preview:\n" + content)

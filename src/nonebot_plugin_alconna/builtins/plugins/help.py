@@ -4,7 +4,7 @@ from tarina import lang
 from nonebot.plugin import PluginMetadata
 from arclet.alconna import Args, Field, Option, Alconna, Arparma, CommandMeta, namespace, store_true, command_manager
 
-from nonebot_plugin_alconna import referent, on_alconna
+from nonebot_plugin_alconna import UniMessage, referent, on_alconna
 
 __plugin_meta__ = PluginMetadata(
     name="help",
@@ -44,7 +44,7 @@ help_matcher.shortcut("所有帮助", {"args": ["--hide"], "prefix": True, "fuzz
 
 
 @help_matcher.handle()
-async def help_cmd_handle(arp: Arparma):
+async def help_cmd_handle(arp: Arparma, bot, event):
     cmds = [i for i in command_manager.get_commands() if not i.meta.hide or arp.query[bool]("hide.value")]
     if (query := arp.all_matched_args["query"]) != "-1":
         if query.isdigit():
@@ -52,7 +52,8 @@ async def help_cmd_handle(arp: Arparma):
             try:
                 executor = referent(slot).executor
                 msg = await executor.output_converter("help", slot.get_help())
-                msg = msg or slot.get_help()
+                msg = msg or UniMessage(slot.get_help())
+                msg = await executor.send_wrapper(bot, event, msg)
             except Exception:
                 msg = slot.get_help()
             return await help_matcher.finish(msg)
