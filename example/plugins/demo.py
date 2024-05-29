@@ -530,10 +530,7 @@ async def setu_h(count: int, tags: Match[tuple[str, ...]]):
 
 from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
 
-preview = (
-    Command("preview <content:any>", "预览")
-    .build(auto_send_output=True, extensions=[ReplyMergeExtension()])
-)
+preview = Command("preview <content:any>", "预览").build(auto_send_output=True, extensions=[ReplyMergeExtension()])
 
 
 @preview.handle()
