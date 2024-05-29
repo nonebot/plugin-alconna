@@ -13,8 +13,10 @@ T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 class Match(Generic[T]):
     """
     匹配项，表示参数是否存在于 `all_matched_args` 内
-    result (T): 匹配结果
-    available (bool): 匹配状态
+
+    Attributes:
+        result (T): 匹配结果
+        available (bool): 匹配状态
     """
 
     result: T
@@ -32,11 +34,10 @@ class Query(Generic[T]):
     """
     查询项，表示参数是否可由 `Arparma.query` 查询并获得结果
 
-    result (T): 查询结果
-
-    available (bool): 查询状态
-
-    path (str): 查询路径
+    Attributes:
+        result (T): 查询结果
+        available (bool): 查询状态
+        path (str): 查询路径
     """
 
     result: T

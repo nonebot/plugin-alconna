@@ -12,12 +12,10 @@ class MarkdownOutputExtension(Extension):
     用于将 Alconna 的自动输出转换为 Markdown 格式
 
     Example:
-        ```python
-        from nonebot_plugin_alconna import MsgId, on_alconna
-        from nonebot_plugin_alconna.builtins.extensions import MarkdownOutputExtension
-
-        matcher = on_alconna(..., extensions=[MarkdownOutputExtension(escape_dot=...)])
-        ```
+        >>> from nonebot_plugin_alconna import MsgId, on_alconna
+        >>> from nonebot_plugin_alconna.builtins.extensions import MarkdownOutputExtension
+        >>>
+        >>> matcher = on_alconna("...", extensions=[MarkdownOutputExtension(escape_dot=...)])
     """
 
     @property

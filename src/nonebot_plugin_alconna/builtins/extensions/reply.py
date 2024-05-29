@@ -13,24 +13,22 @@ class ReplyRecordExtension(Extension):
     推荐配合 matcher.got 使用
 
     Example:
-        ```python
-        from nonebot_plugin_alconna import MsgId, on_alconna
-        from nonebot_plugin_alconna.builtins.extensions import ReplyRecordExtension
-
-        matcher = on_alconna(..., extensions=[ReplyRecordExtension()])
-
-        @matcher.handle()
-        async def handle(msg_id: MsgId, ext: ReplyRecordExtension):
-            if reply := ext.get_reply(msg_id):
-                ...
-            else:
-                ...
-        ```
+        >>> from nonebot_plugin_alconna import MsgId, on_alconna
+        >>> from nonebot_plugin_alconna.builtins.extensions import ReplyRecordExtension
+        >>>
+        >>> matcher = on_alconna("...", extensions=[ReplyRecordExtension()])
+        >>>
+        >>> @matcher.handle()
+        >>> async def handle(msg_id: MsgId, ext: ReplyRecordExtension):
+        >>>     if reply := ext.get_reply(msg_id):
+        >>>         ...
+        >>>     else:
+        >>>         ...
     """
 
     @property
     def priority(self) -> int:
-        return 14
+        return 13
 
     @property
     def id(self) -> str:
@@ -45,13 +43,68 @@ class ReplyRecordExtension(Extension):
     async def message_provider(self, event, state, bot, use_origin: bool = False):
         try:
             msg = event.get_message()
-        except ValueError:
+        except (NotImplementedError, ValueError):
             return
         uni_msg = UniMessage.generate_without_reply(message=msg, bot=bot)
         if not (reply := await reply_fetch(event, bot)):
             return uni_msg
         msg_id = UniMessage.get_message_id(event, bot)
         self.cache[msg_id] = reply
+        return uni_msg
+
+
+class ReplyMergeExtension(Extension):
+    """
+    用于将消息事件中的回复指向的原消息合并到当前消息中作为一部分参数
+
+    推荐配合 matcher.got 使用
+
+    Example:
+        >>> from nonebot_plugin_alconna import Match, on_alconna
+        >>> from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
+        >>>
+        >>> matcher = on_alconna("...", extensions=[ReplyMergeExtension()])
+        >>>
+        >>> @matcher.handle()
+        >>> async def handle(content: Match[str]):
+        >>>     ...
+    """
+
+    def __init__(self, add_left: bool = False):
+        """
+        Args:
+            add_left: 是否在当前消息的左侧合并回复消息，默认为 False
+        """
+        self.add_left = add_left
+
+    @property
+    def priority(self) -> int:
+        return 14
+
+    @property
+    def id(self) -> str:
+        return "builtins.extensions.reply:ReplyMergeExtension"
+
+    async def message_provider(self, event, state, bot, use_origin: bool = False):
+        try:
+            msg = event.get_message()
+        except ValueError:
+            return
+        uni_msg = UniMessage.generate_without_reply(message=msg, bot=bot)
+        if not (reply := await reply_fetch(event, bot)):
+            return uni_msg
+        if not reply.msg:
+            return uni_msg
+        reply_msg = reply.msg
+        if isinstance(reply_msg, str):
+            reply_msg = msg.__class__(reply_msg)
+        uni_msg_reply = UniMessage.generate_without_reply(message=reply_msg, bot=bot)
+        if self.add_left:
+            uni_msg_reply += " "
+            uni_msg_reply.extend(uni_msg)
+            return uni_msg_reply
+        uni_msg += " "
+        uni_msg.extend(uni_msg_reply)
         return uni_msg
 
 

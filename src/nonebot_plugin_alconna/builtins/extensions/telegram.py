@@ -17,15 +17,13 @@ class TelegramSlashExtension(Extension):
     用于将 Alconna 的命令自动转换为 Telegram 的 Command。
 
     Example:
-        ```python
-        from nonebot_plugin_alconna import on_alconna
-        from nonebot.adapters.telegram.model import BotCommandScopeChat
-        from nonebot_plugin_alconna.builtins.extensions.telegram import TelegramCommandExtension
-
-        TelegramCommandExtension.set_scope(BotCommandScopeAllChat())
-
-        matcher = on_alconna(..., extensions=[TelegramSlashExtension()])
-        ```
+        >>> from nonebot_plugin_alconna import on_alconna
+        >>> from nonebot.adapters.telegram.model import BotCommandScopeChat
+        >>> from nonebot_plugin_alconna.builtins.extensions.telegram import TelegramSlashExtension
+        >>>
+        >>> TelegramSlashExtension.set_scope(BotCommandScopeChat())
+        >>>
+        >>> matcher = on_alconna("...", extensions=[TelegramSlashExtension()])
     """
 
     SCOPE: ClassVar[BotCommandScope] = BotCommandScopeDefault()

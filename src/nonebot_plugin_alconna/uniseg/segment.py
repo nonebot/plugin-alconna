@@ -648,7 +648,7 @@ env = create_local_patterns("nonebot")
 
 env[Segment] = BasePattern(
     mode=MatchMode.KEEP,
-    accepts=Segment,
+    accepts=Union[Segment, str],
 )
 
 
