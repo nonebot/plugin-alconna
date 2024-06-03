@@ -121,6 +121,36 @@
           "title": "lang.switch",
           "description": "value of lang item type 'lang.switch'",
           "type": "string"
+        },
+        "help.plugin_name_unknown": {
+          "title": "help.plugin_name_unknown",
+          "description": "value of lang item type 'help.plugin_name_unknown'",
+          "type": "string"
+        },
+        "help.plugin_name": {
+          "title": "help.plugin_name",
+          "description": "value of lang item type 'help.plugin_name'",
+          "type": "string"
+        },
+        "help.plugin_id": {
+          "title": "help.plugin_id",
+          "description": "value of lang item type 'help.plugin_id'",
+          "type": "string"
+        },
+        "help.plugin_path": {
+          "title": "help.plugin_path",
+          "description": "value of lang item type 'help.plugin_path'",
+          "type": "string"
+        },
+        "help.plugin_module": {
+          "title": "help.plugin_module",
+          "description": "value of lang item type 'help.plugin_module'",
+          "type": "string"
+        },
+        "help.plugin_version": {
+          "title": "help.plugin_version",
+          "description": "value of lang item type 'help.plugin_version'",
+          "type": "string"
         }
       }
     }

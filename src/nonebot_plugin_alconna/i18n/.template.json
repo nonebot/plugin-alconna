@@ -33,7 +33,13 @@
       "scope": "nbp-alc/builtin",
         "types": [
           "lang.list",
-          "lang.switch"
+          "lang.switch",
+          "help.plugin_name_unknown",
+          "help.plugin_name",
+          "help.plugin_id",
+          "help.plugin_path",
+          "help.plugin_module",
+          "help.plugin_version"
         ]
     }
   ]

@@ -70,4 +70,4 @@ async def test_help(app: App):
         msg2 = Message("/help 2")
         event2 = fake_message_event_satori(message=msg2, id=125)
         ctx.receive_event(bot, event2)
-        ctx.should_call_send(event2, "test \ntest")
+        ctx.should_call_send(event2, Message("test \ntest"))

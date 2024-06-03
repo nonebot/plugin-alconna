@@ -30,6 +30,12 @@ class NbpAlc:
 class NbpAlcBuiltin:
     lang_list: LangItem = LangItem("nbp-alc/builtin", "lang.list")
     lang_switch: LangItem = LangItem("nbp-alc/builtin", "lang.switch")
+    help_plugin_name_unknown: LangItem = LangItem("nbp-alc/builtin", "help.plugin_name_unknown")
+    help_plugin_name: LangItem = LangItem("nbp-alc/builtin", "help.plugin_name")
+    help_plugin_id: LangItem = LangItem("nbp-alc/builtin", "help.plugin_id")
+    help_plugin_path: LangItem = LangItem("nbp-alc/builtin", "help.plugin_path")
+    help_plugin_module: LangItem = LangItem("nbp-alc/builtin", "help.plugin_module")
+    help_plugin_version: LangItem = LangItem("nbp-alc/builtin", "help.plugin_version")
 
 
 class Lang(LangModel):

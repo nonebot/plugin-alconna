@@ -23,6 +23,12 @@
   },
   "nbp-alc/builtin": {
     "lang.list": "支持的语言列表:",
-    "lang.switch": "切换语言成功: '{locale}'"
+    "lang.switch": "切换语言成功: '{locale}'",
+    "help.plugin_name_unknown": "未知插件",
+    "help.plugin_id":      "插件标识",
+    "help.plugin_name":    "插件名称",
+    "help.plugin_version": "插件版本",
+    "help.plugin_module":  "插件模块",
+    "help.plugin_path":    "插件路径"
   }
 }

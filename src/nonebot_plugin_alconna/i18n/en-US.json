@@ -23,6 +23,12 @@
   },
   "nbp-alc/builtin": {
     "lang.list": "Following languages are supported:",
-    "lang.switch": "Switch to '{locale}' successfully"
+    "lang.switch": "Switch to '{locale}' successfully",
+    "help.plugin_name_unknown": "Unknown plugin",
+    "help.plugin_id":      "ID     ",
+    "help.plugin_name":    "Name   ",
+    "help.plugin_version": "Version",
+    "help.plugin_module":  "Module ",
+    "help.plugin_path":    "Path   "
   }
 }
