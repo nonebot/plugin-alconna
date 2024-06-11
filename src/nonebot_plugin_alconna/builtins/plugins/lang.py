@@ -1,8 +1,8 @@
 from nonebot.plugin import PluginMetadata
 from arclet.alconna import Args, Field, Option, Alconna, CommandMeta, namespace
 
-from nonebot_plugin_alconna import on_alconna
 from nonebot_plugin_alconna.i18n import Lang, lang
+from nonebot_plugin_alconna import UniMessage, on_alconna
 
 __plugin_meta__ = PluginMetadata(
     name="lang",
@@ -21,7 +21,7 @@ with namespace("builtin/lang") as ns:
         Alconna(
             "lang",
             Option("list", help_text="查看支持的语言列表"),
-            Option("switch", Args["locale", str, Field(completion=lambda: "比如 zh-CN")], help_text="切换语言"),
+            Option("switch", Args["locale", str, Field("NONE", completion=lambda: "比如 zh-CN")], help_text="切换语言"),
             meta=CommandMeta("i18n配置相关功能", compact=True),
         ),
         auto_send_output=True,
@@ -36,9 +36,14 @@ async def _():
 
 @cmd.assign("switch")
 async def _(locale: str):
+    if locale == "NONE":
+        resp = await cmd.prompt(UniMessage.i18n(Lang.nbp_alc_builtin.lang_locale_missing), timeout=30)
+        if resp is None:
+            await UniMessage.i18n(Lang.nbp_alc_builtin.lang_locale_timeout).finish()
+        locale = str(resp)
     try:
         lang.select(locale)
     except ValueError as e:
         await cmd.finish(str(e))
     else:
-        await cmd.finish(Lang.nbp_alc_builtin.lang_switch(locale=locale))
+        await UniMessage.i18n(Lang.nbp_alc_builtin.lang_switch, locale=locale).finish()

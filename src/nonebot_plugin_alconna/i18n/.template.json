@@ -34,6 +34,8 @@
         "types": [
           "lang.list",
           "lang.switch",
+          "lang.locale_missing",
+          "lang.locale_timeout",
           "help.plugin_name_unknown",
           "help.plugin_name",
           "help.plugin_id",

@@ -122,6 +122,16 @@
           "description": "value of lang item type 'lang.switch'",
           "type": "string"
         },
+        "lang.locale_missing": {
+          "title": "lang.locale_missing",
+          "description": "value of lang item type 'lang.locale_missing'",
+          "type": "string"
+        },
+        "lang.locale_timeout": {
+          "title": "lang.locale_timeout",
+          "description": "value of lang item type 'lang.locale_timeout'",
+          "type": "string"
+        },
         "help.plugin_name_unknown": {
           "title": "help.plugin_name_unknown",
           "description": "value of lang item type 'help.plugin_name_unknown'",

@@ -23,7 +23,9 @@
   },
   "nbp-alc/builtin": {
     "lang.list": "Following languages are supported:",
-    "lang.switch": "Switch to '{locale}' successfully",
+    "lang.switch": "Switch to '{locale}' successfully.",
+    "lang.locale_missing": "{:At(user, $event.get_user_id())}Missing locale argument, please input:",
+    "lang.locale_timeout": "{:At(user, $event.get_user_id())}Timeout for waiting locale input.",
     "help.plugin_name_unknown": "Unknown plugin",
     "help.plugin_id":      "ID     ",
     "help.plugin_name":    "Name   ",
