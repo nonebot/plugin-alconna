@@ -3,7 +3,6 @@ from __future__ import annotations
 import weakref
 from weakref import ref
 from warnings import warn
-from dataclasses import asdict
 from types import FunctionType
 from datetime import datetime, timedelta
 from typing_extensions import deprecated
@@ -17,18 +16,18 @@ from nonebot.utils import escape_tag
 from tarina.lang.model import LangItem
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
-from nepattern import ANY, STRING, AnyString
 from nonebot.message import run_postprocessor
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
 from arclet.alconna.typing import ShortcutRegWrapper
+from nepattern import ANY, STRING, TPattern, AnyString
 from tarina import lang, is_awaitable, run_always_await
 from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from nonebot.plugin.on import store_matcher, get_matcher_source
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
+from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
 from nonebot.exception import PausedException, FinishedException, RejectedException
-from arclet.alconna import Arg, Args, Alconna, CommandMeta, ShortcutArgs, command_manager
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker, _DependentCallable
@@ -121,11 +120,11 @@ class AlconnaMatcher(Matcher):
 
     @classmethod
     @overload
-    def shortcut(cls, key: str, args: ShortcutArgs | None = None) -> str:
+    def shortcut(cls, key: str | TPattern, args: ShortcutArgs | None = None) -> str:
         """操作快捷命令
 
         Args:
-            key (str): 快捷命令名
+            key (str | re.Pattern[str]): 快捷命令名, 可传入正则表达式
             args (ShortcutArgs[TDC]): 快捷命令参数, 不传入时则尝试使用最近一次使用的命令
 
         Returns:
@@ -140,7 +139,7 @@ class AlconnaMatcher(Matcher):
     @overload
     def shortcut(
         cls,
-        key: str,
+        key: str | TPattern,
         *,
         command: str | None = None,
         arguments: list[Any] | None = None,
@@ -152,7 +151,7 @@ class AlconnaMatcher(Matcher):
         """操作快捷命令
 
         Args:
-            key (str): 快捷命令名
+            key (str | re.Pattern[str]): 快捷命令名, 可传入正则表达式
             command (TDC): 快捷命令指向的命令
             arguments (list[Any] | None, optional): 快捷命令参数, 默认为 `None`
             fuzzy (bool, optional): 是否允许命令后随参数, 默认为 `True`
@@ -170,11 +169,11 @@ class AlconnaMatcher(Matcher):
 
     @classmethod
     @overload
-    def shortcut(cls, key: str, *, delete: Literal[True]) -> str:
+    def shortcut(cls, key: str | TPattern, *, delete: Literal[True]) -> str:
         """操作快捷命令
 
         Args:
-            key (str): 快捷命令名
+            key (str | re.Pattern[str]): 快捷命令名, 可传入正则表达式
             delete (bool): 是否删除快捷命令
 
         Returns:
@@ -186,11 +185,11 @@ class AlconnaMatcher(Matcher):
         ...
 
     @classmethod
-    def shortcut(cls, key: str, args: ShortcutArgs | None = None, delete: bool = False, **kwargs):
+    def shortcut(cls, key: str | TPattern, args: ShortcutArgs | None = None, delete: bool = False, **kwargs):
         """操作快捷命令
 
         Args:
-            key (str): 快捷命令名
+            key (str | re.Pattern[str]): 快捷命令名, 可传入正则表达式
             args (ShortcutArgs[TDC] | None, optional): 快捷命令参数, 不传入时则尝试使用最近一次使用的命令
             delete (bool, optional): 是否删除快捷命令, 默认为 `False`
             command (TDC, optional): 快捷命令指向的命令
@@ -1026,29 +1025,6 @@ class Command(AlconnaString):
     def args_gen(pattern: str, types: dict):
         return AlconnaString.args_gen(pattern, {**types, **patterns})
 
-    def __init__(self, command: str, help_text: str | None = None, meta: CommandMeta | None = None):
-        """创建 Command 对象
-
-        Args:
-            command (str): 命令字符串, 例如 `test <message:str:hello> #HELP_STRING`
-            help_text (Optional[str], optional): 选填的命令的帮助文本.
-            meta (Optional[CommandMeta], optional): 选填的命令元数据.
-        """
-        super().__init__(command, help_text)
-        if meta:
-            meta = CommandMeta(**asdict(meta))
-            if meta.description == "Unknown":
-                meta.description = help_text or self.meta.description
-            self.meta = meta or self.meta
-
-    def example(self, content: str):
-        """设置命令的使用示例"""
-        if not self.meta.example:
-            self.meta.example = content
-        else:
-            self.meta.example += f"\n{content}"
-        return self
-
     def build(
         self,
         rule: Rule | T_RuleChecker | None = None,
@@ -1079,8 +1055,8 @@ class Command(AlconnaString):
         for action in self.actions:
             alc.bind()(action)
         matcher = on_alconna(alc, **params)
-        for key, args in self.shortcuts.items():
-            matcher.shortcut(key, args)
+        for key, args, kwargs in self.shortcuts:
+            matcher.shortcut(key, args, **kwargs)  # type: ignore
         if self.actions:
 
             @matcher.handle()

@@ -5,8 +5,8 @@ authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "arclet-alconna>=1.8.14",
-    "arclet-alconna-tools>=0.7.4",
+    "arclet-alconna>=1.8.15",
+    "arclet-alconna-tools>=0.7.6",
     "nepattern>=0.7.4",
     "nonebot2>=2.3.0",
     "importlib-metadata>=4.13.0",
@@ -96,7 +96,7 @@ select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
 ignore = ["C901", "T201", "E731", "E402"]
 
 [tool.pyright]
-pythonVersion = "3.9"
+pythonVersion = "3.11"
 pythonPlatform = "All"
 defineConstant = { PYDANTIC_V2 = true }
 typeCheckingMode = "basic"
