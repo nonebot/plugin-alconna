@@ -70,12 +70,14 @@ class ReplyMergeExtension(Extension):
         >>>     ...
     """
 
-    def __init__(self, add_left: bool = False):
+    def __init__(self, add_left: bool = False, sep: str = " "):
         """
         Args:
             add_left: 是否在当前消息的左侧合并回复消息，默认为 False
+            sep: 合并时的分隔符，默认为空格
         """
         self.add_left = add_left
+        self.sep = sep
 
     @property
     def priority(self) -> int:
@@ -100,10 +102,10 @@ class ReplyMergeExtension(Extension):
             reply_msg = msg.__class__(reply_msg)
         uni_msg_reply = UniMessage.generate_without_reply(message=reply_msg, bot=bot)
         if self.add_left:
-            uni_msg_reply += " "
+            uni_msg_reply += self.sep
             uni_msg_reply.extend(uni_msg)
             return uni_msg_reply
-        uni_msg += " "
+        uni_msg += self.sep
         uni_msg.extend(uni_msg_reply)
         return uni_msg
 
