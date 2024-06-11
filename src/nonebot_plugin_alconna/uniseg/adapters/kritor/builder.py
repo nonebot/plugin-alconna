@@ -62,7 +62,7 @@ class KritorMessageBuilder(MessageBuilder):
 
     @build("file")
     def file(self, seg: FileSegment):
-        return File(id=seg.data.get("file_id"), name=seg.data.get("name", "file.bin"), url=seg.data.get("url"))
+        return File(id=seg.data.get("id"), name=seg.data.get("name", "file.bin"), url=seg.data.get("url"))
 
     @build("reply")
     def reply(self, seg: ReplySegment):

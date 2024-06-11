@@ -154,7 +154,7 @@ class KookMessageBuilder(MessageBuilder):
     def file(self, seg: FileSegment):
         return File(
             id=seg.data["file_key"],
-            name=seg.data.get("file_name", seg.data.get("title")),
+            name=seg.data["title"] or seg.data["file_key"],
         )
 
     @build("quote")

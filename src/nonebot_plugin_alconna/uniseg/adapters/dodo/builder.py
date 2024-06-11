@@ -15,7 +15,7 @@ from nonebot.adapters.dodo.message import (
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, AtAll, Image, Reply
+from nonebot_plugin_alconna.uniseg.segment import At, File, AtAll, Image, Reply, Video
 
 
 class DodoMessageBuilder(MessageBuilder):
@@ -45,7 +45,7 @@ class DodoMessageBuilder(MessageBuilder):
 
     @build("video")
     def video(self, seg: VideoSegment):
-        return Image(url=seg.data["video"].url)
+        return Video(url=seg.data["video"].url)
 
     @build("file")
     def file(self, seg: FileSegment):
