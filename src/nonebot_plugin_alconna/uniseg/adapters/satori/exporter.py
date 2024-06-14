@@ -7,7 +7,7 @@ from nonebot.adapters.satori.message import Text as _Text
 from nonebot.adapters.satori.message import STYLE_TYPE_MAP
 from nonebot.adapters.satori.event import NoticeEvent, MessageEvent
 from nonebot.adapters.satori.message import Message, MessageSegment
-from nonebot.adapters.satori.models import ChannelType, InnerMessage
+from nonebot.adapters.satori.models import ChannelType, MessageObject
 
 from nonebot_plugin_alconna.uniseg.target import Target
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
@@ -171,7 +171,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, SatoriBot)
-        _mid: InnerMessage = cast(InnerMessage, mid)
+        _mid: MessageObject = cast(MessageObject, mid)
         if isinstance(context, Target):
             if context.private:
                 channel = await bot.user_channel_create(user_id=context.id)
@@ -190,7 +190,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
         if TYPE_CHECKING:
             assert isinstance(new, self.get_message_type())
 
-        _mid: InnerMessage = cast(InnerMessage, mid)
+        _mid: MessageObject = cast(MessageObject, mid)
         if isinstance(context, Target):
             if context.private:
                 channel = await bot.user_channel_create(user_id=context.id)
@@ -202,5 +202,5 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return await bot.update_message(channel.id, _mid.id, new)
 
     def get_reply(self, mid: Any):
-        _mid: InnerMessage = cast(InnerMessage, mid)
+        _mid: MessageObject = cast(MessageObject, mid)
         return Reply(_mid.id)
