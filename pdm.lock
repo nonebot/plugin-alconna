@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:84847042a7e52fc6b24bdad4510d8a8feb1b7cb3207439182a21de1614bf9531"
+content_hash = "sha256:88758b8c9a34fe1916855448e9bcf098d68e79eea1277d17251ed9556e5ea74e"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -1270,15 +1270,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-satori"
-version = "0.11.5"
-requires_python = ">=3.8"
+version = "0.12.0"
+requires_python = ">=3.9"
 summary = "Satori Protocol Adapter for Nonebot2"
 dependencies = [
-    "nonebot2>=2.2.0",
+    "nonebot2>=2.3.0",
 ]
 files = [
-    {file = "nonebot_adapter_satori-0.11.5-py3-none-any.whl", hash = "sha256:8c7a94ac6897a0001878f259880efe4df1c5232fe14a2d03bab742f28b279498"},
-    {file = "nonebot_adapter_satori-0.11.5.tar.gz", hash = "sha256:ab134f0e70302958807b7f91b5c6d0e462c5d39728c93066076699d00c2d067b"},
+    {file = "nonebot_adapter_satori-0.12.0-py3-none-any.whl", hash = "sha256:e29f085ef869779c1122b2f9b610f0381723d3086271c9ebd64812032033787e"},
+    {file = "nonebot_adapter_satori-0.12.0.tar.gz", hash = "sha256:cd333e622f53ea17f96918a2a87c7882ab6b4d62decc39c77ab456db46bdb4b9"},
 ]
 
 [[package]]
