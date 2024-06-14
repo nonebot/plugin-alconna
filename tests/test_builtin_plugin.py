@@ -3,7 +3,7 @@ from nonebug import App
 from nonebot import get_adapter
 from nonebot.adapters.satori import Bot, Adapter, Message, MessageSegment
 
-from tests.fake import fake_message_event_satori
+from tests.fake import FAKE_SATORI_LOGIN, fake_message_event_satori
 
 
 @pytest.mark.asyncio()
@@ -14,7 +14,7 @@ async def test_echo(app: App):
 
     async with app.test_matcher() as ctx:
         adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter, platform="satori", info=None)
+        bot = ctx.create_bot(base=Bot, adapter=adapter, login=FAKE_SATORI_LOGIN, info=None)
         msg = "/echo" + MessageSegment.image(raw=b"123", mime="image/png")
         event = fake_message_event_satori(message=msg, id=123)
         ctx.receive_event(bot, event)
@@ -42,7 +42,7 @@ async def test_help(app: App):
 
     async with app.test_matcher() as ctx:
         adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter, platform="satori", info=None)
+        bot = ctx.create_bot(base=Bot, adapter=adapter, login=FAKE_SATORI_LOGIN, info=None)
         msg = Message("/help")
         event = fake_message_event_satori(message=msg, id=123)
         ctx.receive_event(bot, event)

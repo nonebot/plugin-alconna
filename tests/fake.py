@@ -1,6 +1,10 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
+from nonebot.adapters.satori.models import Login, LoginStatus
+
+FAKE_SATORI_LOGIN = Login(status=LoginStatus.ONLINE)
+
 if TYPE_CHECKING:
     from nonebot.adapters.qq import MessageCreateEvent as MessageCreateEvent
     from nonebot.adapters.satori.event import MessageEvent as SatoriMessageEvent
