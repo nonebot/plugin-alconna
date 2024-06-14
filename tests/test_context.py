@@ -4,7 +4,7 @@ from nonebot.adapters.satori.models import User
 from nonebot.adapters.satori import Bot, Message
 from arclet.alconna import Args, Alconna, CommandMeta
 
-from tests.fake import fake_message_event_satori
+from tests.fake import FAKE_SATORI_LOGIN, fake_message_event_satori
 
 
 @pytest.mark.asyncio()
@@ -20,7 +20,7 @@ async def test_ctx(app: App):
 
     async with app.test_matcher(test_cmd) as ctx:
         # adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(base=Bot, platform="satori", info=None)
+        bot = ctx.create_bot(base=Bot, login=FAKE_SATORI_LOGIN, info=None)
         msg = Message("test $(event.get_user_id())")
         event = fake_message_event_satori(message=msg, id=123, user=User(id="456", name="test"))
         ctx.receive_event(bot, event)

@@ -1,6 +1,10 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
+from nonebot.adapters.satori.models import Login, LoginStatus
+
+FAKE_SATORI_LOGIN = Login(status=LoginStatus.ONLINE)
+
 if TYPE_CHECKING:
     from nonebot.adapters.qq import MessageCreateEvent as MessageCreateEvent
     from nonebot.adapters.satori.event import MessageEvent as SatoriMessageEvent
@@ -89,7 +93,7 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
     from pydantic import create_model
     from nonebot.adapters.satori import Message
     from nonebot.adapters.satori.event import MessageEvent
-    from nonebot.adapters.satori.models import User, Channel, ChannelType, InnerMessage
+    from nonebot.adapters.satori.models import User, Channel, ChannelType, MessageObject
 
     _Fake = create_model("_Fake", __base__=MessageEvent)
 
@@ -101,7 +105,7 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
         timestamp: datetime = datetime.fromtimestamp(1000000)
         channel: Channel = Channel(id="1", type=ChannelType.TEXT)
         user: User = User(id="1", name="test")
-        message: InnerMessage = InnerMessage(id="1", content="text")
+        message: MessageObject = MessageObject(id="1", content="text")
         to_me: bool = False
 
         class Config:

@@ -13,11 +13,10 @@ def get_satori_version():
 
 
 class Loader(BaseLoader):
-
     def __init__(self):
         if version := get_satori_version():
-            if tuple(map(int, version.split(".")[:2])) < (0, 11):
-                raise ImportError("nonebot-adapter-satori>=0.11 is required.")
+            if tuple(map(int, version.split(".")[:2])) < (0, 12):
+                raise ImportError("nonebot-adapter-satori>=0.12 is required.")
 
     def get_adapter(self) -> SupportAdapter:
         return SupportAdapter.satori
