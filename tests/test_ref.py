@@ -31,7 +31,8 @@ async def test_ref(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, "0: {'writer': (value=Ellipsis args={'id': 0})}")
 
-    book1 = referent(book.command)
+    book1 = referent(book.command())
+    assert book1
     assert id(book1) == id(book)
 
     @book1.handle(override=("replace", 0))

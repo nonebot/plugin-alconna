@@ -3,10 +3,10 @@ import random
 from pathlib import Path
 
 from tarina import lang
-from nonebot.plugin import PluginMetadata
+from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 from importlib_metadata import PackageNotFoundError, distribution
 from arclet.alconna import Args, Field, Option, Alconna, Arparma, CommandMeta, namespace, store_true, command_manager
-
+from nonebot.adapters import Bot
 from nonebot_plugin_alconna import UniMessage, AlconnaMatcher, referent, on_alconna
 
 __plugin_meta__ = PluginMetadata(
@@ -16,8 +16,20 @@ __plugin_meta__ = PluginMetadata(
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/help.py",
     config=None,
-    supported_adapters=None,
+    supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
 )
+
+
+def check_supported_adapters(matcher: type[AlconnaMatcher], bot: Bot):
+    if matcher.plugin and matcher.plugin.metadata:
+        adapters = matcher.plugin.metadata.supported_adapters
+        if adapters is None:
+            return True
+        if not adapters:
+            return False
+        adapters = {s.replace("~", "nonebot.adapters") for s in adapters}
+        return bot.adapter.__module__.removesuffix(".adapter") in adapters
+    return True
 
 
 def get_info(matcher: type[AlconnaMatcher]):
@@ -92,14 +104,17 @@ help_matcher.shortcut(
 
 
 @help_matcher.handle()
-async def help_cmd_handle(arp: Arparma, bot, event):
+async def help_cmd_handle(arp: Arparma, bot: Bot, event):
     is_plugin_info = arp.query[bool]("plugin-info.value", False)
     cmds = [i for i in command_manager.get_commands() if not i.meta.hide or arp.query[bool]("hide.value", False)]
+    cmds = [i for i in cmds if ((mat := referent(i)) and check_supported_adapters(mat, bot)) or not mat]
     if (query := arp.all_matched_args["query"]) != "-1":
         if query.isdigit():
             slot = cmds[int(query)]
-            try:
-                _matcher = referent(slot)
+            _matcher = referent(slot)
+            if not _matcher:
+                msg = slot.get_help()
+            else:
                 executor = _matcher.executor
                 if is_plugin_info:
                     msg = UniMessage.text(get_info(_matcher))
@@ -107,14 +122,12 @@ async def help_cmd_handle(arp: Arparma, bot, event):
                     msg = await executor.output_converter("help", slot.get_help())
                     msg = msg or UniMessage(slot.get_help())
                 msg = await executor.send_wrapper(bot, event, msg)
-            except Exception:
-                msg = slot.get_help()
             return await help_matcher.finish(msg)
         elif is_plugin_info:
             command_string = "\n".join(
-                f" 【{str(index).rjust(len(str(len(cmds))), '0')}】{slot.header_display} : {get_info(referent(slot))}"
+                f" 【{str(index).rjust(len(str(len(cmds))), '0')}】{slot.header_display} : {get_info(mat)}"
                 for index, slot in enumerate(cmds)
-                if query in slot.header_display
+                if query in slot.header_display and (mat := referent(slot))
             )
             return await help_matcher.finish(command_string)
         command_string = "\n".join(

@@ -1,7 +1,7 @@
 import asyncio
 import importlib
 from typing import Union, Literal, Optional, cast
-
+import weakref
 from nonebot.typing import T_State
 from tarina import lang, init_spec
 from nonebot.matcher import Matcher
@@ -45,6 +45,8 @@ class AlconnaRule:
         "comp_config",
         "use_origin",
         "executor",
+        "_path",
+        "_namespace",
         "_waiter",
         "_matchers",
         "_futures",
@@ -91,17 +93,19 @@ class AlconnaRule:
                 self.comp_config = cast(CompConfig, {})
             if config.alconna_context_style:
                 with command_manager.update(command):
-                    self.command.meta.context_style = config.alconna_context_style
+                    command.meta.context_style = config.alconna_context_style
             self.use_origin = use_origin or config.alconna_use_origin
         except ValueError:
             self.auto_send = auto_send_output
-        self.command = command
+        self.command = weakref.ref(command)
         if _aliases:
             for alias in _aliases:
                 command.shortcut(alias, prefix=True)
         self.skip = skip_for_unmatch
         self.executor = ExtensionExecutor(self, extensions, exclude_ext)
-        self.executor.post_init()
+        self.executor.post_init(command)
+        self._path = command.path
+        self._namespace = command.namespace
         self._futures: dict[str, dict[str, asyncio.Future]] = {}
         self._matchers: dict[str, type[Matcher]] = {}
         self._interfaces: dict[str, CompSession] = {}
@@ -167,30 +171,29 @@ class AlconnaRule:
             self._waiter = _waiter_handle
 
     def __repr__(self) -> str:
-        return f"Alconna(command={self.command!r})"
+        return f"Alconna(command={self.command()!r})"
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, AlconnaRule) and self.command.path == other.command.path
+        return isinstance(other, AlconnaRule) and self._path == other._path
 
     def __hash__(self) -> int:
         return hash(self.command.__hash__())
 
-    async def handle(self, bot: Bot, event: Event, state: T_State, msg: UniMessage) -> Union[Arparma, Literal[False]]:
+    async def handle(self, cmd: Alconna, bot: Bot, event: Event, state: T_State, msg: UniMessage) -> Union[Arparma, Literal[False]]:
         ctx = await self.executor.context_provider(event, bot, state)
-
         if self.comp_config is None:
-            return self.command.parse(msg, ctx)
+            return cmd.parse(msg, ctx)
         res = None
         session_id = event.get_session_id()
         if session_id not in self._interfaces:
-            self._interfaces[session_id] = CompSession(self.command)
+            self._interfaces[session_id] = CompSession(cmd)
         with self._interfaces[session_id]:
-            res = self.command.parse(msg, ctx)
+            res = cmd.parse(msg, ctx)
         if res:
             self._interfaces[session_id].exit()
             del self._interfaces[session_id]
             return res
-        if not await self.executor.permission_check(bot, event):
+        if not await self.executor.permission_check(bot, event, cmd):
             return False
 
         def _checker(_event: Event):
@@ -198,7 +201,7 @@ class AlconnaRule:
 
         self._matchers[session_id] = on_message(priority=0, block=True, rule=Rule(_checker), handlers=[self._waiter])
         res = Arparma(
-            self.command.path,
+            self._path,
             msg,
             False,
             error_info=SpecialOptionTriggered("completion"),
@@ -246,7 +249,10 @@ class AlconnaRule:
         self.executor.select(bot, event)
         if not (msg := await self.executor.message_provider(event, state, bot, self.use_origin)):
             return False
-        msg = await self.executor.receive_wrapper(bot, event, msg)
+        cmd = self.command()
+        if not cmd:
+            return False
+        msg = await self.executor.receive_wrapper(bot, event, cmd, msg)
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
         adapter_name = bot.adapter.get_name()
         if adapter_name in MAPPING and MAPPING[adapter_name] not in _modules:
@@ -256,38 +262,39 @@ class AlconnaRule:
         else:
             _msg = await UniMessage.generate(message=msg, event=event, bot=bot)
         state[UNISEG_MESSAGE] = _msg
-        with output_manager.capture(self.command.name) as cap:
-            output_manager.set_action(lambda x: x, self.command.name)
+
+        with output_manager.capture(cmd.name) as cap:
+            output_manager.set_action(lambda x: x, cmd.name)
             try:
-                arp = await self.handle(bot, event, state, _msg)
+                arp = await self.handle(cmd, bot, event, state, _msg)
                 if arp is False:
                     return False
             except Exception as e:
-                arp = Arparma(self.command.path, msg, False, error_info=e)
+                arp = Arparma(self._path, msg, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
         if not arp.head_matched:
             return False
         if not arp.matched and not may_help_text and self.skip:
             log(
                 "TRACE",
-                escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp)),
+                escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self._path, arp=arp)),
             )
             return False
         if arp.head_matched:
             log(
                 "DEBUG",
-                escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self.command.path, arp=arp)),
+                escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self._path, arp=arp)),
             )
         if not may_help_text and arp.error_info:
             may_help_text = repr(arp.error_info)
         if self.auto_send and may_help_text:
             await self.send(may_help_text, bot, event, arp)
             return False
-        if not await self.executor.permission_check(bot, event):
+        if not await self.executor.permission_check(bot, event, cmd):
             return False
         await self.executor.parse_wrapper(bot, state, event, arp)
-        state[ALCONNA_RESULT] = CommandResult(source=self.command, result=arp, output=may_help_text)
-        state[ALCONNA_EXEC_RESULT] = self.command.exec_result
+        state[ALCONNA_RESULT] = CommandResult(_source=self.command, result=arp, output=may_help_text)
+        state[ALCONNA_EXEC_RESULT] = cmd.exec_result
         state[ALCONNA_EXTENSION] = self.executor.context
         return True
 

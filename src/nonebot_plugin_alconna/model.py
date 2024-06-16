@@ -1,6 +1,6 @@
 from typing_extensions import NotRequired
 from typing import Union, Generic, Literal, TypeVar, Optional, TypedDict
-
+from weakref import ReferenceType
 from pydantic import Field, BaseModel
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
@@ -54,9 +54,13 @@ class Query(Generic[T]):
 
 
 class CommandResult(BaseModel):
-    source: Alconna
+    _source: ReferenceType[Alconna]
     result: Arparma
     output: Optional[str] = Field(default=None)
+
+    @property
+    def source(self) -> Alconna:
+        return self._source()  # type: ignore
 
     @property
     def matched(self) -> bool:

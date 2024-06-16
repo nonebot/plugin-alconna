@@ -166,7 +166,7 @@ class ExtensionExecutor:
             for ext in self.extensions
             if ext.id not in self._excludes
             and ext.__class__ not in self._excludes
-            and (not (ns := ext.namespace) or ns == rule.command.namespace)
+            and (not (ns := ext.namespace) or ns == rule._namespace)
         ]
         self.context: list[Extension] = []
         self._rule = rule
@@ -181,10 +181,10 @@ class ExtensionExecutor:
                 _ext = _ext()
             if _ext.id in self._excludes or _ext.__class__ in self._excludes:
                 continue
-            if (ns := _ext.namespace) and ns != self._rule.command.namespace:
+            if (ns := _ext.namespace) and ns != self._rule._namespace:
                 continue
             self.extensions.append(_ext)
-            _ext.post_init(self._rule.command)
+            _ext.post_init(self._rule.command())  # type: ignore
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.context.clear()
@@ -222,17 +222,17 @@ class ExtensionExecutor:
 
         return None
 
-    async def receive_wrapper(self, bot: Bot, event: Event, receive: TM) -> TM:
+    async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: TM) -> TM:
         res = receive
         for ext in self.context:
             if ext._overrides["receive_wrapper"]:
-                res = await ext.receive_wrapper(bot, event, self._rule.command, res)
+                res = await ext.receive_wrapper(bot, event, command, res)
         return res
 
-    async def permission_check(self, bot: Bot, event: Event) -> bool:
+    async def permission_check(self, bot: Bot, event: Event, command: Alconna) -> bool:
         for ext in self.context:
             if ext._overrides["permission_check"]:
-                if await ext.permission_check(bot, event, self._rule.command) is False:
+                if await ext.permission_check(bot, event, command) is False:
                     return False
                 continue
         return True
@@ -275,9 +275,9 @@ class ExtensionExecutor:
                 return res
         return PydanticUndefined
 
-    def post_init(self) -> None:
+    def post_init(self, command: Alconna) -> None:
         for ext in self.extensions:
-            ext.post_init(self._rule.command)
+            ext.post_init(command)
 
 
 def add_global_extension(*ext: type[Extension] | Extension) -> None:

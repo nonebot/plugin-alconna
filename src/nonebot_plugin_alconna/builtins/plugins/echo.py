@@ -1,4 +1,4 @@
-from nonebot.plugin import PluginMetadata
+from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 from arclet.alconna import CommandMeta, namespace
 
 from nonebot_plugin_alconna import Command
@@ -11,7 +11,7 @@ __plugin_meta__ = PluginMetadata(
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/echo.py",
     config=None,
-    supported_adapters=None,
+    supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
 )
 
 with namespace("builtin/echo") as ns:

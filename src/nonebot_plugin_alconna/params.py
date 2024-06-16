@@ -222,7 +222,7 @@ class ExtensionParam(Param):
     @classmethod
     def new(cls, executor: ExtensionExecutor):
         return type(
-            f"ExtensionParam_{executor._rule.command.name}",
+            f"ExtensionParam_{executor._rule._path}",
             (cls,),
             {"executor": executor},
         )

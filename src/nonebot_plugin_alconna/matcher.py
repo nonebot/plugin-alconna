@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import weakref
-from weakref import ref
 from warnings import warn
 from types import FunctionType
 from datetime import datetime, timedelta
@@ -31,10 +30,6 @@ from nonebot.exception import PausedException, FinishedException, RejectedExcept
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker, _DependentCallable
-
-require("nonebot_plugin_waiter")
-
-from nonebot_plugin_waiter import waiter
 
 from .rule import alconna
 from .typings import MReturn
@@ -66,8 +61,10 @@ class ArgsMounter(Protocol):
     args: Args
 
 
-def extract_arg(path: str, target: ArgsMounter) -> Arg | None:
+def extract_arg(path: str, target: ArgsMounter | None) -> Arg | None:
     """从 Alconna 中提取参数"""
+    if not target:
+        return
     parts = path.split(".")
     if len(parts) == 1:
         return next((arg for arg in target.args.argument if arg.name == path), None)
@@ -114,7 +111,7 @@ T1 = TypeVar("T1")
 
 
 class AlconnaMatcher(Matcher):
-    command: ClassVar[Alconna]
+    command: ClassVar[weakref.ReferenceType[Alconna]]
     basepath: ClassVar[str]
     executor: ClassVar[ExtensionExecutor]
 
@@ -205,7 +202,7 @@ class AlconnaMatcher(Matcher):
         Raises:
             ValueError: 快捷命令操作失败时抛出
         """
-        return cls.command.shortcut(key, args, delete, **kwargs)  # type: ignore
+        return cls.command().shortcut(key, args, delete, **kwargs)  # type: ignore
 
     if TYPE_CHECKING:
 
@@ -511,8 +508,8 @@ class AlconnaMatcher(Matcher):
             override: 是否定制优先级
         """
         path = merge_path(path, cls.basepath)
-        if not (arg := extract_arg(path, cls.command)):
-            raise ValueError(lang.require("nbp-alc", "error.matcher_got_path").format(path=path, cmd=cls.command.path))
+        if not (arg := extract_arg(path, cls.command())):
+            raise ValueError(lang.require("nbp-alc", "error.matcher_got_path").format(path=path, cmd=cls.command))
 
         @annotation(event=Event, bot=Bot, matcher=AlconnaMatcher, state=T_State)
         async def _key_getter(event: Event, bot: Bot, matcher: AlconnaMatcher, state: T_State):
@@ -791,6 +788,10 @@ class AlconnaMatcher(Matcher):
         """
         warn("Use `nonebot_plugin_waiter.waiter` instead", DeprecationWarning, stacklevel=2)
 
+        require("nonebot_plugin_waiter")
+
+        from nonebot_plugin_waiter import waiter
+
         def wrapper(func: _DependentCallable[R]):
             return waiter(["message"], cls, parameterless=parameterless, keep_session=keep_session)(func)
 
@@ -806,6 +807,10 @@ class AlconnaMatcher(Matcher):
         返回值:
             符合条件的用户输入
         """
+        require("nonebot_plugin_waiter")
+
+        from nonebot_plugin_waiter import waiter
+
         await cls.send(message)
 
         @annotation(event=Event)
@@ -925,13 +930,13 @@ def on_alconna(
 
     matchers[priority].append(NewMatcher)
     store_matcher(matcher)
-    matcher.command = command
+    matcher.command = weakref.ref(command)
     matcher.basepath = ""
     matcher.executor = executor
     command.meta.extra["matcher.source"] = matcher._source
     command.meta.extra["matcher.position"] = (priority, len(matchers[priority]) - 1)
 
-    def remove(wr, selfref=ref(command.meta), _atomic_removal=_remove_dead_weakref):
+    def remove(wr, selfref=weakref.ref(command.meta), _atomic_removal=_remove_dead_weakref):
         self = selfref()
         if self is not None:
             _atomic_removal(self.extra, wr.key)
@@ -940,19 +945,23 @@ def on_alconna(
     return matcher
 
 
-def referent(cmd: str | Alconna) -> type[AlconnaMatcher]:
+def referent(cmd: str | Alconna | None) -> type[AlconnaMatcher] | None:
     """获取 Alconna 对应的 Matcher
 
-    若不存在则返回一个新的 Matcher
+    若不存在则返回 None
     """
+    if not cmd:
+        return
     if isinstance(cmd, str):
         try:
             cmd = command_manager.get_command(cmd)
         except ValueError:
-            return on_alconna(cmd)
-    if "matcher" in cmd.meta.extra:
-        return cmd.meta.extra["matcher"]()
-    return on_alconna(cmd)
+            return
+    try:
+        if "matcher" in cmd.meta.extra:
+            return cmd.meta.extra["matcher"]()
+    except KeyError:
+        return
 
 
 def funcommand(
@@ -987,7 +996,7 @@ def funcommand(
 
     def wrapper(func: Callable[..., MReturn]) -> type[AlconnaMatcher]:
         matcher = on_alconna(
-            FuncMounter(func, _config),  # type: ignore
+            FuncMounter(func, _config),
             rule,
             skip_for_unmatch,
             auto_send_output,
