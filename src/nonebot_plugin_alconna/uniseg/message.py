@@ -6,10 +6,11 @@ from types import FunctionType
 from dataclasses import dataclass
 from collections.abc import Iterable
 from typing_extensions import Self, SupportsIndex
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, NoReturn, Optional, overload
+from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, NoReturn, Optional, overload, Callable
 
 from tarina import lang
 from tarina.lang.model import LangItem
+from nepattern import parser
 from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
@@ -802,6 +803,17 @@ class UniMessage(list[TS]):
         """提取消息内纯文本消息"""
 
         return "".join(seg.text for seg in self if isinstance(seg, Text))
+
+    def filter(self, target: type[TS1], predicate: Callable[[TS1], bool]) -> "UniMessage[TS1]":
+        """过滤消息
+
+        参数:
+            target: 消息段类型
+            predicate: 过滤函数
+        """
+        pattern = parser(target)
+        segments = [res.value() for res in map(pattern.validate, self) if res.success]
+        return UniMessage(seg for seg in segments if predicate(seg))
 
     @staticmethod
     async def generate(

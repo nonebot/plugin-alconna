@@ -20,7 +20,7 @@ def test_uniseg():
 
 def test_unimsg():
     from nonebot_plugin_alconna.uniseg import FallbackSegment
-    from nonebot_plugin_alconna import Text, Other, Segment, UniMessage
+    from nonebot_plugin_alconna import At, Text, Other, Segment, UniMessage
 
     msg = UniMessage([Other(FallbackSegment.text("123")), Segment(), Text("123")])
     assert str(msg) == "[text][segment]123"
@@ -32,6 +32,10 @@ def test_unimsg():
         repr(UniMessage.text("123") + Other(FallbackSegment.text("123")))
         == "[Text(text='123', styles={}), Other(origin=FallbackSegment(type='text', data={'text': '123'}))]"
     )
+
+    msg1 = UniMessage.at("123").at_channel("456").at_role("789")
+    assert repr(msg1) == "[At(flag='user', target='123', display=None), At(flag='channel', target='456', display=None), At(flag='role', target='789', display=None)]"
+    assert msg1.filter(At, lambda x: x.flag == "user") == UniMessage.at("123")
 
 
 @pytest.mark.asyncio()
