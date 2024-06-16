@@ -2,6 +2,7 @@ from nonebot.plugin import PluginMetadata
 from arclet.alconna import CommandMeta, namespace
 
 from nonebot_plugin_alconna import Command
+from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
 
 __plugin_meta__ = PluginMetadata(
     name="echo",
@@ -20,5 +21,5 @@ with namespace("builtin/echo") as ns:
         Command("echo <...content>", "echo 指令", CommandMeta(compact=True))
         .usage("重复你说的话")
         .action(lambda content: content)
-        .build(auto_send_output=True, use_cmd_start=True)
+        .build(auto_send_output=True, use_cmd_start=True, extensions=[ReplyMergeExtension()])
     )

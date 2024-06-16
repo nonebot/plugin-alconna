@@ -113,7 +113,7 @@ def select(
                 alias=f"select({_type.__name__})",
             )
 
-        def converter1(self, _seg: segment.Segment):
+        def converter2(self, _seg: segment.Segment):
             results = []
             if isinstance(_seg, _type):
                 results.append(_seg)
@@ -125,7 +125,7 @@ def select(
         return BasePattern(
             mode=MatchMode.TYPE_CONVERT,
             origin=_type,
-            converter=converter1,
+            converter=converter2,
             accepts=segment.Segment,
             alias=f"select({_type.__name__})[{index}]",
         )

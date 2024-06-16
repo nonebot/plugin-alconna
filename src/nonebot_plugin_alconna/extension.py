@@ -79,7 +79,10 @@ class Extension(metaclass=ABCMeta):
         """提供消息对象以便 Alconna 进行处理。"""
         if event.get_type() != "message":
             return None
-        msg: Message = event.get_message()
+        try:
+            msg: Message = event.get_message()
+        except (NotImplementedError, ValueError):
+            return None
         if use_origin:
             try:
                 msg: Message = getattr(event, "original_message", msg)  # type: ignore
