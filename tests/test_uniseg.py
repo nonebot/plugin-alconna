@@ -34,7 +34,11 @@ def test_unimsg():
     )
 
     msg1 = UniMessage.at("123").at_channel("456").at_role("789")
-    assert repr(msg1) == "[At(flag='user', target='123', display=None), At(flag='channel', target='456', display=None), At(flag='role', target='789', display=None)]"
+    assert repr(msg1) == (
+        "[At(flag='user', target='123', display=None), "
+        "At(flag='channel', target='456', display=None), "
+        "At(flag='role', target='789', display=None)]"
+    )
     assert msg1.filter(At, lambda x: x.flag == "user") == UniMessage.at("123")
 
 

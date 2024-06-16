@@ -1,7 +1,8 @@
 import asyncio
+import weakref
 import importlib
 from typing import Union, Literal, Optional, cast
-import weakref
+
 from nonebot.typing import T_State
 from tarina import lang, init_spec
 from nonebot.matcher import Matcher
@@ -179,7 +180,9 @@ class AlconnaRule:
     def __hash__(self) -> int:
         return hash(self.command.__hash__())
 
-    async def handle(self, cmd: Alconna, bot: Bot, event: Event, state: T_State, msg: UniMessage) -> Union[Arparma, Literal[False]]:
+    async def handle(
+        self, cmd: Alconna, bot: Bot, event: Event, state: T_State, msg: UniMessage
+    ) -> Union[Arparma, Literal[False]]:
         ctx = await self.executor.context_provider(event, bot, state)
         if self.comp_config is None:
             return cmd.parse(msg, ctx)

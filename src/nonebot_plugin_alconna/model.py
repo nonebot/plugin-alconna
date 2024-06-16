@@ -1,6 +1,7 @@
+from weakref import ReferenceType
 from typing_extensions import NotRequired
 from typing import Union, Generic, Literal, TypeVar, Optional, TypedDict
-from weakref import ReferenceType
+
 from pydantic import Field, BaseModel
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication

@@ -6,11 +6,11 @@ from types import FunctionType
 from dataclasses import dataclass
 from collections.abc import Iterable
 from typing_extensions import Self, SupportsIndex
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, NoReturn, Optional, overload, Callable
+from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Optional, overload
 
 from tarina import lang
-from tarina.lang.model import LangItem
 from nepattern import parser
+from tarina.lang.model import LangItem
 from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event

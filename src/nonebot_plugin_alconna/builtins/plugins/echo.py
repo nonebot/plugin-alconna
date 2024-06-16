@@ -1,5 +1,5 @@
-from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 from arclet.alconna import CommandMeta, namespace
+from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 
 from nonebot_plugin_alconna import Command
 from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
