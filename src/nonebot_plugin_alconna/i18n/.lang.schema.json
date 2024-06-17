@@ -2,44 +2,50 @@
   "title": "Lang Schema",
   "description": "Schema for lang file",
   "type": "object",
-  "minProperties": 4,
-  "maxProperties": 4,
   "properties": {
-    "comp/nonebot": {
-      "title": "Comp/nonebot",
-      "description": "Scope 'comp/nonebot' of lang item",
+    "completion": {
+      "title": "Completion",
+      "description": "Scope 'completion' of lang item",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "tab": {
-          "title": "tab",
-          "description": "value of lang item type 'tab'",
-          "type": "string"
-        },
-        "enter": {
-          "title": "enter",
-          "description": "value of lang item type 'enter'",
-          "type": "string"
-        },
-        "exit": {
-          "title": "exit",
-          "description": "value of lang item type 'exit'",
-          "type": "string"
-        },
-        "other": {
-          "title": "other",
-          "description": "value of lang item type 'other'",
-          "type": "string"
-        },
-        "timeout": {
-          "title": "timeout",
-          "description": "value of lang item type 'timeout'",
-          "type": "string"
-        },
-        "exited": {
-          "title": "exited",
-          "description": "value of lang item type 'exited'",
-          "type": "string"
+        "nonebot": {
+          "title": "Nonebot",
+          "description": "Scope 'nonebot' of lang item",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tab": {
+              "title": "tab",
+              "description": "value of lang item type 'tab'",
+              "type": "string"
+            },
+            "enter": {
+              "title": "enter",
+              "description": "value of lang item type 'enter'",
+              "type": "string"
+            },
+            "exit": {
+              "title": "exit",
+              "description": "value of lang item type 'exit'",
+              "type": "string"
+            },
+            "other": {
+              "title": "other",
+              "description": "value of lang item type 'other'",
+              "type": "string"
+            },
+            "timeout": {
+              "title": "timeout",
+              "description": "value of lang item type 'timeout'",
+              "type": "string"
+            },
+            "exited": {
+              "title": "exited",
+              "description": "value of lang item type 'exited'",
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -49,60 +55,100 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "log.load_global_extensions": {
-          "title": "log.load_global_extensions",
-          "description": "value of lang item type 'log.load_global_extensions'",
-          "type": "string"
+        "log": {
+          "title": "Log",
+          "description": "Scope 'log' of lang item",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "load_global_extensions": {
+              "title": "load_global_extensions",
+              "description": "value of lang item type 'load_global_extensions'",
+              "type": "string"
+            },
+            "got_path": {
+              "title": "Got_path",
+              "description": "Scope 'got_path' of lang item",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ms": {
+                  "title": "ms",
+                  "description": "value of lang item type 'ms'",
+                  "type": "string"
+                },
+                "validate": {
+                  "title": "validate",
+                  "description": "value of lang item type 'validate'",
+                  "type": "string"
+                }
+              }
+            },
+            "discord": {
+              "title": "Discord",
+              "description": "Scope 'discord' of lang item",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ambiguous_command": {
+                  "title": "ambiguous_command",
+                  "description": "value of lang item type 'ambiguous_command'",
+                  "type": "string"
+                },
+                "ambiguous_subcommand": {
+                  "title": "ambiguous_subcommand",
+                  "description": "value of lang item type 'ambiguous_subcommand'",
+                  "type": "string"
+                }
+              }
+            },
+            "parse": {
+              "title": "parse",
+              "description": "value of lang item type 'parse'",
+              "type": "string"
+            }
+          }
         },
-        "log.got_path/ms": {
-          "title": "log.got_path/ms",
-          "description": "value of lang item type 'log.got_path/ms'",
-          "type": "string"
-        },
-        "log.got_path/validate": {
-          "title": "log.got_path/validate",
-          "description": "value of lang item type 'log.got_path/validate'",
-          "type": "string"
-        },
-        "log.discord_ambiguous_command": {
-          "title": "log.discord_ambiguous_command",
-          "description": "value of lang item type 'log.discord_ambiguous_command'",
-          "type": "string"
-        },
-        "log.discord_ambiguous_subcommand": {
-          "title": "log.discord_ambiguous_subcommand",
-          "description": "value of lang item type 'log.discord_ambiguous_subcommand'",
-          "type": "string"
-        },
-        "log.parse": {
-          "title": "log.parse",
-          "description": "value of lang item type 'log.parse'",
-          "type": "string"
-        },
-        "error.discord_prefix": {
-          "title": "error.discord_prefix",
-          "description": "value of lang item type 'error.discord_prefix'",
-          "type": "string"
-        },
-        "error.extension_forbid_exclude": {
-          "title": "error.extension_forbid_exclude",
-          "description": "value of lang item type 'error.extension_forbid_exclude'",
-          "type": "string"
-        },
-        "error.extension_path_load": {
-          "title": "error.extension_path_load",
-          "description": "value of lang item type 'error.extension_path_load'",
-          "type": "string"
-        },
-        "error.extension_path_invalid": {
-          "title": "error.extension_path_invalid",
-          "description": "value of lang item type 'error.extension_path_invalid'",
-          "type": "string"
-        },
-        "error.matcher_got_path": {
-          "title": "error.matcher_got_path",
-          "description": "value of lang item type 'error.matcher_got_path'",
-          "type": "string"
+        "error": {
+          "title": "Error",
+          "description": "Scope 'error' of lang item",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "discord_prefix": {
+              "title": "discord_prefix",
+              "description": "value of lang item type 'discord_prefix'",
+              "type": "string"
+            },
+            "extension": {
+              "title": "Extension",
+              "description": "Scope 'extension' of lang item",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "forbid_exclude": {
+                  "title": "forbid_exclude",
+                  "description": "value of lang item type 'forbid_exclude'",
+                  "type": "string"
+                },
+                "path_load": {
+                  "title": "path_load",
+                  "description": "value of lang item type 'path_load'",
+                  "type": "string"
+                },
+                "path_invalid": {
+                  "title": "path_invalid",
+                  "description": "value of lang item type 'path_invalid'",
+                  "type": "string"
+                }
+              }
+            },
+            "matcher_got_path": {
+              "title": "matcher_got_path",
+              "description": "value of lang item type 'matcher_got_path'",
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -112,55 +158,71 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "lang.list": {
-          "title": "lang.list",
-          "description": "value of lang item type 'lang.list'",
-          "type": "string"
+        "lang": {
+          "title": "Lang",
+          "description": "Scope 'lang' of lang item",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "list": {
+              "title": "list",
+              "description": "value of lang item type 'list'",
+              "type": "string"
+            },
+            "switch": {
+              "title": "switch",
+              "description": "value of lang item type 'switch'",
+              "type": "string"
+            },
+            "locale_missing": {
+              "title": "locale_missing",
+              "description": "value of lang item type 'locale_missing'",
+              "type": "string"
+            },
+            "locale_timeout": {
+              "title": "locale_timeout",
+              "description": "value of lang item type 'locale_timeout'",
+              "type": "string"
+            }
+          }
         },
-        "lang.switch": {
-          "title": "lang.switch",
-          "description": "value of lang item type 'lang.switch'",
-          "type": "string"
-        },
-        "lang.locale_missing": {
-          "title": "lang.locale_missing",
-          "description": "value of lang item type 'lang.locale_missing'",
-          "type": "string"
-        },
-        "lang.locale_timeout": {
-          "title": "lang.locale_timeout",
-          "description": "value of lang item type 'lang.locale_timeout'",
-          "type": "string"
-        },
-        "help.plugin_name_unknown": {
-          "title": "help.plugin_name_unknown",
-          "description": "value of lang item type 'help.plugin_name_unknown'",
-          "type": "string"
-        },
-        "help.plugin_name": {
-          "title": "help.plugin_name",
-          "description": "value of lang item type 'help.plugin_name'",
-          "type": "string"
-        },
-        "help.plugin_id": {
-          "title": "help.plugin_id",
-          "description": "value of lang item type 'help.plugin_id'",
-          "type": "string"
-        },
-        "help.plugin_path": {
-          "title": "help.plugin_path",
-          "description": "value of lang item type 'help.plugin_path'",
-          "type": "string"
-        },
-        "help.plugin_module": {
-          "title": "help.plugin_module",
-          "description": "value of lang item type 'help.plugin_module'",
-          "type": "string"
-        },
-        "help.plugin_version": {
-          "title": "help.plugin_version",
-          "description": "value of lang item type 'help.plugin_version'",
-          "type": "string"
+        "help": {
+          "title": "Help",
+          "description": "Scope 'help' of lang item",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "plugin_name_unknown": {
+              "title": "plugin_name_unknown",
+              "description": "value of lang item type 'plugin_name_unknown'",
+              "type": "string"
+            },
+            "plugin_name": {
+              "title": "plugin_name",
+              "description": "value of lang item type 'plugin_name'",
+              "type": "string"
+            },
+            "plugin_id": {
+              "title": "plugin_id",
+              "description": "value of lang item type 'plugin_id'",
+              "type": "string"
+            },
+            "plugin_path": {
+              "title": "plugin_path",
+              "description": "value of lang item type 'plugin_path'",
+              "type": "string"
+            },
+            "plugin_module": {
+              "title": "plugin_module",
+              "description": "value of lang item type 'plugin_module'",
+              "type": "string"
+            },
+            "plugin_version": {
+              "title": "plugin_version",
+              "description": "value of lang item type 'plugin_version'",
+              "type": "string"
+            }
+          }
         }
       }
     }

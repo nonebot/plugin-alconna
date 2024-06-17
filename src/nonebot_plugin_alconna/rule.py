@@ -124,11 +124,11 @@ class AlconnaRule:
                 hides = {"tab", "enter", "exit"}
             hides |= disables
             if len(hides) < 3:
-                template = f"\n\n{{}}{{}}{{}}{lang.require('comp/nonebot', 'other')}\n"
+                template = f"\n\n{{}}{{}}{{}}{lang.require('completion', 'nonebot.other')}\n"
                 self._comp_help = template.format(
-                    ((lang.require("comp/nonebot", "tab").format(cmd=_tab) + "\n") if "tab" not in hides else ""),
-                    ((lang.require("comp/nonebot", "enter").format(cmd=_enter) + "\n") if "enter" not in hides else ""),
-                    ((lang.require("comp/nonebot", "exit").format(cmd=_exit) + "\n") if "exit" not in hides else ""),
+                    ((lang.require("completion", "nonebot.tab").format(cmd=_tab) + "\n") if "tab" not in hides else ""),
+                    ((lang.require("completion", "nonebot.enter").format(cmd=_enter) + "\n") if "enter" not in hides else ""),
+                    ((lang.require("completion", "nonebot.exit").format(cmd=_exit) + "\n") if "exit" not in hides else ""),
                 )
 
             async def _waiter_handle(_bot: Bot, _event: Event, _matcher: Matcher, content: UniMsg):
@@ -225,7 +225,7 @@ class AlconnaRule:
                 try:
                     await asyncio.wait_for(_futures[session_id], timeout=self.comp_config.get("timeout", 60))
                 except asyncio.TimeoutError:
-                    await self.send(lang.require("comp/nonebot", "timeout"), bot, event, res)
+                    await self.send(lang.require("completion", "nonebot.timeout"), bot, event, res)
                     _clear()
                     return res
                 finally:
@@ -234,7 +234,7 @@ class AlconnaRule:
                 ans: Union[UniMessage, bool, None] = _futures[session_id].result()
                 _futures[session_id] = asyncio.get_running_loop().create_future()
                 if ans is False:
-                    await self.send(lang.require("comp/nonebot", "exited"), bot, event, res)
+                    await self.send(lang.require("completion", "nonebot.exited"), bot, event, res)
                     _clear()
                     return res
                 elif ans is None:

@@ -159,7 +159,7 @@ class ExtensionExecutor:
                 self.extensions.append(ext)
         for exl in excludes or []:
             if isinstance(exl, str) and exl.startswith("!"):
-                raise ValueError(lang.require("nbp-alc", "error.extension_forbid_exclude"))
+                raise ValueError(lang.require("nbp-alc", "error.extension.forbid_exclude"))
         self._excludes = set(excludes or [])
         self.extensions = [
             ext
@@ -300,7 +300,7 @@ def load_from_path(path: str) -> None:
         path = f"nonebot_plugin_alconna.builtins.extensions.{path[1:]}"
     match = pattern.match(path)
     if not match:
-        raise ValueError(lang.require("nbp-alc", "error.extension_path_invalid").format(path=path))
+        raise ValueError(lang.require("nbp-alc", "error.extension.path_invalid").format(path=path))
     module = imp.import_module(match.group("module"))
     attrs = filter(None, (match.group("attr") or "__extension__").split("."))
     ext = functools.reduce(getattr, attrs, module)
@@ -309,4 +309,4 @@ def load_from_path(path: str) -> None:
     elif isinstance(ext, Extension):
         add_global_extension(ext)
     else:
-        raise TypeError(lang.require("nbp-alc", "error.extension_path_load").format(path=path))
+        raise TypeError(lang.require("nbp-alc", "error.extension.path_load").format(path=path))

@@ -1,10 +1,10 @@
 {
   "default": "zh-CN",
   "frozen": [
-    "comp/nonebot"
+    "completion.nonebot"
   ],
   "require": [
-    "comp/nonebot",
+    "completion.nonebot",
     "nbp-alc"
   ]
 }

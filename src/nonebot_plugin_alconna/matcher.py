@@ -523,11 +523,11 @@ class AlconnaMatcher(Matcher):
                 ms = msg[0]
                 if isinstance(ms, Text) and not ms.text.strip():
                     await matcher.reject(prompt, fallback=fallback)
-                log("DEBUG", escape_tag(lang.require("nbp-alc", "log.got_path/ms").format(path=path, ms=ms)))
+                log("DEBUG", escape_tag(lang.require("nbp-alc", "log.got_path.ms").format(path=path, ms=ms)))
                 if (res := _validate(arg, ms)) is None:  # type: ignore
                     log(
                         "TRACE",
-                        escape_tag(lang.require("nbp-alc", "log.got_path/validate").format(path=path, validate=res)),
+                        escape_tag(lang.require("nbp-alc", "log.got_path.validate").format(path=path, validate=res)),
                     )
                     await matcher.reject(prompt, fallback=fallback)
                 if middleware:

@@ -1,36 +1,52 @@
 {
   "$schema": ".lang.schema.json",
-  "comp/nonebot": {
-    "tab": "Send a {cmd} to toggle prompt",
-    "enter": "Send {cmd} to confirm the prompt as the input",
-    "exit": "Send {cmd} to exit the completion session",
-    "other": "Input which not in above will be confirmed as the input",
-    "timeout": "Completion session timed out. Exited automatically",
-    "exited": "Completion session exited"
+  "completion": {
+   "nonebot": {
+      "tab": "Send a {cmd} to toggle prompt",
+      "enter": "Send {cmd} to confirm the prompt as the input",
+      "exit": "Send {cmd} to exit the completion session",
+      "other": "Input which not in above will be confirmed as the input",
+      "timeout": "Completion session timed out. Exited automatically",
+      "exited": "Completion session exited"
+    }
   },
   "nbp-alc": {
-    "log.load_global_extensions": "Loading global extension from {path}",
-    "log.got_path/ms": "MessageSegment for got_path({path}) is {ms!r}",
-    "log.got_path/validate": "{validate} for got_path({path})",
-    "log.discord_ambiguous_command": "{cmd} which have both Args and Option/Subcommand can make unintended consequences when you translate it to Discord slash-command",
-    "log.discord_ambiguous_subcommand": "Subcommand {name} which have both Args and sub Option/Subcommand can make unintended consequences when you translate Alconna to Discord slash-command",
-    "log.parse": "Parse result of \"{msg}\" by {cmd} is ({arp})",
-    "error.discord_prefix": "The Alconna obj must have '/' prefix when use to translate to Discord slash-command",
-    "error.extension_forbid_exclude": "Extension which id starts with '!' cannot be excluded",
-    "error.extension_path_load": "Value of {path} is not a subclass of Extension",
-    "error.extension_path_invalid": "{path} is not a valid extension path",
-    "error.matcher_got_path": "Path {path} not found in Alconna {cmd}"
+    "log": {
+      "load_global_extensions": "Loading global extension from {path}",
+      "got_path": {
+        "ms": "MessageSegment for got_path({path}) is {ms!r}",
+        "validate": "{validate} for got_path({path})"
+      },
+      "discord": {
+        "ambiguous_command": "{cmd} which have both Args and Option/Subcommand can make unintended consequences when you translate it to Discord slash-command",
+        "ambiguous_subcommand": "Subcommand {name} which have both Args and sub Option/Subcommand can make unintended consequences when you translate Alconna to Discord slash-command"
+      },
+      "parse": "Parse result of \"{msg}\" by {cmd} is ({arp})"
+    },
+    "error": {
+      "discord_prefix": "The Alconna obj must have '/' prefix when use to translate to Discord slash-command",
+      "extension": {
+        "forbid_exclude": "Extension which id starts with '!' cannot be excluded",
+        "path_load": "Value of {path} is not a subclass of Extension",
+        "path_invalid": "{path} is not a valid extension path"
+      },
+      "matcher_got_path": "Path {path} not found in Alconna {cmd}"
+    }
   },
   "nbp-alc/builtin": {
-    "lang.list": "Following languages are supported:",
-    "lang.switch": "Switch to '{locale}' successfully.",
-    "lang.locale_missing": "{:At(user, $event.get_user_id())}Missing locale argument, please input:",
-    "lang.locale_timeout": "{:At(user, $event.get_user_id())}Timeout for waiting locale input.",
-    "help.plugin_name_unknown": "Unknown plugin",
-    "help.plugin_id":      "ID     ",
-    "help.plugin_name":    "Name   ",
-    "help.plugin_version": "Version",
-    "help.plugin_module":  "Module ",
-    "help.plugin_path":    "Path   "
+    "lang": {
+      "list": "Following languages are supported:",
+      "switch": "Switch to '{locale}' successfully.",
+      "locale_missing": "{:At(user, $event.get_user_id())}Missing locale argument, please input:",
+      "locale_timeout": "{:At(user, $event.get_user_id())}Timeout for waiting locale input."
+    },
+    "help": {
+      "plugin_name_unknown": "Unknown plugin",
+      "plugin_id":      "ID     ",
+      "plugin_name":    "Name   ",
+      "plugin_version": "Version",
+      "plugin_module":  "Module ",
+      "plugin_path":    "Path   "
+    }
   }
 }

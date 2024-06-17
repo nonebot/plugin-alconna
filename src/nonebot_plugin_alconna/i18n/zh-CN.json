@@ -1,36 +1,52 @@
 {
   "$schema": ".lang.schema.json",
-  "comp/nonebot": {
-    "tab": "发送 {cmd} 切换提示",
-    "enter": "发送 {cmd} 以使用提示内容作为输入",
-    "exit": "发送 {cmd} 退出补全会话",
-    "other": "以上选项之外的输入将作为参数输入",
-    "timeout": "补全会话超时, 已自动退出",
-    "exited": "补全会话已退出"
+  "completion": {
+    "nonebot": {
+      "tab": "发送 {cmd} 切换提示",
+      "enter": "发送 {cmd} 以使用提示内容作为输入",
+      "exit": "发送 {cmd} 退出补全会话",
+      "other": "以上选项之外的输入将作为参数输入",
+      "timeout": "补全会话超时, 已自动退出",
+      "exited": "补全会话已退出"
+    }
   },
   "nbp-alc": {
-    "log.load_global_extensions": "正在从 {path} 加载全局扩展 。。。",
-    "log.got_path/ms": "got_path({path}) 下使用的消息段是 {ms!r}",
-    "log.got_path/validate": "got_path({path}) 下的验证结果 是 {validate!r}",
-    "log.discord_ambiguous_command": "同时具有 Args 和 OptionSubcommand 的 {cmd} 在将其转换为 Discord 斜杠命令时会造成意料之外的后果",
-    "log.discord_ambiguous_subcommand": "同时具有 Args 和 OptionSubcommand 的子命令 {name} 在将其转换为 Discord 斜杠命令时会造成意料之外的后果",
-    "log.parse": "{cmd} 对 \"{msg}\" 的解析结果是 ({arp})",
-    "error.discord_prefix": "Alconna 命令对象在用于转换为 Discord 斜杠命令时必须具有 '/' 前缀",
-    "error.extension_forbid_exclude": "不能排除 id 以“！”开头的扩展",
-    "error.extension_path_load": "{path} 的值不是扩展的子类",
-    "error.extension_path_invalid": "{path} 不是有效的扩展路径",
-    "error.matcher_got_path": "在 Alconna {cmd} 中找不到路径 {path}"
+    "log": {
+      "load_global_extensions": "正在从 {path} 加载全局扩展 。。。",
+      "got_path": {
+        "ms": "got_path({path}) 下使用的消息段是 {ms!r}",
+        "validate": "got_path({path}) 下的验证结果 是 {validate!r}"
+      },
+      "discord": {
+        "ambiguous_command": "同时具有 Args 和 OptionSubcommand 的 {cmd} 在将其转换为 Discord 斜杠命令时会造成意料之外的后果",
+        "ambiguous_subcommand": "同时具有 Args 和 OptionSubcommand 的子命令 {name} 在将其转换为 Discord 斜杠命令时会造成意料之外的后果"
+      },
+      "parse": "{cmd} 对 \"{msg}\" 的解析结果是 ({arp})"
+    },
+    "error": {
+      "discord_prefix": "Alconna 命令对象在用于转换为 Discord 斜杠命令时必须具有 '/' 前缀",
+      "extension": {
+        "forbid_exclude": "不能排除 id 以“！”开头的扩展",
+        "path_load": "{path} 的值不是扩展的子类",
+        "path_invalid": "{path} 不是有效的扩展路径"
+      },
+      "matcher_got_path": "在 Alconna {cmd} 中找不到路径 {path}"
+    }
   },
   "nbp-alc/builtin": {
-    "lang.list": "支持的语言列表:",
-    "lang.switch": "切换语言成功: '{locale}'。",
-    "lang.locale_missing": "{:At(user, $event.get_user_id())}缺少语言参数，请输入：",
-    "lang.locale_timeout": "{:At(user, $event.get_user_id())}等待语言参数输入超时。",
-    "help.plugin_name_unknown": "未知插件",
-    "help.plugin_id":      "插件标识",
-    "help.plugin_name":    "插件名称",
-    "help.plugin_version": "插件版本",
-    "help.plugin_module":  "插件模块",
-    "help.plugin_path":    "插件路径"
+    "lang": {
+      "list": "支持的语言列表:",
+      "switch": "切换语言成功: '{locale}'。",
+      "locale_missing": "{:At(user, $event.get_user_id())}缺少语言参数，请输入：",
+      "locale_timeout": "{:At(user, $event.get_user_id())}等待语言参数输入超时。"
+    },
+    "help": {
+      "plugin_name_unknown": "未知插件",
+      "plugin_id":      "插件标识",
+      "plugin_name":    "插件名称",
+      "plugin_version": "插件版本",
+      "plugin_module":  "插件模块",
+      "plugin_path":    "插件路径"
+    }
   }
 }

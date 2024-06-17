@@ -3,45 +3,85 @@
   "$schema": "./.template.schema.json",
   "scopes": [
     {
-      "scope": "comp/nonebot",
+      "scope": "completion",
       "types": [
-        "tab",
-        "enter",
-        "exit",
-        "other",
-        "timeout",
-        "exited"
+        {
+          "subtype": "nonebot",
+          "types": [
+            "tab",
+            "enter",
+            "exit",
+            "other",
+            "timeout",
+            "exited"
+          ]
+        }
       ]
     },
     {
       "scope": "nbp-alc",
       "types": [
-        "log.load_global_extensions",
-        "log.got_path/ms",
-        "log.got_path/validate",
-        "log.discord_ambiguous_command",
-        "log.discord_ambiguous_subcommand",
-        "log.parse",
-        "error.discord_prefix",
-        "error.extension_forbid_exclude",
-        "error.extension_path_load",
-        "error.extension_path_invalid",
-        "error.matcher_got_path"
+        {
+          "subtype": "log",
+          "types": [
+            "load_global_extensions",
+            {
+              "subtype": "got_path",
+              "types": [
+                "ms",
+                "validate"
+              ]
+            },
+            {
+              "subtype": "discord",
+              "types": [
+                "ambiguous_command",
+                "ambiguous_subcommand"
+              ]
+            },
+            "parse"
+          ]
+        },
+        {
+          "subtype": "error",
+          "types": [
+            "discord_prefix",
+            {
+              "subtype": "extension",
+              "types": [
+                "forbid_exclude",
+                "path_load",
+                "path_invalid"
+              ]
+            },
+            "matcher_got_path"
+          ]
+        }
       ]
     },
     {
       "scope": "nbp-alc/builtin",
         "types": [
-          "lang.list",
-          "lang.switch",
-          "lang.locale_missing",
-          "lang.locale_timeout",
-          "help.plugin_name_unknown",
-          "help.plugin_name",
-          "help.plugin_id",
-          "help.plugin_path",
-          "help.plugin_module",
-          "help.plugin_version"
+          {
+            "subtype": "lang",
+            "types": [
+              "list",
+              "switch",
+              "locale_missing",
+              "locale_timeout"
+            ]
+          },
+          {
+            "subtype": "help",
+            "types": [
+              "plugin_name_unknown",
+              "plugin_name",
+              "plugin_id",
+              "plugin_path",
+              "plugin_module",
+              "plugin_version"
+            ]
+          }
         ]
     }
   ]

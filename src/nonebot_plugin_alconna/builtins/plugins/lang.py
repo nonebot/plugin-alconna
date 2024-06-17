@@ -31,19 +31,19 @@ with namespace("builtin/lang") as ns:
 
 @cmd.assign("list")
 async def _():
-    await cmd.finish(Lang.nbp_alc_builtin.lang_list() + "\n" + "\n".join(f" * {locale}" for locale in lang.locales))
+    await cmd.finish(Lang.nbp_alc_builtin.lang.list() + "\n" + "\n".join(f" * {locale}" for locale in lang.locales))
 
 
 @cmd.assign("switch")
 async def _(locale: str):
     if locale == "NONE":
-        resp = await cmd.prompt(UniMessage.i18n(Lang.nbp_alc_builtin.lang_locale_missing), timeout=30)
+        resp = await cmd.prompt(UniMessage.i18n(Lang.nbp_alc_builtin.lang.locale_missing), timeout=30)
         if resp is None:
-            await UniMessage.i18n(Lang.nbp_alc_builtin.lang_locale_timeout).finish()
+            await UniMessage.i18n(Lang.nbp_alc_builtin.lang.locale_timeout).finish()
         locale = str(resp)
     try:
         lang.select(locale)
     except ValueError as e:
         await cmd.finish(str(e))
     else:
-        await UniMessage.i18n(Lang.nbp_alc_builtin.lang_switch, locale=locale).finish()
+        await UniMessage.i18n(Lang.nbp_alc_builtin.lang.switch, locale=locale).finish()

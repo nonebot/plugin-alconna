@@ -205,7 +205,7 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
     if not opt.args.empty and opt.options:
         log(
             "WARNING",
-            lang.require("nbp-alc", "log.discord_ambiguous_subcommand").format(name=opt.name),
+            lang.require("nbp-alc", "log.discord.ambiguous_subcommand").format(name=opt.name),
         )
     if not opt.args.empty:
         return SubCommandOption(
@@ -248,7 +248,7 @@ def translate(
     if not alc.args.empty and allow_opt:
         log(
             "WARNING",
-            lang.require("nbp-alc", "log.discord_ambiguous_command").format(cmd=alc.path),
+            lang.require("nbp-alc", "log.discord.ambiguous_command").format(cmd=alc.path),
         )
     if not (options := _translate_args(alc.args)):
         options = [_translate_options(opt) for opt in allow_opt]
