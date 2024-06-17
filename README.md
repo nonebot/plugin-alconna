@@ -27,7 +27,7 @@ _✨ Alconna Usage For NoneBot2 ✨_
 - 完整的 Alconna 特性支持
 - 自动回复命令帮助信息选项
 - 跨平台的接收与发送消息(被动+主动)
-- 对20种适配器的收发消息支持
+- 对**20种适配器**的收发消息支持
 - 比 `got-reject` 更强大的补全会话机制
 - 多种内置插件 (echo，help，lang)
 - i18n 支持
@@ -46,9 +46,9 @@ NoneBot 文档: [📖这里](https://nonebot.dev/docs/next/best-practice/alconna
 
 ```python
 from nonebot import get_driver
-from nonebot_plugin_alconna import UniMessage, SupportScope, on_alconna
+from nonebot_plugin_alconna import Target, UniMessage, SupportScope, on_alconna
 
-driver = get_driver
+driver = get_driver()
 test = on_alconna("test")
 
 @test.handle()
@@ -63,7 +63,7 @@ async def handle_foo():
     await test.send("图片已收到")
 
 @driver.on_startup
-async def_():
+async def _():
     await Target.group("123456789", SupportScope.qq_client).send(UniMessage.image(path="test.png"))
 ```
 

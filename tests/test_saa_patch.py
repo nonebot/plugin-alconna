@@ -25,7 +25,7 @@ async def test_patch(app: App):
             ]
         ).send()
 
-    patch_saa()
+    dispose = patch_saa()
 
     async with app.test_matcher(test_cmd) as ctx:
         adapter = get_adapter(Adapter)
@@ -40,3 +40,5 @@ async def test_patch(app: App):
                 "content": 'ok\n<at id="234"/>',
             },
         )
+
+    dispose()
