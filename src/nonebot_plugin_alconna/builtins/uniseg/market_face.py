@@ -1,8 +1,9 @@
-from dataclasses import dataclass
 from typing import Optional
+from dataclasses import dataclass
+
+from tarina import lang
 from nonebot.adapters import Bot
 from nonebot.adapters import MessageSegment as BaseMessageSegment
-from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
 from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
@@ -13,6 +14,7 @@ from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter, SerializeFa
 @dataclass
 class MarketFace(Segment):
     """MarketFace对象, 专门表示 QQ 中的商城表情"""
+
     id: str  # alias: emoji_id
     tab_id: Optional[str] = None  # alias: package_id
     key: Optional[str] = None
@@ -82,8 +84,10 @@ async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Bot, fallbac
                 "faceId": seg.id,
                 "tabId": seg.tab_id,
                 "key": seg.key,
-            }
-        )(await exporter.export(seg.children, bot, fallback))  # type: ignore
+            },
+        )(
+            await exporter.export(seg.children, bot, fallback)
+        )  # type: ignore
 
     if exporter.get_adapter() is SupportAdapter.red:
         raise NotImplementedError
@@ -119,5 +123,5 @@ async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Bot, fallbac
                 "emoji_package_id": int(seg.tab_id, 16),
                 "key": seg.key,
                 "summary": seg.summary,
-            }
+            },
         )

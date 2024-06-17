@@ -1,11 +1,11 @@
 from importlib_metadata import PackageNotFoundError, distribution
-
 from nonebot.adapters import MessageSegment as BaseMessageSegment
-from nonebot_plugin_alconna.uniseg.segment import Emoji, custom_register, custom_handler
+
+from nonebot_plugin_alconna.uniseg.loader import BaseLoader
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
 from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
-from nonebot_plugin_alconna.uniseg.loader import BaseLoader
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import Emoji, custom_handler, custom_register
 
 
 def get_satori_version():
@@ -22,8 +22,8 @@ class Loader(BaseLoader):
             if tuple(map(int, version.split(".")[:2])) < (0, 12):
                 raise ImportError("nonebot-adapter-satori>=0.12 is required.")
 
-        from nonebot.adapters.satori import Message, MessageSegment
         from nonebot.adapters.satori.message import Custom
+        from nonebot.adapters.satori import Message, MessageSegment
 
         @custom_register(Emoji, "chronocat:face")
         def fbuild(builder: MessageBuilder, seg: BaseMessageSegment):

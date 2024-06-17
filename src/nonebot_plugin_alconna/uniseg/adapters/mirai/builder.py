@@ -17,7 +17,6 @@ from nonebot.adapters.mirai.message import Video as VideoSegment
 from nonebot.adapters.mirai.message import Voice as VoiceSegment
 from nonebot.adapters.mirai.message import Forward as ForwardSegment
 from nonebot.adapters.mirai.message import RefNode as RefNodeSegment
-from nonebot.adapters.mirai.message import MarketFace as MarketFaceSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build

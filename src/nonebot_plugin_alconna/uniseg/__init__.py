@@ -1,4 +1,6 @@
 import asyncio
+from typing import Callable
+from typing_extensions import TypeAlias
 
 from nonebot.adapters import Bot
 from nonebot.plugin import PluginMetadata
@@ -64,8 +66,20 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-def patch_saa():
-    from .utils import saa  # noqa: F401
+_Dispose: TypeAlias = Callable[[], None]
+"""patch 方法的复原函数类型"""
+
+
+def patch_saa() -> _Dispose:
+    from .utils import saa
+
+    return saa.dispose
+
+
+def patch_matcher_send() -> _Dispose:
+    from .utils import matcher
+
+    return matcher.dispose
 
 
 def apply_filehost():

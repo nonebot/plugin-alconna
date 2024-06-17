@@ -126,9 +126,17 @@ class AlconnaRule:
             if len(hides) < 3:
                 template = f"\n\n{{}}{{}}{{}}{lang.require('completion', 'nonebot.other')}\n"
                 self._comp_help = template.format(
-                    ((lang.require("completion", "nonebot.tab").format(cmd=_tab) + "\n") if "tab" not in hides else ""),
-                    ((lang.require("completion", "nonebot.enter").format(cmd=_enter) + "\n") if "enter" not in hides else ""),
-                    ((lang.require("completion", "nonebot.exit").format(cmd=_exit) + "\n") if "exit" not in hides else ""),
+                    (f"{lang.require('completion', 'nonebot.tab').format(cmd=_tab)}\n" if "tab" not in hides else ""),
+                    (
+                        f"{lang.require('completion', 'nonebot.enter').format(cmd=_enter)}\n"
+                        if "enter" not in hides
+                        else ""
+                    ),
+                    (
+                        f"{lang.require('completion', 'nonebot.exit').format(cmd=_exit)}\n"
+                        if "exit" not in hides
+                        else ""
+                    ),
                 )
 
             async def _waiter_handle(_bot: Bot, _event: Event, _matcher: Matcher, content: UniMsg):

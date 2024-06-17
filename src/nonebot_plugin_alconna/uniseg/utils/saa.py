@@ -86,4 +86,11 @@ async def send(self: MessageFactory, *, at_sender=False, reply=False) -> "SaaRec
         return UnisegReceipt(bot_id=receipt.bot.self_id, adapter_name=receipt.exporter.get_adapter(), data=receipt)
 
 
+_OLD_SEND = MessageFactory.send
+
+
 MessageFactory.send = send
+
+
+def dispose():
+    MessageFactory.send = _OLD_SEND  # type: ignore
