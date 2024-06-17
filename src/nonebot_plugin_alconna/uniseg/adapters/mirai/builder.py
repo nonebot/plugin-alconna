@@ -59,10 +59,6 @@ class MiraiMessageBuilder(MessageBuilder):
     def face(self, seg: FaceSegment):
         return Emoji(str(seg.data["id"]), seg.data["name"])
 
-    @build("market_face")
-    def market_face(self, seg: MarketFaceSegment):
-        return Emoji(str(seg.data["id"]), seg.data["name"])
-
     @build("image")
     def image(self, seg: ImageSegment):
         return Image(url=seg.data["url"], id=seg.data["id"])
