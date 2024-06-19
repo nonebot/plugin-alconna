@@ -110,4 +110,4 @@ class ReplyMergeExtension(Extension):
         return uni_msg
 
 
-__extension__ = ReplyRecordExtension
+__extension__ = ReplyMergeExtension
