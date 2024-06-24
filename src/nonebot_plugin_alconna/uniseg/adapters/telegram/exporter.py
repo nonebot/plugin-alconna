@@ -98,12 +98,13 @@ class TelegramMessageExporter(MessageExporter[Message]):
         }[name]
         if seg.id or seg.url:
             return method(seg.id or seg.url)
-        elif seg.path:
-            return method(Path(seg.path).read_bytes())
+        if seg.path:
+            raw = Path(seg.path).read_bytes()
         elif seg.raw:
-            return method(seg.raw_bytes)
+            raw = seg.raw_bytes
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        return method((seg.name, raw) if seg.name else raw)
 
     @export
     async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
