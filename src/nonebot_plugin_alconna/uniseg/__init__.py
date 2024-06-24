@@ -6,6 +6,8 @@ from nonebot.adapters import Bot
 from nonebot.plugin import PluginMetadata
 
 from .segment import At as At
+from .rule import at_in as at_in
+from .rule import at_me as at_me
 from .constraint import log, lang
 from .segment import File as File
 from .segment import Text as Text

@@ -57,6 +57,8 @@ from .uniseg import Other as Other
 from .uniseg import Reply as Reply
 from .uniseg import Video as Video
 from .uniseg import Voice as Voice
+from .uniseg import at_in as at_in
+from .uniseg import at_me as at_me
 from .typings import Style as Style
 from .params import assign as assign
 from .rule import alconna as alconna

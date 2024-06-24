@@ -8,7 +8,7 @@ from nonebot_plugin_alconna import Reply, Extension, UniMessage
 
 class ReplyRecordExtension(Extension):
     """
-    用于将消息事件中的回复暂存在 extension 中，使得解析用的消息不带回复信息，同时可以在后续的处理中获取回复信息。
+    用于将消息事件中的回复暂存在 extension 中，以在后续的处理中获取回复信息。
 
     推荐配合 matcher.got 使用
 

@@ -271,7 +271,7 @@ class AlconnaRule:
         if isinstance(msg, UniMessage):
             _msg = msg
         else:
-            _msg = await UniMessage.generate(message=msg, event=event, bot=bot)
+            _msg = await UniMessage.generate(message=msg, adapter=adapter_name)
         state[UNISEG_MESSAGE] = _msg
 
         with output_manager.capture(cmd.name) as cap:
