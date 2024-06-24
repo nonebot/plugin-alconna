@@ -381,8 +381,11 @@ class Media(Segment):
     __default_name__ = "media"
     to_url: ClassVar[Optional[MediaToUrl]] = None
 
+    def __is_default_name(self) -> bool:
+        return self.name == self.__default_name__
+
     def __post_init__(self):
-        if self.path:
+        if self.path and self.__is_default_name():
             self.name = Path(self.path).name
         if self.url and not urlparse(self.url).hostname:
             self.url = f"https://{self.url}"
@@ -391,12 +394,14 @@ class Media(Segment):
     def raw_bytes(self) -> bytes:
         if not self.raw:
             raise ValueError(f"{self} has no raw data")
-        raw = self.raw.getvalue() if isinstance(self.raw, BytesIO) else self.raw
-        header = raw[:128]
-        info = fleep.get(header)
-        self.mimetype = info.mimes[0] if info.mimes else self.mimetype
-        if info.types and info.extensions:
-            self.name = f"{info.types[0]}.{info.extensions[0]}"
+        if (not self.mimetype) and self.__is_default_name():
+            raw = self.raw.getvalue() if isinstance(self.raw, BytesIO) else self.raw
+            header = raw[:128]
+            info = fleep.get(header)
+            if not self.mimetype:
+                self.mimetype = info.mimes[0] if info.mimes else self.mimetype
+            if self.__is_default_name() and info.types and info.extensions:
+                self.name = f"{info.types[0]}.{info.extensions[0]}"
         return raw
 
 
