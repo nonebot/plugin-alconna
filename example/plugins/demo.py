@@ -450,23 +450,16 @@ async def handle(name: str, phone: int, at: Union[str, At]):
         continue
 
 
-hd = on_alconna(
-    Alconna(
-        "请求处理",
-        Args["handle", ["-fa", "-fr", "-fi", "-ga", "-gr", "-gi"]]["id", str],
+hd = (
+    on_alconna(
+        Alconna(
+            "请求处理",
+            Args["handle", ["-fa", "-fr", "-fi", "-ga", "-gr", "-gi"]]["id", str],
+        )
     )
-)
-
-hd.shortcut(
-    r"dddd(\d+)",
-    fuzzy=False,
-    command="请求处理 -fa {0}",
-)
-
-hd.shortcut(
-    "dddd",
-    fuzzy=True,
-    command="请求处理 -fa {%0}",
+    .test("请求处理 -fa 1234", {"id": "1234"})
+    .shortcut("dddd", prefix=True, command="请求处理 -fa {%0}")
+    .test("dddd1234", {"id": "1234"})
 )
 
 
@@ -501,9 +494,7 @@ setu.shortcut(
     command="setu {0} tags",
     fuzzy=True,
     wrapper=wrapper,
-)
-
-setu.shortcut(
+).shortcut(
     r"(?:要|我要|给我|来|抽)(点|\d*)(?:张|个|份|幅)?(.+?)的?(?:涩|色|瑟)图",
     command="setu {0}",
     arguments=["tags", "{1}"],

@@ -394,8 +394,8 @@ class Media(Segment):
     def raw_bytes(self) -> bytes:
         if not self.raw:
             raise ValueError(f"{self} has no raw data")
+        raw = self.raw.getvalue() if isinstance(self.raw, BytesIO) else self.raw
         if (not self.mimetype) or self.__is_default_name():
-            raw = self.raw.getvalue() if isinstance(self.raw, BytesIO) else self.raw
             header = raw[:128]
             info = fleep.get(header)
             if not self.mimetype:

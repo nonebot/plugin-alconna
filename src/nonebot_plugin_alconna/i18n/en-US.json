@@ -31,6 +31,12 @@
         "path_invalid": "{path} is not a valid extension path"
       },
       "matcher_got_path": "Path {path} not found in Alconna {cmd}"
+    },
+    "test": {
+      "command_unusable": "{cmd} is not usable",
+      "parse_failed": "Test failed: {cmd} cannot parse \"{msg}\"",
+      "check_failed": "Test failed: Arg {arg} of {cmd} expected {expected!r} but got {got!r}",
+      "passed": "{cmd} passed the test"
     }
   },
   "nbp-alc/builtin": {

@@ -1,26 +1,27 @@
 from __future__ import annotations
 
+import random
 import weakref
 from warnings import warn
 from types import FunctionType
 from datetime import datetime, timedelta
-from typing_extensions import deprecated
 from collections.abc import Hashable, Iterable
+from typing_extensions import Self, deprecated
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, NoReturn, Protocol, cast, overload
 
-from nonebot import require
 from nonebot.rule import Rule
 from nonebot.params import Depends
 from nonebot.utils import escape_tag
 from tarina.lang.model import LangItem
+from nonebot import require, get_driver
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from nonebot.message import run_postprocessor
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
+from tarina import is_awaitable, run_always_await
 from arclet.alconna.typing import ShortcutRegWrapper
 from nepattern import ANY, STRING, TPattern, AnyString
-from tarina import lang, is_awaitable, run_always_await
 from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from nonebot.plugin.on import store_matcher, get_matcher_source
@@ -31,6 +32,7 @@ from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, Messag
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker, _DependentCallable
 
+from .i18n import Lang
 from .rule import alconna
 from .typings import MReturn
 from .util import annotation
@@ -114,10 +116,12 @@ class AlconnaMatcher(Matcher):
     command: ClassVar[weakref.ReferenceType[Alconna]]
     basepath: ClassVar[str]
     executor: ClassVar[ExtensionExecutor]
+    _command_path: ClassVar[str]
+    _tests: ClassVar[list[tuple[UniMessage, dict[str, Any] | None, bool]]]
 
     @classmethod
     @overload
-    def shortcut(cls, key: str | TPattern, args: ShortcutArgs | None = None) -> str:
+    def shortcut(cls, key: str | TPattern, args: ShortcutArgs | None = None) -> type[Self]:
         """操作快捷命令
 
         Args:
@@ -144,7 +148,7 @@ class AlconnaMatcher(Matcher):
         prefix: bool = False,
         wrapper: ShortcutRegWrapper | None = None,
         humanized: str | None = None,
-    ) -> str:
+    ) -> type[Self]:
         """操作快捷命令
 
         Args:
@@ -165,30 +169,12 @@ class AlconnaMatcher(Matcher):
         ...
 
     @classmethod
-    @overload
-    def shortcut(cls, key: str | TPattern, *, delete: Literal[True]) -> str:
-        """操作快捷命令
-
-        Args:
-            key (str | re.Pattern[str]): 快捷命令名, 可传入正则表达式
-            delete (bool): 是否删除快捷命令
-
-        Returns:
-            str: 操作结果
-
-        Raises:
-            ValueError: 快捷命令操作失败时抛出
-        """
-        ...
-
-    @classmethod
-    def shortcut(cls, key: str | TPattern, args: ShortcutArgs | None = None, delete: bool = False, **kwargs):
+    def shortcut(cls, key: str | TPattern, args: ShortcutArgs | None = None, **kwargs):
         """操作快捷命令
 
         Args:
             key (str | re.Pattern[str]): 快捷命令名, 可传入正则表达式
             args (ShortcutArgs[TDC] | None, optional): 快捷命令参数, 不传入时则尝试使用最近一次使用的命令
-            delete (bool, optional): 是否删除快捷命令, 默认为 `False`
             command (TDC, optional): 快捷命令指向的命令
             arguments (list[Any] | None, optional): 快捷命令参数, 默认为 `None`
             fuzzy (bool, optional): 是否允许命令后随参数, 默认为 `True`
@@ -202,17 +188,28 @@ class AlconnaMatcher(Matcher):
         Raises:
             ValueError: 快捷命令操作失败时抛出
         """
-        return cls.command().shortcut(key, args, delete, **kwargs)  # type: ignore
+        cls.command().shortcut(key, args, **kwargs)  # type: ignore
+        return cls
 
     if TYPE_CHECKING:
 
         @classmethod
         def set_path_arg(cls_or_self, path: str, content: Any) -> None:  # type: ignore
-            ...
+            """设置一个 `got_path` 内容
+
+            Args:
+                path (str): 路径; "~XX" 时会把 "~" 替换为父级 assign 的 path
+                content (Any): 内容
+            """
 
         @classmethod
         def get_path_arg(cls_or_self, path: str, default: Any) -> Any:  # type: ignore
-            ...
+            """获取一个 `got_path` 内容
+
+            Args:
+                path (str): 路径; "~XX" 时会把 "~" 替换为父级 assign 的 path
+                default (Any): 默认值
+            """
 
     else:
 
@@ -509,7 +506,7 @@ class AlconnaMatcher(Matcher):
         """
         path = merge_path(path, cls.basepath)
         if not (arg := extract_arg(path, cls.command())):
-            raise ValueError(lang.require("nbp-alc", "error.matcher_got_path").format(path=path, cmd=cls.command))
+            raise ValueError(Lang.nbp_alc.error.matcher_got_path(path=path, cmd=cls.command))
 
         @annotation(event=Event, bot=Bot, matcher=AlconnaMatcher, state=T_State)
         async def _key_getter(event: Event, bot: Bot, matcher: AlconnaMatcher, state: T_State):
@@ -523,11 +520,11 @@ class AlconnaMatcher(Matcher):
                 ms = msg[0]
                 if isinstance(ms, Text) and not ms.text.strip():
                     await matcher.reject(prompt, fallback=fallback)
-                log("DEBUG", escape_tag(lang.require("nbp-alc", "log.got_path.ms").format(path=path, ms=ms)))
+                log("DEBUG", escape_tag(Lang.nbp_alc.log.got_path.ms(path=path, ms=ms)))
                 if (res := _validate(arg, ms)) is None:  # type: ignore
                     log(
                         "TRACE",
-                        escape_tag(lang.require("nbp-alc", "log.got_path.validate").format(path=path, validate=res)),
+                        escape_tag(Lang.nbp_alc.log.got_path.validate(path=path, validate=res)),
                     )
                     await matcher.reject(prompt, fallback=fallback)
                 if middleware:
@@ -824,6 +821,52 @@ class AlconnaMatcher(Matcher):
             return
         return await UniMessage.generate(message=cast(Message, res))
 
+    @classmethod
+    def test(cls, message: str | UniMessage, expected: dict[str, Any] | None = None, prefix: bool = True):
+        """测试当前事件响应器
+
+        参数:
+            message: 测试消息
+            expected: 预期结果
+            prefix: 是否给 message 添加命令前缀
+        """
+        if isinstance(message, str):
+            message = UniMessage(message)
+        cls._tests.append((message, expected, prefix))
+        return cls
+
+    @classmethod
+    def _run_tests(cls):
+        if not cls._tests:
+            return
+        cmd = cls.command()
+        if cmd is None:
+            log("ERROR", Lang.nbp_alc.test.command_unusable(cmd=cls._command_path))
+            return
+        prefix = ""
+        if cmd.prefixes:
+            prefix: str = random.choice(cmd.prefixes)  # type: ignore
+        has_error = False
+        for message, expected, need_pf in cls._tests:
+            if need_pf:
+                message = UniMessage(prefix) + message
+            res = cmd.parse(message)
+            if not res.matched:
+                log("ERROR", Lang.nbp_alc.test.parse_failed(msg=message, cmd=cls._command_path))
+                has_error = True
+                continue
+            if not expected:
+                continue
+            for path, expect in expected.items():
+                if (val := res.query(path)) != expect:
+                    log(
+                        "ERROR",
+                        Lang.nbp_alc.test.check_failed(arg=path, expected=expect, got=val, cmd=cls._command_path),
+                    )
+                    has_error = True
+        if not has_error:
+            log("DEBUG", Lang.nbp_alc.test.passed(cmd=cls._command_path))
+
 
 def on_alconna(
     command: Alconna | str,
@@ -931,6 +974,7 @@ def on_alconna(
     matchers[priority].append(NewMatcher)
     store_matcher(matcher)
     matcher.command = weakref.ref(command)
+    matcher._command_path = command.path
     matcher.basepath = ""
     matcher.executor = executor
     command.meta.extra["matcher.source"] = matcher._source
@@ -942,6 +986,13 @@ def on_alconna(
             _atomic_removal(self.extra, wr.key)
 
     command.meta.extra["matcher"] = weakref.KeyedRef(matcher, remove, "matcher")
+
+    try:
+        driver = get_driver()
+    except ValueError:
+        return matcher
+    matcher._tests = []
+    driver.on_startup(matcher._run_tests)
     return matcher
 
 
@@ -1081,5 +1132,6 @@ class Command(AlconnaString):
 
 
 @run_postprocessor
+@annotation(matcher=AlconnaMatcher)
 def _exit_executor(matcher: AlconnaMatcher):
     matcher.executor.context.clear()

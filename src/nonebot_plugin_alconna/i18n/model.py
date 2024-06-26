@@ -46,9 +46,17 @@ class NbpAlcError:
     matcher_got_path: LangItem = LangItem("nbp-alc", "error.matcher_got_path")
 
 
+class NbpAlcTest:
+    command_unusable: LangItem = LangItem("nbp-alc", "test.command_unusable")
+    parse_failed: LangItem = LangItem("nbp-alc", "test.parse_failed")
+    check_failed: LangItem = LangItem("nbp-alc", "test.check_failed")
+    passed: LangItem = LangItem("nbp-alc", "test.passed")
+
+
 class NbpAlc:
     log = NbpAlcLog
     error = NbpAlcError
+    test = NbpAlcTest
 
 
 class NbpAlcBuiltinLang:

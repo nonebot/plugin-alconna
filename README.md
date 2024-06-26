@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://v2.nonebot.dev/"><img src="https://v2.nonebot.dev/logo.png" width="200" height="200" alt="nonebot"></a>
+  <a href="https://nonebot.dev/docs/next/best-practice/alconna/"><img src="https://v2.nonebot.dev/logo.png" width="200" height="200" alt="nonebot"></a>
 </p>
 
 <div align="center">
@@ -7,6 +7,8 @@
 # NoneBot Plugin Alconna
 
 _✨ Alconna Usage For NoneBot2 ✨_
+
+_✨ All Receive in One, And One Send All ✨_
 
 </div>
 

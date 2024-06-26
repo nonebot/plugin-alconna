@@ -56,6 +56,15 @@
             },
             "matcher_got_path"
           ]
+        },
+        {
+          "subtype": "test",
+          "types": [
+            "command_unusable",
+            "parse_failed",
+            "check_failed",
+            "passed"
+          ]
         }
       ]
     },

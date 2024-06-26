@@ -149,6 +149,34 @@
               "type": "string"
             }
           }
+        },
+        "test": {
+          "title": "Test",
+          "description": "Scope 'test' of lang item",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "command_unusable": {
+              "title": "command_unusable",
+              "description": "value of lang item type 'command_unusable'",
+              "type": "string"
+            },
+            "parse_failed": {
+              "title": "parse_failed",
+              "description": "value of lang item type 'parse_failed'",
+              "type": "string"
+            },
+            "check_failed": {
+              "title": "check_failed",
+              "description": "value of lang item type 'check_failed'",
+              "type": "string"
+            },
+            "passed": {
+              "title": "passed",
+              "description": "value of lang item type 'passed'",
+              "type": "string"
+            }
+          }
         }
       }
     },

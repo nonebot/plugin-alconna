@@ -31,6 +31,12 @@
         "path_invalid": "{path} 不是有效的扩展路径"
       },
       "matcher_got_path": "在 Alconna {cmd} 中找不到路径 {path}"
+    },
+    "test": {
+      "command_unusable": "{cmd} 无法使用",
+      "parse_failed": "测试失败: \"{msg}\" 无法被 {cmd} 解析",
+      "check_failed": "测试失败: {cmd} 的参数 {arg} 期望值为 {expected!r}, 但得到了 {got!r}",
+      "passed": "{cmd} 通过了测试"
     }
   },
   "nbp-alc/builtin": {
