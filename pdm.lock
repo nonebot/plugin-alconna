@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:f43ea9d69e9f657aa53d1ea7d2cfcc0957ec7819779a9256dc1960f0772f10a4"
+content_hash = "sha256:1f0c5caad8625aab2e48717b5e3eb1b48a1ef7476a37cbfa7dcf33eadd8f6a42"
 
 [[package]]
 name = "aio-mc-rcon"
@@ -135,7 +135,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.8.15"
+version = "1.8.16"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -144,8 +144,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.8.15-py3-none-any.whl", hash = "sha256:9cc010e42f00a5201439318df3b2000234dce27fdc90d26813c3a295125e54e8"},
-    {file = "arclet_alconna-1.8.15.tar.gz", hash = "sha256:713a57bdfed3c3959600384e46358154ce33eec012615554beb5634d436507bc"},
+    {file = "arclet_alconna-1.8.16-py3-none-any.whl", hash = "sha256:b04241904d3f3a9d3eae30c5d1af7e264528b5a87b729fee5f408b2d93cef035"},
+    {file = "arclet_alconna-1.8.16.tar.gz", hash = "sha256:57bdc42c8626846ad536c19a24804790005554db4ad3300b7d4607c684cd25f3"},
 ]
 
 [[package]]

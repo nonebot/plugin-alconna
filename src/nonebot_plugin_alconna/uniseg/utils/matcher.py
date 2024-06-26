@@ -38,8 +38,12 @@ async def send(
 
 _OLD_SEND = Matcher.send
 
-Matcher.send = classmethod(send)  # type: ignore
 
+def patch():
 
-def dispose():
-    Matcher.send = _OLD_SEND  # type: ignore
+    Matcher.send = classmethod(send)  # type: ignore
+
+    def dispose():
+        Matcher.send = classmethod(_OLD_SEND)  # type: ignore
+
+    return dispose

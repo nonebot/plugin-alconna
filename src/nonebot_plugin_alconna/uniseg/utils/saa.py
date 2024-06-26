@@ -89,8 +89,11 @@ async def send(self: MessageFactory, *, at_sender=False, reply=False) -> "SaaRec
 _OLD_SEND = MessageFactory.send
 
 
-MessageFactory.send = send
+def patch():
 
+    MessageFactory.send = send
 
-def dispose():
-    MessageFactory.send = _OLD_SEND  # type: ignore
+    def dispose():
+        MessageFactory.send = _OLD_SEND  # type: ignore
+
+    return dispose

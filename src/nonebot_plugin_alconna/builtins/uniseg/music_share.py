@@ -7,8 +7,8 @@ from nonebot.adapters import MessageSegment as BaseMessageSegment
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
 from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
-from nonebot_plugin_alconna.uniseg import Segment, custom_handler, custom_register
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg import Segment, custom_handler, custom_register
 
 
 class MusicShareKind(str, Enum):
@@ -70,6 +70,7 @@ class MusicShare(Segment):
 def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
     if builder.get_adapter() is SupportAdapter.kritor:
         from nonebot.adapters.kritor.protos.kritor.common import MusicElementMusicPlatform
+
         kind = {
             MusicElementMusicPlatform.NETEASE: MusicShareKind.NeteaseCloudMusic,
             MusicElementMusicPlatform.QQ: MusicShareKind.QQMusic,
@@ -77,7 +78,14 @@ def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
         if "id" in seg.data:
             return MusicShare(kind=kind, id=seg.data["id"])
         data = seg.data["custom"]
-        return MusicShare(kind=kind, url=data["url"], title=data["title"], brief=data["author"], thumbnail=data["pic"], audio=data["audio"])
+        return MusicShare(
+            kind=kind,
+            url=data["url"],
+            title=data["title"],
+            brief=data["author"],
+            thumbnail=data["pic"],
+            audio=data["audio"],
+        )
     elif builder.get_adapter() is SupportAdapter.mirai_official:
         data = seg.data
         return MusicShare(
@@ -87,7 +95,7 @@ def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
             url=data["jump_url"],
             thumbnail=data["picture_url"],
             audio=data["music_url"],
-            brief=data["brief"]
+            brief=data["brief"],
         )
 
 
@@ -101,19 +109,19 @@ def music_mirai_community(builder: MessageBuilder, seg: BaseMessageSegment):
         url=data["jumpUrl"],
         thumbnail=data["pictureUrl"],
         audio=data["musicUrl"],
-        brief=data["brief"]
+        brief=data["brief"],
     )
 
 
 @custom_handler(MusicShare)
 async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot, fallback):
     if exporter.get_adapter() is SupportAdapter.kritor:
-        from nonebot.adapters.kritor.protos.kritor.common import MusicElementMusicPlatform
         from nonebot.adapters.kritor.message import Music
+        from nonebot.adapters.kritor.protos.kritor.common import MusicElementMusicPlatform
 
         platform = {
             MusicShareKind.NeteaseCloudMusic: MusicElementMusicPlatform.NETEASE,
-            MusicShareKind.QQMusic: MusicElementMusicPlatform.QQ
+            MusicShareKind.QQMusic: MusicElementMusicPlatform.QQ,
         }.get(seg.kind, MusicElementMusicPlatform.CUSTOM)
 
         if seg.id:
@@ -127,22 +135,16 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot, fal
                     "audio": seg.audio or "",
                     "title": seg.title or "",
                     "author": seg.brief or seg.content or "",
-                    "pic": seg.thumbnail or ""
-                }
-            }
+                    "pic": seg.thumbnail or "",
+                },
+            },
         )
 
     if exporter.get_adapter() is SupportAdapter.mirai_official:
         from nonebot.adapters.mirai.message import MessageSegment
 
         return MessageSegment.music(
-            seg.kind.value,
-            seg.title,
-            seg.content,
-            seg.url,
-            seg.thumbnail,
-            seg.audio,
-            seg.brief
+            seg.kind.value, seg.title, seg.content, seg.url, seg.thumbnail, seg.audio, seg.brief
         )
 
     if exporter.get_adapter() is SupportAdapter.mirai_community:
@@ -155,7 +157,7 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot, fal
             seg.url or "",
             seg.thumbnail or "",
             seg.audio or "",
-            seg.brief or ""
+            seg.brief or "",
         )
 
     if exporter.get_adapter() is SupportAdapter.onebot11:
@@ -176,7 +178,7 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot, fal
             audio=seg.audio or "",
             title=seg.title or "",
             content=seg.content or seg.brief or "",
-            img_url=seg.thumbnail or ""
+            img_url=seg.thumbnail or "",
         )
         res.data["subtype"] = platform
         return res
