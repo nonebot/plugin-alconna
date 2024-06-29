@@ -3,8 +3,8 @@ import random
 from pathlib import Path
 
 from tarina import lang
-from nonebot import get_plugin_config
 from nonebot.adapters import Bot
+from nonebot import get_plugin_config
 from importlib_metadata import PackageNotFoundError, distribution
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 from arclet.alconna import Args, Field, Option, Alconna, Arparma, CommandMeta, namespace, store_true, command_manager

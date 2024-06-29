@@ -1,6 +1,6 @@
+from nonebot.rule import to_me
 from arclet.alconna import namespace
 from nonebot import get_plugin_config
-from nonebot.rule import to_me
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 
 from nonebot_plugin_alconna import Command
@@ -32,6 +32,6 @@ with namespace("builtin/echo") as ns:
             auto_send_output=True,
             use_cmd_start=True,
             extensions=[ReplyMergeExtension()],
-            rule=to_me() if plugin_config.nbp_alc_echo_tome else None
+            rule=to_me() if plugin_config.nbp_alc_echo_tome else None,
         )
     )
