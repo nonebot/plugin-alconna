@@ -143,19 +143,6 @@ __plugin_meta__ = PluginMetadata(
     },
 )
 
-with contextlib.suppress(ValueError, LookupError):
-    _config = get_plugin_config(Config)
-    for path in _config.alconna_global_extensions:
-        log("DEBUG", lang.require("nbp-alc", "log.load_global_extensions").format(path=path))
-        load_from_path(path)
-    if _config.alconna_apply_filehost:
-        apply_filehost()
-    if _config.alconna_enable_saa_patch:
-        patch_saa()
-    if _config.alconna_apply_fetch_targets:
-        apply_fetch_targets()
-
-
 __BUILTIN_LOADED = {}
 
 
@@ -181,3 +168,18 @@ def load_builtin_plugins(*plugins: str):
     return load_all_plugins(
         [f"nonebot_plugin_alconna.builtins.plugins.{p}" for p in plugins if p not in __BUILTIN_LOADED], []
     )
+
+
+with contextlib.suppress(ValueError, LookupError):
+    _config = get_plugin_config(Config)
+    for path in _config.alconna_global_extensions:
+        log("DEBUG", lang.require("nbp-alc", "log.load_global_extensions").format(path=path))
+        load_from_path(path)
+    if _config.alconna_apply_filehost:
+        apply_filehost()
+    if _config.alconna_enable_saa_patch:
+        patch_saa()
+    if _config.alconna_apply_fetch_targets:
+        apply_fetch_targets()
+    if _config.alconna_builtin_plugins:
+        load_builtin_plugins(*_config.alconna_builtin_plugins)

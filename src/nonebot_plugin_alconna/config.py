@@ -35,3 +35,6 @@ class Config(BaseModel):
 
     alconna_apply_fetch_targets: bool = False
     """是否启动时拉取一次发送对象列表"""
+
+    alconna_builtin_plugins: set[str] = Field(default_factory=set)
+    """需要加载的alc内置插件集合"""
