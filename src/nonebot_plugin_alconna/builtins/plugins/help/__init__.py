@@ -3,6 +3,7 @@ import random
 from pathlib import Path
 
 from tarina import lang
+from nonebot import get_plugin_config
 from nonebot.adapters import Bot
 from importlib_metadata import PackageNotFoundError, distribution
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
@@ -10,15 +11,20 @@ from arclet.alconna import Args, Field, Option, Alconna, Arparma, CommandMeta, n
 
 from nonebot_plugin_alconna import UniMessage, AlconnaMatcher, referent, on_alconna
 
+from .config import Config
+
 __plugin_meta__ = PluginMetadata(
     name="help",
     description="展示所有命令帮助",
     usage="/help",
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/help.py",
-    config=None,
+    config=Config,
     supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
 )
+
+
+plugin_config = get_plugin_config(Config)
 
 
 def check_supported_adapters(matcher: type[AlconnaMatcher], bot: Bot):
@@ -69,7 +75,7 @@ with namespace("builtin/help") as ns:
     ns.disable_builtin_options = {"shortcut"}
 
     help_cmd = Alconna(
-        "help",
+        plugin_config.nbp_alc_help_text,
         Args[
             "query#选择某条命令的id或者名称查看具体帮助;/?",
             str,
@@ -95,10 +101,12 @@ with namespace("builtin/help") as ns:
     )
 
 help_matcher = on_alconna(help_cmd, use_cmd_start=True, auto_send_output=True)
-help_matcher.shortcut("帮助", {"prefix": True, "fuzzy": False})
-help_matcher.shortcut("命令帮助", {"prefix": True, "fuzzy": False})
-help_matcher.shortcut("所有帮助", {"args": ["--hide"], "prefix": True, "fuzzy": False})
-help_matcher.shortcut("所有命令帮助", {"args": ["--hide"], "prefix": True, "fuzzy": False})
+
+for alias in plugin_config.nbp_alc_help_alias:
+    help_matcher.shortcut(alias, {"prefix": True, "fuzzy": False})
+for alias in plugin_config.nbp_alc_help_all_alias:
+    help_matcher.shortcut(alias, {"args": ["--hide"], "prefix": True, "fuzzy": False})
+
 help_matcher.shortcut(
     "(获取)?插件信息", {"args": ["--plugin-info", "{%0}"], "prefix": True, "fuzzy": True, "humanized": "[获取]插件信息"}
 )

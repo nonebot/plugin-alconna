@@ -1,8 +1,14 @@
 from arclet.alconna import namespace
+from nonebot import get_plugin_config
+from nonebot.rule import to_me
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 
 from nonebot_plugin_alconna import Command
 from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
+
+from .config import Config
+
+plugin_config = get_plugin_config(Config)
 
 __plugin_meta__ = PluginMetadata(
     name="echo",
@@ -10,7 +16,7 @@ __plugin_meta__ = PluginMetadata(
     usage="/echo [text]",
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/echo.py",
-    config=None,
+    config=Config,
     supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
 )
 
@@ -22,5 +28,10 @@ with namespace("builtin/echo") as ns:
         .config(compact=True)
         .usage("重复你说的话")
         .action(lambda content: content)
-        .build(auto_send_output=True, use_cmd_start=True, extensions=[ReplyMergeExtension()])
+        .build(
+            auto_send_output=True,
+            use_cmd_start=True,
+            extensions=[ReplyMergeExtension()],
+            rule=to_me() if plugin_config.nbp_alc_echo_tome else None
+        )
     )
