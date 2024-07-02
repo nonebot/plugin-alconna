@@ -51,7 +51,7 @@ class MusicShare(Segment):
     """音乐卡片标题"""
 
     content: Optional[str] = None
-    """音乐摘要"""
+    """音乐卡片内容，例如歌手，专辑信息"""
 
     url: Optional[str] = None
     """点击卡片跳转的链接"""
@@ -62,8 +62,8 @@ class MusicShare(Segment):
     audio: Optional[str] = None
     """音乐链接"""
 
-    brief: Optional[str] = None
-    """音乐简介"""
+    summary: Optional[str] = None
+    """音乐摘要/预览信息"""
 
 
 @custom_register(MusicShare, "music")
@@ -82,7 +82,7 @@ def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
             kind=kind,
             url=data["url"],
             title=data["title"],
-            brief=data["author"],
+            content=data["author"],
             thumbnail=data["pic"],
             audio=data["audio"],
         )
@@ -95,7 +95,7 @@ def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
             url=data["jump_url"],
             thumbnail=data["picture_url"],
             audio=data["music_url"],
-            brief=data["brief"],
+            summary=data["brief"],
         )
 
 
@@ -109,7 +109,7 @@ def music_mirai_community(builder: MessageBuilder, seg: BaseMessageSegment):
         url=data["jumpUrl"],
         thumbnail=data["pictureUrl"],
         audio=data["musicUrl"],
-        brief=data["brief"],
+        summary=data["brief"],
     )
 
 
@@ -126,17 +126,18 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot, fal
 
         if seg.id:
             return Music("music", {"platform": platform, "id": seg.id})
+        data = {
+            "url": seg.url or seg.audio or "",
+            "audio": seg.audio or seg.url or "",
+            "title": seg.title or "",
+            "author": seg.content or seg.summary or "",
+            "pic": seg.thumbnail or "",
+        }
         return Music(
             "music",
             {
                 "platform": platform,
-                "custom": {
-                    "url": seg.url or "",
-                    "audio": seg.audio or "",
-                    "title": seg.title or "",
-                    "author": seg.brief or seg.content or "",
-                    "pic": seg.thumbnail or "",
-                },
+                "custom": data,  # type: ignore
             },
         )
 
@@ -144,7 +145,7 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot, fal
         from nonebot.adapters.mirai.message import MessageSegment
 
         return MessageSegment.music(
-            seg.kind.value, seg.title, seg.content, seg.url, seg.thumbnail, seg.audio, seg.brief
+            seg.kind.value, seg.title, seg.content, seg.url, seg.thumbnail, seg.audio, seg.summary or "[音乐分享]"
         )
 
     if exporter.get_adapter() is SupportAdapter.mirai_community:
@@ -153,11 +154,11 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot, fal
         return MessageSegment.music_share(
             seg.kind.value,
             seg.title or "",
-            seg.content or "",
-            seg.url or "",
+            seg.content or seg.summary or "",
+            seg.url or seg.audio or "",
             seg.thumbnail or "",
-            seg.audio or "",
-            seg.brief or "",
+            seg.audio or seg.url or "",
+            seg.summary or seg.content or "[音乐分享]",
         )
 
     if exporter.get_adapter() is SupportAdapter.onebot11:
@@ -174,10 +175,10 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot, fal
         if seg.id:
             return MessageSegment.music(platform, int(seg.id))
         res = MessageSegment.music_custom(
-            url=seg.url or "",
-            audio=seg.audio or "",
+            url=seg.url or seg.audio or "",
+            audio=seg.audio or seg.url or "",
             title=seg.title or "",
-            content=seg.content or seg.brief or "",
+            content=seg.content or seg.summary or "",
             img_url=seg.thumbnail or "",
         )
         res.data["subtype"] = platform
