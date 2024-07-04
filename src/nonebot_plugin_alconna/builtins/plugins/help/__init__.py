@@ -7,7 +7,19 @@ from nonebot.adapters import Bot
 from nonebot import get_plugin_config
 from importlib_metadata import PackageNotFoundError, distribution
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
-from arclet.alconna import Args, Field, Option, Alconna, Arparma, CommandMeta, namespace, store_true, command_manager
+from arclet.alconna import (
+    Args,
+    Field,
+    Option,
+    Alconna,
+    Arparma,
+    Subcommand,
+    CommandMeta,
+    SubcommandResult,
+    namespace,
+    store_true,
+    command_manager,
+)
 
 from nonebot_plugin_alconna import UniMessage, AlconnaMatcher, referent, on_alconna
 
@@ -92,6 +104,13 @@ with namespace("builtin/help") as ns:
             action=store_true,
             default=False,
         ),
+        Subcommand(
+            "--namespace",
+            Args["target?;#指定的命名空间", str],
+            Option("--list", help_text="列出所有命名空间", action=store_true, default=False),
+            alias=["-N", "命名空间"],
+            help_text="是否列出命令所属命名空间",
+        ),
         Option("--hide", alias=["-H", "隐藏"], help_text="是否列出隐藏命令", action=store_true, default=False),
         meta=CommandMeta(
             description="显示所有命令帮助",
@@ -115,8 +134,23 @@ help_matcher.shortcut(
 @help_matcher.handle()
 async def help_cmd_handle(arp: Arparma, bot: Bot, event):
     is_plugin_info = arp.query[bool]("plugin-info.value", False)
-    cmds = [i for i in command_manager.get_commands() if not i.meta.hide or arp.query[bool]("hide.value", False)]
+    is_namespace = arp.query[SubcommandResult]("namespace")
+    target_namespace = is_namespace.args.get("target") if is_namespace else None
+    cmds = [
+        i
+        for i in command_manager.get_commands(target_namespace or "")
+        if not i.meta.hide or arp.query[bool]("hide.value", False)
+    ]
     cmds = [i for i in cmds if ((mat := referent(i)) and check_supported_adapters(mat, bot)) or not mat]
+    if is_namespace and is_namespace.options["list"].value and not target_namespace:
+        namespaces = {i.namespace: 0 for i in cmds}
+        return await help_matcher.finish(
+            "\n".join(
+                f" 【{str(index).rjust(len(str(len(namespaces))), '0')}】{n}"
+                for index, n in enumerate(namespaces.keys())
+            )
+        )
+    show_namespace = is_namespace and not is_namespace.options["list"].value and not target_namespace
     if (query := arp.all_matched_args["query"]) != "-1":
         if query.isdigit():
             slot = cmds[int(query)]
@@ -132,15 +166,12 @@ async def help_cmd_handle(arp: Arparma, bot: Bot, event):
                     msg = msg or UniMessage(slot.get_help())
                 msg = await executor.send_wrapper(bot, event, msg)
             return await help_matcher.finish(msg)
-        elif is_plugin_info:
-            command_string = "\n".join(
-                f" 【{str(index).rjust(len(str(len(cmds))), '0')}】{slot.header_display} : {get_info(mat)}"
-                for index, slot in enumerate(cmds)
-                if query in slot.header_display and (mat := referent(slot))
-            )
-            return await help_matcher.finish(command_string)
         command_string = "\n".join(
-            f" 【{str(index).rjust(len(str(len(cmds))), '0')}】{slot.header_display} : {slot.meta.description}"
+            (
+                f" 【{str(index).rjust(len(str(len(cmds))), '0')}】"
+                f"{f'{slot.namespace}::' if show_namespace else ''}{slot.header_display} : "
+                f"{get_info(mat) if is_plugin_info and (mat := referent(slot)) else slot.meta.description}"
+            )
             for index, slot in enumerate(cmds)
             if query in slot.header_display
         )
@@ -148,7 +179,11 @@ async def help_cmd_handle(arp: Arparma, bot: Bot, event):
             return await help_matcher.finish("查询失败！")
     else:
         command_string = "\n".join(
-            f" 【{str(index).rjust(len(str(len(cmds))), '0')}】{slot.header_display} : {slot.meta.description}"
+            (
+                f" 【{str(index).rjust(len(str(len(cmds))), '0')}】"
+                f"{f'{slot.namespace}::' if show_namespace else ''}{slot.header_display} : "
+                f"{get_info(mat) if is_plugin_info and (mat := referent(slot)) else slot.meta.description}"
+            )
             for index, slot in enumerate(cmds)
         )
     help_names = set()
