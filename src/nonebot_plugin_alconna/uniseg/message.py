@@ -967,12 +967,11 @@ class UniMessage(list[TS]):
 
     def export_sync(
         self,
-        bot: Optional[Bot] = None,
         fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
         adapter: Optional[str] = None,
     ) -> Message:
         """（实验性）同步方法地将 UniMessage 转换为指定适配器下的 Message"""
-        coro = self.export(bot, fallback, adapter)
+        coro = self.export(None, fallback, adapter)
         try:
             return coro.send(None)
         except StopIteration as e:
