@@ -478,7 +478,7 @@ setu = on_alconna(
 )
 
 
-def wrapper(slot: Union[int, str], content: Union[str, None]):
+def wrapper(slot: Union[int, str], content: Union[str, None], context):
     if slot == 0:
         if not content:
             return "1"

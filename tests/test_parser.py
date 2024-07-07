@@ -15,7 +15,7 @@ def test_shortcut():
         Option("-l|--level", Args["level", int], help_text="设置AI等级"),
     )
 
-    def wrapper(slot, content):
+    def wrapper(slot, content, context):
         if slot == "mode":
             if content in ("对战", "双人"):
                 return "--battle"

@@ -243,7 +243,10 @@ class ExtensionExecutor:
             if ext._overrides["context_provider"]:
                 ctx = await ext.context_provider(ctx, event, bot, state)
         ctx["event"] = event
-        # ctx["bot"] = bot
+        ctx["bot.self_id"] = bot.self_id
+        if (platform := hasattr("bot", "platform")) and isinstance(platform, str):
+            ctx["bot.platform"] = platform
+        ctx["adapter.name"] = bot.adapter.get_name()
         return ctx
 
     async def parse_wrapper(self, bot: Bot, state: T_State, event: Event, res: Arparma) -> None:
