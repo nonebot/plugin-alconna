@@ -1,3 +1,4 @@
+import re
 from collections import deque
 from typing import ClassVar, Optional, final
 
@@ -53,12 +54,14 @@ class TelegramSlashExtension(Extension):
             not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")
         ):
             return
-        self.using = True
         if alc.command.startswith("/"):
             command = alc.command[1:]
         else:
             command = alc.command
-        commands.append(BotCommand(command=command, description=alc.meta.description))
+        if not re.fullmatch("[a-z0-9_]{1,32}", command):
+            return
+        self.using = True
+        commands.append(BotCommand(command=command, description=alc.meta.description[:256]))
 
     def validate(self, bot, event) -> bool:
         return self.using
