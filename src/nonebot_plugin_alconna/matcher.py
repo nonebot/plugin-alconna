@@ -26,7 +26,7 @@ from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from nonebot.plugin.on import store_matcher, get_matcher_source
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
-from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
+from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager, Namespace
 from nonebot.exception import PausedException, FinishedException, RejectedException
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
@@ -1085,6 +1085,10 @@ class Command(AlconnaString):
     def args_gen(pattern: str, types: dict):
         return AlconnaString.args_gen(pattern, {**types, **patterns})
 
+    def namespace(self, ns: str | Namespace):
+        self.buffer["namespace"] = ns
+        return self
+
     def build(
         self,
         rule: Rule | T_RuleChecker | None = None,
@@ -1111,7 +1115,8 @@ class Command(AlconnaString):
         params["_depth"] += 1
         params.pop("self")
         params.pop("__class__", None)
-        alc = Alconna(*self.buffer.values(), *self.options, meta=self.meta)
+        ns = self.buffer.pop("namespace", None)
+        alc = Alconna(*self.buffer.values(), *self.options, namespace=ns, meta=self.meta)
         for action in self.actions:
             alc.bind()(action)
         matcher = on_alconna(alc, **params)
