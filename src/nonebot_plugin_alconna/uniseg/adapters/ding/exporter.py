@@ -40,19 +40,19 @@ class DingMessageExporter(MessageExporter[Message]):
         return str(event.msgId)
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.atDingtalkIds(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.atAll()
 
     @export
-    async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
             return MessageSegment.image(seg.url)
         if seg.__class__.to_url and seg.path:

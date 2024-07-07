@@ -74,7 +74,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return str(event.message.id)
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         if not seg.styles:
             return MessageSegment.text(seg.text)
         if seg.extract_most_style() == "link":
@@ -90,7 +90,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return _Text("text", {"text": seg.text, "styles": styles})
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "role":
             return MessageSegment.at_role(seg.target, seg.display)
         if seg.flag == "channel":
@@ -98,11 +98,11 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return MessageSegment.at(seg.target, seg.display)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.at_all(seg.here)
 
     @export
-    async def res(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
+    async def res(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -134,11 +134,11 @@ class SatoriMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.quote(seg.id, content=seg.msg)  # type: ignore
 
     @export
-    async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
+    async def reference(self, seg: Reference, bot: Union[Bot, None]) -> "MessageSegment":
         content = self.get_message_type()()
         for node in seg.children:
             if isinstance(node, RefNode):

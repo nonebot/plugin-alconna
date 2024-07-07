@@ -44,22 +44,24 @@ class FeishuMessageExporter(MessageExporter[Message]):
         raise NotImplementedError
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.at(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.at("all")
 
     @export
-    async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.id:
             return MessageSegment.image(seg.id)
-        elif seg.url:
+        if not bot:
+            raise NotImplementedError
+        if seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             image = resp.content
         elif seg.path:
@@ -76,11 +78,13 @@ class FeishuMessageExporter(MessageExporter[Message]):
         return MessageSegment.image(file_key)
 
     @export
-    async def audio(self, seg: Union[Voice, Audio], bot: Bot) -> "MessageSegment":
+    async def audio(self, seg: Union[Voice, Audio], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         if seg.id:
             return MessageSegment.audio(seg.id, seg.duration)
-        elif seg.url:
+        if not bot:
+            raise NotImplementedError
+        if seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             raw = resp.content
         elif seg.path:
@@ -97,10 +101,12 @@ class FeishuMessageExporter(MessageExporter[Message]):
         return MessageSegment.audio(file_key, seg.duration)
 
     @export
-    async def file(self, seg: File, bot: Bot) -> "MessageSegment":
+    async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.id:
             return MessageSegment.file(seg.id, seg.name)
-        elif seg.url:
+        if not bot:
+            raise NotImplementedError
+        if seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             raw = resp.content
         elif seg.path:
@@ -117,10 +123,12 @@ class FeishuMessageExporter(MessageExporter[Message]):
         return MessageSegment.file(file_key, seg.name)
 
     @export
-    async def video(self, seg: Video, bot: Bot) -> "MessageSegment":
+    async def video(self, seg: Video, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.id:
             return MessageSegment.sticker(seg.id)
-        elif seg.url:
+        if not bot:
+            raise NotImplementedError
+        if seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             raw = resp.content
         elif seg.path:
@@ -137,7 +145,7 @@ class FeishuMessageExporter(MessageExporter[Message]):
         return MessageSegment.sticker(file_key)
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment("$feishu:reply", {"message_id": seg.id})  # type: ignore
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

@@ -58,23 +58,23 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
         return str(event.message_id)
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.at(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.at("all")
 
     @export
-    async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.face(int(seg.id))
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -86,7 +86,7 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
             return method(seg.raw_bytes)
         elif seg.path:
             return method(Path(seg.path))
-        elif seg.url:
+        elif seg.url and bot:
             resp = await bot.adapter.request(Request("GET", seg.url))
             return method(resp.content)
         elif seg.id:
@@ -95,16 +95,16 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def hyper(self, seg: Hyper, bot: Bot) -> "MessageSegment":
+    async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
         assert seg.raw, lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg)
         return MessageSegment.xml(seg.raw) if seg.format == "xml" else MessageSegment.json(seg.raw)
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.reply(int(seg.id))
 
     @export
-    async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
+    async def reference(self, seg: Reference, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.id:
             return MessageSegment.forward(seg.id)
 

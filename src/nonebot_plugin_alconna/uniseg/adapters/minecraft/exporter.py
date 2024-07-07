@@ -1,9 +1,9 @@
 from typing import Union
 
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.minecraft.model import TextColor
 from nonebot.adapters.minecraft.bot import Bot as MinecraftBot
 from nonebot.adapters.minecraft.event.base import MessageEvent
+from nonebot.adapters.minecraft.model import TextColor, BaseComponent
 from nonebot.adapters.minecraft.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.segment import Text
@@ -53,9 +53,7 @@ class MinecraftMessageExporter(MessageExporter[Message]):
         )
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
-        if seg.extract_most_style() == "title":
-            return MessageSegment.title(seg.text)
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         styles = [STYLE_TYPE_MAP[s] for s in seg.styles[(0, len(seg.text))] if s in STYLE_TYPE_MAP]
         kwargs = {}
         for style in styles:
@@ -73,6 +71,8 @@ class MinecraftMessageExporter(MessageExporter[Message]):
                 kwargs["color"] = style
         if seg.extract_most_style() == "actionbar":
             return MessageSegment.actionbar(seg.text, **kwargs)
+        if seg.extract_most_style() == "title":
+            return MessageSegment.title(BaseComponent(text=seg.text, **kwargs))
         return MessageSegment.text(seg.text, **kwargs)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

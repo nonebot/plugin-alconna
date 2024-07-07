@@ -31,7 +31,7 @@ class ConsoleMessageExporter(MessageExporter[Message]):
         return str(event.self_id)
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         styles = seg.extract_most_styles()
         if not styles or styles[0] not in ["markup", "markdown"]:
             return MessageSegment.text(seg.text)
@@ -44,7 +44,7 @@ class ConsoleMessageExporter(MessageExporter[Message]):
         return MessageSegment.text(seg.text)
 
     @export
-    async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.emoji(seg.name or seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

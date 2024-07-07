@@ -11,7 +11,9 @@ from tests.fake import FAKE_SATORI_LOGIN, fake_message_event_satori
 async def test_ctx(app: App):
     from nonebot_plugin_alconna import on_alconna
 
-    test_cmd = on_alconna(Alconna("test", Args["userid", str]["selfid", str], meta=CommandMeta(context_style="parentheses")))
+    test_cmd = on_alconna(
+        Alconna("test", Args["userid", str]["selfid", str], meta=CommandMeta(context_style="parentheses"))
+    )
 
     @test_cmd.handle()
     async def tt_h(userid: str, selfid: str, ctx: dict):

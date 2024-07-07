@@ -23,7 +23,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
         return Message
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
-        assert isinstance(event, DoDoEvent)
+        event = cast(DoDoEvent, event)
         channel_id = getattr(event, "channel_id", None)
         island_id = getattr(event, "island_source_id", None)
         if channel_id:
@@ -37,7 +37,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
             )
         else:
             return Target(
-                event.user_id,
+                event.get_user_id(),
                 island_id or "",
                 True,
                 True,
@@ -51,11 +51,11 @@ class DoDoMessageExporter(MessageExporter[Message]):
         return event.message_id
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "user":
             return MessageSegment.at_user(seg.target)
         elif seg.flag == "channel":
@@ -64,7 +64,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
 
     @export
-    async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if TYPE_CHECKING:
             assert isinstance(bot, DoDoBot)
         if seg.raw:
@@ -81,14 +81,14 @@ class DoDoMessageExporter(MessageExporter[Message]):
         return MessageSegment.picture(res.url, res.width, res.height)
 
     @export
-    async def video(self, seg: Video, bot: Bot) -> "MessageSegment":
+    async def video(self, seg: Video, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
             return MessageSegment.video(seg.url)
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="video", seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.reference(seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

@@ -16,35 +16,35 @@ class NTChatMessageBuilder(MessageBuilder):
         return SupportAdapter.ntchat
 
     @build("text")
-    def text(self, seg: MessageSegment):
+    def text(self, seg: "MessageSegment"):
         return Text(seg.data["content"])
 
     @build("image")
-    def image(self, seg: MessageSegment):
+    def image(self, seg: "MessageSegment"):
         return Image(id=seg.data["file_path"], path=seg.data["file_path"])
 
     @build("video")
-    def video(self, seg: MessageSegment):
+    def video(self, seg: "MessageSegment"):
         return Video(id=seg.data["file_path"], path=seg.data["file_path"])
 
     @build("voice")
-    def voice(self, seg: MessageSegment):
+    def voice(self, seg: "MessageSegment"):
         return Voice(id=seg.data["file_path"], path=seg.data["file_path"])
 
     @build("audio")
-    def audio(self, seg: MessageSegment):
+    def audio(self, seg: "MessageSegment"):
         return Voice(id=seg.data["file_path"], path=seg.data["file_path"])
 
     @build("file")
-    def file(self, seg: MessageSegment):
+    def file(self, seg: "MessageSegment"):
         return File(id=seg.data["file_path"])
 
     @build("card")
-    def card(self, seg: MessageSegment):
+    def card(self, seg: "MessageSegment"):
         return Hyper("json", content={"card_wxid": seg.data["card_wxid"]})
 
     @build("xml")
-    def xml(self, seg: MessageSegment):
+    def xml(self, seg: "MessageSegment"):
         return Hyper("xml", seg.data["xml"])
 
     async def extract_reply(self, event: Event, bot: Bot):

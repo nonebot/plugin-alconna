@@ -46,7 +46,7 @@ class TailChatMessageExporter(MessageExporter["Message"]):
         return str(event.get_message_id())
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         if not seg.styles:
             return MessageSegment.text(seg.text)
         if seg.extract_most_style() == "link":
@@ -65,17 +65,17 @@ class TailChatMessageExporter(MessageExporter["Message"]):
         return MessageSegment.text(seg.text, **styles)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.type == "channel" and seg.display:
             return MessageSegment.url(url=f"/main/group/{seg.target}", text=seg.display)
         return MessageSegment.at(uid=seg.target, nickname=seg.display)
 
     @export
-    async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.emoji(text=seg.id)
 
     @export
-    async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
             return MessageSegment.img(seg.url)
         if seg.__class__.to_url and seg.path:
@@ -87,7 +87,7 @@ class TailChatMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed("tailchat image segment must have url")
 
     @export
-    async def file(self, seg: File, bot: Bot) -> "MessageSegment":
+    async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
             return MessageSegment.file(name=seg.name, url=seg.url)
         if seg.__class__.to_url and seg.path:
@@ -99,7 +99,7 @@ class TailChatMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed("tailchat file segment must have url")
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment("$tailchat:reply", {"extra": {"message_id": seg.id}})  # type: ignore
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

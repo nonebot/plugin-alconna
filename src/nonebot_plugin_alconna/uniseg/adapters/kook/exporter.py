@@ -40,7 +40,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         raise NotImplementedError
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.extract_most_style() == "markdown":
             return MessageSegment.KMarkdown(seg.text)
         elif seg.styles:
@@ -48,7 +48,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "role":
             return MessageSegment.mention_role(seg.target)
         elif seg.flag == "channel":
@@ -57,18 +57,18 @@ class KookMessageExporter(MessageExporter["Message"]):
             return MessageSegment.mention(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.mention_here() if seg.here else MessageSegment.mention_all()
 
     @export
-    async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.name:
             return MessageSegment.KMarkdown(f"(emj){seg.name}(emj)[{seg.id}]")
         else:
             return MessageSegment.KMarkdown(f":{seg.id}:")
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
         if TYPE_CHECKING:
             assert isinstance(bot, KBot)
         name = seg.__class__.__name__.lower()
@@ -104,7 +104,7 @@ class KookMessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def hyper(self, seg: Hyper, bot: Bot) -> "MessageSegment":
+    async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.format == "xml":
             raise SerializeFailed(
                 lang.require("nbp-uniseg", "failed_segment").format(adapter="kook", seg=seg, target="Card")
@@ -112,7 +112,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         return MessageSegment.Card(seg.content or seg.raw)
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.quote(seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

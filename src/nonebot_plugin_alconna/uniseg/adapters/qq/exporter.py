@@ -183,7 +183,7 @@ class QQMessageExporter(MessageExporter[Message]):
         return str(event.id)
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.extract_most_style() == "markdown":
             return MessageSegment.markdown(seg.text)
         elif seg.styles:
@@ -191,7 +191,7 @@ class QQMessageExporter(MessageExporter[Message]):
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         assert isinstance(bot, QQBot)
         if bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 at
             return MessageSegment.text(" ")
@@ -205,18 +205,18 @@ class QQMessageExporter(MessageExporter[Message]):
             )
 
     @export
-    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         assert isinstance(bot, QQBot)
         if bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 at
             return MessageSegment.text(" ")
         return MessageSegment.mention_everyone()
 
     @export
-    async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.emoji(seg.id)
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -252,7 +252,7 @@ class QQMessageExporter(MessageExporter[Message]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.reference(seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

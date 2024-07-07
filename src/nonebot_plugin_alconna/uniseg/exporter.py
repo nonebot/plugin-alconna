@@ -17,7 +17,8 @@ TM = TypeVar("TM", bound=Message)
 
 def export(
     func: Union[
-        Callable[[Any, TS, Bot], Awaitable[MessageSegment]], Callable[[Any, TS, Bot], Awaitable[list[MessageSegment]]]
+        Callable[[Any, TS, Union[Bot, None]], Awaitable[MessageSegment]],
+        Callable[[Any, TS, Union[Bot, None]], Awaitable[list[MessageSegment]]],
     ]
 ):
     sig = inspect.signature(func)
@@ -29,8 +30,8 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
     _mapping: dict[
         type[Segment],
         Union[
-            Callable[[Segment, Bot], Awaitable[MessageSegment]],
-            Callable[[Segment, Bot], Awaitable[list[MessageSegment]]],
+            Callable[[Segment, Union[Bot, None]], Awaitable[MessageSegment]],
+            Callable[[Segment, Union[Bot, None]], Awaitable[list[MessageSegment]]],
         ],
     ]
 
@@ -59,7 +60,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                 else:
                     self._mapping[target] = method
 
-    async def export(self, source: Sequence[Segment], bot: Bot, fallback: Union[bool, FallbackStrategy]):
+    async def export(self, source: Sequence[Segment], bot: Union[Bot, None], fallback: Union[bool, FallbackStrategy]):
         msg_type = self.get_message_type()
         message = msg_type([])
         for seg in source:
@@ -77,7 +78,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                     message.append(res)
             elif isinstance(seg, Other):
                 message.append(seg.origin)  # type: ignore
-            elif bot.adapter.get_name() == SupportAdapter.nonebug:
+            elif bot and bot.adapter.get_name() == SupportAdapter.nonebug:
                 message += str(seg)
             elif isinstance(fallback, FallbackStrategy) and fallback != FallbackStrategy.forbid:
                 if fallback == FallbackStrategy.ignore:
@@ -101,7 +102,9 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                 message += str(seg)
             else:
                 raise SerializeFailed(
-                    lang.require("nbp-uniseg", "failed").format(target=seg, adapter=bot.adapter.get_name())
+                    lang.require("nbp-uniseg", "failed").format(
+                        target=seg, adapter=bot.adapter.get_name() if bot else "Unknown"
+                    )
                 )
         return message
 

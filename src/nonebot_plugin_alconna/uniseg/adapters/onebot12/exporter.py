@@ -67,19 +67,19 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
         return str(event.message_id)
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.mention(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.mention_all()
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -90,7 +90,9 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
         }[name]
         if seg.id:
             return method(seg.id)
-        elif seg.url:
+        if not bot:
+            raise NotImplementedError
+        if seg.url:
             resp = await bot.upload_file(type="url", name=seg.name, url=seg.url)
             return method(resp["file_id"])
         elif seg.path:
@@ -121,7 +123,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.reply(seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

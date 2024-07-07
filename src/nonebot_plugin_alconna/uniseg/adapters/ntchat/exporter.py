@@ -41,13 +41,13 @@ class NTChatMessageExporter(MessageExporter["Message"]):
         return str(event.msgid)  # type: ignore
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
 
         return MessageSegment.text(seg.text)
 
     @export
-    async def res(self, seg: Union[Image, File, Video], bot: Bot) -> "MessageSegment":
+    async def res(self, seg: Union[Image, File, Video], bot: Union[Bot, None]) -> "MessageSegment":
         from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
 
         name = seg.__class__.__name__.lower()
@@ -66,7 +66,7 @@ class NTChatMessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def hyper(self, seg: Hyper, bot: Bot) -> "MessageSegment":
+    async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
         from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
 
         if seg.format == "json" and seg.content and "card_wxid" in seg.content:
@@ -75,7 +75,7 @@ class NTChatMessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg))
         return MessageSegment.xml(seg.raw)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: "Message"):
         from nonebot.adapters.ntchat.bot import send  # type: ignore
         from nonebot.adapters.ntchat.bot import Bot as NTChatBot  # type: ignore
 

@@ -62,7 +62,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         return f"{event.message_id}"
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         if not seg.styles:
             return Entity.text(seg.text)
         else:
@@ -75,7 +75,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
             return Entity(STYLE_TYPE_MAP.get(style, style), {"text": seg.text})
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         return (
             Entity.mention(f"{seg.target} ")
             if seg.target.startswith("@")
@@ -83,11 +83,11 @@ class TelegramMessageExporter(MessageExporter[Message]):
         )
 
     @export
-    async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         return Entity.custom_emoji(seg.name, seg.id)  # type: ignore
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": TgFile.photo,
@@ -107,7 +107,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         return method((seg.name, raw) if seg.name else raw)
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return TgReply.reply(int(seg.id))
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

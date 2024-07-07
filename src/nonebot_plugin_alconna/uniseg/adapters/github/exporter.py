@@ -30,15 +30,15 @@ class GithubMessageExporter(MessageExporter["Message"]):
         return str(event.id)  # type: ignore
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.text(f"@{seg.target}")
 
     @export
-    async def image(self, seg: Image, bot: Bot) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
             return MessageSegment.text(f"![]({seg.url})")
         if seg.__class__.to_url and seg.path:

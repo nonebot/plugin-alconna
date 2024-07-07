@@ -66,11 +66,11 @@ class DiscordMessageExporter(MessageExporter[Message]):
         raise NotImplementedError
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "role":
             return MessageSegment.mention_role(int(seg.target))
         elif seg.flag == "channel":
@@ -79,15 +79,15 @@ class DiscordMessageExporter(MessageExporter[Message]):
             return MessageSegment.mention_user(int(seg.target))
 
     @export
-    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.mention_everyone()
 
     @export
-    async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.custom_emoji(seg.name or "", seg.id)
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
 
         if seg.raw and (seg.id or seg.name):
@@ -96,7 +96,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
         elif seg.path:
             path = Path(seg.path)
             return MessageSegment.attachment(path.name, content=path.read_bytes())
-        elif seg.url and (seg.id or seg.name):
+        elif bot and seg.url and (seg.id or seg.name):
             resp = await bot.adapter.request(Request("GET", seg.url))
             return MessageSegment.attachment(
                 seg.id or seg.name,
@@ -106,7 +106,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.reference(seg.origin or int(seg.id), fail_if_not_exists=False)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

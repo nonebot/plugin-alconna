@@ -40,6 +40,9 @@ def test_unimsg():
         "At(flag='role', target='789', display=None)]"
     )
     assert msg1.filter(At, lambda x: x.flag == "user") == UniMessage.at("123")
+    assert UniMessage.text("123").at("456").export_sync(adapter="OneBot V11") == MessageSegment.text(
+        "123"
+    ) + MessageSegment.at("456")
 
 
 @pytest.mark.asyncio()

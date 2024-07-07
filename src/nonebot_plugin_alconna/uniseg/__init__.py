@@ -51,7 +51,7 @@ from .segment import apply_media_to_url as apply_media_to_url
 from .constraint import SupportAdapterModule as SupportAdapterModule
 from .adapters import BUILDER_MAPPING, FETCHER_MAPPING, EXPORTER_MAPPING
 
-__version__ = "0.48.0"
+__version__ = "0.49.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",
@@ -84,8 +84,10 @@ def patch_matcher_send() -> _Dispose:
     return patch()
 
 
-def apply_filehost():
-    from .utils import filehost  # noqa: F401
+def apply_filehost() -> _Dispose:
+    from .utils.filehost import apply
+
+    return apply()
 
 
 reply_handle = reply_fetch  # backward compatibility

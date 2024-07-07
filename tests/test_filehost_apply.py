@@ -17,7 +17,7 @@ async def test_patch(app: App):
     async def tt_h():
         await test_cmd.send(Image(raw=b"PNG123", name="test.png"))
 
-    apply_filehost()
+    dispose = apply_filehost()
     async with app.test_matcher(test_cmd) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter, login=FAKE_SATORI_LOGIN, info=None)
@@ -29,6 +29,4 @@ async def test_patch(app: App):
             Message(MessageSegment.image("http://filehost.example.com/filehost/test.png")),
         )
 
-    from nonebot_plugin_alconna.uniseg.segment import Media
-
-    Media.to_url = None
+    dispose()

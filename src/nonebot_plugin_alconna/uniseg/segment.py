@@ -365,7 +365,7 @@ class Emoji(Segment):
 
 class MediaToUrl(Protocol):
     def __call__(
-        self, data: Union[str, Path, bytes, BytesIO], bot: Bot, name: Optional[str] = None
+        self, data: Union[str, Path, bytes, BytesIO], bot: Optional[Bot], name: Optional[str] = None
     ) -> Awaitable[str]: ...
 
 
@@ -598,9 +598,13 @@ class _CustomMounter:
         type[Segment],
         Union[
             Callable[
-                ["MessageExporter", Segment, Bot, Union[bool, FallbackStrategy]], Awaitable[Optional[MessageSegment]]
+                ["MessageExporter", Segment, Union[Bot, None], Union[bool, FallbackStrategy]],
+                Awaitable[Optional[MessageSegment]],
             ],
-            Callable[["MessageExporter", Segment, Bot, Union[bool, FallbackStrategy]], Awaitable[list[MessageSegment]]],
+            Callable[
+                ["MessageExporter", Segment, Union[Bot, None], Union[bool, FallbackStrategy]],
+                Awaitable[list[MessageSegment]],
+            ],
         ],
     ] = {}
 
@@ -625,9 +629,13 @@ class _CustomMounter:
         def _handler(
             func: Union[
                 Callable[
-                    ["MessageExporter", TS, Bot, Union[bool, FallbackStrategy]], Awaitable[Optional[MessageSegment]]
+                    ["MessageExporter", TS, Union[Bot, None], Union[bool, FallbackStrategy]],
+                    Awaitable[Optional[MessageSegment]],
                 ],
-                Callable[["MessageExporter", TS, Bot, Union[bool, FallbackStrategy]], Awaitable[list[MessageSegment]]],
+                Callable[
+                    ["MessageExporter", TS, Union[Bot, None], Union[bool, FallbackStrategy]],
+                    Awaitable[list[MessageSegment]],
+                ],
             ]
         ):
             cls.EXPORTERS[custom_type] = func  # type: ignore
@@ -636,7 +644,11 @@ class _CustomMounter:
         return _handler
 
     async def export(
-        self, exporter: "MessageExporter[TM]", seg: Segment, bot: Bot, fallback: Union[bool, FallbackStrategy]
+        self,
+        exporter: "MessageExporter[TM]",
+        seg: Segment,
+        bot: Union[Bot, None],
+        fallback: Union[bool, FallbackStrategy],
     ):
         if seg.__class__ in self.EXPORTERS:
             return await self.EXPORTERS[seg.__class__](exporter, seg, bot, fallback)

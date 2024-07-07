@@ -19,4 +19,14 @@ async def to_url(data: Union[str, Path, bytes, BytesIO], bot: ..., name: Union[s
     return await FileHost(data, filename=name).to_url()
 
 
-Media.to_url = to_url
+_OLD_METHOD = Media.to_url
+
+
+def apply():
+
+    Media.to_url = to_url
+
+    def dispose():
+        Media.to_url = _OLD_METHOD  # type: ignore
+
+    return dispose

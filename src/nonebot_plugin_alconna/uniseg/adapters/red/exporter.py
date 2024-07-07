@@ -51,23 +51,23 @@ class RedMessageExporter(MessageExporter[Message]):
         return f"{event.msgId}#{event.msgSeq}"
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Bot) -> "MessageSegment":
+    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.at(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Bot) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.at_all()
 
     @export
-    async def emoji(self, seg: Emoji, bot: Bot) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.face(seg.id)
 
     @export
-    async def media(self, seg: Union[Image, Video, File], bot: Bot) -> "MessageSegment":
+    async def media(self, seg: Union[Image, Video, File], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -78,34 +78,34 @@ class RedMessageExporter(MessageExporter[Message]):
             return method(Path(seg.path))
         elif seg.raw:
             return method(seg.raw_bytes)
-        elif seg.url:
+        elif seg.url and bot:
             resp = await bot.adapter.request(Request("GET", seg.url))
             return method(resp.content)  # type: ignore
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def voice(self, seg: Union[Voice, Audio], bot: Bot) -> "MessageSegment":
+    async def voice(self, seg: Union[Voice, Audio], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         if seg.path:
             return MessageSegment.voice(Path(seg.path), duration=seg.duration or 1)
         elif seg.raw:
             return MessageSegment.voice(seg.raw_bytes, duration=seg.duration or 1)
-        elif seg.url:
+        elif seg.url and bot:
             resp = await bot.adapter.request(Request("GET", seg.url))
             return MessageSegment.voice(resp.content, duration=seg.duration or 1)  # type: ignore
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Bot) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         if "#" in seg.id:
             _id, _seq = seg.id.split("#", 1)
             return MessageSegment.reply(_seq, _id)
         return MessageSegment.reply(seg.id)
 
     @export
-    async def reference(self, seg: Reference, bot: Bot) -> "MessageSegment":
+    async def reference(self, seg: Reference, bot: Union[Bot, None]) -> "MessageSegment":
         if not seg.children:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
         nodes = []

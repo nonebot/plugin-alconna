@@ -31,7 +31,7 @@ class BilibiliMessageExporter(MessageExporter["Message"]):
         return str(event.session_id)  # type: ignore
 
     @export
-    async def text(self, seg: Text, bot: Bot) -> MessageSegment:
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> MessageSegment:
         return MessageSegment.danmu(seg.text)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):

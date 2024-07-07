@@ -141,6 +141,7 @@ async def _():
 - ALCONNA_ENABLE_SAA_PATCH: 是否启用 SAA 补丁
 - ALCONNA_APPLY_FILEHOST: 是否启用文件托管
 - ALCONNA_APPLY_FETCH_TARGETS: 是否启动时拉取一次发送对象列表
+- ALCONNA_BUILTIN_PLUGINS: 需要加载的alc内置插件集合
 
 ## 插件示例
 

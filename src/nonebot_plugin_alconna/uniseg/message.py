@@ -932,34 +932,52 @@ class UniMessage(list[TS]):
         self.__merge_text__()
 
     async def export(
-        self, bot: Optional[Bot] = None, fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback
+        self,
+        bot: Optional[Bot] = None,
+        fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
+        adapter: Optional[str] = None,
     ) -> Message:
-        if not bot:
-            try:
-                bot = current_bot.get()
-            except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-        adapter = bot.adapter
-        adapter_name = adapter.get_name()
+        """将 UniMessage 转换为指定适配器下的 Message"""
+        if not adapter:
+            if not bot:
+                try:
+                    bot = current_bot.get()
+                except LookupError as e:
+                    raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+            adapter = bot.adapter.get_name()
         if self.has(I18n):
             extra = {}
             try:
                 event = current_event.get()
                 extra["$event"] = event
-                extra["$target"] = self.get_target(event, bot)
-                msg_id = UniMessage.get_message_id(event, bot)
+                extra["$target"] = self.get_target(event, bot, adapter)
+                msg_id = UniMessage.get_message_id(event, bot, adapter)
                 extra["$message_id"] = msg_id
             except (LookupError, NotImplementedError, SerializeFailed):
                 pass
             self._handle_i18n(extra)
         try:
-            if fn := EXPORTER_MAPPING.get(adapter_name):
+            if fn := EXPORTER_MAPPING.get(adapter):
                 return await fn.export(self, bot, fallback)
-            raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
+            raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
         except SerializeFailed:
             if fallback:
                 return FallbackMessage(str(self))
             raise
+
+    def export_sync(
+        self,
+        bot: Optional[Bot] = None,
+        fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
+        adapter: Optional[str] = None,
+    ) -> Message:
+        """（实验性）同步方法地将 UniMessage 转换为指定适配器下的 Message"""
+        coro = self.export(bot, fallback, adapter)
+        try:
+            coro.send(None)
+        except StopIteration as e:
+            return e.args[0]
+        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
     async def send(
         self,
