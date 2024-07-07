@@ -10,7 +10,7 @@ from tests.fake import FAKE_SATORI_LOGIN, fake_message_event_satori
 
 
 def test_message_rollback():
-    from nonebot_plugin_alconna import Image, select_first
+    from nonebot_plugin_alconna import Image, select
 
     text = """\
 捏<chronocat:marketface tab-id="237834" face-id="a651cf5813ba41587b22d273682e01ae" key="e08787120cade0a5">
@@ -23,7 +23,7 @@ def test_message_rollback():
 
     msg1 = Message.from_satori_element(parse(text1))
 
-    alc = Alconna("捏", Args["img", Dot(select_first(Image), str, "url")])
+    alc = Alconna("捏", Args["img", Dot(select(Image).first, str, "url")])
 
     res = alc.parse(msg, {"$adapter.name": "Satori"})
     assert res.matched

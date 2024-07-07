@@ -1,6 +1,8 @@
-from typing import Any, Union, Literal, Optional, overload
+from typing_extensions import deprecated
+from typing import Any, Union, Generic, Literal, TypeVar, Callable, Optional
 
-from nepattern import MatchMode, BasePattern, func
+from tarina import lang
+from nepattern import MatchMode, BasePattern, MatchFailed, func
 
 from .uniseg import segment
 
@@ -19,24 +21,60 @@ File = BasePattern.of(segment.File)
 Reference = BasePattern.of(segment.Reference)
 
 
-@overload
+TS = TypeVar("TS", bound=segment.Segment)
+TS1 = TypeVar("TS1", bound=segment.Segment)
+TS2 = TypeVar("TS2", bound=segment.Segment)
+
+
+class SelectPattern(BasePattern[list[TS], TS2, Literal[MatchMode.TYPE_CONVERT]], Generic[TS, TS2]):
+    def __init__(
+        self,
+        target: type[TS],
+        converter: Callable[[Any, TS2], Optional[list[TS]]],
+    ):
+        super().__init__(
+            mode=MatchMode.TYPE_CONVERT,
+            origin=list[target],
+            converter=converter,
+            alias=f"select({target.__name__})",
+        )
+        self._accepts = (segment.Segment,)
+
+    def match(self, input_: TS2):
+        if not isinstance(input_, self._accepts):
+            raise MatchFailed(
+                lang.require("nepattern", "type_error").format(
+                    type=input_.__class__, target=input_, expected=self.alias
+                )
+            )
+        if (res := self.converter(self, input_)) is None:
+            raise MatchFailed(lang.require("nepattern", "content_error").format(target=input_, expected=self.alias))
+        return res  # type: ignore
+
+    def nth(self, index: int):
+        return func.Index(self, index)
+
+    @property
+    def first(self):
+        return func.Index(self, 0)
+
+    @property
+    def last(self):
+        return func.Index(self, -1)
+
+    def from_(self, seg: Union[type[TS1], BasePattern[TS1, segment.Segment, Any]]) -> "SelectPattern[TS, TS1]":
+        _self = self.copy()
+        if isinstance(seg, BasePattern):
+            _type = seg.origin
+        else:
+            _type = seg
+        _self._accepts = (_type,)
+        return _self  # type: ignore
+
+
 def select(
-    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]],
-) -> BasePattern[list[segment.TS], segment.Segment, Literal[MatchMode.TYPE_CONVERT]]: ...
-
-
-@overload
-def select(
-    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]], index: int = 0
-) -> BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]]: ...
-
-
-def select(
-    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]], index: Optional[int] = None
-) -> Union[
-    BasePattern[list[segment.TS], segment.Segment, Literal[MatchMode.TYPE_CONVERT]],
-    BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]],
-]:
+    seg: Union[type[TS], BasePattern[TS, segment.Segment, Any]],
+) -> SelectPattern[TS, segment.Segment]:
     if isinstance(seg, BasePattern):
         _type = seg.origin
 
@@ -47,27 +85,7 @@ def select(
                     yield res.value()
                 yield from query(s.children)
 
-        if index is None:
-
-            def converter(self, _seg: segment.Segment):
-                results = []
-                _res = seg.validate(_seg)
-                if _res.success:
-                    results.append(_res.value())
-                results.extend(query(_seg.children))
-                if not results:
-                    return None
-                return results
-
-            return BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=list[segment.TS],
-                converter=converter,
-                accepts=segment.Segment,
-                alias=f"select({_type.__name__})",
-            )
-
-        def converter1(self, _seg: segment.Segment):
+        def converter(self, _seg: segment.Segment):
             results = []
             _res = seg.validate(_seg)
             if _res.success:
@@ -75,18 +93,10 @@ def select(
             results.extend(query(_seg.children))
             if not results:
                 return None
-            return results[index]
-
-        return BasePattern(
-            mode=MatchMode.TYPE_CONVERT,
-            origin=_type,
-            converter=converter1,
-            accepts=segment.Segment,
-            alias=f"select({_type.__name__})[{index}]",
-        )
+            return results
 
     else:
-        _type = seg
+        _type: type[TS] = seg
 
         def query1(segs: list[segment.Segment]):
             for s in segs:
@@ -94,53 +104,33 @@ def select(
                     yield s
                 yield from query1(s.children)
 
-        if index is None:
-
-            def converter(self, _seg: segment.Segment):
-                results = []
-                if isinstance(_seg, _type):
-                    results.append(_seg)
-                results.extend(query1(_seg.children))
-                if not results:
-                    return None
-                return results
-
-            return BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                origin=list[segment.TS],
-                converter=converter,
-                accepts=segment.Segment,
-                alias=f"select({_type.__name__})",
-            )
-
-        def converter2(self, _seg: segment.Segment):
+        def converter(self, _seg: segment.Segment):
             results = []
             if isinstance(_seg, _type):
                 results.append(_seg)
             results.extend(query1(_seg.children))
             if not results:
                 return None
-            return results[index]
+            return results
 
-        return BasePattern(
-            mode=MatchMode.TYPE_CONVERT,
-            origin=_type,
-            converter=converter2,
-            accepts=segment.Segment,
-            alias=f"select({_type.__name__})[{index}]",
-        )
+    return SelectPattern(
+        target=_type,
+        converter=converter,
+    )
 
 
+@deprecated("Use `select().first` instead.")
 def select_first(
     seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]]
 ) -> BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]]:
-    return select(seg, 0)
+    return select(seg).first
 
 
+@deprecated("Use `select().last` instead.")
 def select_last(
     seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]]
 ) -> BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]]:
-    return select(seg, -1)
+    return select(seg).last
 
 
 patterns = {

@@ -961,7 +961,7 @@ class UniMessage(list[TS]):
                 return await fn.export(self, bot, fallback)
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
         except SerializeFailed:
-            if fallback:
+            if fallback and fallback != FallbackStrategy.forbid:
                 return FallbackMessage(str(self))
             raise
 
@@ -974,10 +974,9 @@ class UniMessage(list[TS]):
         """（实验性）同步方法地将 UniMessage 转换为指定适配器下的 Message"""
         coro = self.export(bot, fallback, adapter)
         try:
-            coro.send(None)
+            return coro.send(None)
         except StopIteration as e:
             return e.args[0]
-        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
     async def send(
         self,
