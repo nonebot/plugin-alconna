@@ -9,7 +9,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 from typing_extensions import Self
 from collections.abc import Iterable, Awaitable
-from dataclasses import field, asdict, dataclass
+from dataclasses import InitVar, field, asdict, dataclass
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload
 
 from tarina.lang.model import LangItem
@@ -507,11 +507,12 @@ class Reference(Segment):
 
     id: Optional[str] = field(default=None)
     """此处不一定是消息ID，可能是其他ID，如消息序号等"""
-    nodes: Union[list[RefNode], list[CustomNode], list[Union[RefNode, CustomNode]]] = field(default_factory=list)
+    nodes: InitVar[Union[list[RefNode], list[CustomNode], list[Union[RefNode, CustomNode]], None]] = field(default=None)
     _children: list[Union[RefNode, CustomNode]] = field(init=False, default_factory=list)
 
-    def __post_init__(self):
-        self._children.extend(self.nodes)
+    def __post_init__(self, nodes: Union[list[RefNode], list[CustomNode], list[Union[RefNode, CustomNode]], None]):
+        if nodes:
+            self._children.extend(nodes)
 
     @property
     def children(self):
@@ -539,6 +540,86 @@ class Hyper(Segment):
         if self.content and not self.raw and self.format == "json":
             with contextlib.suppress(json.JSONDecodeError):
                 self.raw = json.dumps(self.content, ensure_ascii=False)
+
+
+# discord: action, link -> Button
+# telegram: InlineKeyboardButton
+# kritor, qq: action -> type0, link -> type1, input, enter -> type2
+# satori: same model
+
+
+@dataclass
+class Button(Segment):
+    """Button对象，表示一类按钮消息"""
+
+    flag: Literal["action", "link", "input", "enter"]
+    """
+    - 点击 action 类型的按钮时会触发一个关于 按钮回调 事件，该事件的 button 资源会包含上述 id
+    - 点击 link 类型的按钮时会打开一个链接或者小程序，该链接的地址为 `url`
+    - 点击 input 类型的按钮时会在用户的输入框中填充 `text`
+    - 点击 enter 类型的按钮时会直接发送 `text`
+    """
+    label: str
+    """按钮上的文字"""
+    clicked_label: Optional[str] = None
+    """点击后按钮上的文字"""
+    id: Optional[str] = None
+    url: Optional[str] = None
+    text: Optional[str] = None
+    style: Optional[str] = None
+    """
+    仅建议使用下列值：
+    - primary
+    - secondary
+    - success
+    - warning
+    - danger
+    - info
+    - grey
+    - blue
+
+    此处规定 `grey` 与 `secondary` 等同, `blue` 与 `primary` 等同
+    """
+    permission: Union[Literal["admin", "all"], list[At]] = "all"
+    """按钮权限类型
+    - admin: 仅管理者可操作
+    - all: 所有人可操作
+    - list[At]: 指定用户/身份组可操作
+    """
+
+    def __post_init__(self):
+        if self.style == "grey":
+            self.style = "secondary"
+        elif self.style == "blue":
+            self.style = "primary"
+
+
+# discord: ActionRaw
+# telegram: InlineKeyboardMarkup
+# kritor, qq: same model
+# satori: 展开为多个 Button
+@dataclass
+class Keyboard(Segment):
+    """Keyboard对象，表示一类键盘消息"""
+
+    id: Optional[str] = field(default=None)
+    """此处一般用来表示模板id，特殊情况下可能表示例如 bot_appid 等"""
+    buttons: InitVar[Union[list[Button], None]] = field(default=None)
+    _children: list[Button] = field(init=False, default_factory=list)
+
+    def __post_init__(self, buttons: Union[list[Button], None]):
+        if buttons:
+            self._children.extend(buttons)
+
+    @property
+    def children(self):
+        return self._children
+
+    def __call__(self, *segments: Union[Segment, Button]) -> Self:
+        if not segments:
+            return self
+        self._children.extend(segments)  # type: ignore
+        return self
 
 
 @dataclass

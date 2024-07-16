@@ -1,7 +1,7 @@
 import inspect
 from abc import ABCMeta, abstractmethod
 from collections.abc import Sequence, Awaitable
-from typing import Any, Union, Generic, TypeVar, Callable, get_args, get_origin
+from typing import Any, Union, Generic, TypeVar, Callable, get_args, overload, get_origin
 
 from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
@@ -15,10 +15,29 @@ TS = TypeVar("TS", bound=Segment)
 TM = TypeVar("TM", bound=Message)
 
 
+@overload
+def export(
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[MessageSegment]]
+) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[MessageSegment]]: ...
+
+
+@overload
+def export(
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[list[MessageSegment]]]
+) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[list[MessageSegment]]]: ...
+
+
+@overload
+def export(
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[MessageSegment, list[MessageSegment]]]]
+) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[MessageSegment, list[MessageSegment]]]]: ...
+
+
 def export(
     func: Union[
         Callable[[Any, TS, Union[Bot, None]], Awaitable[MessageSegment]],
         Callable[[Any, TS, Union[Bot, None]], Awaitable[list[MessageSegment]]],
+        Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[MessageSegment, list[MessageSegment]]]],
     ]
 ):
     sig = inspect.signature(func)
@@ -32,6 +51,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
         Union[
             Callable[[Segment, Union[Bot, None]], Awaitable[MessageSegment]],
             Callable[[Segment, Union[Bot, None]], Awaitable[list[MessageSegment]]],
+            Callable[[Segment, Union[Bot, None]], Awaitable[Union[MessageSegment, list[MessageSegment]]]],
         ],
     ]
 

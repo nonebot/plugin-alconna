@@ -25,10 +25,11 @@ from nonebot_plugin_alconna.uniseg.segment import (
     Emoji,
     Hyper,
     Image,
-    Other,
     Reply,
     Video,
     Voice,
+    Button,
+    Keyboard,
     Reference,
 )
 
@@ -86,7 +87,43 @@ class KritorMessageBuilder(MessageBuilder):
 
     @build("keyboard")
     def keyboard(self, seg: KeyboardSegment):
-        return Other(seg)
+        buttons = []
+        for row in seg.data["rows"]:
+            for button in row["buttons"]:
+                if button.action.type == 0:
+                    flag = "link"
+                elif button.action.type == 1:
+                    flag = "action"
+                elif button.action.enter:
+                    flag = "enter"
+                else:
+                    flag = "input"
+                perm = "all"
+                if button.action.permission:
+                    permission = button.action.permission
+                    if permission.type == 0:
+                        assert permission.user_ids
+                        perm = [At("user", i) for i in permission.user_ids]
+                    elif permission.type == 1:
+                        perm = "admin"
+                    elif permission.type == 2:
+                        perm = "all"
+                    else:
+                        assert permission.role_ids
+                        perm = [At("role", i) for i in permission.role_ids]
+                buttons.append(
+                    Button(
+                        flag=flag,  # type: ignore
+                        id=button.id,
+                        label=button.render_data.label,
+                        clicked_label=button.render_data.visited_label,
+                        url=button.action.data if button.action.type == 0 else None,
+                        text=button.action.data if button.action.type == 2 else None,
+                        style="grey" if button.render_data.style == 0 else "blue",
+                        permission=perm,
+                    )
+                )
+        return Keyboard(id=str(seg.data["bot_appid"]), buttons=buttons)
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:

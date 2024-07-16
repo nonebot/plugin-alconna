@@ -1,11 +1,16 @@
 from pathlib import Path
+from dataclasses import dataclass
+from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.qq.bot import Bot as QQBot
+from nonebot.adapters.qq.models.common import Action
 from nonebot.adapters.qq.message import Message, MessageSegment
+from nonebot.adapters.qq.models.common import Button as ButtonModel
 from nonebot.adapters.qq.models.guild import Message as GuildMessage
+from nonebot.adapters.qq.models.common import Permission, RenderData, InlineKeyboard, MessageKeyboard, InlineKeyboardRow
 from nonebot.adapters.qq.event import (
     ForumEvent,
     GuildEvent,
@@ -24,8 +29,29 @@ from nonebot.adapters.qq.event import (
 )
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Emoji,
+    Image,
+    Reply,
+    Video,
+    Voice,
+    Button,
+    Keyboard,
+)
+
+
+@dataclass
+class ButtonSegment(MessageSegment):
+
+    @override
+    def __str__(self) -> str:
+        return "<$qq.button>"
 
 
 class QQMessageExporter(MessageExporter[Message]):
@@ -260,10 +286,61 @@ class QQMessageExporter(MessageExporter[Message]):
             return MessageSegment.text(" ")
         return MessageSegment.reference(seg.id)
 
+    def _button(self, seg: Button, bot: Union[Bot, None]):
+        if seg.permission == "all":
+            perm = Permission(type=2)
+        elif seg.permission == "admin":
+            perm = Permission(type=1)
+        elif seg.permission[0].flag == "role":
+            perm = Permission(type=3, specify_role_ids=[i.target for i in seg.permission])
+        else:
+            perm = Permission(type=0, specify_user_ids=[i.target for i in seg.permission])
+        return ButtonModel(
+            id=seg.id,
+            render_data=RenderData(
+                label=seg.label,
+                visited_label=seg.clicked_label or seg.label,
+                style=0 if seg.style == "secondary" else 1,
+            ),
+            action=Action(
+                type=0 if seg.flag == "link" else 1 if seg.flag == "action" else 2,
+                data=seg.url or seg.text,
+                enter=seg.flag == "enter",
+                unsupport_tips="该版本暂不支持查看此消息，请升级至最新版本。",
+                permission=perm,
+            ),
+        )
+
+    @export
+    async def button(self, seg: Button, bot: Union[Bot, None]):
+        return ButtonSegment("$qq:button", {"button": self._button(seg, bot)})
+
+    @export
+    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+        if not seg.children:
+            if not seg.id:
+                raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
+            return MessageSegment.keyboard(MessageKeyboard(id=seg.id))
+        if len(seg.children) > 25:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
+        buttons = [self._button(child, bot) for child in seg.children]
+        rows = []
+        for i in range(0, len(buttons), 5):
+            rows.append(InlineKeyboardRow(buttons=buttons[i : i + 5]))
+        return MessageSegment.keyboard(MessageKeyboard(content=InlineKeyboard(rows=rows)))
+
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, QQBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
+
+        if message.has("$qq:button"):
+            buttons = [seg.data["button"] for seg in message.get("$qq:button")]
+            message = message.exclude("$qq:button")
+            rows = []
+            for i in range(0, len(buttons), 5):
+                rows.append(InlineKeyboardRow(buttons=buttons[i : i + 5]))
+            message.append(MessageSegment.keyboard(MessageKeyboard(content=InlineKeyboard(rows=rows))))
 
         if isinstance(target, Event):
             assert isinstance(target, MessageEvent)

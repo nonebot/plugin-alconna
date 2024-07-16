@@ -1,4 +1,5 @@
 from pathlib import Path
+from secrets import token_urlsafe
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
@@ -6,9 +7,17 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.kritor.bot import Bot as KritorBot
 from nonebot.adapters.kritor.model import Contact, SceneType
 from nonebot.adapters.kritor.message import Message, MessageSegment
-from nonebot.adapters.kritor.protos.kritor.common import Sender, PushMessageBody, ForwardMessageBody
+from nonebot.adapters.kritor.protos.kritor.common import Button as ButtonModel
 from nonebot.adapters.kritor.protos.kritor.message import SendMessageResponse, SendMessageByResIdResponse
 from nonebot.adapters.kritor.event import MessageEvent, GroupApplyRequest, FriendApplyRequest, InvitedJoinGroupRequest
+from nonebot.adapters.kritor.protos.kritor.common import (
+    Sender,
+    ButtonAction,
+    ButtonRender,
+    PushMessageBody,
+    ForwardMessageBody,
+    ButtonActionPermission,
+)
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
@@ -23,7 +32,9 @@ from nonebot_plugin_alconna.uniseg.segment import (
     Reply,
     Video,
     Voice,
+    Button,
     RefNode,
+    Keyboard,
     Reference,
 )
 
@@ -177,6 +188,45 @@ class KritorMessageExporter(MessageExporter["Message"]):
                 )
         return MessageSegment("$kritor:forward", {"nodes": nodes})
 
+    def _button(self, seg: Button, bot: Union[Bot, None]):
+        if seg.permission == "all":
+            perm = ButtonActionPermission(type=2)
+        elif seg.permission == "admin":
+            perm = ButtonActionPermission(type=1)
+        elif seg.permission[0].flag == "role":
+            perm = ButtonActionPermission(type=3, role_ids=[i.target for i in seg.permission])
+        else:
+            perm = ButtonActionPermission(type=0, user_ids=[i.target for i in seg.permission])
+
+        return ButtonModel(
+            id=seg.id or token_urlsafe(4),
+            render_data=ButtonRender(
+                label=seg.label,
+                visited_label=seg.clicked_label or seg.label,
+                style=0 if seg.style == "secondary" else 1,
+            ),
+            action=ButtonAction(
+                type=0 if seg.flag == "link" else 1 if seg.flag == "action" else 2,
+                data=seg.url or seg.text or seg.label,
+                enter=seg.flag == "enter",
+                unsupported_tips="该版本暂不支持查看此消息，请升级至最新版本。",
+                permission=perm,
+            ),
+        )
+
+    @export
+    async def button(self, seg: Button, bot: Union[Bot, None]):
+        return MessageSegment("$kritor:button", {"button": self._button(seg, bot)})
+
+    @export
+    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+        if not seg.children or not seg.id:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
+        if len(seg.children) > 25:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
+        buttons = [self._button(child, bot) for child in seg.children]
+        return MessageSegment.keyboard(int(seg.id), [buttons[i : i + 5] for i in range(0, len(buttons), 5)])
+
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, KritorBot)
         if TYPE_CHECKING:
@@ -196,6 +246,12 @@ class KritorMessageExporter(MessageExporter["Message"]):
             for node in seg.data["nodes"]:
                 node.message.contact = contact.dump()
             return await bot.send_forward_message(contact, seg.data["nodes"])
+        if message.has("$kritor:button"):
+            buttons = [seg.data["button"] for seg in message.get("$kritor:button")]
+            message = message.exclude("$kritor:button")
+            message.append(
+                MessageSegment.keyboard(int(bot.self_id), [buttons[i : i + 5] for i in range(0, len(buttons), 5)])
+            )
         if target.private:
             return await bot.send_message(
                 contact=Contact(scene=SceneType.FRIEND, peer=target.id, sub_peer=None), elements=message.to_elements()

@@ -1,9 +1,11 @@
 from typing import TYPE_CHECKING
 
+from nonebot.compat import model_dump
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.qq.message import Ark as ArkSegment
 from nonebot.adapters.qq.message import Emoji as EmojiSegment
 from nonebot.adapters.qq.models import Message as GuildMessage
+from nonebot.adapters.qq.message import Keyboard as KeyboardSegment
 from nonebot.adapters.qq.message import Markdown as MarkdownSegment
 from nonebot.adapters.qq.message import Reference as ReferenceSegment
 from nonebot.adapters.qq.event import QQMessageEvent, GuildMessageEvent
@@ -14,7 +16,20 @@ from nonebot.adapters.qq.message import MentionEveryone as MentionEveryoneSegmen
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Emoji,
+    Hyper,
+    Image,
+    Reply,
+    Video,
+    Button,
+    Keyboard,
+)
 
 
 class QQMessageBuilder(MessageBuilder):
@@ -97,7 +112,55 @@ class QQMessageBuilder(MessageBuilder):
 
     @build("ark")
     def ark(self, seg: ArkSegment):
-        return Hyper("json", seg.data["ark"].json())
+        return Hyper("json", content=model_dump(seg.data["ark"]))
+
+    @build("keyboard")
+    def keyboard(self, seg: KeyboardSegment):
+        buttons = []
+        model = seg.data["keyboard"]
+        if not model.content:
+            return Keyboard(id=model.id)
+        assert model.content.rows
+        for row in model.content.rows:
+            assert row.buttons
+            for button in row.buttons:
+                assert button.action
+                assert button.render_data
+                assert button.render_data.label
+                if button.action.type == 0:
+                    flag = "link"
+                elif button.action.type == 1:
+                    flag = "action"
+                elif button.action.enter:
+                    flag = "enter"
+                else:
+                    flag = "input"
+                perm = "all"
+                if button.action.permission:
+                    permission = button.action.permission
+                    if permission.type == 0:
+                        assert permission.specify_user_ids
+                        perm = [At("user", i) for i in permission.specify_user_ids]
+                    elif permission.type == 1:
+                        perm = "admin"
+                    elif permission.type == 2:
+                        perm = "all"
+                    else:
+                        assert permission.specify_role_ids
+                        perm = [At("role", i) for i in permission.specify_role_ids]
+                buttons.append(
+                    Button(
+                        flag=flag,  # type: ignore
+                        id=button.id,
+                        label=button.render_data.label,
+                        clicked_label=button.render_data.visited_label,
+                        url=button.action.data if button.action.type == 0 else None,
+                        text=button.action.data if button.action.type == 2 else None,
+                        style="grey" if button.render_data.style == 0 else "blue",
+                        permission=perm,
+                    )
+                )
+        return Keyboard(buttons=buttons)
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:

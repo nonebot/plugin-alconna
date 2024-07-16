@@ -14,11 +14,24 @@ from nonebot.adapters.satori.message import Audio as AudioSegment
 from nonebot.adapters.satori.message import Image as ImageSegment
 from nonebot.adapters.satori.message import Sharp as SharpSegment
 from nonebot.adapters.satori.message import Video as VideoSegment
+from nonebot.adapters.satori.message import Button as ButtonSegment
 from nonebot.adapters.satori.message import RenderMessage as RenderMessageSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Other, Reply, Video, Reference
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Image,
+    Other,
+    Reply,
+    Video,
+    Button,
+    Reference,
+)
 
 STYLE_TYPE_MAP = {
     "b": "bold",
@@ -138,6 +151,17 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
     @build("message")
     def message(self, seg: RenderMessageSegment):
         return Reference(seg.data.get("id"))(*self.generate(seg.children))
+
+    @build("button")
+    def button(self, seg: ButtonSegment):
+        return Button(
+            flag=seg.data["type"],  # type: ignore
+            id=seg.data.get("id"),
+            label=seg.data.get("display", ""),
+            url=seg.data.get("href"),
+            text=seg.get("text"),
+            style=seg.get("theme"),
+        )(*self.generate(seg.children))
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:

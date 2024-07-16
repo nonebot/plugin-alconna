@@ -22,7 +22,9 @@ from nonebot_plugin_alconna.uniseg.segment import (
     Reply,
     Video,
     Voice,
+    Button,
     RefNode,
+    Keyboard,
     Reference,
 )
 
@@ -100,6 +102,23 @@ class SatoriMessageExporter(MessageExporter[Message]):
     @export
     async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.at_all(seg.here)
+
+    @export
+    async def button(self, seg: Button, bot: Union[Bot, None]) -> "MessageSegment":
+        if seg.flag == "action" and seg.id:
+            return MessageSegment.action_button(seg.id, seg.label, seg.style)
+        elif seg.flag == "link" and seg.url:
+            return MessageSegment.link_button(seg.url, seg.label, seg.style)
+        elif seg.text:
+            return MessageSegment.input_button(seg.text, seg.label, seg.style)
+        else:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="button", seg=seg))
+
+    @export
+    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+        if seg.children:
+            return [await self.button(child, bot) for child in seg.children]
+        return MessageSegment.text("")
 
     @export
     async def res(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
