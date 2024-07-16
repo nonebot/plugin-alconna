@@ -192,8 +192,9 @@ class QQMessageExporter(MessageExporter[Message]):
 
     @export
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
-        assert isinstance(bot, QQBot)
-        if bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 at
+        if TYPE_CHECKING:
+            assert isinstance(bot, QQBot)
+        if bot and bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 at
             return MessageSegment.text(" ")
         if seg.flag == "channel":
             return MessageSegment.mention_channel(seg.target)
@@ -253,6 +254,10 @@ class QQMessageExporter(MessageExporter[Message]):
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+        if TYPE_CHECKING:
+            assert isinstance(bot, QQBot)
+        if bot and bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 reply
+            return MessageSegment.text(" ")
         return MessageSegment.reference(seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
@@ -289,12 +294,14 @@ class QQMessageExporter(MessageExporter[Message]):
                 openid=target.id,
                 message=message,
                 msg_id=target.source,
+                msg_seq=target.extra["qq.reply_seq"],
             )
         else:
             res = await bot.send_to_group(
                 group_openid=target.id,
                 message=message,
                 msg_id=target.source,
+                msg_seq=target.extra["qq.reply_seq"],
             )
         target.extra["qq.reply_seq"] += 1
         return res
