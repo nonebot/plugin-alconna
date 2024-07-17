@@ -160,7 +160,7 @@ class QQMessageBuilder(MessageBuilder):
                         permission=perm,
                     )
                 )
-        return Keyboard(buttons=buttons)
+        return Keyboard(buttons=buttons, row=len(buttons) // len(model.content.rows))
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:

@@ -1,14 +1,15 @@
 from typing import Union
 
+from tarina import lang
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.minecraft.bot import Bot as MinecraftBot
 from nonebot.adapters.minecraft.event.base import MessageEvent
-from nonebot.adapters.minecraft.model import TextColor, BaseComponent
 from nonebot.adapters.minecraft.message import Message, MessageSegment
+from nonebot.adapters.minecraft.model import TextColor, ClickEvent, HoverEvent, ClickAction, HoverAction, BaseComponent
 
-from nonebot_plugin_alconna.uniseg.segment import Text
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
+from nonebot_plugin_alconna.uniseg.segment import Text, Button, Keyboard
+from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 STYLE_TYPE_MAP = {
     "b": "bold",
@@ -74,6 +75,48 @@ class MinecraftMessageExporter(MessageExporter[Message]):
         if seg.extract_most_style() == "title":
             return MessageSegment.title(BaseComponent(text=seg.text, **kwargs))
         return MessageSegment.text(seg.text, **kwargs)
+
+    @export
+    async def button(self, seg: Button, bot: Union[Bot, None]):
+        label = Text(seg.label) if isinstance(seg.label, str) else seg.label
+        styles = [STYLE_TYPE_MAP[s] for s in label.styles[(0, len(label.text))] if s in STYLE_TYPE_MAP]
+        kwargs = {}
+        for style in styles:
+            if style == "bold":
+                kwargs["bold"] = True
+            elif style == "italic":
+                kwargs["italic"] = True
+            elif style == "underline":
+                kwargs["underlined"] = True
+            elif style == "strikethrough":
+                kwargs["strikethrough"] = True
+            elif style == "obfuscated":
+                kwargs["obfuscated"] = True
+            else:
+                kwargs["color"] = style
+        if seg.clicked_label:
+            kwargs["hover_event"] = HoverEvent(
+                action=HoverAction.SHOW_TEXT, base_component_list=[BaseComponent(text=seg.clicked_label)]
+            )
+        if seg.flag == "link":
+            return MessageSegment.text(
+                label.text, **kwargs, click_event=ClickEvent(action=ClickAction.OPEN_URL, value=seg.url)
+            )
+        if seg.flag == "input":
+            return MessageSegment.text(
+                label.text, **kwargs, click_event=ClickEvent(action=ClickAction.SUGGEST_COMMAND, value=seg.text)
+            )
+        if seg.flag == "enter":
+            return MessageSegment.text(
+                label.text, **kwargs, click_event=ClickEvent(action=ClickAction.RUN_COMMAND, value=seg.text)
+            )
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="button", seg=seg))
+
+    @export
+    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+        if seg.children:
+            return [await self.button(child, bot) for child in seg.children]
+        return MessageSegment.text("")
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, MinecraftBot)

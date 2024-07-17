@@ -13,10 +13,23 @@ from nonebot.adapters.telegram.message import Reply as TgReply
 from nonebot.adapters.telegram.message import Message as TgMessage
 from nonebot.adapters.telegram.model import Message as MessageModel
 from nonebot.adapters.telegram.event import MessageEvent, EventWithChat
+from nonebot.adapters.telegram.model import InlineKeyboardButton, InlineKeyboardMarkup
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, Audio, Emoji, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    File,
+    Text,
+    Audio,
+    Emoji,
+    Image,
+    Reply,
+    Video,
+    Voice,
+    Button,
+    Keyboard,
+)
 
 STYLE_TYPE_MAP = {
     "b": "bold",
@@ -110,13 +123,59 @@ class TelegramMessageExporter(MessageExporter[Message]):
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return TgReply.reply(int(seg.id))
 
+    def _button(self, seg: Button, bot: Union[Bot, None]):
+        label = str(seg.label)
+        if seg.flag == "link":
+            return InlineKeyboardButton(text=label, url=seg.url)
+        elif seg.flag == "action":
+            return InlineKeyboardButton(text=label, callback_data=seg.id)
+        else:
+            return InlineKeyboardButton(text=label, switch_inline_query_current_chat=seg.text)
+
+    @export
+    async def button(self, seg: Button, bot: Union[Bot, None]):
+        return MessageSegment("$telegram:button", {"button": self._button(seg, bot)})
+
+    @export
+    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+        if not seg.children:
+            return Entity.text("")
+        buttons = [self._button(but, bot) for but in seg.children]
+        if len(buttons) < 10 and not seg.row:
+            return MessageSegment("$telegram:button_row", {"buttons": buttons})
+        rows = []
+        for i in range(0, len(buttons), seg.row or 9):
+            rows.append(buttons[i : i + (seg.row or 9)])
+        return MessageSegment("$telegram:keyboard", {"buttons": buttons})
+
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, TgBot)
         assert isinstance(message, TgMessage)
+        reply_markup = None
+        if buttons := message.get("$telegram:button"):
+            message = message.exclude("$telegram:button")
+            buts = [but.data["button"] for but in buttons]
+            rows = []
+            for i in range(0, len(buttons), 9):
+                rows.append(buts[i : i + 9])
+            reply_markup = InlineKeyboardMarkup(inline_keyboard=rows)
+        if rows := message.get("telegram:button_row"):
+            message = message.exclude("telegram:button_row")
+            but_rows = [row.data["buttons"] for row in rows]
+            if not reply_markup:
+                reply_markup = InlineKeyboardMarkup(inline_keyboard=but_rows)
+            else:
+                reply_markup.inline_keyboard += but_rows
+        if kb := message.get("$telegram:keyboard"):
+            message = message.exclude("$telegram:keyboard")
+            if reply_markup:
+                reply_markup.inline_keyboard += kb[0].data["buttons"]
+            else:
+                reply_markup = InlineKeyboardMarkup(inline_keyboard=kb[0].data["buttons"])
         if isinstance(target, Event):
             assert isinstance(target, TgEvent)
-            return await bot.send(event=target, message=message)
-        return await bot.send_to(target.id, message)
+            return await bot.send(event=target, message=message, reply_markup=reply_markup)
+        return await bot.send_to(target.id, message=message, reply_markup=reply_markup)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, TgBot)

@@ -4,15 +4,29 @@ from typing import TYPE_CHECKING, Any, Union, cast
 from tarina import lang
 from nonebot.adapters import Bot, Event
 from nonebot.internal.driver import Request
-from nonebot.adapters.discord.api.types import ChannelType
 from nonebot.adapters.discord.bot import Bot as DiscordBot
-from nonebot.adapters.discord.api.model import Channel, MessageGet
+from nonebot.adapters.discord.api.model import Button as ButtonModel
 from nonebot.adapters.discord.message import Message, MessageSegment, parse_message
+from nonebot.adapters.discord.api.types import ButtonStyle, ChannelType, TextInputStyle
+from nonebot.adapters.discord.api.model import Channel, ActionRow, TextInput, MessageGet
 from nonebot.adapters.discord.event import MessageEvent, GuildMessageCreateEvent, DirectMessageCreateEvent
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Emoji,
+    Image,
+    Reply,
+    Video,
+    Voice,
+    Button,
+    Keyboard,
+)
 
 
 class DiscordMessageExporter(MessageExporter[Message]):
@@ -108,6 +122,39 @@ class DiscordMessageExporter(MessageExporter[Message]):
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.reference(seg.origin or int(seg.id), fail_if_not_exists=False)
+
+    def _button(self, seg: Button, bot: Union[Bot, None]):
+        styles = {
+            "primary": ButtonStyle.Primary,
+            "secondary": ButtonStyle.Secondary,
+            "success": ButtonStyle.Success,
+            "danger": ButtonStyle.Danger,
+            "link": ButtonStyle.Link,
+        }
+        label = str(seg.label)
+        if seg.flag == "link" and seg.url:
+            return ButtonModel(style=styles.get(seg.style or "", ButtonStyle.Primary), label=label, url=seg.url)
+        if seg.flag == "action" and seg.id:
+            return ButtonModel(style=styles.get(seg.style or "", ButtonStyle.Primary), label=label, custom_id=seg.id)
+        if seg.text:
+            return TextInput(
+                custom_id=seg.id or label,
+                style=TextInputStyle.Short,
+                label=label,
+                placeholder=seg.clicked_label or label,
+                value=seg.text,
+            )
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="button", seg=seg))
+
+    @export
+    async def button(self, seg: Button, bot: Union[Bot, None]) -> "MessageSegment":
+        return MessageSegment.component(self._button(seg, bot))
+
+    @export
+    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]) -> "MessageSegment":
+        if not seg.children:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
+        return MessageSegment.component(ActionRow(components=[self._button(but, bot) for but in seg.children]))
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, DiscordBot)

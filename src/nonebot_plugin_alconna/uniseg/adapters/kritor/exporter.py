@@ -197,17 +197,17 @@ class KritorMessageExporter(MessageExporter["Message"]):
             perm = ButtonActionPermission(type=3, role_ids=[i.target for i in seg.permission])
         else:
             perm = ButtonActionPermission(type=0, user_ids=[i.target for i in seg.permission])
-
+        label = str(seg.label)
         return ButtonModel(
             id=seg.id or token_urlsafe(4),
             render_data=ButtonRender(
-                label=seg.label,
-                visited_label=seg.clicked_label or seg.label,
+                label=label,
+                visited_label=seg.clicked_label or label,
                 style=0 if seg.style == "secondary" else 1,
             ),
             action=ButtonAction(
                 type=0 if seg.flag == "link" else 1 if seg.flag == "action" else 2,
-                data=seg.url or seg.text or seg.label,
+                data=seg.url or seg.text or label,
                 enter=seg.flag == "enter",
                 unsupported_tips="该版本暂不支持查看此消息，请升级至最新版本。",
                 permission=perm,
@@ -225,7 +225,11 @@ class KritorMessageExporter(MessageExporter["Message"]):
         if len(seg.children) > 25:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
         buttons = [self._button(child, bot) for child in seg.children]
-        return MessageSegment.keyboard(int(seg.id), [buttons[i : i + 5] for i in range(0, len(buttons), 5)])
+        if len(buttons) < 6 and not seg.row:
+            return MessageSegment("$kritor:button_row", {"buttons": buttons})
+        return MessageSegment.keyboard(
+            int(seg.id), [buttons[i : i + (seg.row or 5)] for i in range(0, len(buttons), seg.row or 5)]
+        )
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, KritorBot)
@@ -246,12 +250,20 @@ class KritorMessageExporter(MessageExporter["Message"]):
             for node in seg.data["nodes"]:
                 node.message.contact = contact.dump()
             return await bot.send_forward_message(contact, seg.data["nodes"])
+        kb = None
         if message.has("$kritor:button"):
             buttons = [seg.data["button"] for seg in message.get("$kritor:button")]
             message = message.exclude("$kritor:button")
-            message.append(
-                MessageSegment.keyboard(int(bot.self_id), [buttons[i : i + 5] for i in range(0, len(buttons), 5)])
-            )
+            kb = MessageSegment.keyboard(int(bot.self_id), [buttons[i : i + 5] for i in range(0, len(buttons), 5)])
+        if message.has("$kritor:button_row"):
+            rows = [seg.data["buttons"] for seg in message.get("$kritor:button_row")]
+            message = message.exclude("$kritor:button_row")
+            if not kb:
+                kb = MessageSegment.keyboard(int(bot.self_id), buttons=rows)
+            else:
+                kb.data["rows"] += rows
+        if kb:
+            message.append(kb)
         if target.private:
             return await bot.send_message(
                 contact=Contact(scene=SceneType.FRIEND, peer=target.id, sub_peer=None), elements=message.to_elements()

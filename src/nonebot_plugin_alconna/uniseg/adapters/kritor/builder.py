@@ -123,7 +123,7 @@ class KritorMessageBuilder(MessageBuilder):
                         permission=perm,
                     )
                 )
-        return Keyboard(id=str(seg.data["bot_appid"]), buttons=buttons)
+        return Keyboard(id=str(seg.data["bot_appid"]), buttons=buttons, row=len(buttons) // len(seg.data["rows"]))
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:

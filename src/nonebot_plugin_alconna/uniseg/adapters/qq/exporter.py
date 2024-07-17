@@ -54,6 +54,14 @@ class ButtonSegment(MessageSegment):
         return "<$qq.button>"
 
 
+@dataclass
+class ButtonRowSegment(MessageSegment):
+
+    @override
+    def __str__(self) -> str:
+        return "<$qq.button_row>"
+
+
 class QQMessageExporter(MessageExporter[Message]):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
@@ -295,16 +303,17 @@ class QQMessageExporter(MessageExporter[Message]):
             perm = Permission(type=3, specify_role_ids=[i.target for i in seg.permission])
         else:
             perm = Permission(type=0, specify_user_ids=[i.target for i in seg.permission])
+        label = str(seg.label)
         return ButtonModel(
             id=seg.id,
             render_data=RenderData(
-                label=seg.label,
-                visited_label=seg.clicked_label or seg.label,
+                label=label,
+                visited_label=seg.clicked_label or label,
                 style=0 if seg.style == "secondary" else 1,
             ),
             action=Action(
                 type=0 if seg.flag == "link" else 1 if seg.flag == "action" else 2,
-                data=seg.url or seg.text,
+                data=seg.url or seg.text or label,
                 enter=seg.flag == "enter",
                 unsupport_tips="该版本暂不支持查看此消息，请升级至最新版本。",
                 permission=perm,
@@ -324,9 +333,11 @@ class QQMessageExporter(MessageExporter[Message]):
         if len(seg.children) > 25:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
         buttons = [self._button(child, bot) for child in seg.children]
+        if len(buttons) < 6 and not seg.row:
+            return ButtonRowSegment("$qq:button_row", {"buttons": buttons})
         rows = []
-        for i in range(0, len(buttons), 5):
-            rows.append(InlineKeyboardRow(buttons=buttons[i : i + 5]))
+        for i in range(0, len(buttons), seg.row or 5):
+            rows.append(InlineKeyboardRow(buttons=buttons[i : i + (seg.row or 5)]))
         return MessageSegment.keyboard(MessageKeyboard(content=InlineKeyboard(rows=rows)))
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
@@ -334,13 +345,26 @@ class QQMessageExporter(MessageExporter[Message]):
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
+        kb = None
         if message.has("$qq:button"):
             buttons = [seg.data["button"] for seg in message.get("$qq:button")]
             message = message.exclude("$qq:button")
             rows = []
             for i in range(0, len(buttons), 5):
                 rows.append(InlineKeyboardRow(buttons=buttons[i : i + 5]))
-            message.append(MessageSegment.keyboard(MessageKeyboard(content=InlineKeyboard(rows=rows))))
+            kb = MessageKeyboard(content=InlineKeyboard(rows=rows))
+
+        if message.has("$qq:button_row"):
+            rows = [InlineKeyboardRow(buttons=seg.data["buttons"]) for seg in message.get("$qq:button_row")]
+            message = message.exclude("$qq:button_row")
+            if not kb:
+                kb = MessageKeyboard(content=InlineKeyboard(rows=rows))
+            else:
+                assert kb.content
+                assert kb.content.rows
+                kb.content.rows += rows
+        if kb:
+            message.append(MessageSegment.keyboard(kb))
 
         if isinstance(target, Event):
             assert isinstance(target, MessageEvent)

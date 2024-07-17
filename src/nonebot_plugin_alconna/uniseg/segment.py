@@ -543,9 +543,7 @@ class Hyper(Segment):
 
 
 # discord: action, link -> Button
-# telegram: InlineKeyboardButton
-# kritor, qq: action -> type0, link -> type1, input, enter -> type2
-# satori: same model
+# telegram: InlineKeyboardButton & bot_command
 
 
 @dataclass
@@ -559,7 +557,7 @@ class Button(Segment):
     - 点击 input 类型的按钮时会在用户的输入框中填充 `text`
     - 点击 enter 类型的按钮时会直接发送 `text`
     """
-    label: str
+    label: Union[str, Text]
     """按钮上的文字"""
     clicked_label: Optional[str] = None
     """点击后按钮上的文字"""
@@ -575,6 +573,7 @@ class Button(Segment):
     - warning
     - danger
     - info
+    - link
     - grey
     - blue
 
@@ -594,17 +593,15 @@ class Button(Segment):
             self.style = "primary"
 
 
-# discord: ActionRaw
-# telegram: InlineKeyboardMarkup
-# kritor, qq: same model
-# satori: 展开为多个 Button
 @dataclass
 class Keyboard(Segment):
-    """Keyboard对象，表示一类键盘消息"""
+    """Keyboard对象，表示一行按钮元素"""
 
+    buttons: InitVar[Union[list[Button], None]] = field(default=None)
     id: Optional[str] = field(default=None)
     """此处一般用来表示模板id，特殊情况下可能表示例如 bot_appid 等"""
-    buttons: InitVar[Union[list[Button], None]] = field(default=None)
+    row: Union[int, None] = None
+    """当消息中只写有一个 Keyboard 时可根据此参数约定按钮组的列数"""
     _children: list[Button] = field(init=False, default_factory=list)
 
     def __post_init__(self, buttons: Union[list[Button], None]):
