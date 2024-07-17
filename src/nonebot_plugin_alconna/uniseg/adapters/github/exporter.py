@@ -49,5 +49,10 @@ class GithubMessageExporter(MessageExporter["Message"]):
             return MessageSegment.text(f"![]({url})")
         raise ValueError("github image segment must have url")
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        raise NotImplementedError
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+        if isinstance(target, Target):
+            raise NotImplementedError
+        return await bot.send(
+            target,  # type: ignore
+            message=message,
+        )

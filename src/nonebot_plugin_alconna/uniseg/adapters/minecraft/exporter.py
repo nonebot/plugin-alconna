@@ -118,6 +118,8 @@ class MinecraftMessageExporter(MessageExporter[Message]):
             return [await self.button(child, bot) for child in seg.children]
         return MessageSegment.text("")
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, MinecraftBot)
+        if isinstance(target, Event):
+            return await bot.send(target, message, **kwargs)  # type: ignore
         return await bot.send_msg(message=message)  # type: ignore

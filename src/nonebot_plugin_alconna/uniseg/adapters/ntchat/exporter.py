@@ -75,18 +75,18 @@ class NTChatMessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg))
         return MessageSegment.xml(seg.raw)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: "Message"):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: "Message", **kwargs):
         from nonebot.adapters.ntchat.bot import send  # type: ignore
         from nonebot.adapters.ntchat.bot import Bot as NTChatBot  # type: ignore
 
         assert isinstance(bot, NTChatBot)
 
         if isinstance(target, Event):
-            target = self.get_target(target, bot)
+            return await send(bot, target, message, **kwargs)  # type: ignore
 
         class FakeEvent:
             from_wxid = target.id
             if target.parent_id:
                 room_wxid = target.parent_id
 
-        return await send(bot, FakeEvent, message)  # type: ignore
+        return await send(bot, FakeEvent, message, **kwargs)  # type: ignore

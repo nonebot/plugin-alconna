@@ -6,11 +6,12 @@ from types import FunctionType
 from dataclasses import dataclass
 from collections.abc import Iterable
 from typing_extensions import Self, SupportsIndex
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Optional, overload
+from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Optional, Protocol, overload
 
 from tarina import lang
 from nepattern import parser
 from tarina.lang.model import LangItem
+from tarina.context import ContextModel
 from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
@@ -55,6 +56,16 @@ class _method:
         if instance is None:
             return self.__func__.__get__(owner, owner)
         return self.__func__.__get__(instance, owner)
+
+
+TM = TypeVar("TM", bound=Union[str, Message, "UniMessage"])
+
+
+class SendWrapper(Protocol):
+    async def __call__(self, bot: Bot, event: Event, send: TM) -> TM: ...
+
+
+current_send_wrapper: ContextModel[SendWrapper] = ContextModel("nonebot_plugin_alconna.uniseg.send_wrapper")
 
 
 class UniMessage(list[TS]):
@@ -927,7 +938,7 @@ class UniMessage(list[TS]):
         return result
 
     @staticmethod
-    def generate_without_reply(
+    def generate_sync(
         *,
         message: Optional[Message] = None,
         event: Optional[Event] = None,
@@ -955,6 +966,8 @@ class UniMessage(list[TS]):
         if not (fn := BUILDER_MAPPING.get(adapter)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
         return UniMessage(fn.generate(message))
+
+    generate_without_reply = generate_sync
 
     @staticmethod
     def get_message_id(event: Optional[Event] = None, bot: Optional[Bot] = None, adapter: Optional[str] = None) -> str:
@@ -1060,6 +1073,7 @@ class UniMessage(list[TS]):
         fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
+        **kwargs,
     ) -> "Receipt":
         if not target:
             try:
@@ -1093,12 +1107,14 @@ class UniMessage(list[TS]):
                     else:
                         raise TypeError("reply_to must be str when target is not Event")
                 self.insert(0, Reply(reply_to))  # type: ignore
+        if (wrapper := current_send_wrapper.get(None)) and isinstance(target, Event):
+            self[:] = await wrapper(bot, target, self)
         msg = await self.export(bot, fallback)
         adapter = bot.adapter
         adapter_name = adapter.get_name()
         if not (fn := EXPORTER_MAPPING.get(adapter_name)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
-        res = await fn.send_to(target, bot, msg)
+        res = await fn.send_to(target, bot, msg, **kwargs)
         return Receipt(bot, target, fn, res if isinstance(res, list) else [res])
 
     async def finish(
@@ -1108,8 +1124,9 @@ class UniMessage(list[TS]):
         fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
+        **kwargs,
     ) -> NoReturn:
-        await self.send(target, bot, fallback, at_sender, reply_to)
+        await self.send(target, bot, fallback, at_sender, reply_to, **kwargs)
         raise FinishedException
 
 
@@ -1197,6 +1214,7 @@ class Receipt:
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
         delay: float = 0,
+        **kwargs,
     ):
         if delay > 1e-4:
             await asyncio.sleep(delay)
@@ -1218,8 +1236,10 @@ class Receipt:
                     else:
                         raise TypeError("reply_to must be str when target is not Event")
                 self.insert(0, Reply(reply_to))  # type: ignore
+        if (wrapper := current_send_wrapper.get(None)) and isinstance(self.context, Event):
+            message = await wrapper(self.bot, self.context, message)
         msg = await self.exporter.export(message, self.bot, fallback)
-        res = await self.exporter.send_to(self.context, self.bot, msg)
+        res = await self.exporter.send_to(self.context, self.bot, msg, **kwargs)
         self.msg_ids.extend(res if isinstance(res, list) else [res])
         return self
 
@@ -1230,8 +1250,9 @@ class Receipt:
         at_sender: Union[str, bool] = False,
         index: int = -1,
         delay: float = 0,
+        **kwargs,
     ):
-        return await self.send(message, fallback, at_sender, self.get_reply(index), delay)
+        return await self.send(message, fallback, at_sender, self.get_reply(index), delay, **kwargs)
 
     async def finish(
         self,
@@ -1240,6 +1261,7 @@ class Receipt:
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
         delay: float = 0,
+        **kwargs,
     ):
-        await self.send(message, fallback, at_sender, reply_to, delay)
+        await self.send(message, fallback, at_sender, reply_to, delay, **kwargs)
         raise FinishedException

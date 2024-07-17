@@ -340,7 +340,7 @@ class QQMessageExporter(MessageExporter[Message]):
             rows.append(InlineKeyboardRow(buttons=buttons[i : i + (seg.row or 5)]))
         return MessageSegment.keyboard(MessageKeyboard(content=InlineKeyboard(rows=rows)))
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, QQBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -368,10 +368,7 @@ class QQMessageExporter(MessageExporter[Message]):
 
         if isinstance(target, Event):
             assert isinstance(target, MessageEvent)
-            return await bot.send(
-                event=target,
-                message=message,
-            )
+            return await bot.send(event=target, message=message, **kwargs)
 
         if target.channel:
             if target.private:
@@ -381,21 +378,12 @@ class QQMessageExporter(MessageExporter[Message]):
                 # 私信需要使用 post_dms_messages
                 # https://bot.q.qq.com/wiki/develop/api/openapi/dms/post_dms_messages.html#%E5%8F%91%E9%80%81%E7%A7%81%E4%BF%A1
                 return await bot.send_to_dms(
-                    guild_id=dms.guild_id,  # type: ignore
-                    message=message,
-                    msg_id=target.source,
+                    guild_id=dms.guild_id, message=message, msg_id=target.source, **kwargs  # type: ignore
                 )
-            return await bot.send_to_channel(
-                channel_id=target.id,
-                message=message,
-                msg_id=target.source,
-            )
+            return await bot.send_to_channel(channel_id=target.id, message=message, msg_id=target.source, **kwargs)
         if target.private:
             res = await bot.send_to_c2c(
-                openid=target.id,
-                message=message,
-                msg_id=target.source,
-                msg_seq=target.extra["qq.reply_seq"],
+                openid=target.id, message=message, msg_id=target.source, msg_seq=target.extra["qq.reply_seq"], **kwargs
             )
         else:
             res = await bot.send_to_group(
@@ -403,6 +391,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 message=message,
                 msg_id=target.source,
                 msg_seq=target.extra["qq.reply_seq"],
+                **kwargs,
             )
         target.extra["qq.reply_seq"] += 1
         return res

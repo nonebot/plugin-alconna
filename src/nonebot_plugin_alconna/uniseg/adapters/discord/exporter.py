@@ -166,17 +166,17 @@ class DiscordMessageExporter(MessageExporter[Message]):
             for i in range(0, len(buttons), seg.row)
         ]
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, DiscordBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
         if isinstance(target, Event):
-            target = self.get_target(target, bot)
+            return await bot.send(target, message, **kwargs)  # type: ignore
         if target.private:
             dm = await bot.create_DM(recipient_id=int(target.id))
-            return await bot.send_to(channel_id=dm.id, message=message)
-        return await bot.send_to(channel_id=int(target.id), message=message)
+            return await bot.send_to(channel_id=dm.id, message=message, **kwargs)
+        return await bot.send_to(channel_id=int(target.id), message=message, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         _mid: MessageGet = cast(MessageGet, mid)

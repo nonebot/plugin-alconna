@@ -175,13 +175,13 @@ class SatoriMessageExporter(MessageExporter[Message]):
 
         return MessageSegment.message(seg.id, bool(seg.children), content)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, SatoriBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
         if isinstance(target, Event):
-            target = self.get_target(target, bot)
+            return await bot.send(target, message, **kwargs)  # type: ignore
 
         if target.private:
             return await bot.send_private_message(target.id, message)

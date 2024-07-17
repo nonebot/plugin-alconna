@@ -102,22 +102,23 @@ class TailChatMessageExporter(MessageExporter["Message"]):
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment("$tailchat:reply", {"extra": {"message_id": seg.id}})  # type: ignore
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, TailChatBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
-        if isinstance(target, Event):
-            target = self.get_target(target, bot)
         if message.has("$tailchat:reply"):
             reply_id = message.pop(message.index("$tailchat:reply")).data["extra"]["message_id"]
         else:
             reply_id = None
+        if isinstance(target, Event):
+            return await bot.send(target, message, meta={"reply": {"_id": reply_id}} if reply_id else None, **kwargs)  # type: ignore
         return await bot.sendMessage(
             content=message.decode(),
             converseId=target.id,
             groupId=None if target.private else target.parent_id,
             meta={"reply": {"_id": reply_id}} if reply_id else None,
+            **kwargs,
         )
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):

@@ -45,7 +45,7 @@ class ReplyRecordExtension(Extension):
             msg = event.get_message()
         except (NotImplementedError, ValueError):
             return
-        uni_msg = UniMessage.generate_without_reply(message=msg, bot=bot)
+        uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
         if not (reply := await reply_fetch(event, bot)):
             return uni_msg
         msg_id = UniMessage.get_message_id(event, bot)
@@ -92,7 +92,7 @@ class ReplyMergeExtension(Extension):
             msg = event.get_message()
         except ValueError:
             return
-        uni_msg = UniMessage.generate_without_reply(message=msg, bot=bot)
+        uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
         if not (reply := await reply_fetch(event, bot)):
             return uni_msg
         if not reply.msg:
@@ -100,7 +100,7 @@ class ReplyMergeExtension(Extension):
         reply_msg = reply.msg
         if isinstance(reply_msg, str):
             reply_msg = msg.__class__(reply_msg)
-        uni_msg_reply = UniMessage.generate_without_reply(message=reply_msg, bot=bot)
+        uni_msg_reply = UniMessage.generate_sync(message=reply_msg, bot=bot)
         if self.add_left:
             uni_msg_reply += self.sep
             uni_msg_reply.extend(uni_msg)

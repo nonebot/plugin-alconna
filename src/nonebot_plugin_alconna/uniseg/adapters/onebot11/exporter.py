@@ -132,31 +132,35 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                 )
         return nodes  # type: ignore
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, OnebotBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
         if isinstance(target, Event):
-            target = self.get_target(target, bot)
+            _target = self.get_target(target, bot)
+        else:
+            _target = target
 
         if msg := message.include("node"):
-            if target.private:
+            if _target.private:
                 return await bot.call_api(
                     "send_private_forward_msg",
-                    user_id=int(target.id),
+                    user_id=int(_target.id),
                     messages=[asdict(m) for m in msg],
                 )
             else:
                 return await bot.call_api(
                     "send_group_forward_msg",
-                    group_id=int(target.id),
+                    group_id=int(_target.id),
                     messages=[asdict(m) for m in msg],
                 )
-        if target.private:
-            return await bot.send_msg(message_type="private", user_id=int(target.id), message=message)
+        if isinstance(target, Event):
+            return await bot.send(target, message, **kwargs)  # type: ignore
+        if _target.private:
+            return await bot.send_msg(message_type="private", user_id=int(_target.id), message=message, **kwargs)
         else:
-            return await bot.send_msg(message_type="group", group_id=int(target.id), message=message)
+            return await bot.send_msg(message_type="group", group_id=int(_target.id), message=message, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, OnebotBot)

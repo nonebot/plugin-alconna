@@ -16,7 +16,7 @@ from arclet.alconna import Alconna, Arparma
 from nonebot.compat import PydanticUndefined
 from nonebot.adapters import Bot, Event, Message
 
-from .uniseg import UniMessage, FallbackMessage
+from .uniseg import UniMessage
 
 OutputType = Literal["help", "shortcut", "completion", "error"]
 TM = TypeVar("TM", bound=Union[str, Message, UniMessage])
@@ -67,11 +67,11 @@ class Extension(metaclass=ABCMeta):
         return ""
 
     def validate(self, bot: Bot, event: Event) -> bool:
-        return True
+        return event.get_type() == "message"
 
-    async def output_converter(self, output_type: OutputType, content: str) -> Message | UniMessage:
+    async def output_converter(self, output_type: OutputType, content: str) -> UniMessage:
         """依据输出信息的类型，将字符串转换为消息对象以便发送。"""
-        return FallbackMessage(content)
+        return UniMessage(content)
 
     async def message_provider(
         self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
@@ -186,15 +186,21 @@ class ExtensionExecutor:
             self.extensions.append(_ext)
             _ext.post_init(self._rule.command())  # type: ignore
 
+    def __enter__(self) -> Self:
+        return self
+
     def __exit__(self, exc_type, exc_value, traceback):
-        self.context.clear()
+        self.clear()
 
     def select(self, bot: Bot, event: Event) -> Self:
         self.context = [ext for ext in self.extensions if ext.validate(bot, event)]
         self.context.sort(key=lambda ext: ext.priority)
         return self
 
-    async def output_converter(self, output_type: OutputType, content: str) -> Message | UniMessage:
+    def clear(self) -> None:
+        self.context.clear()
+
+    async def output_converter(self, output_type: OutputType, content: str) -> UniMessage:
         exc = None
         for ext in self.context:
             if not ext._overrides["output_converter"]:
@@ -204,7 +210,7 @@ class ExtensionExecutor:
             except Exception as e:
                 exc = e
         if not exc:
-            return FallbackMessage()
+            return UniMessage()
         raise exc  # type: ignore
 
     async def message_provider(

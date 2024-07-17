@@ -214,13 +214,13 @@ class MiraiMessageExporter(MessageExporter[Message]):
                 )
         return MessageSegment.forward(nodes)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, MiraiBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
         if isinstance(target, Event):
-            target = self.get_target(target, bot)
+            return await bot.send(target, message)  # type: ignore
 
         if target.private:
             return await bot.send_friend_message(target=int(target.id), message=message)

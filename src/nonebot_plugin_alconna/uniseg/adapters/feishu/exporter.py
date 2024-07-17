@@ -148,23 +148,25 @@ class FeishuMessageExporter(MessageExporter[Message]):
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment("$feishu:reply", {"message_id": seg.id})  # type: ignore
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, FeishuBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
-        if isinstance(target, Event):
-            target = self.get_target(target, bot)
-
-        if target.private:
-            receive_id, receive_id_type = target.id, "open_id"
-        else:
-            receive_id, receive_id_type = target.id, "chat_id"
         if message.has("$feishu:reply"):
             reply = message["$feishu:reply", 0]
             message = message.exclude("$feishu:reply")
             msg_type, content = message.serialize()
             return await bot.reply_msg(reply.data["message_id"], content, msg_type)
+
+        if isinstance(target, Event):
+            return await bot.send(target, message, **kwargs)  # type: ignore
+
+        if target.private:
+            receive_id, receive_id_type = target.id, "open_id"
+        else:
+            receive_id, receive_id_type = target.id, "chat_id"
+
         msg_type, content = message.serialize()
         return await bot.send_msg(receive_id_type, receive_id, content, msg_type)
 

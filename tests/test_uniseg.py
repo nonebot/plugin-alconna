@@ -127,21 +127,13 @@ async def test_unimsg_send(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         event = fake_group_message_event_v11(message=Message("test_unimsg_send"), user_id=123, group_id=456)
         ctx.receive_event(bot, event)
-        ctx.should_call_api(
-            "send_msg",
-            {
-                "message_type": "group",
-                "group_id": 456,
-                "message": MessageSegment.reply(1) + MessageSegment.at(123) + MessageSegment.text("hello!"),
-            },
+        ctx.should_call_send(
+            event,
+            MessageSegment.reply(1) + MessageSegment.at(123) + MessageSegment.text("hello!"),
         )
-        ctx.should_call_api(
-            "send_msg",
-            {
-                "message_type": "group",
-                "group_id": 456,
-                "message": MessageSegment.reply(2) + MessageSegment.at(123) + MessageSegment.text("world!"),
-            },
+        ctx.should_call_send(
+            event,
+            MessageSegment.reply(2) + MessageSegment.at(123) + MessageSegment.text("world!"),
         )
         ctx.should_call_api("delete_msg", {"message_id": 2})
 

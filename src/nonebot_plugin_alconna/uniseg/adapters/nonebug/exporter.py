@@ -22,5 +22,5 @@ class NonebugMessageExporter(MessageExporter[FallbackMessage]):
     async def text(self, seg: Text, bot: Union[Bot, None]) -> "FallbackSegment":
         return FallbackSegment.text(seg.text)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: FallbackMessage):
-        return await bot.send(target, message)  # type: ignore
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: FallbackMessage, **kwargs):
+        return await bot.send(target, message, **kwargs)  # type: ignore

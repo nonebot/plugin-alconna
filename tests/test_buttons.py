@@ -25,9 +25,9 @@ async def test_button(app: App):
         ).send()
 
     async with app.test_matcher(matcher) as ctx:
-        from nonebot.adapters.discord import Bot, Adapter
         from nonebot.adapters.discord.api import Button as DCButton
         from nonebot.adapters.discord.api import ActionRow, ButtonStyle
+        from nonebot.adapters.discord import Bot, Adapter, Message, MessageSegment
 
         from tests.fake import fake_message_event_discord
 
@@ -35,67 +35,63 @@ async def test_button(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter, bot_info=None, self_id="12345", auto_connect=False)
         event = fake_message_event_discord("test 3")
         ctx.receive_event(bot, event)
-        ctx.should_call_api(
-            "create_message",
-            {
-                "channel_id": 5566,
-                "nonce": None,
-                "tts": False,
-                "allowed_mentions": None,
-                "components": [
-                    ActionRow(
-                        components=[
-                            DCButton(style=ButtonStyle.Primary, label="1", custom_id="1"),
-                            DCButton(style=ButtonStyle.Primary, label="2", custom_id="2"),
-                            DCButton(style=ButtonStyle.Primary, label="3", custom_id="3"),
-                        ]
-                    ),
-                    ActionRow(
-                        components=[
-                            DCButton(style=ButtonStyle.Primary, label="4", custom_id="4"),
-                            DCButton(style=ButtonStyle.Primary, label="5", custom_id="5"),
-                            DCButton(style=ButtonStyle.Primary, label="6", custom_id="6"),
-                        ]
-                    ),
-                    ActionRow(
-                        components=[
-                            DCButton(style=ButtonStyle.Primary, label="7", custom_id="7"),
-                            DCButton(style=ButtonStyle.Primary, label="8", custom_id="8"),
-                            DCButton(style=ButtonStyle.Primary, label="9", custom_id="9"),
-                        ]
-                    ),
-                ],
-            },
+        ctx.should_call_send(
+            event,
+            MessageSegment.component(
+                ActionRow(
+                    components=[
+                        DCButton(style=ButtonStyle.Primary, label="1", custom_id="1"),
+                        DCButton(style=ButtonStyle.Primary, label="2", custom_id="2"),
+                        DCButton(style=ButtonStyle.Primary, label="3", custom_id="3"),
+                    ]
+                ),
+            )
+            + MessageSegment.component(
+                ActionRow(
+                    components=[
+                        DCButton(style=ButtonStyle.Primary, label="4", custom_id="4"),
+                        DCButton(style=ButtonStyle.Primary, label="5", custom_id="5"),
+                        DCButton(style=ButtonStyle.Primary, label="6", custom_id="6"),
+                    ]
+                ),
+            )
+            + MessageSegment.component(
+                ActionRow(
+                    components=[
+                        DCButton(style=ButtonStyle.Primary, label="7", custom_id="7"),
+                        DCButton(style=ButtonStyle.Primary, label="8", custom_id="8"),
+                        DCButton(style=ButtonStyle.Primary, label="9", custom_id="9"),
+                    ]
+                ),
+            ),
         )
         event1 = fake_message_event_discord("test 4")
         ctx.receive_event(bot, event1)
-        ctx.should_call_api(
-            "create_message",
-            {
-                "channel_id": 5566,
-                "nonce": None,
-                "tts": False,
-                "allowed_mentions": None,
-                "components": [
-                    ActionRow(
-                        components=[
-                            DCButton(style=ButtonStyle.Primary, label="1", custom_id="1"),
-                            DCButton(style=ButtonStyle.Primary, label="2", custom_id="2"),
-                            DCButton(style=ButtonStyle.Primary, label="3", custom_id="3"),
-                            DCButton(style=ButtonStyle.Primary, label="4", custom_id="4"),
-                        ]
-                    ),
-                    ActionRow(
-                        components=[
-                            DCButton(style=ButtonStyle.Primary, label="5", custom_id="5"),
-                            DCButton(style=ButtonStyle.Primary, label="6", custom_id="6"),
-                            DCButton(style=ButtonStyle.Primary, label="7", custom_id="7"),
-                            DCButton(style=ButtonStyle.Primary, label="8", custom_id="8"),
-                        ]
-                    ),
-                    ActionRow(components=[DCButton(style=ButtonStyle.Primary, label="9", custom_id="9")]),
-                ],
-            },
+        ctx.should_call_send(
+            event1,
+            MessageSegment.component(
+                ActionRow(
+                    components=[
+                        DCButton(style=ButtonStyle.Primary, label="1", custom_id="1"),
+                        DCButton(style=ButtonStyle.Primary, label="2", custom_id="2"),
+                        DCButton(style=ButtonStyle.Primary, label="3", custom_id="3"),
+                        DCButton(style=ButtonStyle.Primary, label="4", custom_id="4"),
+                    ]
+                ),
+            )
+            + MessageSegment.component(
+                ActionRow(
+                    components=[
+                        DCButton(style=ButtonStyle.Primary, label="5", custom_id="5"),
+                        DCButton(style=ButtonStyle.Primary, label="6", custom_id="6"),
+                        DCButton(style=ButtonStyle.Primary, label="7", custom_id="7"),
+                        DCButton(style=ButtonStyle.Primary, label="8", custom_id="8"),
+                    ]
+                ),
+            )
+            + MessageSegment.component(
+                ActionRow(components=[DCButton(style=ButtonStyle.Primary, label="9", custom_id="9")]),
+            ),
         )
 
     async with app.test_matcher(matcher) as ctx:

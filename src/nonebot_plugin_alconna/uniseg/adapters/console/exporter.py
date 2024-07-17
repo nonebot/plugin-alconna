@@ -47,10 +47,10 @@ class ConsoleMessageExporter(MessageExporter[Message]):
     async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.emoji(seg.name or seg.id)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, ConsoleBot)
         if TYPE_CHECKING:
             assert isinstance(message, Message)
         if isinstance(target, Event):
-            target = self.get_target(target, bot)
-        return await bot.send_msg(user_id=target.id, message=message)
+            return await bot.send(target, message, **kwargs)  # type: ignore
+        return await bot.send_msg(user_id=target.id, message=message, **kwargs)

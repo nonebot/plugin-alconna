@@ -129,7 +129,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
         return message
 
     @abstractmethod
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         raise NotImplementedError
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):

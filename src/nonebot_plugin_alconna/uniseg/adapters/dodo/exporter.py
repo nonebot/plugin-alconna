@@ -91,13 +91,13 @@ class DoDoMessageExporter(MessageExporter[Message]):
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.reference(seg.id)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, DoDoBot)
         if TYPE_CHECKING:
             assert isinstance(message, Message)
 
         if isinstance(target, Event):
-            target = self.get_target(target, bot)
+            return await bot.send(target, message, **kwargs)  # type: ignore
 
         if target.private:
             return await bot.send_to_personal(target.parent_id, target.id, message)

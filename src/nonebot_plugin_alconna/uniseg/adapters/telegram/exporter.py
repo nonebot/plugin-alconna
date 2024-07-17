@@ -148,7 +148,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
             rows.append(buttons[i : i + (seg.row or 9)])
         return MessageSegment("$telegram:keyboard", {"buttons": buttons})
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, TgBot)
         assert isinstance(message, TgMessage)
         reply_markup = None
@@ -174,8 +174,8 @@ class TelegramMessageExporter(MessageExporter[Message]):
                 reply_markup = InlineKeyboardMarkup(inline_keyboard=kb[0].data["buttons"])
         if isinstance(target, Event):
             assert isinstance(target, TgEvent)
-            return await bot.send(event=target, message=message, reply_markup=reply_markup)
-        return await bot.send_to(target.id, message=message, reply_markup=reply_markup)
+            return await bot.send(event=target, message=message, reply_markup=reply_markup, **kwargs)
+        return await bot.send_to(target.id, message=message, reply_markup=reply_markup, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, TgBot)

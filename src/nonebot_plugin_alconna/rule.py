@@ -1,15 +1,15 @@
 import asyncio
 import weakref
 import importlib
-from typing import Union, Literal, Optional, cast
+from typing import Any, Union, Literal, Optional, cast
 
 from nonebot.typing import T_State
 from tarina import lang, init_spec
 from nonebot.matcher import Matcher
 from nonebot.utils import escape_tag
+from nonebot.adapters import Bot, Event
 from nonebot.plugin.on import on_message
 from nonebot.internal.rule import Rule as Rule
-from nonebot.adapters import Bot, Event, Message
 from nonebot import get_driver, get_plugin_config
 from arclet.alconna.exceptions import SpecialOptionTriggered
 from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
@@ -259,9 +259,11 @@ class AlconnaRule:
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
         self.executor.select(bot, event)
         if not (msg := await self.executor.message_provider(event, state, bot, self.use_origin)):
+            self.executor.clear()
             return False
         cmd = self.command()
         if not cmd:
+            self.executor.clear()
             return False
         msg = await self.executor.receive_wrapper(bot, event, cmd, msg)
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
@@ -279,17 +281,20 @@ class AlconnaRule:
             try:
                 arp = await self.handle(cmd, bot, event, state, _msg)
                 if arp is False:
+                    self.executor.clear()
                     return False
             except Exception as e:
                 arp = Arparma(self._path, msg, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
         if not arp.head_matched:
+            self.executor.clear()
             return False
         if not arp.matched and not may_help_text and self.skip:
             log(
                 "TRACE",
                 escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self._path, arp=arp)),
             )
+            self.executor.clear()
             return False
         if arp.head_matched:
             log(
@@ -300,8 +305,10 @@ class AlconnaRule:
             may_help_text = repr(arp.error_info)
         if self.auto_send and may_help_text:
             await self.send(may_help_text, bot, event, arp)
+            self.executor.clear()
             return False
         if not await self.executor.permission_check(bot, event, cmd):
+            self.executor.clear()
             return False
         await self.executor.parse_wrapper(bot, state, event, arp)
         state[ALCONNA_RESULT] = CommandResult(_source=self.command, result=arp, output=may_help_text)
@@ -309,16 +316,14 @@ class AlconnaRule:
         state[ALCONNA_EXTENSION] = self.executor.context
         return True
 
-    async def send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Message:
+    async def send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Any:
         _t = str(arp.error_info) if isinstance(arp.error_info, SpecialOptionTriggered) else "error"
         try:
             msg = await self.executor.output_converter(_t, text)  # type: ignore
             if not msg:
                 return await bot.send(event, text)
             msg = await self.executor.send_wrapper(bot, event, msg)
-            if isinstance(msg, UniMessage):
-                msg = await msg.export(bot, fallback=True)
-            return await bot.send(event, msg)  # type: ignore
+            return await bot.send(event, await msg.export(bot, fallback=True))  # type: ignore
         except NotImplementedError:
             return await bot.send(event, event.get_message().__class__(text))
 

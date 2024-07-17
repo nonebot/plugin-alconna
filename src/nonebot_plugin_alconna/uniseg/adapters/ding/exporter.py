@@ -1,6 +1,7 @@
 from typing import Union
 
 from nonebot.adapters import Bot, Event
+from nonebot.adapters.ding import Bot as DingBot
 from nonebot.adapters.ding.message import Message, MessageSegment
 from nonebot.adapters.ding.event import MessageEvent, ConversationType
 
@@ -65,5 +66,8 @@ class DingMessageExporter(MessageExporter[Message]):
             )
         raise ValueError("github image segment must have url")
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
-        raise NotImplementedError
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+        assert isinstance(bot, DingBot)
+        if isinstance(target, Target):
+            raise NotImplementedError
+        return await DingBot.send(bot, target, message=message, **kwargs)  # type: ignore

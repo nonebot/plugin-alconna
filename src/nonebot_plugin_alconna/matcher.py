@@ -4,6 +4,7 @@ import random
 import weakref
 from warnings import warn
 from types import FunctionType
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from collections.abc import Hashable, Iterable
 from typing_extensions import Self, deprecated
@@ -41,6 +42,7 @@ from .pattern import patterns
 from .uniseg import Text, Segment, UniMessage
 from .uniseg.fallback import FallbackStrategy
 from .uniseg.template import UniMessageTemplate
+from .uniseg.message import current_send_wrapper
 from .extension import Extension, ExtensionExecutor
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, log
 from .params import (
@@ -867,6 +869,20 @@ class AlconnaMatcher(Matcher):
         if not has_error:
             log("DEBUG", Lang.nbp_alc.test.passed(cmd=cls._command_path))
 
+    @contextmanager
+    def ensure_context(self, bot: Bot, event: Event):
+        b_t = current_bot.set(bot)
+        e_t = current_event.set(event)
+        m_t = current_matcher.set(self)
+        s_t = current_send_wrapper.set(self.executor.send_wrapper)
+        try:
+            yield
+        finally:
+            current_bot.reset(b_t)
+            current_event.reset(e_t)
+            current_matcher.reset(m_t)
+            current_send_wrapper.reset(s_t)
+
 
 def on_alconna(
     command: Alconna | str,
@@ -1139,4 +1155,4 @@ class Command(AlconnaString):
 @run_postprocessor
 @annotation(matcher=AlconnaMatcher)
 def _exit_executor(matcher: AlconnaMatcher):
-    matcher.executor.context.clear()
+    matcher.executor.clear()

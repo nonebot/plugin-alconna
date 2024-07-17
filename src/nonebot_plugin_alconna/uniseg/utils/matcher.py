@@ -27,9 +27,9 @@ async def send(
     else:
         _message = message
     if isinstance(_message, Message):
-        _unimsg = UniMessage.generate_without_reply(message=_message, bot=bot)
+        _unimsg = UniMessage.generate_sync(message=_message, bot=bot)
     elif isinstance(_message, MessageSegment):
-        _unimsg = UniMessage.generate_without_reply(message=_message.get_message_class()(_message), bot=bot)
+        _unimsg = UniMessage.generate_sync(message=_message.get_message_class()(_message), bot=bot)
     else:
         _unimsg = UniMessage.text(_message)
     _send = await _unimsg.export(bot=bot, fallback=FallbackStrategy.text)

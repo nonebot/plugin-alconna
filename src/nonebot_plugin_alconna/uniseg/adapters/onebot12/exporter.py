@@ -126,21 +126,21 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.reply(seg.id)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, OnebotBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
         if isinstance(target, Event):
-            target = self.get_target(target, bot)
+            return await bot.send(target, message, **kwargs)  # type: ignore
         if target.private:
-            return await bot.send_message(detail_type="private", user_id=target.id, message=message)
+            return await bot.send_message(detail_type="private", user_id=target.id, message=message, **kwargs)
         elif target.channel:
             return await bot.send_message(
-                detail_type="channel", channel_id=target.id, guild_id=target.parent_id, message=message
+                detail_type="channel", channel_id=target.id, guild_id=target.parent_id, message=message, **kwargs
             )
         else:
-            return await bot.send_message(detail_type="group", group_id=target.id, message=message)
+            return await bot.send_message(detail_type="group", group_id=target.id, message=message, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, OnebotBot)

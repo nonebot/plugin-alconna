@@ -64,7 +64,6 @@ dev = [
     "nonebot-adapter-tailchat>=0.1.0b7",
     "nonebot-plugin-filehost>=1.1.1",
     "nonebot-plugin-send-anything-anywhere>=0.6.1",
-    "pytest-mock>=3.14.0",
     "pytest-sugar>=1.0.0",
 ]
 [tool.pdm.build]

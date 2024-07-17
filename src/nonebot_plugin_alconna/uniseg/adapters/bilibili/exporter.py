@@ -34,6 +34,6 @@ class BilibiliMessageExporter(MessageExporter["Message"]):
     async def text(self, seg: Text, bot: Union[Bot, None]) -> MessageSegment:
         return MessageSegment.danmu(seg.text)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         adapter: Adapter = cast(Adapter, bot.adapter)
         return await adapter.bili.send(str(message), bot.self_id)

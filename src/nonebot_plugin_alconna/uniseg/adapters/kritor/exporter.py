@@ -230,20 +230,22 @@ class KritorMessageExporter(MessageExporter["Message"]):
             int(seg.id), [buttons[i : i + (seg.row or 5)] for i in range(0, len(buttons), seg.row or 5)]
         )
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
+    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, KritorBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
         if isinstance(target, Event):
-            target = self.get_target(target, bot)
+            _target = self.get_target(target, bot)
+        else:
+            _target = target
 
         if msg := message.include("$kritor:forward"):
             seg = msg[0]
-            if target.private:
-                contact = Contact(scene=SceneType.FRIEND, peer=target.id, sub_peer=None)
+            if _target.private:
+                contact = Contact(scene=SceneType.FRIEND, peer=_target.id, sub_peer=None)
             else:
-                contact = Contact(scene=SceneType.GROUP, peer=target.id, sub_peer=None)
+                contact = Contact(scene=SceneType.GROUP, peer=_target.id, sub_peer=None)
             if "res_id" in seg.data:
                 return await bot.send_message_by_res_id(res_id=seg.data["res_id"], contact=contact)
             for node in seg.data["nodes"]:
@@ -263,19 +265,21 @@ class KritorMessageExporter(MessageExporter["Message"]):
                 kb.data["rows"] += rows
         if kb:
             message.append(kb)
-        if target.private:
+        if isinstance(target, Event):
+            return await bot.send(target, message, **kwargs)  # type: ignore
+        if _target.private:
             return await bot.send_message(
-                contact=Contact(scene=SceneType.FRIEND, peer=target.id, sub_peer=None), elements=message.to_elements()
+                contact=Contact(scene=SceneType.FRIEND, peer=_target.id, sub_peer=None), elements=message.to_elements()
             )
-        elif target.channel:
-            if not target.parent_id:
+        elif _target.channel:
+            if not _target.parent_id:
                 raise NotImplementedError
             return await bot.send_channel_message(
-                guild_id=int(target.parent_id), channel_id=int(target.id), message=str(message)
+                guild_id=int(_target.parent_id), channel_id=int(_target.id), message=str(message), **kwargs
             )
         else:
             return await bot.send_message(
-                contact=Contact(scene=SceneType.GROUP, peer=target.id, sub_peer=None), elements=message.to_elements()
+                contact=Contact(scene=SceneType.GROUP, peer=_target.id, sub_peer=None), elements=message.to_elements()
             )
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
