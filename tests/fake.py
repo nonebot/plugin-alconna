@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
+from nonebot.compat import type_validate_python
 from nonebot.adapters.satori.models import Login, LoginStatus
 
 FAKE_SATORI_LOGIN = Login(status=LoginStatus.ONLINE)
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
     from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
     from nonebot.adapters.onebot.v11 import GroupMessageEvent as GroupMessageEventV11
     from nonebot.adapters.onebot.v11 import PrivateMessageEvent as PrivateMessageEventV11
+    from nonebot.adapters.discord.event import GuildMessageCreateEvent as DiscordMessageEvent
 
 
 def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
@@ -87,6 +89,46 @@ def fake_discord_interaction_event(**field) -> "ApplicationCommandInteractionEve
         pass
 
     return FakeEvent(**field)
+
+
+def fake_message_event_discord(content: str) -> "DiscordMessageEvent":
+    from nonebot.adapters.discord.api.model import User
+    from nonebot.adapters.discord.api import MessageFlag, MessageType
+    from nonebot.adapters.discord.event import GuildMessageCreateEvent
+
+    return type_validate_python(
+        GuildMessageCreateEvent,
+        {
+            "id": 11234,
+            "channel_id": 5566,
+            "guild_id": 6677,
+            "author": User(
+                **{
+                    "id": 3344,
+                    "username": "MyUser",
+                    "discriminator": "0",
+                    "avatar": "xxx",
+                }
+            ),
+            "content": content,
+            "timestamp": 123456,
+            "edited_timestamp": None,
+            "tts": False,
+            "mention_everyone": False,
+            "mentions": [],
+            "mention_roles": [],
+            "attachments": [],
+            "embeds": [],
+            "nonce": 3210,
+            "pinned": False,
+            "type": MessageType(0),
+            "flags": MessageFlag(0),
+            "referenced_message": None,
+            "components": [],
+            "to_me": False,
+            "reply": None,
+        },
+    )
 
 
 def fake_message_event_satori(**field) -> "SatoriMessageEvent":

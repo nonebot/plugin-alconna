@@ -591,6 +591,7 @@ class Button(Segment):
             self.style = "secondary"
         elif self.style == "blue":
             self.style = "primary"
+        self._children.insert(0, Text(self.label) if isinstance(self.label, str) else self.label)
 
 
 @dataclass

@@ -62,6 +62,7 @@ from .uniseg import at_me as at_me
 from .typings import Style as Style
 from .params import assign as assign
 from .rule import alconna as alconna
+from .uniseg import Button as Button
 from .uniseg import SCOPES as SCOPES
 from .uniseg import Target as Target
 from .uniseg import UniMsg as UniMsg
@@ -72,6 +73,7 @@ from .uniseg import Segment as Segment
 from .uniseg import get_bot as get_bot
 from .matcher import Command as Command
 from .typings import Spoiler as Spoiler
+from .uniseg import Keyboard as Keyboard
 from .matcher import referent as referent
 from .params import AlcResult as AlcResult
 from .uniseg import MessageId as MessageId

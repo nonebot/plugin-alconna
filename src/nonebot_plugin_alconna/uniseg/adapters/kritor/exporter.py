@@ -1,5 +1,4 @@
 from pathlib import Path
-from secrets import token_urlsafe
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
@@ -199,7 +198,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
             perm = ButtonActionPermission(type=0, user_ids=[i.target for i in seg.permission])
         label = str(seg.label)
         return ButtonModel(
-            id=seg.id or token_urlsafe(4),
+            id=seg.id or label,
             render_data=ButtonRender(
                 label=label,
                 visited_label=seg.clicked_label or label,

@@ -105,13 +105,12 @@ class SatoriMessageExporter(MessageExporter[Message]):
 
     @export
     async def button(self, seg: Button, bot: Union[Bot, None]) -> "MessageSegment":
-        label = str(seg.label)
         if seg.flag == "action" and seg.id:
-            return MessageSegment.action_button(seg.id, label, seg.style)
+            return MessageSegment.action_button(seg.id, seg.style)(await self.export(seg.children, bot, True))  # type: ignore
         elif seg.flag == "link" and seg.url:
-            return MessageSegment.link_button(seg.url, label, seg.style)
+            return MessageSegment.link_button(seg.url, seg.style)(await self.export(seg.children, bot, True))  # type: ignore
         elif seg.text:
-            return MessageSegment.input_button(seg.text, label, seg.style)
+            return MessageSegment.input_button(seg.text, seg.style)(await self.export(seg.children, bot, True))  # type: ignore
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="button", seg=seg))
 

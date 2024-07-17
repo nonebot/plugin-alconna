@@ -134,8 +134,10 @@ class DiscordMessageExporter(MessageExporter[Message]):
         label = str(seg.label)
         if seg.flag == "link" and seg.url:
             return ButtonModel(style=styles.get(seg.style or "", ButtonStyle.Primary), label=label, url=seg.url)
-        if seg.flag == "action" and seg.id:
-            return ButtonModel(style=styles.get(seg.style or "", ButtonStyle.Primary), label=label, custom_id=seg.id)
+        if seg.flag == "action":
+            return ButtonModel(
+                style=styles.get(seg.style or "", ButtonStyle.Primary), label=label, custom_id=seg.id or label
+            )
         if seg.text:
             return TextInput(
                 custom_id=seg.id or label,
@@ -150,11 +152,19 @@ class DiscordMessageExporter(MessageExporter[Message]):
     async def button(self, seg: Button, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.component(self._button(seg, bot))
 
-    @export
-    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]) -> "MessageSegment":
+    @export  # type: ignore
+    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
         if not seg.children:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
-        return MessageSegment.component(ActionRow(components=[self._button(but, bot) for but in seg.children]))
+
+        if not seg.row:
+            return MessageSegment.component(ActionRow(components=[self._button(but, bot) for but in seg.children]))
+
+        buttons = [self._button(but, bot) for but in seg.children]
+        return [
+            MessageSegment.component(ActionRow(components=buttons[i : i + seg.row]))  # type: ignore
+            for i in range(0, len(buttons), seg.row)
+        ]
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message):
         assert isinstance(bot, DiscordBot)

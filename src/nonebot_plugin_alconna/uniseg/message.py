@@ -21,7 +21,26 @@ from .constraint import SerializeFailed
 from .template import UniMessageTemplate
 from .adapters import BUILDER_MAPPING, EXPORTER_MAPPING
 from .fallback import FallbackMessage, FallbackStrategy
-from .segment import At, File, I18n, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice, Segment
+from .segment import (
+    At,
+    File,
+    I18n,
+    Text,
+    AtAll,
+    Audio,
+    Emoji,
+    Hyper,
+    Image,
+    Reply,
+    Video,
+    Voice,
+    Button,
+    RefNode,
+    Segment,
+    Keyboard,
+    Reference,
+    CustomNode,
+)
 
 T = TypeVar("T")
 TS = TypeVar("TS", bound=Segment)
@@ -287,6 +306,42 @@ class UniMessage(list[TS]):
             ...
 
         @classmethod
+        def reference(
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
+            *nodes: Union[RefNode, CustomNode],
+            id: Optional[str] = None,
+        ) -> "UniMessage[Union[TS1, Reference]]":
+            """创建转发消息
+
+            参数:
+                nodes: 转发消息节点
+                id: 此处不一定是消息ID，可能是其他ID，如消息序号等
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
+        def keyboard(
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
+            *buttons: Button,
+            id: Optional[str] = None,
+            row: Optional[int] = None,
+        ) -> "UniMessage[Union[TS1, Keyboard]]":
+            """创建转发消息
+
+            参数:
+                buttons: 按钮
+                id: 此处一般用来表示模板id，特殊情况下可能表示例如 bot_appid 等
+                row: 当消息中只写有一个 Keyboard 时可根据此参数约定按钮组的列数
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
         def i18n(
             cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]],  # type: ignore
             item_or_scope: Union[LangItem, str],
@@ -431,6 +486,27 @@ class UniMessage(list[TS]):
                 cls_or_self.append(Hyper(flag, content))
                 return cls_or_self
             return UniMessage(Hyper(flag, content))
+
+        @_method
+        def reference(
+            cls_or_self, *nodes: Union[RefNode, CustomNode], id: Optional[str] = None
+        ) -> "UniMessage[Union[TS1, Reference]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self.append(Reference(id=id, nodes=list(nodes)))
+                return cls_or_self
+            return UniMessage(Reference(id=id, nodes=list(nodes)))
+
+        @_method
+        def keyboard(
+            cls_or_self,
+            *buttons: Button,
+            id: Optional[str] = None,
+            row: Optional[int] = None,
+        ) -> "UniMessage[Union[TS1, Keyboard]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self.append(Keyboard(id=id, buttons=list(buttons), row=row))
+                return cls_or_self
+            return UniMessage(Keyboard(id=id, buttons=list(buttons), row=row))
 
         @_method
         def i18n(

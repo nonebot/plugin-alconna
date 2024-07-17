@@ -305,7 +305,7 @@ class QQMessageExporter(MessageExporter[Message]):
             perm = Permission(type=0, specify_user_ids=[i.target for i in seg.permission])
         label = str(seg.label)
         return ButtonModel(
-            id=seg.id,
+            id=seg.id or label,
             render_data=RenderData(
                 label=label,
                 visited_label=seg.clicked_label or label,
@@ -313,8 +313,8 @@ class QQMessageExporter(MessageExporter[Message]):
             ),
             action=Action(
                 type=0 if seg.flag == "link" else 1 if seg.flag == "action" else 2,
-                data=seg.url or seg.text or label,
-                enter=seg.flag == "enter",
+                data=seg.url or seg.text or (label if seg.flag != "action" else None),
+                enter=True if seg.flag == "enter" else False if seg.flag == "input" else None,
                 unsupport_tips="该版本暂不支持查看此消息，请升级至最新版本。",
                 permission=perm,
             ),

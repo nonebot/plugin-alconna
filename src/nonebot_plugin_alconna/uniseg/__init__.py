@@ -25,10 +25,12 @@ from .segment import Voice as Voice
 from .params import UniMsg as UniMsg
 from .target import SCOPES as SCOPES
 from .target import Target as Target
+from .segment import Button as Button
 from .tools import get_bot as get_bot
 from .message import Receipt as Receipt
 from .segment import RefNode as RefNode
 from .segment import Segment as Segment
+from .segment import Keyboard as Keyboard
 from .params import MessageId as MessageId
 from .params import MsgTarget as MsgTarget
 from .segment import Reference as Reference
