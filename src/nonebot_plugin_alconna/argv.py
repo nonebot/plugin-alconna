@@ -146,16 +146,15 @@ class _Text(BasePattern[Text, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]]
         if maybe := styles["record"].get((start, styles["index"])):
             return Text(x, {(0, len(x)): maybe})
         _styles = {}
-        _len = len(x)
         for scale, style in styles["record"].items():
             if start <= scale[0] < styles["index"] <= scale[1]:
-                _styles[(scale[0] - start, scale[1] + 1 - styles["index"])] = style
+                _styles[(scale[0] - start, styles["index"] - start)] = style
             elif scale[0] <= start < scale[1] <= styles["index"]:
                 _styles[(0, scale[1] - start)] = style
             elif start <= scale[0] < scale[1] <= styles["index"]:
                 _styles[(scale[0] - start, scale[1] - start)] = style
             elif scale[0] <= start < styles["index"] <= scale[1]:
-                _styles[(scale[0] - start, _len)] = style
+                _styles[(0, styles["index"] - start)] = style
         return Text(x, _styles)
 
     def match(self, input_: str | Text) -> Text:

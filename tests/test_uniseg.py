@@ -21,6 +21,13 @@ def test_uniseg():
     assert text.split() == [Text("hello").color("red").italic(3), Text("world").color("red", 0, -3).italic(0, -2)]
     assert text[3:] == Text("lo world").color("red", 0, -3).italic(0, -2)
 
+    text1 = Text("hello world man").color("red", 0, -3).italic(3, -2)
+    assert text1.split() == [
+        Text("hello").color("red").italic(3),
+        Text("world").color("red").italic(),
+        Text("man").italic(0, 1),
+    ]
+
 
 def test_unimsg():
     from nonebot_plugin_alconna.uniseg import FallbackSegment

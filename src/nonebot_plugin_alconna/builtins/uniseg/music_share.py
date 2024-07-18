@@ -114,7 +114,7 @@ def music_mirai_community(builder: MessageBuilder, seg: BaseMessageSegment):
 
 
 @custom_handler(MusicShare)
-async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot, fallback):
+async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Optional[Bot], fallback):
     if exporter.get_adapter() is SupportAdapter.kritor:
         from nonebot.adapters.kritor.message import Music
         from nonebot.adapters.kritor.protos.kritor.common import MusicElementMusicPlatform

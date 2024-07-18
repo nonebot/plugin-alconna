@@ -237,7 +237,15 @@ class Text(Segment):
         self._children = [Text(text)]
         return self
 
-    def mark(self, start: int, end: int, *styles: str):
+    def mark(self, start: Optional[int] = None, end: Optional[int] = None, *styles: str):
+        if start is None:
+            start = 0
+        elif start < 0:
+            start += len(self.text)
+        if end is None:
+            end = len(self.text)
+        elif end < 0:
+            end += len(self.text)
         _styles = self.styles.setdefault((start, end), [])
         for sty in styles:
             if sty not in _styles:
@@ -245,34 +253,34 @@ class Text(Segment):
         self.__merge__()
         return self
 
-    def bold(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end > 0 else len(self.text) + end, "bold")
+    def bold(self, start: Optional[int] = None, end: Optional[int] = None):
+        return self.mark(start, end, "bold")
 
-    def italic(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end > 0 else len(self.text) + end, "italic")
+    def italic(self, start: Optional[int] = None, end: Optional[int] = None):
+        return self.mark(start, end, "italic")
 
-    def underline(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end > 0 else len(self.text) + end, "underline")
+    def underline(self, start: Optional[int] = None, end: Optional[int] = None):
+        return self.mark(start, end, "underline")
 
-    def strikethrough(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end > 0 else len(self.text) + end, "strikethrough")
+    def strikethrough(self, start: Optional[int] = None, end: Optional[int] = None):
+        return self.mark(start, end, "strikethrough")
 
-    def spoiler(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end > 0 else len(self.text) + end, "spoiler")
+    def spoiler(self, start: Optional[int] = None, end: Optional[int] = None):
+        return self.mark(start, end, "spoiler")
 
-    def link(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end > 0 else len(self.text) + end, "link")
+    def link(self, start: Optional[int] = None, end: Optional[int] = None):
+        return self.mark(start, end, "link")
 
-    def code(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end > 0 else len(self.text) + end, "code")
+    def code(self, start: Optional[int] = None, end: Optional[int] = None):
+        return self.mark(start, end, "code")
 
-    def markdown(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end > 0 else len(self.text) + end, "markdown")
+    def markdown(self, start: Optional[int] = None, end: Optional[int] = None):
+        return self.mark(start, end, "markdown")
 
-    def color(self, color: str, start: int = 0, end: int = -1):
+    def color(self, color: str, start: Optional[int] = None, end: Optional[int] = None):
         if color not in STYLE_TYPE_MAP:
             raise ValueError(f"Color {color} is not supported")
-        return self.mark(start, end if end > 0 else len(self.text) + end, color)
+        return self.mark(start, end, color)
 
     def __str__(self) -> str:
         result = []
@@ -363,16 +371,15 @@ class Text(Segment):
                 result.append(Text(part, {(0, len(part)): maybe}))
                 continue
             _styles = {}
-            _len = len(part)
             for scale, style in styles.items():
                 if start <= scale[0] < index <= scale[1]:
-                    _styles[(scale[0] - start, scale[1] + 1 - index)] = style
+                    _styles[(scale[0] - start, index - start)] = style
                 elif scale[0] <= start < scale[1] <= index:
                     _styles[(0, scale[1] - start)] = style
                 elif start <= scale[0] < scale[1] <= index:
                     _styles[(scale[0] - start, scale[1] - start)] = style
                 elif scale[0] <= start < index <= scale[1]:
-                    _styles[(scale[0] - start, _len)] = style
+                    _styles[(0, index - start)] = style
             result.append(Text(part, _styles))
         return result
 

@@ -71,7 +71,7 @@ def mfbuild_chronocat(builder: MessageBuilder, seg: BaseMessageSegment):
 
 
 @custom_handler(MarketFace)
-async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Bot, fallback):
+async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Optional[Bot], fallback):
     if exporter.get_adapter() is SupportAdapter.satori:
         from nonebot.adapters.satori import MessageSegment
 
