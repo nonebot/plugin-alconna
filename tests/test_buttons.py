@@ -27,7 +27,7 @@ async def test_button(app: App):
     async with app.test_matcher(matcher) as ctx:
         from nonebot.adapters.discord.api import Button as DCButton
         from nonebot.adapters.discord.api import ActionRow, ButtonStyle
-        from nonebot.adapters.discord import Bot, Adapter, Message, MessageSegment
+        from nonebot.adapters.discord import Bot, Adapter, MessageSegment
 
         from tests.fake import fake_message_event_discord
 
