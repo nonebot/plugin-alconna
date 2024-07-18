@@ -1297,6 +1297,7 @@ class UniMessage(list[TS]):
         fallback: Union[bool, FallbackStrategy] = FallbackStrategy.rollback,
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
+        no_wrapper: bool = False,
         **kwargs,
     ) -> "Receipt":
         if not target:
@@ -1331,7 +1332,7 @@ class UniMessage(list[TS]):
                     else:
                         raise TypeError("reply_to must be str when target is not Event")
                 self.insert(0, Reply(reply_to))  # type: ignore
-        if (wrapper := current_send_wrapper.get(None)) and isinstance(target, Event):
+        if not no_wrapper and isinstance(target, Event) and (wrapper := current_send_wrapper.get(None)):
             self[:] = await wrapper(bot, target, self)
         msg = await self.export(bot, fallback)
         adapter = bot.adapter

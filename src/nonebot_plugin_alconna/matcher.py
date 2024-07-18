@@ -639,7 +639,7 @@ class AlconnaMatcher(Matcher):
         event = current_event.get()
         _message = await cls.executor.send_wrapper(bot, event, cls.convert(message))
         if isinstance(_message, UniMessage):
-            return await _message.send(target=event, bot=bot, fallback=fallback, **kwargs)
+            return await _message.send(target=event, bot=bot, fallback=fallback, no_wrapper=True, **kwargs)
         else:
             res = _message
         return await bot.send(event=event, message=res, **kwargs)
