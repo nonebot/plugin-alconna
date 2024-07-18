@@ -149,7 +149,7 @@ class _Text(BasePattern[Text, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]]
         _len = len(x)
         for scale, style in styles["record"].items():
             if start <= scale[0] < styles["index"] <= scale[1]:
-                _styles[(scale[0] - start, scale[1] - start)] = style
+                _styles[(scale[0] - start, scale[1] + 1 - styles["index"])] = style
             elif scale[0] <= start < scale[1] <= styles["index"]:
                 _styles[(0, scale[1] - start)] = style
             elif start <= scale[0] < scale[1] <= styles["index"]:

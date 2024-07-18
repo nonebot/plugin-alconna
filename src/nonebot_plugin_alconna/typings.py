@@ -250,7 +250,7 @@ class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]
             count = -1
             results = []
             for _text in temp:
-                for _t in _text.split():
+                for _t in _text.style_split():
                     try:
                         results.append(_match(_t))
                         count += 1

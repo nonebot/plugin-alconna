@@ -17,6 +17,10 @@ def test_uniseg():
     assert str(Segment()) == "[segment]"
     assert str(Text("123")) == "123"
 
+    text = Text("hello world").color("red", 0, -3).italic(3, -2)
+    assert text.split() == [Text("hello").color("red").italic(3), Text("world").color("red", 0, -3).italic(0, -2)]
+    assert text[3:] == Text("lo world").color("red", 0, -3).italic(0, -2)
+
 
 def test_unimsg():
     from nonebot_plugin_alconna.uniseg import FallbackSegment
@@ -43,6 +47,11 @@ def test_unimsg():
     assert UniMessage.text("123").at("456").export_sync(adapter="OneBot V11") == MessageSegment.text(
         "123"
     ) + MessageSegment.at("456")
+    assert msg1.transform({"at": lambda attrs, _: Text(attrs["target"])}) == UniMessage.text("123456789")
+
+    msg2 = msg1 + Text("abc ")
+    assert msg2.lstrip(At) == UniMessage.text("abc ")
+    assert msg2.rstrip() == msg1 + Text("abc")
 
 
 @pytest.mark.asyncio()

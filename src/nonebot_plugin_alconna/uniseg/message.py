@@ -4,8 +4,8 @@ from pathlib import Path
 from copy import deepcopy
 from types import FunctionType
 from dataclasses import dataclass
-from collections.abc import Iterable
-from typing_extensions import Self, SupportsIndex
+from collections.abc import Iterable, Sequence, Awaitable
+from typing_extensions import Self, TypeAlias, SupportsIndex
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Optional, Protocol, overload
 
 from tarina import lang
@@ -66,6 +66,17 @@ class SendWrapper(Protocol):
 
 
 current_send_wrapper: ContextModel[SendWrapper] = ContextModel("nonebot_plugin_alconna.uniseg.send_wrapper")
+
+
+Fragment: TypeAlias = Union[Segment, Iterable[Segment]]
+Visit: TypeAlias = Callable[[Segment], T]
+Render: TypeAlias = Callable[[dict[str, Any], list[Segment]], T]
+SyncTransformer: TypeAlias = Union[bool, Fragment, Render[Union[bool, Fragment]]]
+AsyncTransformer: TypeAlias = Union[bool, Fragment, Render[Awaitable[Union[bool, Fragment]]]]
+SyncVisitor: TypeAlias = Union[dict[str, SyncTransformer], Visit[Union[bool, Fragment]]]
+AsyncVisitor: TypeAlias = Union[dict[str, AsyncTransformer], Visit[Awaitable[Union[bool, Fragment]]]]
+
+MessageContainer = Union[str, Segment, Sequence["MessageContainer"], "UniMessage"]
 
 
 class UniMessage(list[TS]):
@@ -735,9 +746,9 @@ class UniMessage(list[TS]):
     ) -> Union[TS, TS1, "UniMessage[TS]", "UniMessage[TS1]"]:
         arg1, arg2 = args if isinstance(args, tuple) else (args, None)
         if isinstance(arg1, int) and arg2 is None:
-            return super().__getitem__(arg1)
+            return list.__getitem__(self, arg1)
         if isinstance(arg1, slice) and arg2 is None:
-            return UniMessage(super().__getitem__(arg1))
+            return UniMessage(list.__getitem__(self, arg1))
         if TYPE_CHECKING:
             assert not isinstance(arg1, (slice, int))
         if issubclass(arg1, Segment) and arg2 is None:
@@ -901,6 +912,219 @@ class UniMessage(list[TS]):
         pattern = parser(target)
         segments = [res.value() for res in map(pattern.validate, self) if res.success]
         return UniMessage(seg for seg in segments if predicate(seg))
+
+    @staticmethod
+    def _visit_sync(seg: Segment, rules: SyncVisitor):
+        _type, data, children = seg.type, seg.data, seg.children
+        if not isinstance(rules, dict):
+            return rules(seg)
+        result = rules.get(_type, True)
+        if not isinstance(result, (bool, Segment, Iterable)):
+            result = result(data, children)
+        return result
+
+    @staticmethod
+    async def _visit_async(seg: Segment, rules: AsyncVisitor):
+        _type, data, children = seg.type, seg.data, seg.children
+        if not isinstance(rules, dict):
+            return await rules(seg)
+        result = rules.get(_type, True)
+        if not isinstance(result, (bool, Segment, Iterable)):
+            result = await result(data, children)
+        return result
+
+    def transform(self, rules: SyncVisitor) -> "UniMessage":
+        """同步遍历消息段并转换
+
+        参数:
+            rules: 转换规则
+
+        返回:
+            转换后的消息
+        """
+        output = UniMessage()
+        for seg in self:
+            result = self._visit_sync(seg, rules)
+            if result is True:
+                output.append(seg)
+            elif result is not False:
+                if isinstance(result, Segment):
+                    output.append(result)
+                else:
+                    output.extend(result)
+        output.__merge_text__()
+        return output
+
+    async def transform_async(self, rules: AsyncVisitor) -> "UniMessage":
+        """异步遍历消息段并转换
+
+        参数:
+            rules: 转换规则
+
+        返回:
+            转换后的消息
+        """
+        output = UniMessage()
+        for seg in self:
+            result = await self._visit_async(seg, rules)
+            if result is True:
+                output.append(seg)
+            elif result is not False:
+                if isinstance(result, Segment):
+                    output.append(result)
+                else:
+                    output.extend(result)
+        output.__merge_text__()
+        return output
+
+    def split(self, pattern: str = " ") -> list[Self]:
+        """和 `str.split` 差不多, 提供一个字符串, 然后返回分割结果.
+
+        Args:
+            pattern (str): 分隔符. 默认为单个空格.
+
+        Returns:
+            list[Self]: 分割结果, 行为和 `str.split` 差不多.
+        """
+
+        result: list[Self] = []
+        tmp = []
+        for seg in self:
+            if isinstance(seg, Text):
+                split_result = seg.split(pattern)
+                for index, split_text in enumerate(split_result):
+                    if tmp and index > 0:
+                        result.append(self.__class__(tmp))
+                        tmp = []
+                    if split_text.text:
+                        tmp.append(split_text)
+            else:
+                tmp.append(seg)
+        if tmp:
+            result.append(self.__class__(tmp))
+            tmp = []
+        return result
+
+    def startswith(self, string: str) -> bool:
+        """判断消息链是否以给出的字符串开头
+
+        Args:
+            string (str): 字符串
+
+        Returns:
+            bool: 是否以给出的字符串开头
+        """
+
+        if not self or not isinstance(self[0], Text):
+            return False
+        return list.__getitem__(self, 0).text.startswith(string)
+
+    def endswith(self, string: str) -> bool:
+        """判断消息链是否以给出的字符串结尾
+
+        Args:
+            string (str): 字符串
+
+        Returns:
+            bool: 是否以给出的字符串结尾
+        """
+
+        if not self or not isinstance(self[-1], Text):
+            return False
+        return list.__getitem__(self, -1).text.endswith(string)
+
+    def removeprefix(self, prefix: str) -> Self:
+        """移除消息链前缀.
+
+        Args:
+            prefix (str): 要移除的前缀.
+
+        Returns:
+            UniMessage: 修改后的消息链.
+        """
+        copy = list.copy(self)
+        if not copy:
+            return self.__class__(copy)
+        seg = copy[0]
+        if not isinstance(seg, Text):
+            return self.__class__(copy)
+        if seg.text.startswith(prefix):
+            seg = seg[len(prefix) :]
+            if not seg.text:
+                copy.pop(0)
+            else:
+                copy[0] = seg
+        return self.__class__(copy)
+
+    def removesuffix(self, suffix: str) -> Self:
+        """移除消息链后缀.
+
+        Args:
+            suffix (str): 要移除的后缀.
+
+        Returns:
+            UniMessage: 修改后的消息链.
+        """
+        copy = list.copy(self)
+        if not copy:
+            return self.__class__(copy)
+        seg = copy[-1]
+        if not isinstance(seg, Text):
+            return self.__class__(copy)
+        if seg.text.endswith(suffix):
+            seg = seg[: -len(suffix)]
+            if not seg.text:
+                copy.pop(-1)
+            else:
+                copy[-1] = seg
+        return self.__class__(copy)
+
+    def strip(self, *segments: Union[str, Segment, type[Segment]]) -> Self:
+        return self.lstrip(*segments).rstrip(*segments)
+
+    def lstrip(self, *segments: Union[str, Segment, type[Segment]]) -> Self:
+        types = [i for i in segments if not isinstance(i, str)] or []
+        chars = "".join([i for i in segments if isinstance(i, str)]) or None
+        copy = list.copy(self)
+        if not copy:
+            return self.__class__(copy)
+        while copy:
+            seg = copy[0]
+            if seg in types or seg.__class__ in types:
+                copy.pop(0)
+            elif isinstance(seg, Text):
+                seg = seg.lstrip(chars)
+                if not seg.text:
+                    copy.pop(0)
+                    continue
+                else:
+                    copy[0] = seg
+                break
+            else:
+                break
+        return self.__class__(copy)
+
+    def rstrip(self, *segments: Union[str, Segment, type[Segment]]) -> Self:
+        types = [i for i in segments if not isinstance(i, str)] or []
+        chars = "".join([i for i in segments if isinstance(i, str)]) or None
+        copy = list.copy(self)
+        if not copy:
+            return self.__class__(copy)
+        while copy:
+            seg = copy[-1]
+            if seg in types or seg.__class__ in types:
+                copy.pop(-1)
+            elif isinstance(seg, Text):
+                seg = seg.rstrip(chars)
+                if not seg.text:
+                    copy.pop(-1)
+                    continue
+                else:
+                    copy[-1] = seg
+                break
+            else:
+                break
+        return self.__class__(copy)
 
     @staticmethod
     async def generate(

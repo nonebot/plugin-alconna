@@ -246,28 +246,33 @@ class Text(Segment):
         return self
 
     def bold(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end != -1 else len(self.text), "bold")
+        return self.mark(start, end if end > 0 else len(self.text) + end, "bold")
 
     def italic(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end != -1 else len(self.text), "italic")
+        return self.mark(start, end if end > 0 else len(self.text) + end, "italic")
 
     def underline(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end != -1 else len(self.text), "underline")
+        return self.mark(start, end if end > 0 else len(self.text) + end, "underline")
 
     def strikethrough(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end != -1 else len(self.text), "strikethrough")
+        return self.mark(start, end if end > 0 else len(self.text) + end, "strikethrough")
 
     def spoiler(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end != -1 else len(self.text), "spoiler")
+        return self.mark(start, end if end > 0 else len(self.text) + end, "spoiler")
 
     def link(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end != -1 else len(self.text), "link")
+        return self.mark(start, end if end > 0 else len(self.text) + end, "link")
 
     def code(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end != -1 else len(self.text), "code")
+        return self.mark(start, end if end > 0 else len(self.text) + end, "code")
 
     def markdown(self, start: int = 0, end: int = -1):
-        return self.mark(start, end if end != -1 else len(self.text), "markdown")
+        return self.mark(start, end if end > 0 else len(self.text) + end, "markdown")
+
+    def color(self, color: str, start: int = 0, end: int = -1):
+        if color not in STYLE_TYPE_MAP:
+            raise ValueError(f"Color {color} is not supported")
+        return self.mark(start, end if end > 0 else len(self.text) + end, color)
 
     def __str__(self) -> str:
         result = []
@@ -321,7 +326,7 @@ class Text(Segment):
         max_scale = max(self.styles, key=lambda x: x[1] - x[0], default=(0, 0))
         return self.styles[max_scale]
 
-    def split(self):
+    def style_split(self):
         result: list[Text] = []
         text = self.text
         styles = self.styles
@@ -330,13 +335,87 @@ class Text(Segment):
         self.__merge__()
         scales = sorted(styles.keys(), key=lambda x: x[0])
         left = scales[0][0]
-        result.append(Text(text[:left]))
+        if left > 0:
+            result.append(Text(text[:left]))
         for scale in scales:
             result.append(Text(text[scale[0] : scale[1]], {(scale[0] - left, scale[1] - left): styles[scale]}))
             left = scale[0]
         right = scales[-1][1]
-        result.append(Text(text[right:]))
+        if right < len(text):
+            result.append(Text(text[right:]))
         return result
+
+    def split(self, pattern: Optional[str] = None):
+        parts = self.text.split(pattern)
+        if len(parts) == 1:
+            return [Text(self.text, self.styles)]
+        styles = self.styles
+        text = self.text
+        index = 0
+        result: list[Text] = []
+        for part in parts:
+            start = text.find(part, index)
+            if start == -1:
+                result.append(Text(part))
+                continue
+            index = start + len(part)
+            if maybe := styles.get((start, index)):
+                result.append(Text(part, {(0, len(part)): maybe}))
+                continue
+            _styles = {}
+            _len = len(part)
+            for scale, style in styles.items():
+                if start <= scale[0] < index <= scale[1]:
+                    _styles[(scale[0] - start, scale[1] + 1 - index)] = style
+                elif scale[0] <= start < scale[1] <= index:
+                    _styles[(0, scale[1] - start)] = style
+                elif start <= scale[0] < scale[1] <= index:
+                    _styles[(scale[0] - start, scale[1] - start)] = style
+                elif scale[0] <= start < index <= scale[1]:
+                    _styles[(scale[0] - start, _len)] = style
+            result.append(Text(part, _styles))
+        return result
+
+    @overload
+    def __getitem__(self, item: int) -> str: ...
+
+    @overload
+    def __getitem__(self, item: slice) -> "Text": ...
+
+    def __getitem__(self, item: Union[int, slice]):
+        if isinstance(item, int):
+            return self.text[item]
+        start = item.start or 0
+        end = item.stop or len(self.text)
+        if end < 0:
+            end += len(self.text)
+        res = Text(
+            self.text[item],
+            {
+                (max(_start - start, 0), _end - start): style
+                for (_start, _end), style in self.styles.items()
+                if _start < end and _end > start
+            },
+        )
+        res.__merge__()
+        return res
+
+    def lstrip(self, chars: Optional[str] = None) -> "Text":
+        text = self.text
+        changed = self.text.lstrip(chars)
+        if changed == text:
+            return self
+        return self[len(text) - len(changed) :]
+
+    def rstrip(self, chars: Optional[str] = None) -> "Text":
+        text = self.text
+        changed = self.text.rstrip(chars)
+        if changed == text:
+            return self
+        return self[: len(changed)]
+
+    def strip(self, chars: str = " ") -> "Text":
+        return self.lstrip(chars).rstrip(chars)
 
 
 @dataclass
