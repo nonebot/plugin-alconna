@@ -10,8 +10,8 @@ from tests.fake import fake_group_message_event_v11
 
 
 def test_uniseg():
-    from nonebot_plugin_alconna import Text, Other, Segment
     from nonebot_plugin_alconna.uniseg import FallbackSegment
+    from nonebot_plugin_alconna import Text, Other, Video, Segment, select
 
     assert str(Other(FallbackSegment.text("123"))) == "[text]"
     assert str(Segment()) == "[segment]"
@@ -27,6 +27,8 @@ def test_uniseg():
         Text("world").color("red").italic(),
         Text("man").italic(0, 1),
     ]
+
+    assert select(Text).from_(Video).first.validate(Video(url="foobar")(Text("foobar"))).value() == Text("foobar")
 
 
 def test_unimsg():
@@ -50,7 +52,8 @@ def test_unimsg():
         "At(flag='channel', target='456', display=None), "
         "At(flag='role', target='789', display=None)]"
     )
-    assert msg1.filter(At, lambda x: x.flag == "user") == UniMessage.at("123")
+    assert msg1.select(At).filter(lambda x: x.flag == "user") == UniMessage.at("123")
+    assert msg1.select(At).map(lambda x: x.target) == ["123", "456", "789"]
     assert UniMessage.text("123").at("456").export_sync(adapter="OneBot V11") == MessageSegment.text(
         "123"
     ) + MessageSegment.at("456")

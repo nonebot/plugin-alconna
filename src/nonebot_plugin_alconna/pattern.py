@@ -5,6 +5,7 @@ from tarina import lang
 from nepattern import MatchMode, BasePattern, MatchFailed, func
 
 from .uniseg import segment
+from .uniseg.segment import Segment
 
 Image = BasePattern.of(segment.Image)
 Text = BasePattern.of(segment.Text)
@@ -21,9 +22,9 @@ File = BasePattern.of(segment.File)
 Reference = BasePattern.of(segment.Reference)
 
 
-TS = TypeVar("TS", bound=segment.Segment)
-TS1 = TypeVar("TS1", bound=segment.Segment)
-TS2 = TypeVar("TS2", bound=segment.Segment)
+TS = TypeVar("TS", bound=Segment)
+TS1 = TypeVar("TS1", bound=Segment)
+TS2 = TypeVar("TS2", bound=Segment)
 
 
 class SelectPattern(BasePattern[list[TS], TS2, Literal[MatchMode.TYPE_CONVERT]], Generic[TS, TS2]):
@@ -38,10 +39,10 @@ class SelectPattern(BasePattern[list[TS], TS2, Literal[MatchMode.TYPE_CONVERT]],
             converter=converter,
             alias=f"select({target.__name__})",
         )
-        self._accepts = (segment.Segment,)
+        self.accept = lambda x: isinstance(x, target)
 
     def match(self, input_: TS2):
-        if not isinstance(input_, self._accepts):
+        if not self.accept(input_):
             raise MatchFailed(
                 lang.require("nepattern", "type_error").format(
                     type=input_.__class__, target=input_, expected=self.alias
@@ -62,30 +63,31 @@ class SelectPattern(BasePattern[list[TS], TS2, Literal[MatchMode.TYPE_CONVERT]],
     def last(self):
         return func.Index(self, -1)
 
-    def from_(self, seg: Union[type[TS1], BasePattern[TS1, segment.Segment, Any]]) -> "SelectPattern[TS, TS1]":
+    def from_(self, seg: Union[type[TS1], BasePattern[TS1, Segment, Any]]) -> "SelectPattern[TS, TS1]":
         _self = self.copy()
         if isinstance(seg, BasePattern):
-            _type = seg.origin
+            _self.accept = lambda x: seg.validate(x).flag == "valid"  # type: ignore
         else:
-            _type = seg
-        _self._accepts = (_type,)
+            _self.accept = lambda x: isinstance(x, seg)  # type: ignore
+        _self.alias = f"{self.alias}.from({seg if isinstance(seg, BasePattern) else seg.__name__})"
+        _self.refresh()
         return _self  # type: ignore
 
 
 def select(
-    seg: Union[type[TS], BasePattern[TS, segment.Segment, Any]],
-) -> SelectPattern[TS, segment.Segment]:
+    seg: Union[type[TS], BasePattern[TS, Segment, Any]],
+) -> SelectPattern[TS, Segment]:
     if isinstance(seg, BasePattern):
         _type = seg.origin
 
-        def query(segs: list[segment.Segment]):
+        def query(segs: list[Segment]):
             for s in segs:
                 res = seg.validate(s)
                 if res.success:
                     yield res.value()
                 yield from query(s.children)
 
-        def converter(self, _seg: segment.Segment):
+        def converter(self, _seg: Segment):
             results = []
             _res = seg.validate(_seg)
             if _res.success:
@@ -98,13 +100,13 @@ def select(
     else:
         _type: type[TS] = seg
 
-        def query1(segs: list[segment.Segment]):
+        def query1(segs: list[Segment]):
             for s in segs:
                 if isinstance(s, _type):
                     yield s
                 yield from query1(s.children)
 
-        def converter(self, _seg: segment.Segment):
+        def converter(self, _seg: Segment):
             results = []
             if isinstance(_seg, _type):
                 results.append(_seg)
@@ -121,15 +123,15 @@ def select(
 
 @deprecated("Use `select().first` instead.")
 def select_first(
-    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]]
-) -> BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]]:
+    seg: Union[type[segment.TS], BasePattern[segment.TS, Segment, Any]]
+) -> BasePattern[segment.TS, Segment, Literal[MatchMode.TYPE_CONVERT]]:
     return select(seg).first
 
 
 @deprecated("Use `select().last` instead.")
 def select_last(
-    seg: Union[type[segment.TS], BasePattern[segment.TS, segment.Segment, Any]]
-) -> BasePattern[segment.TS, segment.Segment, Literal[MatchMode.TYPE_CONVERT]]:
+    seg: Union[type[segment.TS], BasePattern[segment.TS, Segment, Any]]
+) -> BasePattern[segment.TS, Segment, Literal[MatchMode.TYPE_CONVERT]]:
     return select(seg).last
 
 

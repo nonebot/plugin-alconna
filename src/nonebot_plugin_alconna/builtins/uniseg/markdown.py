@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, cast
 
 from nonebot.adapters import Bot
-from nepattern import BasePattern, UnionPattern, global_patterns
+from nepattern import BasePattern, UnionPattern, local_patterns
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
 from nonebot_plugin_alconna.typings import Style
@@ -52,4 +52,4 @@ async def music_export(exporter: MessageExporter, seg: Markdown, bot: Optional[B
         return [await exporter.export([Text(seg.content).markdown()], bot, fallback)][0]
 
 
-global_patterns()[Markdown] = UnionPattern([Style("markdown"), BasePattern.of(Markdown)])
+local_patterns()[Markdown] = UnionPattern([Style("markdown"), BasePattern.of(Markdown)])

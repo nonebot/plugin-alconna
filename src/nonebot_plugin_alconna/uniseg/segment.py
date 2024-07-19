@@ -39,64 +39,6 @@ class Segment:
     origin: Optional[MessageSegment] = field(init=False, hash=False, repr=False, compare=False, default=None)
     _children: list["Segment"] = field(init=False, default_factory=list, repr=False, hash=False)
 
-    @classmethod
-    @overload
-    def from_(
-        cls: type[TS], source: BasePattern[TS1, Any, Any], *, fetch_all: Literal[True]
-    ) -> BasePattern[list[TS], TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
-
-    @classmethod
-    @overload
-    def from_(
-        cls: type[TS], source: type[TS1], *, fetch_all: Literal[True]
-    ) -> BasePattern[list[TS], TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
-
-    @classmethod
-    @overload
-    def from_(
-        cls: type[TS], source: BasePattern[TS1, Any, Any], *, index: int = 0
-    ) -> BasePattern[TS, TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
-
-    @classmethod
-    @overload
-    def from_(
-        cls: type[TS], source: type[TS1], *, index: int = 0
-    ) -> BasePattern[TS, TS1, Literal[MatchMode.TYPE_CONVERT]]: ...
-
-    @classmethod
-    def from_(  # type: ignore
-        cls: type[TS],
-        source: Union[type[TS1], BasePattern[TS1, Any, Any]],
-        fetch_all: bool = False,
-        index: int = 0,
-    ) -> BasePattern[Union[list[TS], TS], TS1, Literal[MatchMode.TYPE_CONVERT]]:
-
-        def converter(_, seg: Segment) -> Union[TS, list[TS], None]:
-            children = [s for s in getattr(seg, "_children", []) if isinstance(s, cls)]
-            if not children:
-                return None
-            if fetch_all:
-                return children
-            if len(children) <= index:
-                return None
-            return children[index]
-
-        if isinstance(source, BasePattern):
-            return BasePattern(
-                mode=MatchMode.TYPE_CONVERT,
-                # origin=cls,
-                alias=f"{cls.__name__}",
-                previous=source,
-                converter=converter,
-            )
-        return BasePattern(
-            mode=MatchMode.TYPE_CONVERT,
-            # origin=cls,
-            alias=f"{cls.__name__}In{source.__name__}",
-            accepts=source,
-            converter=converter,
-        )
-
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
 
