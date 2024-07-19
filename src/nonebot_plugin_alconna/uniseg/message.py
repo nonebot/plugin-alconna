@@ -9,7 +9,6 @@ from typing_extensions import Self, TypeAlias, SupportsIndex
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Optional, Protocol, overload
 
 from tarina import lang
-from nepattern import parser
 from tarina.lang.model import LangItem
 from tarina.context import ContextModel
 from nonebot.exception import FinishedException
@@ -902,16 +901,49 @@ class UniMessage(list[TS]):
 
         return "".join(seg.text for seg in self if isinstance(seg, Text))
 
-    def filter(self, target: type[TS1], predicate: Callable[[TS1], bool]) -> "UniMessage[TS1]":
+    def filter(self, predicate: Callable[[TS], bool]) -> "UniMessage[TS]":
         """过滤消息
 
         参数:
             target: 消息段类型
             predicate: 过滤函数
         """
-        pattern = parser(target)
-        segments = [res.value() for res in map(pattern.validate, self) if res.success]
-        return UniMessage(seg for seg in segments if predicate(seg))
+        return UniMessage(seg for seg in self if predicate(seg))
+
+    @overload
+    def map(self, func: Callable[[TS], TS1]) -> "UniMessage[TS1]": ...
+
+    @overload
+    def map(self, func: Callable[[TS], T]) -> list[T]: ...
+
+    def map(self, func: Union[Callable[[TS], TS1], Callable[[TS], T]]) -> "UniMessage[TS1] | list[T]":
+        result1 = []
+        result2 = []
+        for seg in self:
+            result = func(seg)
+            if isinstance(result, Segment):
+                result1.append(result)
+            else:
+                result2.append(result)
+        if result1:
+            return UniMessage(result1)
+        return result2
+
+    def select(self, cls: type[TS1]) -> "UniMessage[TS1]":
+        """递归地从消息中选择指定类型的消息段"""
+
+        def query(segs: list[Segment]):
+            for s in segs:
+                if isinstance(s, cls):
+                    yield s
+                yield from query(s.children)
+
+        results = []
+        for seg in self:
+            if isinstance(seg, cls):
+                results.append(seg)
+            results.extend(query(seg.children))
+        return UniMessage(results)
 
     @staticmethod
     def _visit_sync(seg: Segment, rules: SyncVisitor):
