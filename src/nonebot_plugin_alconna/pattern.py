@@ -39,7 +39,7 @@ class SelectPattern(BasePattern[list[TS], TS2, Literal[MatchMode.TYPE_CONVERT]],
             converter=converter,
             alias=f"select({target.__name__})",
         )
-        self.accept = lambda x: isinstance(x, target)
+        self.accept = lambda x: isinstance(x, Segment)
 
     def match(self, input_: TS2):
         if not self.accept(input_):

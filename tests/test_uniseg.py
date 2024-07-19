@@ -28,7 +28,14 @@ def test_uniseg():
         Text("man").italic(0, 1),
     ]
 
-    assert select(Text).from_(Video).first.validate(Video(url="foobar")(Text("foobar"))).value() == Text("foobar")
+    pat = select(Text)
+    assert pat.first.validate(Text("foobar")).value() == Text("foobar")
+    assert pat.first.validate(Video(url="foobar")(Text("foobar"))).value() == Text("foobar")
+    assert pat.first.validate(Other(FallbackSegment.text("foobar"))(Text("foobar"))).value() == Text("foobar")
+    pat1 = select(Text).from_(Video)
+    assert pat1.first.validate(Text("foobar")).failed
+    assert pat1.first.validate(Video(url="foobar")(Text("foobar"))).value() == Text("foobar")
+    assert pat1.first.validate(Other(FallbackSegment.text("foobar"))(Text("foobar"))).failed
 
 
 def test_unimsg():
