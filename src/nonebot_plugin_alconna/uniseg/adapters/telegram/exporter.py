@@ -159,8 +159,8 @@ class TelegramMessageExporter(MessageExporter[Message]):
             for i in range(0, len(buttons), 9):
                 rows.append(buts[i : i + 9])
             reply_markup = InlineKeyboardMarkup(inline_keyboard=rows)
-        if rows := message.get("telegram:button_row"):
-            message = message.exclude("telegram:button_row")
+        if rows := message.get("$telegram:button_row"):
+            message = message.exclude("$telegram:button_row")
             but_rows = [row.data["buttons"] for row in rows]
             if not reply_markup:
                 reply_markup = InlineKeyboardMarkup(inline_keyboard=but_rows)
