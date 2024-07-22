@@ -27,6 +27,7 @@ def test_uniseg():
         Text("world").color("red").italic(),
         Text("man").italic(0, 1),
     ]
+    assert text1.replace("o", "e") == Text("helle werld man").color("red", 0, -3).italic(3, -2)
 
     pat = select(Text)
     assert pat.first.validate(Text("foobar")).value() == Text("foobar")

@@ -5,6 +5,7 @@ import json
 import contextlib
 from io import BytesIO
 from pathlib import Path
+from functools import reduce
 from datetime import datetime
 from urllib.parse import urlparse
 from typing_extensions import Self
@@ -188,6 +189,8 @@ class Text(Segment):
             end = len(self.text)
         elif end < 0:
             end += len(self.text)
+        if not styles:
+            return self
         _styles = self.styles.setdefault((start, end), [])
         for sty in styles:
             if sty not in _styles:
@@ -295,6 +298,76 @@ class Text(Segment):
             result.append(Text(text[right:]))
         return result
 
+    def _merge_text(self, other: "Text"):
+        _len = len(self.text)
+        if not other.text:
+            return self
+        self.text += other.text
+        for scale, styles in other.styles.items():
+            self.styles[(scale[0] + _len, scale[1] + _len)] = styles[:]
+        self.__merge__()
+        return self
+
+    @overload
+    def __add__(self, item: Union[str, "Text"]) -> Self: ...
+    @overload
+    def __add__(self, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[Text, TS1]]": ...
+
+    def __add__(self, item: Union[str, Union["Text", TS1], Iterable[TS1]]):
+        from .message import UniMessage
+
+        if isinstance(item, str):
+            self.text += item
+            return self
+
+        if isinstance(item, Text):
+            return self._merge_text(item)
+
+        return UniMessage(Text(self.text, self.styles)) + item
+
+    @overload
+    def __radd__(self, item: Union[str, "Text"]) -> "Text": ...
+
+    @overload
+    def __radd__(self, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS1, Text]]": ...
+
+    def __radd__(self, item: Union[str, Union["Text", TS1], Iterable[TS1]]):
+        from .message import UniMessage
+
+        if isinstance(item, str):
+            return Text(item)._merge_text(self)
+
+        if isinstance(item, Text):
+            return item._merge_text(self)
+
+        return UniMessage(item) + Text(self.text, self.styles)
+
+    @overload
+    def __getitem__(self, item: int) -> str: ...
+
+    @overload
+    def __getitem__(self, item: slice) -> "Text": ...
+
+    def __getitem__(self, item: Union[int, slice]):
+        if isinstance(item, int):
+            return self.text[item]
+        start = item.start or 0
+        end = item.stop or len(self.text)
+        if end < 0:
+            end += len(self.text)
+        text = self.text[item]
+        len_ = len(text)
+        res = Text(
+            text,
+            {
+                (max(_start - start, 0), min(_end - start, len_)): style
+                for (_start, _end), style in self.styles.items()
+                if _start < end and _end > start
+            },
+        )
+        res.__merge__()
+        return res
+
     def split(self, pattern: Optional[str] = None):
         parts = self.text.split(pattern)
         if len(parts) == 1:
@@ -325,29 +398,35 @@ class Text(Segment):
             result.append(Text(part, _styles))
         return result
 
-    @overload
-    def __getitem__(self, item: int) -> str: ...
-
-    @overload
-    def __getitem__(self, item: slice) -> "Text": ...
-
-    def __getitem__(self, item: Union[int, slice]):
-        if isinstance(item, int):
-            return self.text[item]
-        start = item.start or 0
-        end = item.stop or len(self.text)
-        if end < 0:
-            end += len(self.text)
-        res = Text(
-            self.text[item],
-            {
-                (max(_start - start, 0), _end - start): style
-                for (_start, _end), style in self.styles.items()
-                if _start < end and _end > start
-            },
+    def replace(self, old: str, new: Union[str, "Text"]):
+        text = self.text
+        index = 0
+        new_text = new if isinstance(new, str) else new.text
+        old_len = len(old)
+        start = text.find(old, index)
+        if start == -1:
+            return self
+        texts = [self[:start]]
+        old_t = self[start : start + old_len]
+        texts.append(
+            Text(new_text).mark(None, None, *old_t.style_split()[0].extract_most_styles())
+            if isinstance(new, str)
+            else new
         )
-        res.__merge__()
-        return res
+        index = start + old_len
+        while (start := text.find(old, index)) != -1:
+            if start > index:
+                texts.append(self[index:start])
+            old_t = self[start : start + old_len]
+            texts.append(
+                Text(new_text).mark(None, None, *old_t.style_split()[0].extract_most_styles())
+                if isinstance(new, str)
+                else new
+            )
+            index = start + old_len
+        if index < len(text):
+            texts.append(self[index:])
+        return reduce(lambda x, y: x + y, texts)
 
     def lstrip(self, chars: Optional[str] = None) -> "Text":
         text = self.text

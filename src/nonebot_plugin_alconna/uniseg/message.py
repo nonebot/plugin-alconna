@@ -610,10 +610,7 @@ class UniMessage(list[TS]):
         last = list.__getitem__(self, 0)
         for seg in list.__getitem__(self, slice(1, None)):
             if isinstance(seg, Text) and isinstance(last, Text):
-                _len = len(last.text)
-                last.text += seg.text
-                for scale, styles in seg.styles.items():
-                    last.styles[(scale[0] + _len, scale[1] + _len)] = styles[:]
+                last += seg
             else:
                 result.append(last)
                 last = seg
@@ -1036,6 +1033,28 @@ class UniMessage(list[TS]):
             result.append(self.__class__(tmp))
             tmp = []
         return result
+
+    def replace(
+        self,
+        old: str,
+        new: Union[str, Text],
+    ) -> Self:
+        """替换消息中有关的文本
+
+        Args:
+            old (str): 要替换的字符串.
+            new (str | Text): 替换后的字符串/文本元素.
+
+        Returns:
+            UniMessage: 修改后的消息链, 若未替换则原样返回.
+        """
+        result_list: list[Segment] = []
+        for seg in self:
+            if isinstance(seg, Text):
+                result_list.append(seg.replace(old, new))
+            else:
+                result_list.append(seg)
+        return self.__class__(result_list)
 
     def startswith(self, string: str) -> bool:
         """判断消息链是否以给出的字符串开头
