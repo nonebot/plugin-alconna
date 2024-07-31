@@ -12,9 +12,6 @@ class Config(BaseModel):
     alconna_use_command_start: bool = False
     """是否将 COMMAND_START 作为全局命令前缀"""
 
-    alconna_auto_completion: bool = False
-    """是否全局启用命令自动补全"""
-
     alconna_use_origin: bool = False
     """是否全局使用原始消息 (即未经过 to_me 等处理的)"""
 

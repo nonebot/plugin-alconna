@@ -1,7 +1,7 @@
 import asyncio
 import weakref
 import importlib
-from typing import Any, Union, Literal, Optional, cast
+from typing import Any, Union, Literal, Optional
 
 from nonebot.typing import T_State
 from tarina import lang, init_spec
@@ -59,22 +59,22 @@ class AlconnaRule:
         self,
         command: Alconna,
         skip_for_unmatch: bool = True,
-        auto_send_output: bool = False,
+        auto_send_output: Optional[bool] = None,
         comp_config: Optional[CompConfig] = None,
         extensions: Optional[list[Union[type[Extension], Extension]]] = None,
         exclude_ext: Optional[list[Union[type[Extension], str]]] = None,
-        use_origin: bool = False,
-        use_cmd_start: bool = False,
-        use_cmd_sep: bool = False,
+        use_origin: Optional[bool] = None,
+        use_cmd_start: Optional[bool] = None,
+        use_cmd_sep: Optional[bool] = None,
         _aliases: Optional[Union[set[str], tuple[str, ...]]] = None,
     ):
         self.comp_config = comp_config
-        self.use_origin = use_origin
+        self.use_origin = use_origin or False
         try:
             global_config = get_driver().config
             config = get_plugin_config(Config)
-            self.auto_send = auto_send_output or config.alconna_auto_send_output
-            if (use_cmd_start or config.alconna_use_command_start) and global_config.command_start:
+            self.auto_send = config.alconna_auto_send_output if auto_send_output is None else auto_send_output
+            if (config.alconna_use_command_start if use_cmd_start is None else use_cmd_start) and global_config.command_start:
                 with command_manager.update(command):
                     if command.prefixes:
                         if command.command:
@@ -87,15 +87,13 @@ class AlconnaRule:
                                 command.shortcut(prefix, prefix=True)  # type: ignore
                     else:
                         command.prefixes = list(global_config.command_start)
-            if (use_cmd_sep or config.alconna_use_command_sep) and global_config.command_sep:
+            if (config.alconna_use_command_sep if use_cmd_sep is None else use_cmd_sep) and global_config.command_sep:
                 with command_manager.update(command):
                     command.separators = tuple(global_config.command_sep)
-            if config.alconna_auto_completion and not self.comp_config:
-                self.comp_config = cast(CompConfig, {})
             if config.alconna_context_style:
                 with command_manager.update(command):
                     command.meta.context_style = config.alconna_context_style
-            self.use_origin = use_origin or config.alconna_use_origin
+            self.use_origin = config.alconna_use_origin if use_origin is None else use_origin
         except ValueError:
             self.auto_send = auto_send_output
         self.command = weakref.ref(command)
