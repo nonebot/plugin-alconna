@@ -12,6 +12,7 @@ from .constraint import log, lang
 from .segment import File as File
 from .segment import Text as Text
 from .target import TARGET_RECORD
+from .fallback import AUTO as AUTO
 from .params import MsgId as MsgId
 from .segment import AtAll as AtAll
 from .segment import Audio as Audio
@@ -27,10 +28,14 @@ from .target import SCOPES as SCOPES
 from .target import Target as Target
 from .segment import Button as Button
 from .tools import get_bot as get_bot
+from .fallback import FORBID as FORBID
+from .fallback import IGNORE as IGNORE
 from .message import Receipt as Receipt
 from .segment import RefNode as RefNode
 from .segment import Segment as Segment
+from .fallback import TO_TEXT as TO_TEXT
 from .segment import Keyboard as Keyboard
+from .fallback import ROLLBACK as ROLLBACK
 from .params import MessageId as MessageId
 from .params import MsgTarget as MsgTarget
 from .segment import Reference as Reference

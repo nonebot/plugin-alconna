@@ -9,10 +9,80 @@ from nonebot.adapters import Bot, Event, Message, MessageSegment
 from .target import Target as Target
 from .fallback import FallbackStrategy
 from .constraint import SupportAdapter, SerializeFailed
-from .segment import Other, Segment, Reference, CustomNode, custom
+from .segment import (
+    At,
+    Text,
+    AtAll,
+    Emoji,
+    Hyper,
+    Media,
+    Other,
+    Reply,
+    Button,
+    Segment,
+    Keyboard,
+    Reference,
+    CustomNode,
+    custom,
+)
 
 TS = TypeVar("TS", bound=Segment)
 TM = TypeVar("TM", bound=Message)
+
+
+async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
+    if isinstance(seg, Media):
+        if seg.url:
+            return [Text(f"[{seg.type}]{seg.url}")]
+        if seg.__class__.to_url and seg.raw:
+            url = await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
+            return [Text(f"[{seg.type}]{url}")]
+        if seg.__class__.to_url and seg.path:
+            url = await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
+            return [Text(f"[{seg.type}]{url}")]
+        return [Text(f"[{seg.type}]{'' if seg.name == seg.__default_name__ else seg.name}")]
+    if isinstance(seg, At):
+        if seg.flag == "channel":
+            return [Text(f"#{seg.display or seg.target} ")]
+        return [Text(f"@{seg.display or seg.target} ")]
+    if isinstance(seg, AtAll):
+        return [Text("@全体成员 ")]
+    if isinstance(seg, Emoji):
+        return [Text(f"emoji({seg.name or seg.id})")]
+    if isinstance(seg, Hyper):
+        return [Text(f"[{seg.format}]")]
+    if isinstance(seg, Reply):
+        return []  # Text(f"> 回复{seg.msg or seg.id}的消息\n")]
+    if isinstance(seg, Button):
+        if seg.flag == "link":
+            return [Text(f"[{seg.label}]({seg.url})")]
+        elif seg.flag != "action":
+            return [Text(f"[{seg.label}]{seg.text}")]
+        return [Text(f"[{seg.label}]")]
+    if isinstance(seg, Keyboard):
+        if seg.children:
+            msg = []
+            for but in seg.children:
+                msg.extend(await _auto_fallback(but, bot))
+            return msg
+        return []  # Text("[keyboard]")]
+    if isinstance(seg, Reference):
+        if not seg.children:
+            return []  # [Text(f"> msg:{seg.id}\n")]
+        msg = []
+        for node in seg.children:
+            if isinstance(node, CustomNode):
+                if isinstance(node.content, str):
+                    msg.append(Text(node.content))
+                elif isinstance(node.content, Message):
+                    msg.extend(Other(ms) for ms in node.content)
+                else:
+                    msg.extend(node.content)
+            else:
+                msg.append(Text(f"> msg:{node.id}"))
+        return msg
+    else:
+        return [Text(str(seg))]
 
 
 @overload
@@ -103,23 +173,39 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
             elif isinstance(fallback, FallbackStrategy) and fallback != FallbackStrategy.forbid:
                 if fallback == FallbackStrategy.ignore:
                     continue
-                elif fallback == FallbackStrategy.text or not seg.children:
+                elif fallback == FallbackStrategy.to_text:
                     message += str(seg)
-                elif isinstance(seg, Reference):
-                    for node in seg.children:
-                        if isinstance(node, CustomNode):
-                            if isinstance(node.content, str):
-                                message.extend(msg_type(node.content))
-                            elif isinstance(node.content, Message):
-                                message.extend(node.content)
+                elif fallback == FallbackStrategy.rollback:
+                    if not seg.children:
+                        if isinstance(seg, Media):
+                            if seg.url:
+                                message += f"[{seg.type}]{seg.url}"
                             else:
-                                message.extend(await self.export(node.content, bot, fallback))
+                                message += f"[{seg.type}]{'' if seg.name == seg.__default_name__ else seg.name}"
                         else:
-                            ...
+                            message += str(seg)
+                    elif isinstance(seg, Reference):
+                        for node in seg.children:
+                            if isinstance(node, CustomNode):
+                                if isinstance(node.content, str):
+                                    message.append(msg_type(node.content))
+                                elif isinstance(node.content, Message):
+                                    message.extend(node.content)
+                                else:
+                                    message.extend(await self.export(node.content, bot, FallbackStrategy.auto))
+                            else:
+                                message += f"> msg:{node.id}\n"
+                    else:
+                        message.extend(await self.export(seg.children, bot, fallback))
+                elif seg.children:
+                    message.extend(await self.export(seg.children, bot, FallbackStrategy.auto))
                 else:
-                    message.extend(await self.export(seg.children, bot, fallback))
+                    message.extend(await self.export((await _auto_fallback(seg, bot)), bot, FallbackStrategy.auto))
             elif fallback is True:
-                message += str(seg)
+                if seg.children:
+                    message.extend(await self.export(seg.children, bot, FallbackStrategy.auto))
+                else:
+                    message.extend(await self.export((await _auto_fallback(seg, bot)), bot, FallbackStrategy.auto))
             else:
                 raise SerializeFailed(
                     lang.require("nbp-uniseg", "failed").format(

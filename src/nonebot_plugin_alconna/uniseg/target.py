@@ -212,6 +212,7 @@ class Target:
         fallback: bool = True,
         at_sender: Union[str, bool] = False,
         reply_to: Union[str, bool, Reply, None] = False,
+        **kwargs,
     ):
         """发送消息"""
         if isinstance(message, str):
@@ -221,8 +222,8 @@ class Target:
         if isinstance(message, Message):
             from .message import UniMessage
 
-            message = await UniMessage.generate(message=message, bot=bot)
-        return await message.send(self, bot, fallback, at_sender, reply_to)
+            message = UniMessage.generate_sync(message=message, bot=bot)
+        return await message.send(self, bot, fallback, at_sender, reply_to, **kwargs)
 
     def dump(self, only_scope: bool = False, save_self_id: bool = True):
         extra = self.extra.copy()

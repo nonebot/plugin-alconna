@@ -39,6 +39,7 @@ from .consts import log
 from .config import Config
 from .uniseg import At as At
 from . import pattern as pattern
+from .uniseg import AUTO as AUTO
 from .uniseg import File as File
 from .uniseg import Text as Text
 from .model import Match as Match
@@ -63,6 +64,8 @@ from .typings import Style as Style
 from .params import assign as assign
 from .rule import alconna as alconna
 from .uniseg import Button as Button
+from .uniseg import FORBID as FORBID
+from .uniseg import IGNORE as IGNORE
 from .uniseg import SCOPES as SCOPES
 from .uniseg import Target as Target
 from .uniseg import UniMsg as UniMsg
@@ -70,10 +73,12 @@ from .pattern import select as select
 from .typings import Italic as Italic
 from .uniseg import RefNode as RefNode
 from .uniseg import Segment as Segment
+from .uniseg import TO_TEXT as TO_TEXT
 from .uniseg import get_bot as get_bot
 from .matcher import Command as Command
 from .typings import Spoiler as Spoiler
 from .uniseg import Keyboard as Keyboard
+from .uniseg import ROLLBACK as ROLLBACK
 from .matcher import referent as referent
 from .params import AlcResult as AlcResult
 from .uniseg import MessageId as MessageId

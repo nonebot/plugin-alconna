@@ -741,7 +741,12 @@ class Button(Segment):
             self.style = "secondary"
         elif self.style == "blue":
             self.style = "primary"
-        self._children.insert(0, Text(self.label) if isinstance(self.label, str) else self.label)
+        label = Text(self.label) if isinstance(self.label, str) else self.label[:]
+        if self.flag == "link":
+            label += f"({self.url})"
+        elif self.flag != "action":
+            label += f"[{self.text}]"
+        self._children.insert(0, label)
 
 
 @dataclass

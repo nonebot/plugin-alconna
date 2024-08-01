@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Final
 
 from nonebot.adapters import Message, MessageSegment
 
@@ -7,7 +8,7 @@ class FallbackStrategy(str, Enum):
     ignore = "ignore"
     """将丢弃未转换元素"""
 
-    text = "text"
+    to_text = "to_text"
     """将未转换元素作为文本元素"""
 
     rollback = "rollback"
@@ -15,6 +16,15 @@ class FallbackStrategy(str, Enum):
 
     forbid = "forbid"
     """禁止未转换元素"""
+
+    auto = "auto"
+    """自动选择策略"""
+
+    @classmethod
+    def _missing_(cls, value):
+        if value == "text":
+            return cls.to_text
+        return cls.auto
 
 
 class FallbackSegment(MessageSegment["FallbackMessage"]):
@@ -43,3 +53,10 @@ class FallbackMessage(Message[FallbackSegment]):
     @staticmethod
     def _construct(msg: str):
         yield FallbackSegment.text(msg)
+
+
+IGNORE: Final[FallbackStrategy] = FallbackStrategy.ignore
+TO_TEXT: Final[FallbackStrategy] = FallbackStrategy.to_text
+ROLLBACK: Final[FallbackStrategy] = FallbackStrategy.rollback
+FORBID: Final[FallbackStrategy] = FallbackStrategy.forbid
+AUTO: Final[FallbackStrategy] = FallbackStrategy.auto

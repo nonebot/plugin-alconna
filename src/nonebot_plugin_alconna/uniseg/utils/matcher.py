@@ -32,7 +32,7 @@ async def send(
         _unimsg = UniMessage.generate_sync(message=_message.get_message_class()(_message), bot=bot)
     else:
         _unimsg = UniMessage.text(_message)
-    _send = await _unimsg.export(bot=bot, fallback=FallbackStrategy.text)
+    _send = await _unimsg.export(bot=bot, fallback=FallbackStrategy.to_text)
     return await bot.send(event=event, message=_send, **kwargs)
 
 
