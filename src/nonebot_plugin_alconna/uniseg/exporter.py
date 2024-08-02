@@ -30,17 +30,34 @@ TS = TypeVar("TS", bound=Segment)
 TM = TypeVar("TM", bound=Message)
 
 
+def merge_text(msg: Message) -> Message:
+    if not msg:
+        return msg
+    result = []
+    last = list.__getitem__(msg, 0)
+    for seg in list.__getitem__(msg, slice(1, None)):
+        if seg.is_text() and last.is_text():
+            last.data["text"] += seg.data["text"]
+        else:
+            result.append(last)
+            last = seg
+    result.append(last)
+    msg.clear()
+    msg.extend(result)
+    return msg
+
+
 async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
     if isinstance(seg, Media):
         if seg.url:
-            return [Text(f"[{seg.type}]{seg.url}")]
+            return [Text(f"[{seg.type}]{seg.url} ")]
         if seg.__class__.to_url and seg.raw:
             url = await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
-            return [Text(f"[{seg.type}]{url}")]
+            return [Text(f"[{seg.type}]{url} ")]
         if seg.__class__.to_url and seg.path:
             url = await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
-            return [Text(f"[{seg.type}]{url}")]
-        return [Text(f"[{seg.type}]{'' if seg.name == seg.__default_name__ else seg.name}")]
+            return [Text(f"[{seg.type}]{url} ")]
+        return [Text(f"[{seg.type}]{'' if seg.name == seg.__default_name__ else seg.name} ")]
     if isinstance(seg, At):
         if seg.flag == "channel":
             return [Text(f"#{seg.display or seg.target} ")]
@@ -48,7 +65,7 @@ async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
     if isinstance(seg, AtAll):
         return [Text("@全体成员 ")]
     if isinstance(seg, Emoji):
-        return [Text(f"emoji({seg.name or seg.id})")]
+        return [Text(f"[{seg.name}]")] if seg.name else [Text(f"[表情:{seg.id}]")]
     if isinstance(seg, Hyper):
         return [Text(f"[{seg.format}]")]
     if isinstance(seg, Reply):
@@ -57,7 +74,7 @@ async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
         if seg.flag == "link":
             return [Text(f"[{seg.label}]({seg.url})")]
         elif seg.flag != "action":
-            return [Text(f"[{seg.label}]{seg.text}")]
+            return [Text(f"[{seg.label}]{seg.text} ")]
         return [Text(f"[{seg.label}]")]
     if isinstance(seg, Keyboard):
         if seg.children:
@@ -212,7 +229,8 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                         target=seg, adapter=bot.adapter.get_name() if bot else "Unknown"
                     )
                 )
-        return message
+
+        return merge_text(message)
 
     @abstractmethod
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):

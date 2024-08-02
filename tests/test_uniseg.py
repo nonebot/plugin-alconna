@@ -74,7 +74,7 @@ def test_unimsg():
 
 @pytest.mark.asyncio()
 async def test_fallback(app: App):
-    from nonebot.adapters.console import Message, MessageSegment
+    from nonebot.adapters.console import Message
 
     from nonebot_plugin_alconna.uniseg import Button, UniMessage, SerializeFailed, fallback
 
@@ -82,17 +82,13 @@ async def test_fallback(app: App):
     with pytest.raises(SerializeFailed):
         await msg.export(adapter="OneBot V11", fallback=fallback.FORBID)
     assert (await msg.export(adapter="Console", fallback=fallback.IGNORE)) == Message("hello")
-    assert (await msg.export(adapter="Console", fallback=fallback.TO_TEXT)) == MessageSegment.text(
-        "[at]"
-    ) + MessageSegment.text("[at]") + MessageSegment.text("[image]") + MessageSegment.text("hello")
+    assert (await msg.export(adapter="Console", fallback=fallback.TO_TEXT)) == Message("[at][at][image]hello")
 
     msg1 = UniMessage.keyboard(Button("input", "foo", text="/bar"))
     assert (await msg1.export(adapter="Console", fallback=fallback.ROLLBACK)) == Message("foo[/bar]")
 
-    assert (await msg.export(adapter="Console", fallback=fallback.AUTO)) == MessageSegment.text(
-        "@123 "
-    ) + MessageSegment.text("#456 ") + MessageSegment.text("[image]https://example.com/1.jpg") + MessageSegment.text(
-        "hello"
+    assert (await msg.export(adapter="Console", fallback=fallback.AUTO)) == Message(
+        "@123 #456 [image]https://example.com/1.jpg hello"
     )
 
 

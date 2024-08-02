@@ -421,7 +421,7 @@ class AlconnaMatcher(Matcher):
         key: str,
         prompt: _M | None = None,
         parameterless: Iterable[Any] | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         override: tuple[Literal["insert", "replace"], int] | None = None,
     ) -> Callable[[T_Handler], T_Handler]:
         """装饰一个函数来指示 NoneBot 获取一个参数 `key`
@@ -488,7 +488,7 @@ class AlconnaMatcher(Matcher):
         prompt: _M | None = None,
         middleware: MIDDLEWARE | None = None,
         parameterless: Iterable[Any] | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         override: tuple[Literal["insert", "replace"], int] | None = None,
     ) -> Callable[[T_Handler], T_Handler]:
         """装饰一个函数来指示 NoneBot 获取一个路径下的参数 `path`
@@ -622,7 +622,7 @@ class AlconnaMatcher(Matcher):
     async def send(
         cls,
         message: _M,
-        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         **kwargs: Any,
     ) -> Any:
         """发送一条消息给当前交互用户
@@ -648,7 +648,7 @@ class AlconnaMatcher(Matcher):
     async def finish(
         cls,
         message: _M | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         **kwargs,
     ) -> NoReturn:
         """发送一条消息给当前交互用户并结束当前事件响应器
@@ -667,7 +667,7 @@ class AlconnaMatcher(Matcher):
     async def pause(
         cls,
         prompt: _M | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         **kwargs,
     ) -> NoReturn:
         """发送一条消息给当前交互用户并暂停事件响应器，在接收用户新的一条消息后继续下一个处理函数
@@ -686,7 +686,7 @@ class AlconnaMatcher(Matcher):
     async def reject(
         cls,
         prompt: _M | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         **kwargs,
     ) -> NoReturn:
         """最近使用 `got` / `receive` 接收的消息不符合预期，
@@ -707,7 +707,7 @@ class AlconnaMatcher(Matcher):
         cls,
         path: str,
         prompt: _M | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         **kwargs,
     ) -> NoReturn:
         """最近使用 `got_path` 接收的消息不符合预期，
@@ -731,7 +731,7 @@ class AlconnaMatcher(Matcher):
         cls,
         key: str,
         prompt: _M | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         **kwargs,
     ) -> NoReturn:
         """最近使用 `got` 接收的消息不符合预期，
@@ -755,7 +755,7 @@ class AlconnaMatcher(Matcher):
         cls,
         id: str = "",
         prompt: _M | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.ignore,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         **kwargs,
     ) -> NoReturn:
         """最近使用 `receive` 接收的消息不符合预期，
