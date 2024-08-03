@@ -26,7 +26,7 @@ async def reply_fetch(event: Event, bot: Bot):
     return await fn.extract_reply(event, bot)
 
 
-async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwargs) -> bytes:
+async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwargs) -> Optional[bytes]:
     adapter_name = bot.adapter.get_name()
     if adapter_name == "RedProtocol":
         origin = img.origin
