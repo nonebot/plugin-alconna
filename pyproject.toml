@@ -66,6 +66,7 @@ dev = [
     "nonebot-plugin-send-anything-anywhere>=0.6.1",
     "pytest-sugar>=1.0.0",
     "pytest-mock>=3.14.0",
+    "nonebot-plugin-localstore>=0.7.1",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

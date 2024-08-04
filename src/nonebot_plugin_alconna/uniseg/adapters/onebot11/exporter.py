@@ -119,15 +119,13 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                 content = self.get_message_type()()
                 if isinstance(node.content, str):
                     content.extend(self.get_message_type()(node.content))
-                elif isinstance(node.content, list):
-                    content.extend(await self.export(node.content, bot, True))  # type: ignore
                 else:
-                    content.extend(node.content)
+                    content.extend(await self.export(node.content, bot, True))
                 nodes.append(
                     MessageSegment.node_custom(
                         user_id=int(node.uid),
                         nickname=node.name,
-                        content=[asdict(m) for m in content],  # type: ignore
+                        content=content,  # type: ignore
                     )
                 )
         return nodes  # type: ignore

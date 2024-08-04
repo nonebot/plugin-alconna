@@ -167,10 +167,8 @@ class SatoriMessageExporter(MessageExporter[Message]):
                 _content.append(MessageSegment.author(node.uid, node.name))
                 if isinstance(node.content, str):
                     _content.extend(self.get_message_type()(node.content))
-                elif isinstance(node.content, list):
-                    _content.extend(await self.export(node.content, bot, True))  # type: ignore
                 else:
-                    _content.extend(node.content)
+                    _content.extend(await self.export(node.content, bot, True))
                 content.append(MessageSegment.message(content=_content))
 
         return MessageSegment.message(seg.id, bool(seg.children), content)

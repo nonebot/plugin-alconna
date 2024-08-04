@@ -2,17 +2,21 @@
 
 import re
 import json
+import hashlib
+import importlib
 import contextlib
 from io import BytesIO
 from pathlib import Path
-from functools import reduce
+from functools import reduce, lru_cache
 from datetime import datetime
 from urllib.parse import urlparse
 from typing_extensions import Self
 from collections.abc import Iterable, Awaitable
-from dataclasses import InitVar, field, asdict, dataclass
+from dataclasses import InitVar, field, asdict, fields, dataclass
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload
 
+from nonebot import require
+from tarina import gen_subclass
 from tarina.lang.model import LangItem
 from nonebot.compat import custom_validation
 from nonebot.internal.adapter import Bot, Message, MessageSegment
@@ -30,6 +34,11 @@ if TYPE_CHECKING:
 
 TS = TypeVar("TS", bound="Segment")
 TS1 = TypeVar("TS1", bound="Segment")
+
+
+@lru_cache(4096)
+def get_segment_class(name: str) -> type["Segment"]:
+    return next((cls for cls in gen_subclass(Segment) if cls.__name__.lower() == name), Segment)
 
 
 @custom_validation
@@ -80,7 +89,10 @@ class Segment:
 
     @property
     def data(self) -> dict[str, Any]:
-        return asdict(self)
+        res = asdict(self)
+        res.pop("origin", None)
+        res.pop("_children", None)
+        return res
 
     def __call__(self, *segments: Union[str, "Segment"]) -> Self:
         if not segments:
@@ -101,6 +113,18 @@ class Segment:
         if isinstance(value, cls):
             return value
         raise ValueError(f"Type {type(value)} can not be converted to {cls}")
+
+    def dump(self) -> dict:
+        data = {f.name: getattr(self, f.name) for f in fields(self) if f.name not in ("origin", "_children")}
+        if self._children:
+            data["children"] = [child.dump() for child in self._children]
+        return {"type": self.type, **{k: v for k, v in data.items() if v is not None}}
+
+    @classmethod
+    def load(cls, data: dict) -> Self:
+        if children := data.get("children", []):
+            children = [get_segment_class(child["type"]).load(child) for child in children]
+        return cls(**{k: v for k, v in data.items() if k not in ("type", "children")})(*children)  # type: ignore
 
 
 STYLE_TYPE_MAP = {
@@ -488,6 +512,20 @@ class Text(Segment):
     def strip(self, chars: str = " ") -> "Text":
         return self.lstrip(chars).rstrip(chars)
 
+    def dump(self) -> dict:
+        data: dict = {"type": "text", "text": self.text}
+        if self.styles:
+            data["styles"] = {":".join(map(str, k)): v for k, v in self.styles.items()}
+        return data
+
+    @classmethod
+    def load(cls, data: dict) -> "Text":
+        styles = {}
+        if "styles" in data:
+            for k, v in data["styles"].items():
+                styles[tuple(map(int, k.split(":")))] = v
+        return cls(data["text"], styles)
+
 
 @dataclass
 class At(Segment):
@@ -553,6 +591,39 @@ class Media(Segment):
             if self.__is_default_name() and info.types and info.extensions:
                 self.name = f"{info.types[0]}.{info.extensions[0]}"
         return raw
+
+    def dump(self, *, media_save_dir: Optional[Union[str, Path]] = None) -> dict:
+        data = super().dump()
+        if self.__is_default_name():
+            data.pop("name", None)
+        if self.url or self.path or not self.raw:
+            data.pop("raw", None)
+            data.pop("mimetype", None)
+            return {k: v for k, v in data.items() if v is not None}
+        if media_save_dir:
+            dir_ = Path(media_save_dir)
+        else:
+            try:
+                require("nonebot_plugin_localstore")
+                from nonebot_plugin_localstore import get_data_dir
+
+                dir_ = get_data_dir("nonebot_plugin_alconna") / "media"
+            except ImportError:
+                get_data_dir = None  # noqa
+                dir_ = Path.cwd() / ".data" / "media"
+        raw = self.raw.getvalue() if isinstance(self.raw, BytesIO) else self.raw
+        del data["raw"]
+        del data["mimetype"]
+        header = raw[:128]
+        info = fleep.get(header)
+        ext = info.extensions[0] if info.extensions else "bin"
+        md5 = hashlib.md5(raw).hexdigest()
+        path = dir_ / md5[:2] / f"{md5}.{ext}"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("wb+") as f:
+            f.write(raw)
+        data["path"] = str(path.resolve().as_posix())
+        return {k: v for k, v in data.items() if v is not None}
 
 
 @dataclass
@@ -624,6 +695,9 @@ class Reply(Segment):
         if not hasattr(self, "_children"):
             self._children = []
 
+    def dump(self) -> dict:
+        return {"type": self.type, "id": self.id}
+
 
 @dataclass
 class RefNode:
@@ -634,6 +708,13 @@ class RefNode:
     context: Optional[str] = None
     """可能的群聊id"""
 
+    def dump(self):
+        return {"type": "ref", "id": self.id, "context": self.context}
+
+    @classmethod
+    def load(cls, data: dict):
+        return cls(data["id"], data.get("context"))
+
 
 @dataclass
 class CustomNode:
@@ -643,12 +724,30 @@ class CustomNode:
     """消息发送者id"""
     name: str
     """消息发送者昵称"""
-    content: Union[str, "UniMessage", Message]
+    content: Union[str, "UniMessage", list[Segment]]
     """消息内容"""
     time: datetime = field(default_factory=datetime.now)
     """消息发送时间"""
     context: Optional[str] = None
     """可能的群聊id"""
+
+    def dump(self):
+        return {
+            "type": "custom",
+            "uid": self.uid,
+            "name": self.name,
+            "content": self.content if isinstance(self.content, str) else [seg.dump() for seg in self.content],
+            "time": self.time.timestamp(),
+            "context": self.context,
+        }
+
+    @classmethod
+    def load(cls, data: dict):
+        if isinstance(data["content"], str):
+            content = data["content"]
+        else:
+            content = [get_segment_class(seg["type"]).load(seg) for seg in data["content"]]
+        return cls(data["uid"], data["name"], content, datetime.fromtimestamp(data["time"]), data["context"])
 
 
 @dataclass
@@ -673,6 +772,14 @@ class Reference(Segment):
             return self
         self._children.extend(segments)  # type: ignore
         return self
+
+    def dump(self) -> dict:
+        return {"type": self.type, "id": self.id, "nodes": [node.dump() for node in self._children]}
+
+    @classmethod
+    def load(cls, data: dict):
+        nodes = [(RefNode.load(d) if d["type"] == "ref" else CustomNode.load(d)) for d in data["nodes"]]
+        return cls(data["id"], nodes)
 
 
 @dataclass
@@ -784,6 +891,20 @@ class Other(Segment):
     def __str__(self):
         return f"[{self.origin.type}]"
 
+    def dump(self):
+        return {
+            "type": "other",
+            "origin": asdict(self.origin),
+            "module": self.origin.__class__.__module__,
+            "class": self.origin.__class__.__name__,
+        }
+
+    @classmethod
+    def load(cls, data: dict):
+        module = importlib.import_module(data["module"])
+        origin = getattr(module, data["class"])(**data["origin"])
+        return cls(origin)
+
 
 @dataclass
 class I18n(Segment):
@@ -818,6 +939,19 @@ class I18n(Segment):
         from .message import UniMessage
 
         return UniMessage.template(lang.require(self.item.scope, self.item.type))
+
+    def dump(self):
+        return {
+            "type": "i18n",
+            "scope": self.item.scope,
+            "_type": self.item.type,
+            "args": list(self.args),
+            "kwargs": self.kwargs,
+        }
+
+    @classmethod
+    def load(cls, data: dict):
+        return cls(data["scope"], data["_type"], *data["args"], **data["kwargs"])
 
 
 TM = TypeVar("TM", bound=Message)

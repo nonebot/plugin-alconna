@@ -69,7 +69,9 @@ class Mirai2MessageBuilder(MessageBuilder):
             elif "messageRef" in node:
                 nodes.append(RefNode(node["messageRef"]["messageId"], node["messageRef"]["target"]))
             else:
-                nodes.append(CustomNode(node["senderId"], node["senderName"], node["time"], node["messageChain"]))
+                nodes.append(
+                    CustomNode(node["senderId"], node["senderName"], self.generate(node["messageChain"]), node["time"])
+                )
         return Reference(seg.data.get("messageId"))(*nodes)
 
     @build(MessageType.APP)

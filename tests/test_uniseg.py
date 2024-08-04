@@ -72,6 +72,32 @@ def test_unimsg():
     assert msg2.rstrip() == msg1 + Text("abc")
 
 
+def test_persistence():
+    from nonebot_plugin_alconna import UniMessage
+
+    msg = UniMessage.at("123").at_channel("456").image(url="https://example.com/1.jpg").text("hello")
+    assert msg.dump() == [
+        {"type": "at", "flag": "user", "target": "123"},
+        {"type": "at", "flag": "channel", "target": "456"},
+        {"type": "image", "url": "https://example.com/1.jpg"},
+        {"type": "text", "text": "hello"},
+    ]
+    assert (
+        msg.dump(json=True)
+        == """\
+[{"type": "at", "flag": "user", "target": "123"}, \
+{"type": "at", "flag": "channel", "target": "456"}, \
+{"type": "image", "url": "https://example.com/1.jpg"}, \
+{"type": "text", "text": "hello"}]"""
+    )
+
+    msg1 = [
+        {"type": "at", "flag": "user", "target": "456"},
+        {"type": "text", "text": "world"},
+    ]
+    assert UniMessage.load(msg1) == UniMessage.at("456").text("world")
+
+
 @pytest.mark.asyncio()
 async def test_fallback(app: App):
     from nonebot.adapters.console import Message

@@ -194,10 +194,8 @@ class Mirai2MessageExporter(MessageExporter[MessageChain]):
                 content = self.get_message_type()([])
                 if isinstance(node.content, str):
                     content.extend(self.get_message_type()(node.content))
-                elif isinstance(node.content, list):
-                    content.extend(await self.export(node.content, bot, True))  # type: ignore
                 else:
-                    content.extend(node.content)
+                    content.extend(await self.export(node.content, bot, True))
                 nodes.append(
                     {
                         "senderId": node.uid,

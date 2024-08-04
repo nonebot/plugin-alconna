@@ -83,7 +83,9 @@ class MiraiMessageBuilder(MessageBuilder):
             elif isinstance(node, RefNodeSegment):
                 nodes.append(RefNode(str(node.ref["id"]), str(node.ref["target"])))
             else:
-                nodes.append(CustomNode(str(node.uid), node.name, node.message, datetime.fromtimestamp(node.time)))
+                nodes.append(
+                    CustomNode(str(node.uid), node.name, self.generate(node.message), datetime.fromtimestamp(node.time))
+                )
         return Reference()(*nodes)
 
     @build("app")

@@ -91,8 +91,6 @@ async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
             if isinstance(node, CustomNode):
                 if isinstance(node.content, str):
                     msg.append(Text(node.content))
-                elif isinstance(node.content, Message):
-                    msg.extend(Other(ms) for ms in node.content)
                 else:
                     msg.extend(node.content)
             else:
@@ -206,8 +204,6 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                             if isinstance(node, CustomNode):
                                 if isinstance(node.content, str):
                                     message.append(msg_type(node.content))
-                                elif isinstance(node.content, Message):
-                                    message.extend(node.content)
                                 else:
                                     message.extend(await self.export(node.content, bot, FallbackStrategy.auto))
                             else:
