@@ -1,4 +1,3 @@
-from weakref import ReferenceType
 from typing_extensions import NotRequired
 from typing import Union, Generic, Literal, TypeVar, Optional, TypedDict
 
