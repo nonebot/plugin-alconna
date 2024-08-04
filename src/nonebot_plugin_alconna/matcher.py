@@ -27,8 +27,8 @@ from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from nonebot.plugin.on import store_matcher, get_matcher_source
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
-from nonebot.exception import PausedException, FinishedException, RejectedException
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
+from nonebot.exception import PausedException, FinishedException, RejectedException
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker, _DependentCallable
