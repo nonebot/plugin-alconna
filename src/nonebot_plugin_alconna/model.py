@@ -55,13 +55,12 @@ class Query(Generic[T]):
 
 
 class CommandResult(BaseModel):
-    _source: ReferenceType[Alconna]
     result: Arparma
     output: Optional[str] = Field(default=None)
 
     @property
     def source(self) -> Alconna:
-        return self._source()  # type: ignore
+        return self.result.source
 
     @property
     def matched(self) -> bool:

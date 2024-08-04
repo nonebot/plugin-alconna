@@ -1101,10 +1101,6 @@ class Command(AlconnaString):
     def args_gen(pattern: str, types: dict):
         return AlconnaString.args_gen(pattern, {**types, **patterns})
 
-    def namespace(self, ns: str | Namespace):
-        self.buffer["namespace"] = ns
-        return self
-
     def build(
         self,
         rule: Rule | T_RuleChecker | None = None,

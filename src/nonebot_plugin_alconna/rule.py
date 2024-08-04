@@ -212,7 +212,7 @@ class AlconnaRule:
 
         self._matchers[session_id] = on_message(priority=0, block=True, rule=Rule(_checker), handlers=[self._waiter])
         res = Arparma(
-            self._path,
+            cmd._hash,
             msg,
             False,
             error_info=SpecialOptionTriggered("completion"),
@@ -284,7 +284,7 @@ class AlconnaRule:
                     self.executor.clear()
                     return False
             except Exception as e:
-                arp = Arparma(self._path, msg, False, error_info=e)
+                arp = Arparma(cmd._hash, msg, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
         if not arp.head_matched:
             self.executor.clear()
@@ -311,7 +311,7 @@ class AlconnaRule:
             self.executor.clear()
             return False
         await self.executor.parse_wrapper(bot, state, event, arp)
-        state[ALCONNA_RESULT] = CommandResult(_source=self.command, result=arp, output=may_help_text)
+        state[ALCONNA_RESULT] = CommandResult(result=arp, output=may_help_text)
         state[ALCONNA_EXEC_RESULT] = cmd.exec_result
         state[ALCONNA_EXTENSION] = self.executor.context
         return True
