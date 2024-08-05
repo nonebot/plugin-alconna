@@ -125,9 +125,13 @@ from .uniseg import FallbackStrategy as FallbackStrategy
 from .uniseg import UniversalMessage as UniversalMessage
 from .uniseg import UniversalSegment as UniversalSegment
 from .params import AlconnaExecResult as AlconnaExecResult
+from .matcher import command_from_json as command_from_json
+from .matcher import command_from_yaml as command_from_yaml
 from .params import AlconnaDuplication as AlconnaDuplication
 from .uniseg import apply_media_to_url as apply_media_to_url
 from .uniseg import patch_matcher_send as patch_matcher_send
+from .matcher import commands_from_json as commands_from_json
+from .matcher import commands_from_yaml as commands_from_yaml
 from .consts import ALCONNA_EXEC_RESULT as ALCONNA_EXEC_RESULT
 from .uniseg import apply_fetch_targets as apply_fetch_targets
 from .uniseg import SupportAdapterModule as SupportAdapterModule

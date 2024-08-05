@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 import weakref
+from pathlib import Path
 from warnings import warn
 from types import FunctionType
 from contextlib import contextmanager
@@ -27,6 +28,7 @@ from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from nonebot.plugin.on import store_matcher, get_matcher_source
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
+from nonebot.compat import type_validate_json, type_validate_python
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
 from nonebot.exception import PausedException, FinishedException, RejectedException
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
@@ -37,8 +39,8 @@ from .i18n import Lang
 from .rule import alconna
 from .typings import MReturn
 from .util import annotation
-from .model import CompConfig
 from .pattern import patterns
+from .model import CompConfig, CommandModel
 from .uniseg import Text, Segment, UniMessage
 from .uniseg.fallback import FallbackStrategy
 from .uniseg.template import UniMessageTemplate
@@ -1147,8 +1149,115 @@ class Command(AlconnaString):
 
         return matcher
 
+    @classmethod
+    def from_model(cls, model: CommandModel):
+        """从 `CommandModel` 生成 `Command` 对象"""
+        cmd = cls(model.command, model.help)
+        if model.usage:
+            cmd.usage(model.usage)
+        if model.examples:
+            cmd.example("\n".join(model.examples))
+        if model.author:
+            cmd.meta.author = model.author
+        if model.namespace:
+            cmd.namespace(model.namespace)
+        cmd.config(
+            model.fuzzy_match,
+            model.fuzzy_threshold,
+            model.raise_exception,
+            model.hide,
+            model.hide_shortcut,
+            model.keep_crlf,
+            model.compact,
+            model.strict,
+            model.context_style,
+            model.extra,
+        )
+        for opt in model.options:
+            cmd.option(opt.name, opt.opt, opt.default)
+        for sub in model.subcommands:
+            cmd.subcommand(sub.name, sub.default)
+        for alias in model.aliases:
+            cmd.alias(alias)
+        for short in model.shortcuts:
+            cmd.shortcut(
+                short.key,
+                command=short.command,
+                arguments=short.args,
+                fuzzy=short.fuzzy,
+                prefix=short.prefix,
+                humanized=short.humanized,
+            )
+        return cmd
+
 
 @run_postprocessor
 @annotation(matcher=AlconnaMatcher)
 def _exit_executor(matcher: AlconnaMatcher):
     matcher.executor.clear()
+
+
+def command_from_json(file: str | Path) -> Command:
+    """从 JSON 文件中加载 Command 对象"""
+    path = Path(file)
+    if not path.exists():
+        raise FileNotFoundError(path)
+    with path.open("r", encoding="utf-8") as f:
+        model = type_validate_json(CommandModel, f.read())
+    return Command.from_model(model)
+
+
+def command_from_yaml(file: str | Path) -> Command:
+    """从 YAML 文件中加载 Command 对象
+
+    使用该函数前请确保已安装 `pyyaml`
+    """
+    try:
+        from yaml import safe_load
+    except ImportError:
+        raise ImportError("Please install pyyaml first")
+    path = Path(file)
+    if not path.exists():
+        raise FileNotFoundError(path)
+    with path.open("r", encoding="utf-8") as f:
+        data = safe_load(f)
+    model = type_validate_python(CommandModel, data)
+    return Command.from_model(model)
+
+
+def commands_from_json(file: str | Path) -> dict[str, Command]:
+    """从单个 JSON 文件，或 JSON 文件目录中加载 Command 对象"""
+    path = Path(file)
+    if not path.exists():
+        raise FileNotFoundError(path)
+    if path.is_dir():
+        return {(cmd := command_from_json(fl)).buffer["command"]: cmd for fl in path.iterdir()}
+    with path.open("r", encoding="utf-8") as f:
+        models = type_validate_json(list[CommandModel], f.read())
+    return {model.command: Command.from_model(model) for model in models}
+
+
+def commands_from_yaml(file: str | Path) -> dict[str, Command]:
+    """从单个 YAML 文件，或 YAML 文件目录中加载 Command 对象
+
+    使用该函数前请确保已安装 `pyyaml`
+
+    在单个 YAML 文件下，若数据为列表，则直接解析为 CommandModel 列表；
+        若数据为字典，则使用 values 解析为 CommandModel 列表
+    """
+    try:
+        from yaml import safe_load
+    except ImportError:
+        raise ImportError("Please install pyyaml first")
+    path = Path(file)
+    if not path.exists():
+        raise FileNotFoundError(path)
+    if path.is_dir():
+        return {(cmd := command_from_yaml(fl)).buffer["command"]: cmd for fl in path.iterdir()}
+    with path.open("r", encoding="utf-8") as f:
+        data = safe_load(f)
+    if isinstance(data, list):
+        models = type_validate_python(list[CommandModel], data)
+    else:
+        models = type_validate_python(list[CommandModel], list(data.values()))
+    return {model.command: Command.from_model(model) for model in models}

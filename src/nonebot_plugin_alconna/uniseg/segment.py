@@ -7,10 +7,10 @@ import importlib
 import contextlib
 from io import BytesIO
 from pathlib import Path
-from functools import reduce, lru_cache
 from datetime import datetime
 from urllib.parse import urlparse
 from typing_extensions import Self
+from functools import reduce, lru_cache
 from collections.abc import Iterable, Awaitable
 from dataclasses import InitVar, field, asdict, fields, dataclass
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload

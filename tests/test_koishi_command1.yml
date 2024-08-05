@@ -1,0 +1,29 @@
+book2:
+  command: book2
+  help: 测试
+  options:
+    - name: writer
+      opt: "-w <id:int>"
+    - name: writer
+      opt: "--anonymous"
+      default:
+        id: 2
+  usage: book [-w <id:int> | --anonymous]
+  shortcuts:
+    - key: 测试
+      args: ["--anonymous"]
+
+book3:
+  command: book3
+  help: 测试
+  options:
+    - name: writer
+      opt: "-w <id:int>"
+    - name: writer
+      opt: "--anonymous"
+      default:
+        id: 3
+  usage: book [-w <id:int> | --anonymous]
+  shortcuts:
+    - key: 测试
+      args: ["--anonymous"]

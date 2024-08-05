@@ -1,5 +1,5 @@
 from typing_extensions import NotRequired
-from typing import Union, Generic, Literal, TypeVar, Optional, TypedDict
+from typing import Any, Union, Generic, Literal, TypeVar, Optional, TypedDict
 
 from pydantic import Field, BaseModel
 from arclet.alconna import Empty, Alconna, Arparma
@@ -83,3 +83,48 @@ class CompConfig(TypedDict):
     hides: NotRequired[set[Literal["tab", "enter", "exit"]]]
     disables: NotRequired[set[Literal["tab", "enter", "exit"]]]
     lite: NotRequired[bool]
+
+
+class SubcommandModel(BaseModel):
+    name: str
+    default: Any = None
+
+
+class OptionModel(BaseModel):
+    name: str
+    opt: Optional[str] = None
+    default: Any = None
+
+
+class ShortcutModel(BaseModel):
+    key: str
+    command: Optional[str] = None
+    args: Optional[list[str]] = None
+    fuzzy: bool = True
+    prefix: bool = False
+    humanized: Optional[str] = None
+
+
+class CommandModel(BaseModel):
+    command: str
+    help: Optional[str] = None
+    usage: Optional[str] = None
+    examples: Optional[list[str]] = None
+    author: Optional[str] = None
+    fuzzy_match: bool = False
+    fuzzy_threshold: float = 0.6
+    raise_exception: bool = False
+    hide: bool = False
+    hide_shortcut: bool = False
+    keep_crlf: bool = False
+    compact: bool = False
+    strict: bool = True
+    context_style: Optional[Literal["bracket", "parentheses"]] = None
+    extra: Optional[dict[str, Any]] = None
+
+    namespace: Optional[str] = None
+    aliases: set[str] = Field(default_factory=set)
+
+    options: list[OptionModel] = Field(default_factory=list)
+    subcommands: list[SubcommandModel] = Field(default_factory=list)
+    shortcuts: list[ShortcutModel] = Field(default_factory=list)
