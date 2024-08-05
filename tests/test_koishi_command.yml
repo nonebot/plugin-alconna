@@ -11,3 +11,8 @@ usage: book [-w <id:int> | --anonymous]
 shortcuts:
   - key: 测试
     args: ["--anonymous"]
+actions:
+  -
+    params: ["options"]
+    code: |
+      return str(options)

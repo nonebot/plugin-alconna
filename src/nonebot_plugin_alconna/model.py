@@ -2,6 +2,7 @@ from typing_extensions import NotRequired
 from typing import Any, Union, Generic, Literal, TypeVar, Optional, TypedDict
 
 from pydantic import Field, BaseModel
+from arclet.alconna.action import Action
 from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
 from nonebot.compat import PYDANTIC_V2, ConfigDict
@@ -94,6 +95,7 @@ class OptionModel(BaseModel):
     name: str
     opt: Optional[str] = None
     default: Any = None
+    action: Optional[Union[Literal["store_true", "store_false", "count", "append"], Action]] = None
 
 
 class ShortcutModel(BaseModel):
@@ -103,6 +105,20 @@ class ShortcutModel(BaseModel):
     fuzzy: bool = True
     prefix: bool = False
     humanized: Optional[str] = None
+
+
+class ActionModel(BaseModel):
+    params: list[str]
+    code: str
+
+    def gen_exec(self, _globals: dict):
+        code = f"async def _({', '.join(self.params)}):"
+        lines = self.code.splitlines()
+        for line in lines:
+            code += f"    {line}"
+        _locals = {}
+        exec(code, _globals, _locals)
+        return _locals["_"]
 
 
 class CommandModel(BaseModel):
@@ -128,3 +144,4 @@ class CommandModel(BaseModel):
     options: list[OptionModel] = Field(default_factory=list)
     subcommands: list[SubcommandModel] = Field(default_factory=list)
     shortcuts: list[ShortcutModel] = Field(default_factory=list)
+    actions: list[ActionModel] = Field(default_factory=list)

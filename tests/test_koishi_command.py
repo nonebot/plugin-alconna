@@ -38,10 +38,6 @@ async def test_command(app: App):
 
     book1 = command_from_yaml(FILE).build()
 
-    @book1.handle()
-    async def _(arp: Arparma):
-        await book1.send(str(arp.options))
-
     async with app.test_matcher(book1) as ctx:  # type: ignore
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)

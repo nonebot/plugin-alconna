@@ -41,11 +41,11 @@ from .typings import MReturn
 from .util import annotation
 from .pattern import patterns
 from .model import CompConfig, CommandModel
-from .uniseg import Text, Segment, UniMessage
 from .uniseg.fallback import FallbackStrategy
 from .uniseg.template import UniMessageTemplate
 from .uniseg.message import current_send_wrapper
 from .extension import Extension, ExtensionExecutor
+from .uniseg import Text, Segment, UniMessage, segment
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, log
 from .params import (
     CHECK,
@@ -1188,6 +1188,11 @@ class Command(AlconnaString):
                 prefix=short.prefix,
                 humanized=short.humanized,
             )
+        if model.actions:
+            _globals = {**segment.__dict__, **globals()}
+            for act in model.actions:
+                func = act.gen_exec(_globals)
+                cmd.action(func)
         return cmd
 
 
