@@ -2,6 +2,7 @@ from typing_extensions import deprecated
 from typing import Any, Union, Generic, Literal, TypeVar, Callable, Optional
 
 from tarina import lang
+from arclet.alconna import StrMulti
 from nepattern import MatchMode, BasePattern, MatchFailed, func
 
 from .uniseg import segment
@@ -136,6 +137,7 @@ def select_last(
 
 
 patterns = {
+    "text": StrMulti,
     "Image": segment.Image,
     "Text": segment.Text,
     "At": segment.At,
@@ -150,8 +152,6 @@ patterns = {
     "File": segment.File,
     "Reference": segment.Reference,
     "select": select,
-    "select_first": select_first,
-    "select_last": select_last,
     "Dot": func.Dot,
     "Filter": func.Filter,
     "GetItem": func.GetItem,

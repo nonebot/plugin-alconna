@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.internal.driver import Request
 from nonebot.adapters.onebot.v11.event import MessageEvent
 from nonebot.adapters.onebot.v11.bot import Bot as OnebotBot
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
@@ -86,11 +85,8 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
             return method(seg.raw_bytes)
         elif seg.path:
             return method(Path(seg.path))
-        elif seg.url and bot:
-            resp = await bot.adapter.request(Request("GET", seg.url))
-            return method(resp.content)
-        elif seg.id:
-            return method(seg.id)
+        elif seg.url:
+            return method(seg.url)
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 

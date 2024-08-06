@@ -1,3 +1,4 @@
+from nonebot.adapters.minecraft.model import BaseComponent
 from nonebot.adapters.minecraft.message import MessageSegment
 
 from nonebot_plugin_alconna.uniseg import Text
@@ -24,7 +25,7 @@ STYLE_TYPE_MAP = {
 
 def title(self, x: Text):
     if x.extract_most_style() == "title":
-        return MessageSegment.title(x.text)
+        return MessageSegment.title(BaseComponent(text=x.text))
 
 
 def actionbar(sef, x: Text):

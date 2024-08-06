@@ -1051,7 +1051,7 @@ class UniMessage(list[TS]):
         Returns:
             UniMessage: 修改后的消息链, 若未替换则原样返回.
         """
-        result_list: list[Segment] = []
+        result_list: list[TS] = []
         for seg in self:
             if isinstance(seg, Text):
                 result_list.append(seg.replace(old, new))
@@ -1439,7 +1439,7 @@ class UniMessage(list[TS]):
         return dumps(result, ensure_ascii=False) if json else result
 
     @classmethod
-    def load(cls, data: Union[str, list[dict[str, Any]]]):
+    def load(cls: "type[UniMessage[Segment]]", data: Union[str, list[dict[str, Any]]]):
         """从 JSON 数据加载消息
 
         Args:

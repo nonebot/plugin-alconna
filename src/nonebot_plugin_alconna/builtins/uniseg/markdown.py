@@ -49,7 +49,7 @@ async def music_export(exporter: MessageExporter, seg: Markdown, bot: Optional[B
         return MessageSegment.markdown(md)
 
     if seg.content:
-        return [await exporter.export([Text(seg.content).markdown()], bot, fallback)][0]
+        return (await exporter.export([Text(seg.content).markdown()], bot, fallback))[0]
 
 
 local_patterns()[Markdown] = UnionPattern([Style("markdown"), BasePattern.of(Markdown)])

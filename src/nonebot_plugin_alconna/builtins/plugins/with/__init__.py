@@ -35,7 +35,7 @@ with namespace("builtin/with") as ns:
     ns.disable_builtin_options = {"shortcut", "completion"}
 
     with_ = (
-        Command(f"{plugin_config.nbp_alc_with_text} [name:+str]", "with 指令")
+        Command(f"{plugin_config.nbp_alc_with_text} [name:str]", "with 指令")
         .config(compact=True)
         .option("expire", "expire <time:datetime>#设置可能的生效时间")
         .option("unset", "unset #取消当前前缀")
@@ -66,9 +66,7 @@ with namespace("builtin/with") as ns:
         data[key] = name.result
         if time.available:
             asyncio.get_running_loop().call_later(
-                abs((time.result - datetime.datetime.now()).total_seconds()),
-                remove,
-                key
+                abs((time.result - datetime.datetime.now()).total_seconds()), remove, key
             )
 
         await with_.finish("设置前缀成功")

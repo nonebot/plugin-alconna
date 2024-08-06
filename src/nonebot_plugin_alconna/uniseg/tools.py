@@ -42,7 +42,7 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
     if img.url:  # mirai2, qqguild, kook, villa, minecraft, ding
         req = Request("GET", img.url, **kwargs)
         resp = await bot.adapter.request(req)
-        return resp.content
+        return resp.content  # type: ignore
     if not img.id:
         return None
     if adapter_name == "OneBot V11":
@@ -53,7 +53,7 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
         url = (await bot.get_image(file=img.id))["data"]["url"]
         req = Request("GET", url, **kwargs)
         resp = await bot.adapter.request(req)
-        return resp.content
+        return resp.content  # type: ignore
     if adapter_name == "OneBot V12":
         if TYPE_CHECKING:
             from nonebot.adapters.onebot.v12.bot import Bot
@@ -65,7 +65,7 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
         url = f"https://gchat.qpic.cn/gchatpic_new/0/0-0-" f"{img.id.replace('-', '').upper()}/0"
         req = Request("GET", url, **kwargs)
         resp = await bot.adapter.request(req)
-        return resp.content
+        return resp.content  # type: ignore
     if adapter_name == "Telegram":
         if TYPE_CHECKING:
             from nonebot.adapters.telegram.bot import Bot
@@ -79,7 +79,7 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
         url = URL(bot.bot_config.api_server) / "file" / f"bot{bot.bot_config.token}" / res.file_path
         req = Request("GET", url, **kwargs)
         resp = await bot.adapter.request(req)
-        return resp.content
+        return resp.content  # type: ignore
     if adapter_name == "Feishu":
         if TYPE_CHECKING:
             from nonebot.adapters.feishu.bot import Bot
