@@ -5,10 +5,10 @@ authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "tarina>=0.5.4",
+    "tarina>=0.5.5",
     "nepattern>=0.7.4",
-    "arclet-alconna>=1.8.21",
-    "arclet-alconna-tools>=0.7.8",
+    "arclet-alconna>=1.8.22",
+    "arclet-alconna-tools>=0.7.9",
     "importlib-metadata>=4.13.0",
     "nonebot2>=2.3.0",
     "nonebot-plugin-waiter>=0.6.0",

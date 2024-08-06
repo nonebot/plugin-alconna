@@ -26,6 +26,11 @@ plugin_config = get_plugin_config(Config)
 
 data = {}
 
+
+def remove(key: str):
+    data.pop(key, None)
+
+
 with namespace("builtin/with") as ns:
     ns.disable_builtin_options = {"shortcut", "completion"}
 
@@ -60,7 +65,12 @@ with namespace("builtin/with") as ns:
             await with_.finish("无法设置该前缀")
         data[key] = name.result
         if time.available:
-            asyncio.get_running_loop().call_at(time.result.timestamp(), lambda k: data.pop(k, None), key)
+            asyncio.get_running_loop().call_later(
+                abs((time.result - datetime.datetime.now()).total_seconds()),
+                remove,
+                key
+            )
+
         await with_.finish("设置前缀成功")
 
 

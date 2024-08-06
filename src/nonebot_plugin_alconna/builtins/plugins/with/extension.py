@@ -22,10 +22,12 @@ class PrefixAppendExtension(Extension):
     supplier: ClassVar[Callable[[Any, Target], Optional[str]]]
     prefixes: list[str]
     command: str
+    sep: str
 
     def post_init(self, alc: Alconna) -> None:
         self.prefixes = [pf for pf in alc.prefixes if isinstance(pf, str)]
         self.command = alc.header_display
+        self.sep = alc.separators[0]
 
     async def message_provider(self, event: Event, state: T_State, bot: Bot, use_origin: bool = False):
         if event.get_type() != "message":
@@ -39,4 +41,4 @@ class PrefixAppendExtension(Extension):
         prefix = self.supplier(target)  # type: ignore
         if not prefix or not self.command.endswith(prefix):
             return uni_msg
-        return f"{random.choice(self.prefixes)}{prefix}" + uni_msg
+        return f"{random.choice(self.prefixes)}{prefix}{self.sep}" + uni_msg
