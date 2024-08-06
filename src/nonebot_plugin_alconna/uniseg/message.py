@@ -32,7 +32,6 @@ from .segment import (
     Emoji,
     Hyper,
     Image,
-    Media,
     Reply,
     Video,
     Voice,
@@ -1409,33 +1408,30 @@ class UniMessage(list[TS]):
         raise FinishedException
 
     @overload
-    def dump(self, media_save_dir: Union[str, Path, None] = None) -> list[dict]: ...
+    def dump(self, media_save_dir: Optional[Union[str, Path, bool]] = None) -> list[dict]: ...
 
     @overload
-    def dump(self, media_save_dir: Union[str, Path, None] = None, json: Literal[True] = True) -> str: ...
+    def dump(self, media_save_dir: Optional[Union[str, Path, bool]] = None, json: Literal[True] = True) -> str: ...
 
     def dump(
-        self, media_save_dir: Union[str, Path, None] = None, json: bool = False
+        self, media_save_dir: Optional[Union[str, Path, bool]] = None, json: bool = False
     ) -> Union[str, list[dict[str, Any]]]:
         """将消息序列化为 JSON 格式
 
         注意：
+            若 media_save_dir 为 False，则不会保存媒体文件。
+            若 media_save_dir 为 True，则会将文件数据转为 base64 编码。
             若不指定 media_save_dir，则会尝试导入 `nonebot_plugin_localstore` 并使用其提供的路径。
             否则，将会尝试使用当前工作目录。
 
         Args:
-            media_save_dir (Union[str, Path, None], optional): 媒体文件保存路径. Defaults to None.
+            media_save_dir (Union[str, Path， bool, None], optional): 媒体文件保存路径. Defaults to None.
             json (bool, optional): 是否返回 JSON 字符串. Defaults to False.
 
         Returns:
             Union[str, list[dict]]: 序列化后的消息
         """
-        result = []
-        for seg in self:
-            if isinstance(seg, Media):
-                result.append(seg.dump(media_save_dir=media_save_dir))
-            else:
-                result.append(seg.dump())
+        result = [seg.dump(media_save_dir=media_save_dir) for seg in self]
         return dumps(result, ensure_ascii=False) if json else result
 
     @classmethod

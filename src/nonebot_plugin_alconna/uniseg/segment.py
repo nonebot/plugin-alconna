@@ -2,6 +2,7 @@
 
 import re
 import json
+import base64
 import hashlib
 import importlib
 import contextlib
@@ -114,11 +115,32 @@ class Segment:
             return value
         raise ValueError(f"Type {type(value)} can not be converted to {cls}")
 
-    def dump(self) -> dict:
+    def dump(self, *, media_save_dir: Optional[Union[str, Path, bool]] = None) -> dict:
+        """将对象转为 dict 数据
+        注意：
+            若 media_save_dir 为 False，则不会保存媒体文件。
+            若 media_save_dir 为 True，则会将文件数据转为 base64 编码。
+            若不指定 media_save_dir，则会尝试导入 `nonebot_plugin_localstore` 并使用其提供的路径。
+            否则，将会尝试使用当前工作目录。
+        """
         data = {f.name: getattr(self, f.name) for f in fields(self) if f.name not in ("origin", "_children")}
+        data = {"type": self.type, **{k: v for k, v in data.items() if v is not None}}
+        if isinstance(self, Media):
+            if self.name == self.__default_name__:
+                data.pop("name", None)
+            if self.url or self.path or not self.raw:
+                data.pop("raw", None)
+                data.pop("mimetype", None)
+            elif media_save_dir is True:
+                data["raw"] = base64.b64encode(self.raw_bytes).decode()
+            elif media_save_dir is not False:
+                path = self.save(media_save_dir=media_save_dir)
+                del data["raw"]
+                del data["mimetype"]
+                data["path"] = str(path.resolve().as_posix())
         if self._children:
-            data["children"] = [child.dump() for child in self._children]
-        return {"type": self.type, **{k: v for k, v in data.items() if v is not None}}
+            data["children"] = [child.dump(media_save_dir=media_save_dir) for child in self._children]
+        return data
 
     @classmethod
     def load(cls, data: dict) -> Self:
@@ -512,7 +534,7 @@ class Text(Segment):
     def strip(self, chars: str = " ") -> "Text":
         return self.lstrip(chars).rstrip(chars)
 
-    def dump(self) -> dict:
+    def dump(self, **kwargs) -> dict:
         data: dict = {"type": "text", "text": self.text}
         if self.styles:
             data["styles"] = {":".join(map(str, k)): v for k, v in self.styles.items()}
@@ -592,15 +614,18 @@ class Media(Segment):
                 self.name = f"{info.types[0]}.{info.extensions[0]}"
         return raw
 
-    def dump(self, *, media_save_dir: Optional[Union[str, Path]] = None) -> dict:
-        data = super().dump()
-        if self.__is_default_name():
-            data.pop("name", None)
-        if self.url or self.path or not self.raw:
-            data.pop("raw", None)
-            data.pop("mimetype", None)
-            return {k: v for k, v in data.items() if v is not None}
-        if media_save_dir:
+    @classmethod
+    def load(cls, data: dict) -> Self:
+        if children := data.get("children", []):
+            children = [get_segment_class(child["type"]).load(child) for child in children]
+        if "raw" in data and isinstance(data["raw"], str):
+            data["raw"] = base64.b64decode(data["raw"])
+        return cls(**{k: v for k, v in data.items() if k not in ("type", "children")})(*children)  # type: ignore
+
+    def save(self, media_save_dir: Optional[Union[str, Path]] = None) -> Path:
+        if not self.raw:
+            raise ValueError
+        if isinstance(media_save_dir, (str, Path)):
             dir_ = Path(media_save_dir)
         else:
             try:
@@ -612,8 +637,6 @@ class Media(Segment):
                 get_data_dir = None  # noqa
                 dir_ = Path.cwd() / ".data" / "media"
         raw = self.raw.getvalue() if isinstance(self.raw, BytesIO) else self.raw
-        del data["raw"]
-        del data["mimetype"]
         header = raw[:128]
         info = fleep.get(header)
         ext = info.extensions[0] if info.extensions else "bin"
@@ -622,8 +645,7 @@ class Media(Segment):
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("wb+") as f:
             f.write(raw)
-        data["path"] = str(path.resolve().as_posix())
-        return {k: v for k, v in data.items() if v is not None}
+        return path.resolve()
 
 
 @dataclass
@@ -695,8 +717,11 @@ class Reply(Segment):
         if not hasattr(self, "_children"):
             self._children = []
 
-    def dump(self) -> dict:
-        return {"type": self.type, "id": self.id}
+    def dump(self, *, media_save_dir: Optional[Union[str, Path, bool]] = None) -> dict:
+        data = super().dump(media_save_dir=media_save_dir)
+        data["id"] = self.id
+        data.pop("msg", None)
+        return data
 
 
 @dataclass
@@ -708,7 +733,7 @@ class RefNode:
     context: Optional[str] = None
     """可能的群聊id"""
 
-    def dump(self):
+    def dump(self, **kwargs):
         return {"type": "ref", "id": self.id, "context": self.context}
 
     @classmethod
@@ -731,12 +756,16 @@ class CustomNode:
     context: Optional[str] = None
     """可能的群聊id"""
 
-    def dump(self):
+    def dump(self, *, media_save_dir: Optional[Union[str, Path, bool]] = None):
         return {
             "type": "custom",
             "uid": self.uid,
             "name": self.name,
-            "content": self.content if isinstance(self.content, str) else [seg.dump() for seg in self.content],
+            "content": (
+                self.content
+                if isinstance(self.content, str)
+                else [seg.dump(media_save_dir=media_save_dir) for seg in self.content]
+            ),
             "time": self.time.timestamp(),
             "context": self.context,
         }
@@ -773,8 +802,12 @@ class Reference(Segment):
         self._children.extend(segments)  # type: ignore
         return self
 
-    def dump(self) -> dict:
-        return {"type": self.type, "id": self.id, "nodes": [node.dump() for node in self._children]}
+    def dump(self, *, media_save_dir: Optional[Union[str, Path, bool]] = None) -> dict:
+        return {
+            "type": self.type,
+            "id": self.id,
+            "nodes": [node.dump(media_save_dir=media_save_dir) for node in self._children],
+        }
 
     @classmethod
     def load(cls, data: dict):
@@ -891,7 +924,7 @@ class Other(Segment):
     def __str__(self):
         return f"[{self.origin.type}]"
 
-    def dump(self):
+    def dump(self, **kwargs):
         return {
             "type": "other",
             "origin": asdict(self.origin),
@@ -940,7 +973,7 @@ class I18n(Segment):
 
         return UniMessage.template(lang.require(self.item.scope, self.item.type))
 
-    def dump(self):
+    def dump(self, **kwargs):
         return {
             "type": "i18n",
             "scope": self.item.scope,

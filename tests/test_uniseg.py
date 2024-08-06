@@ -73,7 +73,7 @@ def test_unimsg():
 
 
 def test_persistence():
-    from nonebot_plugin_alconna import UniMessage
+    from nonebot_plugin_alconna import Image, UniMessage
 
     msg = UniMessage.at("123").at_channel("456").image(url="https://example.com/1.jpg").text("hello")
     assert msg.dump() == [
@@ -96,6 +96,18 @@ def test_persistence():
         {"type": "text", "text": "world"},
     ]
     assert UniMessage.load(msg1) == UniMessage.at("456").text("world")
+
+    msg2 = UniMessage.image(raw=b"123", mimetype="image/jpeg")
+    assert msg2.dump(media_save_dir=True) == [{"type": "image", "raw": "MTIz", "mimetype": "image/jpeg"}]
+    assert msg2.dump(media_save_dir=False) == [{"type": "image", "raw": b"123", "mimetype": "image/jpeg"}]
+
+    msg3 = [{"type": "image", "raw": "MTIz", "mimetype": "image/jpeg"}]
+    assert UniMessage.load(msg3) == msg2
+
+    msg4 = UniMessage(Image(url="https://example.com/1.jpg")(Image(raw=b"123")))
+    assert msg4.dump(media_save_dir=True) == [
+        {"type": "image", "url": "https://example.com/1.jpg", "children": [{"type": "image", "raw": "MTIz"}]},
+    ]
 
 
 @pytest.mark.asyncio()
