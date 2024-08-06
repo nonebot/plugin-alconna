@@ -604,7 +604,7 @@ class UniMessage(list[TS]):
         返回:
             消息格式化器
         """
-        return UniMessageTemplate(format_string, cls)
+        return UniMessageTemplate(format_string, cls)  # type: ignore
 
     def __merge_text__(self) -> Self:
         if not self:

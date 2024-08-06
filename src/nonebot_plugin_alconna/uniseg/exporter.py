@@ -171,17 +171,22 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
         for seg in source:
             seg_type = seg.__class__
             if seg_type in self._mapping:
-                res = await self._mapping[seg_type](seg, bot)
+                try:
+                    res = await self._mapping[seg_type](seg, bot)
+                    if isinstance(res, list):
+                        message.extend(res)
+                    else:
+                        message.append(res)
+                    continue
+                except (SerializeFailed, NotImplementedError):
+                    pass
+            if res := await custom.export(self, seg, bot, fallback):  # type: ignore
                 if isinstance(res, list):
                     message.extend(res)
                 else:
                     message.append(res)
-            elif res := await custom.export(self, seg, bot, fallback):  # type: ignore
-                if isinstance(res, list):
-                    message.extend(res)
-                else:
-                    message.append(res)
-            elif isinstance(seg, Other):
+                continue
+            if isinstance(seg, Other):
                 message.append(seg.origin)  # type: ignore
             elif bot and bot.adapter.get_name() == SupportAdapter.nonebug:
                 message += str(seg)
