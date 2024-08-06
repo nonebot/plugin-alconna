@@ -62,6 +62,8 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
 
     @export
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+        if seg.flag != "user":
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
         return MessageSegment.at(seg.target)
 
     @export
