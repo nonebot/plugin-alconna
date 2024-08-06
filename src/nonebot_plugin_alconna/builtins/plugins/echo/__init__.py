@@ -15,7 +15,7 @@ __plugin_meta__ = PluginMetadata(
     description="重复你说的话",
     usage="/echo [text]",
     type="application",
-    homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/echo.py",
+    homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/echo",
     config=Config,
     supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
 )

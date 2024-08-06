@@ -30,7 +30,7 @@ __plugin_meta__ = PluginMetadata(
     description="展示所有命令帮助",
     usage="/help",
     type="application",
-    homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/help.py",
+    homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/help",
     config=Config,
     supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
 )

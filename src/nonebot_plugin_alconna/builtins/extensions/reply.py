@@ -41,6 +41,8 @@ class ReplyRecordExtension(Extension):
         return self.cache.get(message_id, None)
 
     async def message_provider(self, event, state, bot, use_origin: bool = False):
+        if event.get_type() != "message":
+            return
         try:
             msg = event.get_message()
         except (NotImplementedError, ValueError):
@@ -88,9 +90,11 @@ class ReplyMergeExtension(Extension):
         return "builtins.extensions.reply:ReplyMergeExtension"
 
     async def message_provider(self, event, state, bot, use_origin: bool = False):
+        if event.get_type() != "message":
+            return
         try:
             msg = event.get_message()
-        except ValueError:
+        except (NotImplementedError, ValueError):
             return
         uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
         if not (reply := await reply_fetch(event, bot)):

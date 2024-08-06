@@ -88,13 +88,13 @@ class CompConfig(TypedDict):
 
 class SubcommandModel(BaseModel):
     name: str
-    default: Any = None
+    default: Any = Empty
 
 
 class OptionModel(BaseModel):
     name: str
     opt: Optional[str] = None
-    default: Any = None
+    default: Any = Empty
     action: Optional[Union[Literal["store_true", "store_false", "count", "append"], Action]] = None
 
 
