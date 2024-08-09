@@ -1,5 +1,6 @@
 from pathlib import Path
 from dataclasses import dataclass
+from nonebot.adapters.qq.models import PostC2CMessagesReturn, PostGroupMessagesReturn, QQMessage
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Union
 
@@ -420,6 +421,21 @@ class QQMessageExporter(MessageExporter[Message]):
                     channel_id=mid.channel_id,
                     message_id=mid.id,
                 )
+        elif isinstance(context, GroupAtMessageCreateEvent):
+            if isinstance(mid,PostGroupMessagesReturn): 
+            
+                await bot.delete_group_message(
+                    group_openid=context.group_openid,
+                    message_id=mid.id,#type: ignore
+                )
+        elif isinstance(context, C2CMessageCreateEvent):
+            if isinstance(mid, PostC2CMessagesReturn):
+                await bot.delete_c2c_message(
+                    openid=context.author.id,
+                    message_id=mid.id,#type: ignore
+                )
+            
+                
         return
 
     def get_reply(self, mid: Any):
