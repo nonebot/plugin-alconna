@@ -1,6 +1,5 @@
 from pathlib import Path
 from dataclasses import dataclass
-from nonebot.adapters.qq.models import PostC2CMessagesReturn, PostGroupMessagesReturn, QQMessage
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Union
 
@@ -11,6 +10,7 @@ from nonebot.adapters.qq.models.common import Action
 from nonebot.adapters.qq.message import Message, MessageSegment
 from nonebot.adapters.qq.models.common import Button as ButtonModel
 from nonebot.adapters.qq.models.guild import Message as GuildMessage
+from nonebot.adapters.qq.models import PostC2CMessagesReturn, PostGroupMessagesReturn
 from nonebot.adapters.qq.models.common import Permission, RenderData, InlineKeyboard, MessageKeyboard, InlineKeyboardRow
 from nonebot.adapters.qq.event import (
     ForumEvent,
@@ -422,20 +422,19 @@ class QQMessageExporter(MessageExporter[Message]):
                     message_id=mid.id,
                 )
         elif isinstance(context, GroupAtMessageCreateEvent):
-            if isinstance(mid,PostGroupMessagesReturn): 
-            
+            if isinstance(mid, PostGroupMessagesReturn):
+
                 await bot.delete_group_message(
                     group_openid=context.group_openid,
-                    message_id=mid.id,#type: ignore
+                    message_id=mid.id,  # type: ignore
                 )
         elif isinstance(context, C2CMessageCreateEvent):
             if isinstance(mid, PostC2CMessagesReturn):
                 await bot.delete_c2c_message(
                     openid=context.author.id,
-                    message_id=mid.id,#type: ignore
+                    message_id=mid.id,  # type: ignore
                 )
-            
-                
+
         return
 
     def get_reply(self, mid: Any):
