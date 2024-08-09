@@ -437,8 +437,8 @@ class QQMessageExporter(MessageExporter[Message]):
         elif isinstance(mid, PostC2CMessagesReturn):
             if isinstance(context, Target):
                 if context.private:
-                    await bot.delete_group_message(
-                        group_openid=context.id,
+                    await bot.delete_c2c_message(
+                        openid=context.id,
                         message_id=mid.id,  # type: ignore
                     )
             else:
