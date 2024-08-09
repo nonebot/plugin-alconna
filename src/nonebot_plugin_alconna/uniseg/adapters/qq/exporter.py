@@ -377,7 +377,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 # 私信需要使用 post_dms_messages
                 # https://bot.q.qq.com/wiki/develop/api/openapi/dms/post_dms_messages.html#%E5%8F%91%E9%80%81%E7%A7%81%E4%BF%A1
                 return await bot.send_to_dms(
-                    guild_id=dms.guild_id,
+                    guild_id=dms.guild_id,  # type: ignore
                     message=message,
                     msg_id=target.source,
                     **kwargs,  # type: ignore
@@ -429,7 +429,7 @@ class QQMessageExporter(MessageExporter[Message]):
                         group_openid=context.id,
                         message_id=mid.id,  # type: ignore
                     )
-            else:
+            elif isinstance(context, GroupAtMessageCreateEvent):
                 await bot.delete_group_message(
                     group_openid=context.group_openid,
                     message_id=mid.id,  # type: ignore
@@ -441,7 +441,7 @@ class QQMessageExporter(MessageExporter[Message]):
                         openid=context.id,
                         message_id=mid.id,  # type: ignore
                     )
-            else:
+            elif isinstance(context, C2CMessageCreateEvent):
                 await bot.delete_c2c_message(
                     openid=context.author.id,
                     message_id=mid.id,  # type: ignore
