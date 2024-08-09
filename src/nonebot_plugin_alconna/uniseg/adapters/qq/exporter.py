@@ -49,7 +49,6 @@ from nonebot_plugin_alconna.uniseg.segment import (
 
 @dataclass
 class ButtonSegment(MessageSegment):
-
     @override
     def __str__(self) -> str:
         return "<$qq.button>"
@@ -57,7 +56,6 @@ class ButtonSegment(MessageSegment):
 
 @dataclass
 class ButtonRowSegment(MessageSegment):
-
     @override
     def __str__(self) -> str:
         return "<$qq.button_row>"
@@ -379,7 +377,10 @@ class QQMessageExporter(MessageExporter[Message]):
                 # 私信需要使用 post_dms_messages
                 # https://bot.q.qq.com/wiki/develop/api/openapi/dms/post_dms_messages.html#%E5%8F%91%E9%80%81%E7%A7%81%E4%BF%A1
                 return await bot.send_to_dms(
-                    guild_id=dms.guild_id, message=message, msg_id=target.source, **kwargs  # type: ignore
+                    guild_id=dms.guild_id,
+                    message=message,
+                    msg_id=target.source,
+                    **kwargs,  # type: ignore
                 )
             return await bot.send_to_channel(channel_id=target.id, message=message, msg_id=target.source, **kwargs)
         if target.private:
@@ -421,15 +422,26 @@ class QQMessageExporter(MessageExporter[Message]):
                     channel_id=mid.channel_id,
                     message_id=mid.id,
                 )
-        elif isinstance(context, GroupAtMessageCreateEvent):
-            if isinstance(mid, PostGroupMessagesReturn):
-
+        elif isinstance(mid, PostGroupMessagesReturn):
+            if isinstance(context, Target):
+                if not context.private:
+                    await bot.delete_group_message(
+                        group_openid=context.id,
+                        message_id=mid.id,  # type: ignore
+                    )
+            else:
                 await bot.delete_group_message(
                     group_openid=context.group_openid,
                     message_id=mid.id,  # type: ignore
                 )
-        elif isinstance(context, C2CMessageCreateEvent):
-            if isinstance(mid, PostC2CMessagesReturn):
+        elif isinstance(mid, PostC2CMessagesReturn):
+            if isinstance(context, Target):
+                if context.private:
+                    await bot.delete_group_message(
+                        group_openid=context.id,
+                        message_id=mid.id,  # type: ignore
+                    )
+            else:
                 await bot.delete_c2c_message(
                     openid=context.author.id,
                     message_id=mid.id,  # type: ignore
