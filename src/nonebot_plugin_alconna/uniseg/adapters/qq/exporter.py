@@ -388,18 +388,17 @@ class QQMessageExporter(MessageExporter[Message]):
             res = await bot.send_to_c2c(
                 openid=target.id, message=message, msg_id=target.source, msg_seq=target.extra["qq.reply_seq"], **kwargs
             )
+        elif target.extra.get("qq.interaction",False):
+            res = await bot.send_to_group(group_openid=target.id, message=message, event_id=target.source, **kwargs)
+            return res
         else:
-            if target.extra.get("qq.interaction",False):
-                res = await bot.send_to_group(group_openid=target.id, message=message, event_id=target.source, **kwargs)
-                return res
-            else:
-                res = await bot.send_to_group(
-                    group_openid=target.id,
-                    message=message,
-                    msg_id=target.source,
-                    msg_seq=target.extra["qq.reply_seq"],
-                    **kwargs,
-                )
+            res = await bot.send_to_group(
+                group_openid=target.id,
+                message=message,
+                msg_id=target.source,
+                msg_seq=target.extra["qq.reply_seq"],
+                **kwargs,
+            )
 
         target.extra["qq.reply_seq"] += 1
         return res
