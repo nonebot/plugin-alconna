@@ -171,7 +171,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                     scope=SupportScope.qq_api,
-                    extra={"qq.interaction":True}
+                    extra={"qq.interaction": True},
                 )
             elif event.channel_id:
                 return Target(
