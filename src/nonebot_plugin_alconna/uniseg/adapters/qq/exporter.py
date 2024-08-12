@@ -10,6 +10,7 @@ from nonebot.adapters.qq.models.common import Action
 from nonebot.adapters.qq.message import Message, MessageSegment
 from nonebot.adapters.qq.models.common import Button as ButtonModel
 from nonebot.adapters.qq.models.guild import Message as GuildMessage
+from nonebot.adapters.qq.models import PostC2CMessagesReturn, PostGroupMessagesReturn
 from nonebot.adapters.qq.models.common import Permission, RenderData, InlineKeyboard, MessageKeyboard, InlineKeyboardRow
 from nonebot.adapters.qq.event import (
     ForumEvent,
@@ -48,7 +49,6 @@ from nonebot_plugin_alconna.uniseg.segment import (
 
 @dataclass
 class ButtonSegment(MessageSegment):
-
     @override
     def __str__(self) -> str:
         return "<$qq.button>"
@@ -56,7 +56,6 @@ class ButtonSegment(MessageSegment):
 
 @dataclass
 class ButtonRowSegment(MessageSegment):
-
     @override
     def __str__(self) -> str:
         return "<$qq.button_row>"
@@ -172,6 +171,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                     scope=SupportScope.qq_api,
+                    extra={"qq.interaction": True},
                 )
             elif event.channel_id:
                 return Target(
@@ -378,13 +378,19 @@ class QQMessageExporter(MessageExporter[Message]):
                 # 私信需要使用 post_dms_messages
                 # https://bot.q.qq.com/wiki/develop/api/openapi/dms/post_dms_messages.html#%E5%8F%91%E9%80%81%E7%A7%81%E4%BF%A1
                 return await bot.send_to_dms(
-                    guild_id=dms.guild_id, message=message, msg_id=target.source, **kwargs  # type: ignore
+                    guild_id=dms.guild_id,  # type: ignore
+                    message=message,
+                    msg_id=target.source,
+                    **kwargs,  # type: ignore
                 )
             return await bot.send_to_channel(channel_id=target.id, message=message, msg_id=target.source, **kwargs)
         if target.private:
             res = await bot.send_to_c2c(
                 openid=target.id, message=message, msg_id=target.source, msg_seq=target.extra["qq.reply_seq"], **kwargs
             )
+        elif target.extra.get("qq.interaction", False):
+            res = await bot.send_to_group(group_openid=target.id, message=message, event_id=target.source, **kwargs)
+            return res
         else:
             res = await bot.send_to_group(
                 group_openid=target.id,
@@ -393,6 +399,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 msg_seq=target.extra["qq.reply_seq"],
                 **kwargs,
             )
+
         target.extra["qq.reply_seq"] += 1
         return res
 
@@ -420,6 +427,31 @@ class QQMessageExporter(MessageExporter[Message]):
                     channel_id=mid.channel_id,
                     message_id=mid.id,
                 )
+        elif isinstance(mid, PostGroupMessagesReturn):
+            if isinstance(context, Target):
+                if not context.private:
+                    await bot.delete_group_message(
+                        group_openid=context.id,
+                        message_id=mid.id,  # type: ignore
+                    )
+            elif isinstance(context, GroupAtMessageCreateEvent):
+                await bot.delete_group_message(
+                    group_openid=context.group_openid,
+                    message_id=mid.id,  # type: ignore
+                )
+        elif isinstance(mid, PostC2CMessagesReturn):
+            if isinstance(context, Target):
+                if context.private:
+                    await bot.delete_c2c_message(
+                        openid=context.id,
+                        message_id=mid.id,  # type: ignore
+                    )
+            elif isinstance(context, C2CMessageCreateEvent):
+                await bot.delete_c2c_message(
+                    openid=context.author.id,
+                    message_id=mid.id,  # type: ignore
+                )
+
         return
 
     def get_reply(self, mid: Any):
