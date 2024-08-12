@@ -1,5 +1,4 @@
 from pathlib import Path
-from dataclasses import asdict
 from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
@@ -143,13 +142,13 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                 return await bot.call_api(
                     "send_private_forward_msg",
                     user_id=int(_target.id),
-                    messages=[asdict(m) for m in msg],
+                    messages=msg,
                 )
             else:
                 return await bot.call_api(
                     "send_group_forward_msg",
                     group_id=int(_target.id),
-                    messages=[asdict(m) for m in msg],
+                    messages=msg,
                 )
         if isinstance(target, Event):
             return await bot.send(target, message, **kwargs)  # type: ignore
