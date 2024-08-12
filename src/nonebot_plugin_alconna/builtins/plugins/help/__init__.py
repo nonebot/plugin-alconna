@@ -119,7 +119,7 @@ with namespace("builtin/help") as ns:
         ),
     )
 
-help_matcher = on_alconna(help_cmd, use_cmd_start=True, auto_send_output=True)
+help_matcher = on_alconna(help_cmd, use_cmd_start=True)
 
 for alias in plugin_config.nbp_alc_help_alias:
     help_matcher.shortcut(alias, {"prefix": True, "fuzzy": False})

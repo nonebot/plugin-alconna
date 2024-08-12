@@ -40,7 +40,7 @@ with namespace("builtin/with") as ns:
         .option("expire", "expire <time:datetime>#设置可能的生效时间")
         .option("unset", "unset #取消当前前缀")
         .usage("设置局部命令前缀")
-        .build(auto_send_output=True, use_cmd_start=True, priority=0, block=True)
+        .build(use_cmd_start=True, priority=0, block=True)
     )
 
     for alias in plugin_config.nbp_alc_with_alias:

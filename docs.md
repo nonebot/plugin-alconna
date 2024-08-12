@@ -47,7 +47,7 @@ async def _(result: Arparma = AlconnaMatches()):
 def on_alconna(
     command: Alconna | str,
     skip_for_unmatch: bool = True,
-    auto_send_output: bool = False,
+    auto_send_output: bool = True,
     aliases: set[str | tuple[str, ...]] | None = None,
     comp_config: CompConfig | None = None,
     extensions: list[type[Extension] | Extension] | None = None,
@@ -69,6 +69,14 @@ def on_alconna(
 - `use_origin`: 是否使用未经 to_me 等处理过的消息
 - `use_cmd_start`: 是否使用 COMMAND_START 作为命令前缀
 - `use_cmd_sep`: 是否使用 COMMAND_SEP 作为命令分隔符
+
+其中对于 `skip_for_unmatch` 和 `auto_send_output` 的效果如下:
+
+| skip \ auto | True           | False                         |
+|-------------|----------------|-------------------------------|
+| True        | 帮助文本等自动发送      | 帮助文本等不发送                      |
+| False       | 帮助文本等和错误信息自动发送 | 帮助文本等和错误信息设置到 `CommandResult` |
+
 
 `on_alconna` 返回的是 `Matcher` 的子类 `AlconnaMatcher`，其拓展了如下方法:
 

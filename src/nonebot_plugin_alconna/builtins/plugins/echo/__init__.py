@@ -29,7 +29,6 @@ with namespace("builtin/echo") as ns:
         .usage("重复你说的话")
         .action(lambda content: content)
         .build(
-            auto_send_output=True,
             use_cmd_start=True,
             extensions=[ReplyMergeExtension()],
             rule=to_me() if plugin_config.nbp_alc_echo_tome else None,

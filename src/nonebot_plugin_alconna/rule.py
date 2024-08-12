@@ -302,7 +302,7 @@ class AlconnaRule:
                 escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self._path, arp=arp)),
             )
         if not may_help_text and arp.error_info:
-            may_help_text = repr(arp.error_info)
+            may_help_text = str(arp.error_info)
         if self.auto_send and may_help_text:
             await self.send(may_help_text, bot, event, arp)
             self.executor.clear()
