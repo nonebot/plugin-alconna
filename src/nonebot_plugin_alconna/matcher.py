@@ -46,7 +46,7 @@ from .uniseg.template import UniMessageTemplate
 from .uniseg.message import current_send_wrapper
 from .extension import Extension, ExtensionExecutor
 from .uniseg import Text, Segment, UniMessage, segment
-from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, log
+from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_PATH, log
 from .params import (
     CHECK,
     MIDDLEWARE,
@@ -224,7 +224,9 @@ class AlconnaMatcher(Matcher):
                 state = cls_or_self.state
             else:
                 state = current_matcher.get().state
-            state[ALCONNA_ARG_KEY.format(key=merge_path(path, cls_or_self.basepath))] = content
+            key = merge_path(path, cls_or_self.basepath)
+            state[ALCONNA_ARG_KEY.format(key=key)] = content
+            state[ALCONNA_ARG_PATH] = key
 
         @_method
         def get_path_arg(cls_or_self, path: str, default: Any) -> Any:

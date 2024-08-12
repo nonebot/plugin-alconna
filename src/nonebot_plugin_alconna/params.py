@@ -17,7 +17,7 @@ from arclet.alconna import Empty, Alconna, Arparma, Duplication
 from .typings import CHECK, MIDDLEWARE
 from .model import T, Match, Query, CommandResult
 from .extension import Extension, ExtensionExecutor
-from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
+from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_PATH, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 T_Extension = TypeVar("T_Extension", bound=Extension)
@@ -309,6 +309,8 @@ class AlconnaParam(Param):
             return res.result.context
         if (key := ALCONNA_ARG_KEY.format(key=self.extra["name"])) in state:
             return state[key]
+        if (path := state.get(ALCONNA_ARG_PATH)) and path.endswith(f".{self.extra['name']}"):
+            return state[ALCONNA_ARG_KEY.format(key=path)]
         if self.extra["name"] in res.result.all_matched_args:
             return res.result.all_matched_args[self.extra["name"]]
         return self.default if self.default not in (..., Empty) else PydanticUndefined
@@ -318,6 +320,7 @@ class AlconnaParam(Param):
             if (
                 self.extra["name"] in _alconna_result(state).result.all_matched_args
                 or ALCONNA_ARG_KEY.format(key=self.extra["name"]) in state
+                or ((path := state.get(ALCONNA_ARG_PATH)) and path.endswith(f".{self.extra['name']}"))
             ):
                 return True
             if self.default not in (..., Empty):
