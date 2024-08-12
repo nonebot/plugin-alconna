@@ -307,6 +307,9 @@ class AlconnaRule:
             await self.send(may_help_text, bot, event, arp)
             self.executor.clear()
             return False
+        if self.skip and may_help_text:
+            self.executor.clear()
+            return False
         if not await self.executor.permission_check(bot, event, cmd):
             self.executor.clear()
             return False
