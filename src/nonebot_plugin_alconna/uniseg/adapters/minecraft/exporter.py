@@ -55,9 +55,12 @@ class MinecraftMessageExporter(MessageExporter[Message]):
 
     @export
     async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
-        styles = [STYLE_TYPE_MAP[s] for s in seg.styles[(0, len(seg.text))] if s in STYLE_TYPE_MAP]
+        styles = seg.extract_most_styles()
         kwargs = {}
         for style in styles:
+            if style not in STYLE_TYPE_MAP:
+                continue
+            style = STYLE_TYPE_MAP[style]
             if style == "bold":
                 kwargs["bold"] = True
             elif style == "italic":
@@ -70,30 +73,33 @@ class MinecraftMessageExporter(MessageExporter[Message]):
                 kwargs["obfuscated"] = True
             else:
                 kwargs["color"] = style
-        if seg.extract_most_style() == "actionbar":
+        if "actionbar" in styles:
             return MessageSegment.actionbar(seg.text, **kwargs)
-        if seg.extract_most_style() == "title":
+        if "title" in styles:
             return MessageSegment.title(BaseComponent(text=seg.text, **kwargs))
         return MessageSegment.text(seg.text, **kwargs)
 
     @export
     async def button(self, seg: Button, bot: Union[Bot, None]):
         label = Text(seg.label) if isinstance(seg.label, str) else seg.label
-        styles = [STYLE_TYPE_MAP[s] for s in label.styles[(0, len(label.text))] if s in STYLE_TYPE_MAP]
         kwargs = {}
-        for style in styles:
-            if style == "bold":
-                kwargs["bold"] = True
-            elif style == "italic":
-                kwargs["italic"] = True
-            elif style == "underline":
-                kwargs["underlined"] = True
-            elif style == "strikethrough":
-                kwargs["strikethrough"] = True
-            elif style == "obfuscated":
-                kwargs["obfuscated"] = True
-            else:
-                kwargs["color"] = style
+        if label.styles:
+            for style in label.extract_most_styles():
+                if style not in STYLE_TYPE_MAP:
+                    continue
+                style = STYLE_TYPE_MAP[style]
+                if style == "bold":
+                    kwargs["bold"] = True
+                elif style == "italic":
+                    kwargs["italic"] = True
+                elif style == "underline":
+                    kwargs["underlined"] = True
+                elif style == "strikethrough":
+                    kwargs["strikethrough"] = True
+                elif style == "obfuscated":
+                    kwargs["obfuscated"] = True
+                else:
+                    kwargs["color"] = style
         if seg.clicked_label:
             kwargs["hover_event"] = HoverEvent(
                 action=HoverAction.SHOW_TEXT, base_component_list=[BaseComponent(text=seg.clicked_label)]

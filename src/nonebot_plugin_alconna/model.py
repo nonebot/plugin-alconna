@@ -66,6 +66,10 @@ class CommandResult(BaseModel):
     def matched(self) -> bool:
         return self.result.matched
 
+    @property
+    def context(self):
+        return self.result.context
+
     if PYDANTIC_V2:
         model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)  # type: ignore
     else:

@@ -36,7 +36,7 @@ def merge_text(msg: Message) -> Message:
     result = []
     last = list.__getitem__(msg, 0)
     for seg in list.__getitem__(msg, slice(1, None)):
-        if seg.is_text() and last.is_text():
+        if seg.is_text() and last.is_text() and seg.type == "text" and len(seg.data) == 1:
             last.data["text"] += seg.data["text"]
         else:
             result.append(last)
