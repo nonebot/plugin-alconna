@@ -164,33 +164,37 @@ async def help_cmd_handle(arp: Arparma, bot: Bot, event):
     show_namespace = is_namespace and not is_namespace.options["list"].value and not target_namespace
     if (query := arp.all_matched_args["query"]) != "-1":
         if query.isdigit():
-            slot = cmds[int(query)]
-            _matcher = referent(slot)
-            if not _matcher:
-                msg = slot.get_help()
-            else:
-                executor = _matcher.executor
-                if is_plugin_info:
-                    msg = UniMessage.text(get_info(_matcher))
-                else:
-                    msg = await executor.output_converter("help", slot.get_help())
-                    msg = msg or UniMessage(slot.get_help())
-                msg = await executor.send_wrapper(bot, event, msg)
-            return await help_matcher.finish(msg)
-        command_string = "\n".join(
-            (
-                f"【{str(index).rjust(len(str(len(cmds))), '0')}】"
-                f"{f'{slot.namespace}::' if show_namespace else ''}{slot.header_display} : "
-                f"{get_info(mat) if is_plugin_info and (mat := referent(slot)) else slot.meta.description}"
+            index = int(query)
+            if index < 0 or index >= len(cmds):
+                return await help_matcher.finish("查询失败！")
+            slot = cmds[index]
+        elif not (slot := next((i for i in cmds if query == i.command), None)):
+            command_string = "\n".join(
+                (
+                    f"【{str(index).rjust(len(str(len(cmds))), '0')}】"
+                    f"{f'{slot.namespace}::' if show_namespace else ''}{slot.header_display} : "
+                    f"{get_info(mat) if is_plugin_info and (mat := referent(slot)) else slot.meta.description}"
+                )
+                for index, slot in enumerate(cmds)
+                if query in str(slot.command)
             )
-            for index, slot in enumerate(cmds)
-            if query in slot.header_display
-        )
-        if not command_string:
-            return await help_matcher.finish("查询失败！")
-        return await help_matcher.finish(f"{command_string}\n{footer}")
+            if not command_string:
+                return await help_matcher.finish("查询失败！")
+            return await help_matcher.finish(f"{command_string}\n{footer}")
+        _matcher = referent(slot)
+        if not _matcher:
+            msg = slot.get_help()
+        else:
+            executor = _matcher.executor
+            if is_plugin_info:
+                msg = UniMessage.text(get_info(_matcher))
+            else:
+                msg = await executor.output_converter("help", slot.get_help())
+                msg = msg or UniMessage(slot.get_help())
+            msg = await executor.send_wrapper(bot, event, msg)
+        return await help_matcher.finish(msg)
 
-    if not plugin_config.nbp_alc_help_page_size:
+    if not plugin_config.nbp_alc_page_size:
         header = lang.require("manager", "help_header")
         command_string = "\n".join(
             (
@@ -202,10 +206,10 @@ async def help_cmd_handle(arp: Arparma, bot: Bot, event):
         )
         return await help_matcher.finish(f"{header}\n{command_string}\n{footer}")
 
-    max_page = len(cmds) // plugin_config.nbp_alc_help_page_size + 1
+    max_page = len(cmds) // plugin_config.nbp_alc_page_size + 1
     if page < 1 or page > max_page:
         page = 1
-    max_length = plugin_config.nbp_alc_help_page_size
+    max_length = plugin_config.nbp_alc_page_size
     footer += "\n" + "输入 '<', 'a' 或 '>', 'd' 来翻页"
 
     async def _send(_page: int):

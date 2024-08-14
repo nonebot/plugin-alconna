@@ -56,7 +56,7 @@ async def test_help(app: App):
 # 输入'命令名 -h|--help' 查看特定命令的语法""",
         )
 
-        msg1 = Message("/help test")
+        msg1 = Message("/help tes")
         event1 = fake_message_event_satori(message=msg1, id=124)
         ctx.receive_event(bot, event1)
         ctx.should_call_send(

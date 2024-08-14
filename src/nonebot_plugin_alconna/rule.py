@@ -265,6 +265,9 @@ class AlconnaRule:
         if not cmd:
             self.executor.clear()
             return False
+        if command_manager.is_disable(cmd):
+            self.executor.clear()
+            return False
         msg = await self.executor.receive_wrapper(bot, event, cmd, msg)
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
         adapter_name = bot.adapter.get_name()
