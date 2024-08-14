@@ -98,6 +98,11 @@ with namespace("builtin/help") as ns:
             ),
         ],
         Option(
+            "--page",
+            Args["index", int],
+            help_text="查看指定页数的命令帮助",
+        ),
+        Option(
             "--plugin-info",
             alias=["-P", "插件信息"],
             help_text="查看命令所属插件的信息",
@@ -115,7 +120,7 @@ with namespace("builtin/help") as ns:
         meta=CommandMeta(
             description="显示所有命令帮助",
             usage="可以使用 --hide 参数来显示隐藏命令，使用 -P 参数来显示命令所属插件名称",
-            example="$help 1",
+            example=f"${plugin_config.nbp_alc_help_text} 1",
         ),
     )
 
@@ -135,6 +140,7 @@ help_matcher.shortcut(
 async def help_cmd_handle(arp: Arparma, bot: Bot, event):
     is_plugin_info = arp.query[bool]("plugin-info.value", False)
     is_namespace = arp.query[SubcommandResult]("namespace")
+    page = arp.query[int]("page.index", 1)
     target_namespace = is_namespace.args.get("target") if is_namespace else None
     cmds = [
         i
@@ -150,6 +156,11 @@ async def help_cmd_handle(arp: Arparma, bot: Bot, event):
                 for index, n in enumerate(namespaces.keys())
             )
         )
+    help_names = set()
+    for i in cmds:
+        help_names.update(i.namespace_config.builtin_option_name["help"])
+
+    footer = lang.require("manager", "help_footer").format(help="|".join(sorted(help_names, key=lambda x: len(x))))
     show_namespace = is_namespace and not is_namespace.options["list"].value and not target_namespace
     if (query := arp.all_matched_args["query"]) != "-1":
         if query.isdigit():
@@ -168,7 +179,7 @@ async def help_cmd_handle(arp: Arparma, bot: Bot, event):
             return await help_matcher.finish(msg)
         command_string = "\n".join(
             (
-                f" 【{str(index).rjust(len(str(len(cmds))), '0')}】"
+                f"【{str(index).rjust(len(str(len(cmds))), '0')}】"
                 f"{f'{slot.namespace}::' if show_namespace else ''}{slot.header_display} : "
                 f"{get_info(mat) if is_plugin_info and (mat := referent(slot)) else slot.meta.description}"
             )
@@ -177,7 +188,10 @@ async def help_cmd_handle(arp: Arparma, bot: Bot, event):
         )
         if not command_string:
             return await help_matcher.finish("查询失败！")
-    else:
+        return await help_matcher.finish(f"{command_string}\n{footer}")
+
+    if not plugin_config.nbp_alc_help_page_size:
+        header = lang.require("manager", "help_header")
         command_string = "\n".join(
             (
                 f" 【{str(index).rjust(len(str(len(cmds))), '0')}】"
@@ -186,9 +200,44 @@ async def help_cmd_handle(arp: Arparma, bot: Bot, event):
             )
             for index, slot in enumerate(cmds)
         )
-    help_names = set()
-    for i in cmds:
-        help_names.update(i.namespace_config.builtin_option_name["help"])
-    header = lang.require("manager", "help_header")
-    footer = lang.require("manager", "help_footer").format(help="|".join(sorted(help_names, key=lambda x: len(x))))
-    return await help_matcher.finish(f"{header}\n{command_string}\n{footer}")
+        return await help_matcher.finish(f"{header}\n{command_string}\n{footer}")
+
+    max_page = len(cmds) // plugin_config.nbp_alc_help_page_size + 1
+    if page < 1 or page > max_page:
+        page = 1
+    max_length = plugin_config.nbp_alc_help_page_size
+    footer += "\n" + "输入 '<', 'a' 或 '>', 'd' 来翻页"
+
+    async def _send(_page: int):
+        header = (
+            lang.require("manager", "help_header")
+            + "\t"
+            + lang.require("manager", "help_pages").format(current=_page, total=max_page)
+        )
+        command_string = "\n".join(
+            (
+                f" 【{str(index).rjust(len(str(_page * max_length)), '0')}】"
+                f"{f'{slot.namespace}::' if show_namespace else ''}{slot.header_display} : "
+                f"{get_info(mat) if is_plugin_info and (mat := referent(slot)) else slot.meta.description}"
+            )
+            for index, slot in enumerate(
+                cmds[(_page - 1) * max_length : _page * max_length], start=(_page - 1) * max_length
+            )
+        )
+        return await help_matcher.prompt(f"{header}\n{command_string}\n{footer}", timeout=15, block=False)
+
+    while True:
+        resp = await _send(page)
+        if not resp:
+            await help_matcher.finish()
+        resp = resp.extract_plain_text().strip().lower()
+        if resp == "a" or resp == "<":
+            page -= 1
+            if page < 1:
+                page = max_page
+        elif resp == "d" or resp == ">":
+            page += 1
+            if page > max_page:
+                page = 1
+        else:
+            help_matcher.skip()

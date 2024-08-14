@@ -801,12 +801,13 @@ class AlconnaMatcher(Matcher):
         return wrapper
 
     @classmethod
-    async def prompt(cls, message: _M, timeout: float = 120):
+    async def prompt(cls, message: _M, timeout: float = 120, block: bool = True):
         """等待用户输入并返回结果
 
         参数:
             message: 提示消息
             timeout: 等待超时时间
+            block: 是否阻塞后续事件处理
         返回值:
             符合条件的用户输入
         """
@@ -820,7 +821,7 @@ class AlconnaMatcher(Matcher):
         async def wrapper(event: Event):
             return event.get_message()
 
-        wait = waiter(["message"], keep_session=True)(wrapper)
+        wait = waiter(["message"], keep_session=True, block=block)(wrapper)
 
         res = await wait.wait(timeout=timeout)
         if res is None:

@@ -62,8 +62,7 @@ async def test_help(app: App):
         ctx.should_call_send(
             event1,
             """\
-# 当前可用的命令有:
- 【2】test : test
+【2】test : test
 # 输入'命令名 -h|--help' 查看特定命令的语法""",
         )
 
