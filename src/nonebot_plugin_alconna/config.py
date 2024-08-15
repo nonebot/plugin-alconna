@@ -35,3 +35,6 @@ class Config(BaseModel):
 
     alconna_builtin_plugins: set[str] = Field(default_factory=set)
     """需要加载的alc内置插件集合"""
+
+    alconna_conflict_resolver: Literal["raise", "default", "ignore", "replace"] = Field(default="default")
+    """命令冲突解决策略，default 为保留两个命令，raise 为抛出异常，ignore 为忽略新命令，replace 为替换旧命令"""

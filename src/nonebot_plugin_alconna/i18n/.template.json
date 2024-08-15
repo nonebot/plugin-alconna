@@ -46,6 +46,7 @@
           "subtype": "error",
           "types": [
             "discord_prefix",
+            "existed_command",
             {
               "subtype": "extension",
               "types": [

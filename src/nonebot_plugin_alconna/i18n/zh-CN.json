@@ -25,6 +25,7 @@
     },
     "error": {
       "discord_prefix": "Alconna 命令对象在用于转换为 Discord 斜杠命令时必须具有 '/' 前缀",
+      "existed_command": "Alconna 命令对象 {cmd} 已经存在",
       "extension": {
         "forbid_exclude": "不能排除 id 以“！”开头的扩展",
         "path_load": "{path} 的值不是扩展的子类",

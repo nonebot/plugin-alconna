@@ -42,6 +42,7 @@ class NbpAlcErrorExtension:
 
 class NbpAlcError:
     discord_prefix: LangItem = LangItem("nbp-alc", "error.discord_prefix")
+    existed_command: LangItem = LangItem("nbp-alc", "error.existed_command")
     extension = NbpAlcErrorExtension
     matcher_got_path: LangItem = LangItem("nbp-alc", "error.matcher_got_path")
 

@@ -153,6 +153,14 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
         if isinstance(target, Event):
             return await bot.send(target, message, **kwargs)  # type: ignore
         if _target.private:
+            if _target.parent_id:
+                return await bot.send_msg(
+                    message_type="private",
+                    user_id=int(_target.id),
+                    group_id=int(_target.parent_id),
+                    message=message,
+                    **kwargs,
+                )
             return await bot.send_msg(message_type="private", user_id=int(_target.id), message=message, **kwargs)
         else:
             return await bot.send_msg(message_type="group", group_id=int(_target.id), message=message, **kwargs)

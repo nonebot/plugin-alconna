@@ -120,6 +120,11 @@
               "description": "value of lang item type 'discord_prefix'",
               "type": "string"
             },
+            "existed_command": {
+              "title": "existed_command",
+              "description": "value of lang item type 'existed_command'",
+              "type": "string"
+            },
             "extension": {
               "title": "Extension",
               "description": "Scope 'extension' of lang item",

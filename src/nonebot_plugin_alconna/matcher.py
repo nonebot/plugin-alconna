@@ -15,7 +15,6 @@ from nonebot.rule import Rule
 from nonebot.params import Depends
 from nonebot.utils import escape_tag
 from tarina.lang.model import LangItem
-from nonebot import require, get_driver
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from nonebot.message import run_postprocessor
@@ -25,6 +24,7 @@ from tarina import is_awaitable, run_always_await
 from arclet.alconna.typing import ShortcutRegWrapper
 from nepattern import ANY, STRING, TPattern, AnyString
 from _weakref import _remove_dead_weakref  # type: ignore
+from nonebot import require, get_driver, get_plugin_config
 from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from nonebot.plugin.on import store_matcher, get_matcher_source
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
@@ -37,6 +37,7 @@ from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecke
 
 from .i18n import Lang
 from .rule import alconna
+from .config import Config
 from .typings import MReturn
 from .util import annotation
 from .pattern import patterns
@@ -65,6 +66,14 @@ _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, U
 
 class ArgsMounter(Protocol):
     args: Args
+
+
+try:
+    global_config = get_driver().config
+    config = get_plugin_config(Config)
+    conflict_resolver = config.alconna_conflict_resolver
+except ValueError:
+    conflict_resolver = "ignore"
 
 
 def extract_arg(path: str, target: ArgsMounter | None) -> Arg | None:
@@ -934,7 +943,25 @@ def on_alconna(
         state: 默认 state
     """
     if isinstance(command, str):
-        command = AlconnaFormat(command)
+        command = AlconnaFormat(command, union=False)
+    try:
+        exist = command_manager.get_command(command.path)
+        if exist != command and (_matcher := referent(exist)):
+            if conflict_resolver == "raise":
+                raise RuntimeError(Lang.nbp_alc.error.existed_command(cmd=command.path))
+            if conflict_resolver == "ignore":
+                command_manager.delete(command)
+                return _matcher
+            if conflict_resolver == "replace":
+                _matcher.destroy()
+                command_manager.delete(exist)
+                command_manager.register(command)
+            else:
+                exist.formatter.remove(command)
+                command.formatter = command.formatter.__class__()
+                command.formatter.add(command)
+    except ValueError:
+        pass
     _rule = alconna(
         command,
         skip_for_unmatch,
