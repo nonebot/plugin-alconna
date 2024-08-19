@@ -86,7 +86,7 @@ def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
             thumbnail=data["pic"],
             audio=data["audio"],
         )
-    elif builder.get_adapter() is SupportAdapter.mirai_official:
+    elif builder.get_adapter() is SupportAdapter.mirai:
         data = seg.data
         return MusicShare(
             kind=MusicShareKind(data["kind"].value),
@@ -97,20 +97,6 @@ def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
             audio=data["music_url"],
             summary=data["brief"],
         )
-
-
-@custom_register(MusicShare, "MusicShare")
-def music_mirai_community(builder: MessageBuilder, seg: BaseMessageSegment):
-    data = seg.data
-    return MusicShare(
-        kind=MusicShareKind(data["kind"]),
-        title=data["title"],
-        content=data["summary"],
-        url=data["jumpUrl"],
-        thumbnail=data["pictureUrl"],
-        audio=data["musicUrl"],
-        summary=data["brief"],
-    )
 
 
 @custom_handler(MusicShare)
@@ -141,24 +127,11 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Optional
             },
         )
 
-    if exporter.get_adapter() is SupportAdapter.mirai_official:
+    if exporter.get_adapter() is SupportAdapter.mirai:
         from nonebot.adapters.mirai.message import MessageSegment
 
         return MessageSegment.music(
             seg.kind.value, seg.title, seg.content, seg.url, seg.thumbnail, seg.audio, seg.summary or "[音乐分享]"
-        )
-
-    if exporter.get_adapter() is SupportAdapter.mirai_community:
-        from nonebot.adapters.mirai2.message import MessageSegment
-
-        return MessageSegment.music_share(
-            seg.kind.value,
-            seg.title or "",
-            seg.content or seg.summary or "",
-            seg.url or seg.audio or "",
-            seg.thumbnail or "",
-            seg.audio or seg.url or "",
-            seg.summary or seg.content or "[音乐分享]",
         )
 
     if exporter.get_adapter() is SupportAdapter.onebot11:

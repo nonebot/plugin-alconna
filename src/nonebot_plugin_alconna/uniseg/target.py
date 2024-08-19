@@ -322,8 +322,7 @@ async def select_qq_client(target: "Target", bot: Bot):
     if target.channel:
         return False
     if adapter_name not in {
-        SupportAdapter.mirai_official,
-        SupportAdapter.mirai_community,
+        SupportAdapter.mirai,
         SupportAdapter.onebot12,
         SupportAdapter.onebot11,
         SupportAdapter.satori,

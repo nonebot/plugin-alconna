@@ -41,7 +41,7 @@ from nonebot_plugin_alconna.uniseg.segment import (
 class MiraiMessageExporter(MessageExporter[Message]):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
-        return SupportAdapter.mirai_official
+        return SupportAdapter.mirai
 
     def get_message_type(self):
         return Message

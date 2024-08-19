@@ -5,6 +5,7 @@ from tarina import lang
 from nonebot.adapters import Bot
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
+from nonebot_plugin_alconna import Image
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
 from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
 from nonebot_plugin_alconna.uniseg import Segment, custom_handler, custom_register
@@ -32,7 +33,7 @@ def mfbuild(builder: MessageBuilder, seg: BaseMessageSegment):
             key=seg.data.get("key"),
             summary=seg.data.get("face_name"),
         )
-    elif builder.get_adapter() is SupportAdapter.mirai_official:
+    elif builder.get_adapter() is SupportAdapter.mirai:
         return MarketFace(
             id=str(seg.data["id"]),
             summary=seg.data["name"],
@@ -46,14 +47,6 @@ def mfbuild_ob11(builder: MessageBuilder, seg: BaseMessageSegment):
         tab_id=hex(seg.data["emoji_package_id"]),
         key=seg.data.get("key"),
         summary=seg.data.get("summary"),
-    )
-
-
-@custom_register(MarketFace, "MarketFace")
-def mfbuild_mirai_community(builder: MessageBuilder, seg: BaseMessageSegment):
-    return MarketFace(
-        id=str(seg.data["faceId"]),
-        summary=seg.data["name"],
     )
 
 
@@ -97,15 +90,10 @@ async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Optional[Bot
 
         return MessageSegment.market_face(seg.id)
 
-    if exporter.get_adapter() is SupportAdapter.mirai_official:
+    if exporter.get_adapter() is SupportAdapter.mirai:
         from nonebot.adapters.mirai.message import MessageSegment
 
         return MessageSegment.market_face(int(seg.id), seg.summary)
-
-    if exporter.get_adapter() is SupportAdapter.mirai_community:
-        from nonebot.adapters.mirai2.message import MessageSegment
-
-        return MessageSegment.market_face(int(seg.id), seg.summary or "商城表情")
 
     if exporter.get_adapter() is SupportAdapter.onebot11:
         from nonebot.adapters.onebot.v11.message import MessageSegment
@@ -125,3 +113,6 @@ async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Optional[Bot
                 "summary": seg.summary,
             },
         )
+
+    url = f"https://gxh.vip.qq.com/club/item/parcel/item/{seg.id[:2]}/{seg.id}/raw300.gif"
+    return (await exporter.export([Image(url=url)], bot, fallback))[0]

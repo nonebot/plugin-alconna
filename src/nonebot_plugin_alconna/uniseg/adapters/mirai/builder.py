@@ -40,7 +40,7 @@ from nonebot_plugin_alconna.uniseg.segment import (
 class MiraiMessageBuilder(MessageBuilder):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
-        return SupportAdapter.mirai_official
+        return SupportAdapter.mirai
 
     @build("text")
     def plain(self, seg: TextSegment):

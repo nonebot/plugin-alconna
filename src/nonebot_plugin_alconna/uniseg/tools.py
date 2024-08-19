@@ -39,7 +39,7 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
 
         return await origin.download(bot)
 
-    if img.url:  # mirai2, qqguild, kook, villa, minecraft, ding
+    if img.url:  # mirai, qqguild, kook, villa, minecraft, ding
         req = Request("GET", img.url, **kwargs)
         resp = await bot.adapter.request(req)
         return resp.content  # type: ignore
@@ -61,7 +61,7 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
             assert isinstance(bot, Bot)
         resp = (await bot.get_file(type="data", file_id=img.id))["data"]
         return b64decode(resp) if isinstance(resp, str) else bytes(resp)
-    if adapter_name == "mirai2":
+    if adapter_name == "Mirai":
         url = f"https://gchat.qpic.cn/gchatpic_new/0/0-0-" f"{img.id.replace('-', '').upper()}/0"
         req = Request("GET", url, **kwargs)
         resp = await bot.adapter.request(req)

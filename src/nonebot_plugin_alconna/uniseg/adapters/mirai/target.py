@@ -10,7 +10,7 @@ from nonebot_plugin_alconna.uniseg.target import Target, TargetFetcher
 class MiraiTargetFetcher(TargetFetcher):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
-        return SupportAdapter.mirai_official
+        return SupportAdapter.mirai
 
     async def fetch(self, bot: Bot, target: Union[Target, None] = None):
         if TYPE_CHECKING:
