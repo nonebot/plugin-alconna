@@ -75,7 +75,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         return f"{event.message_id}"
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]):
         if not seg.styles:
             return Entity.text(seg.text)
         else:
@@ -85,7 +85,11 @@ class TelegramMessageExporter(MessageExporter[Message]):
                     return Entity.url(seg.text)
                 else:
                     return Entity.text_link(seg._children[0].text, seg.text)  # type: ignore
-            return Entity(STYLE_TYPE_MAP.get(style, style), {"text": seg.text})
+            res = []
+            for part in seg.style_split():
+                style = part.extract_most_style()
+                res.append(Entity(STYLE_TYPE_MAP.get(style, style), {"text": part.text}))
+            return res
 
     @export
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":

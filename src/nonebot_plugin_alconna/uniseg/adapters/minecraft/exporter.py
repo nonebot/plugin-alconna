@@ -27,6 +27,22 @@ STYLE_TYPE_MAP = {
     "strikethrough": "strikethrough",
     "obf": "obfuscated",
     "obfuscated": "obfuscated",
+    "black": "black",
+    "dark_blue": "dark_blue",
+    "dark_green": "dark_green",
+    "dark_aqua": "dark_aqua",
+    "dark_red": "dark_red",
+    "dark_purple": "dark_purple",
+    "gold": "gold",
+    "gray": "gray",
+    "dark_gray": "dark_gray",
+    "blue": "blue",
+    "green": "green",
+    "aqua": "aqua",
+    "red": "red",
+    "light_purple": "light_purple",
+    "yellow": "yellow",
+    "white": "white",
 }
 
 for color in TextColor.__members__.values():
@@ -54,30 +70,33 @@ class MinecraftMessageExporter(MessageExporter[Message]):
         )
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
-        styles = seg.extract_most_styles()
-        kwargs = {}
-        for style in styles:
-            if style not in STYLE_TYPE_MAP:
-                continue
-            style = STYLE_TYPE_MAP[style]
-            if style == "bold":
-                kwargs["bold"] = True
-            elif style == "italic":
-                kwargs["italic"] = True
-            elif style == "underline":
-                kwargs["underlined"] = True
-            elif style == "strikethrough":
-                kwargs["strikethrough"] = True
-            elif style == "obfuscated":
-                kwargs["obfuscated"] = True
+    async def text(self, seg: Text, bot: Union[Bot, None]) -> "list[MessageSegment]":
+        res = []
+        for part in seg.style_split():
+            kwargs = {}
+            for style in part.extract_most_styles():
+                if style not in STYLE_TYPE_MAP:
+                    continue
+                style = STYLE_TYPE_MAP[style]
+                if style == "bold":
+                    kwargs["bold"] = True
+                elif style == "italic":
+                    kwargs["italic"] = True
+                elif style == "underline":
+                    kwargs["underlined"] = True
+                elif style == "strikethrough":
+                    kwargs["strikethrough"] = True
+                elif style == "obfuscated":
+                    kwargs["obfuscated"] = True
+                elif "color" not in kwargs:
+                    kwargs["color"] = style
+            if "actionbar" in part.styles:
+                res.append(MessageSegment.actionbar(part.text, **kwargs))
+            elif "title" in part.styles:
+                res.append(MessageSegment.title(BaseComponent(text=part.text, **kwargs)))
             else:
-                kwargs["color"] = style
-        if "actionbar" in styles:
-            return MessageSegment.actionbar(seg.text, **kwargs)
-        if "title" in styles:
-            return MessageSegment.title(BaseComponent(text=seg.text, **kwargs))
-        return MessageSegment.text(seg.text, **kwargs)
+                res.append(MessageSegment.text(part.text, **kwargs))
+        return res
 
     @export
     async def button(self, seg: Button, bot: Union[Bot, None]):
@@ -98,7 +117,7 @@ class MinecraftMessageExporter(MessageExporter[Message]):
                     kwargs["strikethrough"] = True
                 elif style == "obfuscated":
                     kwargs["obfuscated"] = True
-                else:
+                elif "color" not in kwargs:
                     kwargs["color"] = style
         if seg.clicked_label:
             kwargs["hover_event"] = HoverEvent(

@@ -24,8 +24,12 @@ for name in _adapters:
     except Exception as e:
         warn(f"Failed to import uniseg adapter {name}: {e}", RuntimeWarning, 15)
 
-EXPORTER_MAPPING: dict[str, MessageExporter] = {SupportAdapter.nonebug.value: loaders["nonebug"].get_exporter()}
-BUILDER_MAPPING: dict[str, MessageBuilder] = {SupportAdapter.nonebug.value: loaders["nonebug"].get_builder()}
+EXPORTER_MAPPING: dict[str, MessageExporter] = {
+    SupportAdapter.nonebug.value: loaders[SupportAdapter.nonebug.value].get_exporter()
+}
+BUILDER_MAPPING: dict[str, MessageBuilder] = {
+    SupportAdapter.nonebug.value: loaders[SupportAdapter.nonebug.value].get_builder()
+}
 FETCHER_MAPPING: dict[str, TargetFetcher] = {}
 adapters = {}
 try:
