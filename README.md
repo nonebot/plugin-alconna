@@ -83,7 +83,7 @@ async def _():
 | [钉钉](https://open.dingtalk.com/document/)                           | adapters.ding                        |
 | [Console](https://github.com/nonebot/adapter-console)               | adapters.console                     |
 | [开黑啦](https://developer.kookapp.cn/)                                | adapters.kook                        |
-| [Mirai](https://docs.mirai.mamoe.net/mirai-api-http/)               | adapters.mirai, adapters.mirai2      |
+| [Mirai](https://docs.mirai.mamoe.net/mirai-api-http/)               | adapters.mirai                       |
 | [Ntchat](https://github.com/JustUndertaker/adapter-ntchat)          | adapters.ntchat                      |
 | [MineCraft](https://github.com/17TheWord/nonebot-adapter-minecraft) | adapters.minecraft                   |
 | [BiliBili Live](https://github.com/wwweww/adapter-bilibili)         | adapters.bilibili                    |

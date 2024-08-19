@@ -11,6 +11,7 @@ from ..loader import BaseLoader
 from ..target import TargetFetcher
 from ..builder import MessageBuilder
 from ..exporter import MessageExporter
+from ..constraint import SupportAdapter
 
 root = Path(__file__).parent
 loaders: dict[str, BaseLoader] = {}
@@ -23,8 +24,8 @@ for name in _adapters:
     except Exception as e:
         warn(f"Failed to import uniseg adapter {name}: {e}", RuntimeWarning, 15)
 
-EXPORTER_MAPPING: dict[str, MessageExporter] = {}
-BUILDER_MAPPING: dict[str, MessageBuilder] = {}
+EXPORTER_MAPPING: dict[str, MessageExporter] = {SupportAdapter.nonebug.value: loaders["nonebug"].get_exporter()}
+BUILDER_MAPPING: dict[str, MessageBuilder] = {SupportAdapter.nonebug.value: loaders["nonebug"].get_builder()}
 FETCHER_MAPPING: dict[str, TargetFetcher] = {}
 adapters = {}
 try:
