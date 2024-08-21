@@ -579,8 +579,7 @@ class UniMessage(list[TS]):
             self.__iadd__(Text(message), _merge=False)
         elif isinstance(message, Iterable):
             for i in message:
-                self.__iadd__(Text(i) if isinstance(i, str) else i
-                              )
+                self.__iadd__(Text(i) if isinstance(i, str) else i)
         elif isinstance(message, Segment):
             self.__iadd__(message, _merge=False)
         self.__merge_text__()
