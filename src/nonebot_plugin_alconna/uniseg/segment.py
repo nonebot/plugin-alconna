@@ -398,7 +398,7 @@ class Text(Segment):
         return self
 
     @overload
-    def __add__(self, item: Union[str, "Text"]) -> Self: ...
+    def __add__(self, item: Union[str, "Text"]) -> "Text": ...
     @overload
     def __add__(self, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[Text, TS1]]": ...
 
@@ -406,11 +406,11 @@ class Text(Segment):
         from .message import UniMessage
 
         if isinstance(item, str):
-            self.text += item
-            return self
+            return Text(self.text + item, self.styles)
 
         if isinstance(item, Text):
-            return self._merge_text(item)
+            new = Text(self.text, self.styles)
+            return new._merge_text(item)
 
         return UniMessage(Text(self.text, self.styles)) + item
 
@@ -427,7 +427,8 @@ class Text(Segment):
             return Text(item)._merge_text(self)
 
         if isinstance(item, Text):
-            return item._merge_text(self)
+            new = Text(item.text, item.styles)
+            return new._merge_text(self)
 
         return UniMessage(item) + Text(self.text, self.styles)
 
