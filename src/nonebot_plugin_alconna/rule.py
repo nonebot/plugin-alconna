@@ -74,9 +74,7 @@ class AlconnaRule:
             global_config = get_driver().config
             config = get_plugin_config(Config)
             if auto_send_output is None:
-                self.auto_send = config.alconna_auto_send_output
-            elif config.alconna_auto_send_output is False:
-                self.auto_send = False
+                self.auto_send = True if config.alconna_auto_send_output is None else config.alconna_auto_send_output
             else:
                 self.auto_send = auto_send_output
             if (
@@ -102,7 +100,7 @@ class AlconnaRule:
                     command.meta.context_style = config.alconna_context_style
             self.use_origin = config.alconna_use_origin if use_origin is None else use_origin
         except ValueError:
-            self.auto_send = auto_send_output
+            self.auto_send = True if auto_send_output is None else auto_send_output
         self.command = weakref.ref(command)
         if _aliases:
             for alias in _aliases:

@@ -6,7 +6,7 @@ from pydantic import Field, BaseModel
 class Config(BaseModel):
     """Plugin Config Here"""
 
-    alconna_auto_send_output: bool = False
+    alconna_auto_send_output: Optional[bool] = None
     """是否全局启用输出信息自动发送"""
 
     alconna_use_command_start: bool = False
