@@ -268,13 +268,22 @@ class AlconnaMatcher(Matcher):
             additional: 额外的检查函数
             parameterless: 非参数类型依赖列表
         """
-        parameterless = [
-            Check(assign(merge_path(path, cls.basepath), value, or_not, additional)),
-            *(parameterless or []),
-        ]
 
         def _decorator(func: T_Handler) -> T_Handler:
-            cls.append_handler(func, parameterless=parameterless)
+            _parameterless = [
+                Check(assign(merge_path(path, cls.basepath), value, or_not, additional)),
+                *(parameterless or []),
+            ]
+            if hasattr(func, "__nonebot_dependent__") and hasattr(func, "__nonebot_dependent_index__"):
+                handler_: Dependent = func.__nonebot_dependent__
+                cls.handlers[func.__nonebot_dependent_index__] = Dependent(
+                    call=handler_.call,
+                    params=handler_.params,
+                    parameterless=handler_.parameterless
+                    + Dependent.parse_parameterless(tuple(_parameterless), cls.HANDLER_PARAM_TYPES),
+                )
+            else:
+                cls.append_handler(func, parameterless=_parameterless)
             return func
 
         return _decorator
@@ -337,6 +346,18 @@ class AlconnaMatcher(Matcher):
         matcher.basepath = merge_path(path, cls.basepath)
         matcher.executor = cls.executor
         return matcher
+
+    @classmethod
+    def append_handler(cls, handler: T_Handler, parameterless: Iterable[Any] | None = None) -> Dependent[Any]:
+        handler_ = Dependent[Any].parse(
+            call=handler,
+            parameterless=parameterless,
+            allow_types=cls.HANDLER_PARAM_TYPES,
+        )
+        cls.handlers.append(handler_)
+        setattr(handler, "__nonebot_dependent__", handler_)
+        setattr(handler, "__nonebot_dependent_index__", len(cls.handlers) - 1)
+        return handler_
 
     @classmethod
     def handle(
