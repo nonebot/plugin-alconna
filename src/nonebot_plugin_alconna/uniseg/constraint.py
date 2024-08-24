@@ -11,7 +11,6 @@ log = logger_wrapper("Plugin-Uniseg")
 class SupportAdapter(str, Enum):
     """支持的适配器"""
 
-    bilibili = "BilibiliLive"
     console = "Console"
     ding = "Ding"
     discord = "Discord"
@@ -50,7 +49,6 @@ class SupportScope(str, Enum):
     kook = "Kaiheila"
     minecraft = "Minecraft"
     github = "GitHub"
-    bilibili = "Bilibili"
     console = "Console"
     ding = "Ding"
     wechat = "WeChat"
@@ -96,7 +94,6 @@ class SupportScope(str, Enum):
 class SupportAdapterModule(str, Enum):
     """支持的适配器的模块路径"""
 
-    bilibili = "nonebot.adapters.bilibili"
     console = "nonebot.adapters.console"
     ding = "nonebot.adapters.ding"
     discord = "nonebot.adapters.discord"

@@ -429,13 +429,6 @@ async def select_github(target: "Target", bot: Bot):
     return bot.adapter.get_name() == SupportAdapter.github
 
 
-@_register(SupportScope.bilibili)
-async def select_bilibili(target: "Target", bot: Bot):
-    if target.channel or target.private:
-        return False
-    return bot.adapter.get_name() == SupportAdapter.bilibili
-
-
 @_register(SupportScope.console)
 async def select_console(target: "Target", bot: Bot):
     if target.channel:

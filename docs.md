@@ -423,10 +423,9 @@ async def handle():
 | [钉钉](https://github.com/nonebot/adapter-ding)                       | adapters.ding                        |
 | [Console](https://github.com/nonebot/adapter-console)               | adapters.console                     |
 | [开黑啦](https://github.com/Tian-que/nonebot-adapter-kaiheila)         | adapters.kook                        |
-| [Mirai](https://github.com/ieew/nonebot_adapter_mirai2)             | adapters.mirai, adapters.mirai2      |
+| [Mirai](https://github.com/nonebot/adapter-mirai)                   | adapters.mirai, adapters.mirai2      |
 | [Ntchat](https://github.com/JustUndertaker/adapter-ntchat)          | adapters.ntchat                      |
 | [MineCraft](https://github.com/17TheWord/nonebot-adapter-minecraft) | adapters.minecraft                   |
-| [BiliBili Live](https://github.com/wwweww/adapter-bilibili)         | adapters.bilibili                    |
 | [Walle-Q](https://github.com/onebot-walle/nonebot_adapter_walleq)   | adapters.onebot12                    |
 | [Discord](https://github.com/nonebot/adapter-discord)               | adapters.discord                     |
 | [Red 协议](https://github.com/nonebot/adapter-red)                    | adapters.red                         |

@@ -1,5 +1,4 @@
 MAPPING = {
-    "BilibiliLive": "bilibili",
     "Console": "console",
     "Ding": "ding",
     "Discord": "discord",

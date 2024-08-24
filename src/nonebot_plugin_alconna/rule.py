@@ -77,9 +77,11 @@ class AlconnaRule:
                 self.auto_send = True if config.alconna_auto_send_output is None else config.alconna_auto_send_output
             else:
                 self.auto_send = auto_send_output
-            if (
-                config.alconna_use_command_start if use_cmd_start is None else use_cmd_start
-            ) and global_config.command_start:
+            if use_cmd_start is None:
+                _use_cmd_start = False if config.alconna_use_command_start is None else config.alconna_use_command_start
+            else:
+                _use_cmd_start = use_cmd_start
+            if _use_cmd_start and global_config.command_start:
                 with command_manager.update(command):
                     if command.prefixes:
                         if command.command:

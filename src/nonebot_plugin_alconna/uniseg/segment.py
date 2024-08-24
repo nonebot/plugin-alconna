@@ -95,7 +95,7 @@ class Segment:
         res.pop("_children", None)
         return res
 
-    def __call__(self, *segments: Union[str, "Segment"]) -> Self:
+    def __call__(self, *segments: Union[str, "TS"]) -> Self:
         if not segments:
             return self
         self._children.extend(Text(s) if isinstance(s, str) else s for s in segments)
