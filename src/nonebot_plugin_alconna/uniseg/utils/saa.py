@@ -2,9 +2,10 @@ from io import BytesIO
 from typing import Any
 
 from nonebot import require
+from nonebot.compat import model_dump
 from nonebot.internal.matcher import current_bot, current_event
 
-from nonebot_plugin_alconna.uniseg.message import Receipt, UniMessage
+from nonebot_plugin_alconna.uniseg.message import Text, AtAll, Receipt, UniMessage
 
 try:
     require("nonebot_plugin_saa")
@@ -12,7 +13,7 @@ try:
     from nonebot_plugin_saa import MessageFactory, extract_target
     from nonebot_plugin_saa.registries import Receipt as SaaReceipt
     from nonebot_plugin_saa.utils.exceptions import AdapterNotSupported
-    from nonebot_plugin_saa.types.common_message_segment import Text, Image, Reply, Mention
+    from nonebot_plugin_saa.types.common_message_segment import Text, Image, Reply, Mention, MentionAll
 except ImportError:
     raise ImportError("You need to install nonebot_plugin_saa to use this module.")
 
@@ -31,7 +32,7 @@ def convert(mf: MessageFactory) -> UniMessage:
             else:
                 msg.image(path=image, name=msf.data["name"])
         elif isinstance(msf, Reply):
-            msg.text(f"[回复:{msf.data['message_id'].dict()}]")
+            msg.text(f"[回复:{model_dump(msf.data['message_id'])}]")
         elif isinstance(msf, Mention):
             user_id = msf.data["user_id"]
             if user_id == "all":
@@ -40,6 +41,11 @@ def convert(mf: MessageFactory) -> UniMessage:
                 msg.at_all(online=True)
             else:
                 msg.at(user_id)
+        elif isinstance(msf, MentionAll):
+            if fallback := msf.data["fallback"]:
+                msg.append(AtAll(msf.data["online_only"])(fallback))
+            else:
+                msg.at_all(online=msf.data["online_only"])
         else:
             msg.text(f"[未知:{msf}]")
     return msg
