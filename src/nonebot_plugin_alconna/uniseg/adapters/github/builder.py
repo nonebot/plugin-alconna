@@ -10,6 +10,6 @@ class GithubMessageBuilder(MessageBuilder):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.github
 
-    @build("text")
+    @build("markdown")
     def text(self, seg: MessageSegment):
         return Text(seg.data["text"])

@@ -1,8 +1,12 @@
 from typing import Union
 
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.github.event import MessageEvent  # type: ignore
 from nonebot.adapters.github.message import Message, MessageSegment  # type: ignore
+from nonebot.adapters.github.event import (  # type: ignore
+    IssueCommentCreated,  # type: ignore
+    CommitCommentCreated,  # type: ignore
+    PullRequestReviewCommentCreated,  # type: ignore
+)
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, Text, Image
@@ -26,27 +30,27 @@ class GithubMessageExporter(MessageExporter["Message"]):
         )
 
     def get_message_id(self, event: Event) -> str:
-        assert isinstance(event, MessageEvent)
+        assert isinstance(event, (CommitCommentCreated, IssueCommentCreated, PullRequestReviewCommentCreated))
         return str(event.id)  # type: ignore
 
     @export
     async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
-        return MessageSegment.text(seg.text)
+        return MessageSegment.markdown(seg.text)
 
     @export
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
-        return MessageSegment.text(f"@{seg.target}")
+        return MessageSegment.markdown(f"@{seg.target}")
 
     @export
     async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
-            return MessageSegment.text(f"![]({seg.url})")
+            return MessageSegment.markdown(f"![]({seg.url})")
         if seg.__class__.to_url and seg.path:
             url = await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
-            return MessageSegment.text(f"![]({url})")
+            return MessageSegment.markdown(f"![]({url})")
         if seg.__class__.to_url and seg.raw:
             url = await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
-            return MessageSegment.text(f"![]({url})")
+            return MessageSegment.markdown(f"![]({url})")
         raise ValueError("github image segment must have url")
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
