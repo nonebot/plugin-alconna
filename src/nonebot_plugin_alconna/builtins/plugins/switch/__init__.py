@@ -12,11 +12,11 @@ from nonebot_plugin_alconna import on_alconna
 from .config import Config
 
 __plugin_meta__ = PluginMetadata(
-    name="help",
-    description="展示所有命令帮助",
-    usage="/help",
+    name="switch",
+    description="启用或禁用某个命令, 仅限超级用户使用",
+    usage="/enable & /disable",
     type="application",
-    homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/help",
+    homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/switch",
     config=Config,
     supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
 )

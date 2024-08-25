@@ -1,12 +1,10 @@
 from typing import Union
 
 from nonebot.adapters import Bot, Event
+from nonebot.adapters.github.event import IssueCommentCreated  # type: ignore
+from nonebot.adapters.github.event import CommitCommentCreated  # type: ignore
 from nonebot.adapters.github.message import Message, MessageSegment  # type: ignore
-from nonebot.adapters.github.event import (  # type: ignore
-    IssueCommentCreated,  # type: ignore
-    CommitCommentCreated,  # type: ignore
-    PullRequestReviewCommentCreated,  # type: ignore
-)
+from nonebot.adapters.github.event import PullRequestReviewCommentCreated  # type: ignore
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, Text, Image
