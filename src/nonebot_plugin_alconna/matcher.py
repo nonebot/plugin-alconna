@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import inspect
 import weakref
 from pathlib import Path
 from warnings import warn
@@ -274,9 +275,13 @@ class AlconnaMatcher(Matcher):
                 Check(assign(merge_path(path, cls.basepath), value, or_not, additional)),
                 *(parameterless or []),
             ]
-            if hasattr(func, "__nonebot_dependent__") and hasattr(func, "__nonebot_dependent_index__"):
-                handler_: Dependent = func.__nonebot_dependent__
-                cls.handlers[func.__nonebot_dependent_index__] = Dependent(
+            if inspect.ismethod(func):
+                _func = func.__func__
+            else:
+                _func = func
+            if hasattr(_func, "__nonebot_dependent__") and hasattr(_func, "__nonebot_dependent_index__"):
+                handler_: Dependent = _func.__nonebot_dependent__
+                cls.handlers[_func.__nonebot_dependent_index__] = Dependent(
                     call=handler_.call,
                     params=handler_.params,
                     parameterless=handler_.parameterless
@@ -355,8 +360,12 @@ class AlconnaMatcher(Matcher):
             allow_types=cls.HANDLER_PARAM_TYPES,
         )
         cls.handlers.append(handler_)
-        setattr(handler, "__nonebot_dependent__", handler_)
-        setattr(handler, "__nonebot_dependent_index__", len(cls.handlers) - 1)
+        if inspect.ismethod(handler):
+            setattr(handler.__func__, "__nonebot_dependent__", handler_)
+            setattr(handler.__func__, "__nonebot_dependent_index__", len(cls.handlers) - 1)
+        else:
+            setattr(handler, "__nonebot_dependent__", handler_)
+            setattr(handler, "__nonebot_dependent_index__", len(cls.handlers) - 1)
         return handler_
 
     @classmethod

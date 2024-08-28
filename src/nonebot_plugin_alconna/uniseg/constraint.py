@@ -80,7 +80,7 @@ class SupportScope(str, Enum):
         return {
             "chronocat": SupportScope.qq_client,
             "onebot": SupportScope.qq_client,
-            "qq": SupportScope.qq_guild,
+            "qq": SupportScope.qq_api,
             "telegram": SupportScope.telegram,
             "discord": SupportScope.discord,
             "feishu": SupportScope.feishu,
