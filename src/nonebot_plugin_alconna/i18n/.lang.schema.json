@@ -216,6 +216,11 @@
               "title": "locale_timeout",
               "description": "value of lang item type 'locale_timeout'",
               "type": "string"
+            },
+            "config_name_error": {
+              "title": "config_name_error",
+              "description": "value of lang item type 'config_name_error'",
+              "type": "string"
             }
           }
         },

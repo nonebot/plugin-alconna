@@ -78,7 +78,8 @@
               "list",
               "switch",
               "locale_missing",
-              "locale_timeout"
+              "locale_timeout",
+              "config_name_error"
             ]
           },
           {

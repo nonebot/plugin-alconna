@@ -45,7 +45,8 @@
       "list": "Following languages are supported:",
       "switch": "Switch to '{locale}' successfully.",
       "locale_missing": "{:At(user, $event.get_user_id())}Missing locale argument, please input:",
-      "locale_timeout": "{:At(user, $event.get_user_id())}Timeout for waiting locale input."
+      "locale_timeout": "{:At(user, $event.get_user_id())}Timeout for waiting locale input.",
+      "config_name_error": "{:At(user, $event.get_user_id())}Invalid name of i18n parent dir: {name}"
     },
     "help": {
       "plugin_name_unknown": "Unknown plugin",

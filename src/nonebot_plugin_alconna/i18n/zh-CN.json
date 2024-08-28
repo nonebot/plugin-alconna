@@ -45,7 +45,8 @@
       "list": "支持的语言列表:",
       "switch": "切换语言成功: '{locale}'。",
       "locale_missing": "{:At(user, $event.get_user_id())}缺少语言参数，请输入：",
-      "locale_timeout": "{:At(user, $event.get_user_id())}等待语言参数输入超时。"
+      "locale_timeout": "{:At(user, $event.get_user_id())}等待语言参数输入超时。",
+      "config_name_error": "{:At(user, $event.get_user_id())} 未能找到 {name} 所属的 i18n 目录"
     },
     "help": {
       "plugin_name_unknown": "未知插件",

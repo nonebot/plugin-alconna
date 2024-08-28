@@ -6,5 +6,6 @@
   "require": [
     "completion.nonebot",
     "nbp-alc"
-  ]
+  ],
+  "name": "nonebot_plugin_alconna"
 }

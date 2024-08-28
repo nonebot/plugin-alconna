@@ -46,7 +46,7 @@ STYLE_TYPE_MAP = {
 }
 
 for color in TextColor.__members__.values():
-    STYLE_TYPE_MAP[color.value] = color.value
+    STYLE_TYPE_MAP[color.value] = color  # type: ignore
 
 
 class MinecraftMessageExporter(MessageExporter[Message]):
@@ -71,7 +71,7 @@ class MinecraftMessageExporter(MessageExporter[Message]):
 
     @export
     async def text(self, seg: Text, bot: Union[Bot, None]) -> "list[MessageSegment]":
-        res = []
+        res: list[MessageSegment] = []
         for part in seg.style_split():
             kwargs = {}
             for style in part.extract_most_styles():
@@ -91,9 +91,11 @@ class MinecraftMessageExporter(MessageExporter[Message]):
                 elif "color" not in kwargs:
                     kwargs["color"] = style
             if "actionbar" in part.styles:
-                res.append(MessageSegment.actionbar(part.text, **kwargs))
+                res.append(
+                    MessageSegment("$minecraft:actionbar", {"content": MessageSegment.text(part.text, **kwargs)})
+                )
             elif "title" in part.styles:
-                res.append(MessageSegment.title(BaseComponent(text=part.text, **kwargs)))
+                res.append(MessageSegment("$minecraft:title", {"content": MessageSegment.text(part.text, **kwargs)}))
             else:
                 res.append(MessageSegment.text(part.text, **kwargs))
         return res
@@ -121,7 +123,7 @@ class MinecraftMessageExporter(MessageExporter[Message]):
                     kwargs["color"] = style
         if seg.clicked_label:
             kwargs["hover_event"] = HoverEvent(
-                action=HoverAction.SHOW_TEXT, base_component_list=[BaseComponent(text=seg.clicked_label)]
+                action=HoverAction.SHOW_TEXT, text=[BaseComponent(text=seg.clicked_label)]
             )
         if seg.flag == "link":
             return MessageSegment.text(
@@ -143,8 +145,13 @@ class MinecraftMessageExporter(MessageExporter[Message]):
             return [await self.button(child, bot) for child in seg.children]
         return MessageSegment.text("")
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
-        assert isinstance(bot, MinecraftBot)
-        if isinstance(target, Event):
-            return await bot.send(target, message, **kwargs)  # type: ignore
+    async def send_to(self, target: Union[Target, Event], bot: MinecraftBot, message: Message, **kwargs):
+        if titles := message.get("$minecraft:title"):
+            message = message.exclude("$minecraft:title")
+            for title in titles:
+                await bot.send_title(title.data["content"])
+        if actionbars := message.get("$minecraft:actionbar"):
+            message = message.exclude("$minecraft:actionbar")
+            for actionbar in actionbars:
+                await bot.send_actionbar(actionbar.data["content"])
         return await bot.send_msg(message=message)  # type: ignore

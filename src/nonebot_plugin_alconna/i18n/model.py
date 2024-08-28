@@ -65,6 +65,7 @@ class NbpAlcBuiltinLang:
     switch: LangItem = LangItem("nbp-alc/builtin", "lang.switch")
     locale_missing: LangItem = LangItem("nbp-alc/builtin", "lang.locale_missing")
     locale_timeout: LangItem = LangItem("nbp-alc/builtin", "lang.locale_timeout")
+    config_name_error: LangItem = LangItem("nbp-alc/builtin", "lang.config_name_error")
 
 
 class NbpAlcBuiltinHelp:
