@@ -1,7 +1,7 @@
 import pytest
-from nonebot import get_adapter
-from nonebot.adapters.satori import Adapter, Bot, Message, MessageSegment
 from nonebug import App
+from nonebot import get_adapter
+from nonebot.adapters.satori import Bot, Adapter, Message, MessageSegment
 
 from tests.fake import FAKE_SATORI_LOGIN, fake_message_event_satori
 
