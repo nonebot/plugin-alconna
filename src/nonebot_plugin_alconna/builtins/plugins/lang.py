@@ -33,7 +33,7 @@ async def _(name: Match[str]):
     try:
         locales = lang.locales_in(name.result) if name.available else lang.locales
     except KeyError:
-        await cmd.finish(Lang.nbp_alc_builtin.lang.config_name_error(name=name.result))
+        await cmd.finish(UniMessage.i18n(Lang.nbp_alc_builtin.lang.config_name_error, name=name.result))
     else:
         await cmd.finish(Lang.nbp_alc_builtin.lang.list() + "\n" + "\n".join(f" * {locale}" for locale in locales))
 
