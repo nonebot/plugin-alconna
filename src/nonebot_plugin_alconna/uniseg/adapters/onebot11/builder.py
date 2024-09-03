@@ -17,12 +17,12 @@ class Onebot11MessageBuilder(MessageBuilder):
     @build("at")
     def at(self, seg: MessageSegment):
         if seg.data["qq"] != "all":
-            return At("user", seg.data["qq"])
+            return At("user", str(seg.data["qq"]))
         return AtAll()
 
     @build("face")
     def face(self, seg: MessageSegment):
-        return Emoji(seg.data["id"])
+        return Emoji(str(seg.data["id"]))
 
     @build("image")
     def image(self, seg: MessageSegment):
@@ -38,7 +38,7 @@ class Onebot11MessageBuilder(MessageBuilder):
 
     @build("reply")
     def reply(self, seg: MessageSegment):
-        return Reply(seg.data["id"], origin=seg)
+        return Reply(str(seg.data["id"]), origin=seg)
 
     @build("forward")
     def forward(self, seg: MessageSegment):
