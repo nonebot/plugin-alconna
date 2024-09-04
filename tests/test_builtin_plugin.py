@@ -94,7 +94,7 @@ async def test_lang_switch(app: App):
 
 @pytest.mark.asyncio()
 async def test_lang_list(app: App, mocker: MockerFixture):
-    from tarina.lang import lang
+    from nonebot_plugin_alconna.consts import lang
 
     from nonebot_plugin_alconna import load_builtin_plugin
 
@@ -107,7 +107,7 @@ async def test_lang_list(app: App, mocker: MockerFixture):
             return {"zh-CN"}
         return old_locales_in(config_name)
 
-    mocker.patch("tarina.lang.lang.locales_in", locales_in)
+    mocker.patch("nonebot_plugin_alconna.consts.lang.locales_in", locales_in)
 
     async with app.test_matcher() as ctx:
         adapter = get_adapter(Adapter)
