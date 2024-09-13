@@ -8,27 +8,26 @@ from nonebot.adapters.kritor.model import Contact, SceneType
 from nonebot.adapters.kritor.message import Message, MessageSegment
 from nonebot.adapters.kritor.protos.kritor.common import Button as ButtonModel
 from nonebot.adapters.kritor.protos.kritor.message import SendMessageResponse, SendMessageByResIdResponse
-from nonebot.adapters.kritor.event import (
-    MessageEvent,
-    GroupMessage, 
-    TempMessage,
-    FriendMessage,
-    StrangerMessage,
-    NearbyMessage,
-    GuildMessage,
-    GroupApplyRequest, 
-    FriendApplyRequest, 
-    InvitedJoinGroupRequest
-)
-from nonebot.adapters.kritor.protos.kritor.common import (
-    #Sender,
-    PrivateSender,
+from nonebot.adapters.kritor.protos.kritor.common import (  # Sender,
     GroupSender,
     ButtonAction,
     ButtonRender,
+    PrivateSender,
     PushMessageBody,
     ForwardMessageBody,
     ButtonActionPermission,
+)
+from nonebot.adapters.kritor.event import (
+    TempMessage,
+    GroupMessage,
+    GuildMessage,
+    MessageEvent,
+    FriendMessage,
+    NearbyMessage,
+    StrangerMessage,
+    GroupApplyRequest,
+    FriendApplyRequest,
+    InvitedJoinGroupRequest,
 )
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
@@ -293,7 +292,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
         if _target.private:
             if not _target.parent_id:
                 return await bot.send_message(
-                   contact=Contact(type=SceneType.FRIEND, id=_target.id), elements=message.to_elements()
+                    contact=Contact(type=SceneType.FRIEND, id=_target.id), elements=message.to_elements()
                 )
             return await bot.send_message(
                 contact=Contact(type=SceneType.STRANGER_FROM_GROUP, id=_target.id, sub_id=_target.parent_id),
