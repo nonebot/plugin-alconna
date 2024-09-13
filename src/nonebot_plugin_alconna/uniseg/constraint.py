@@ -78,8 +78,12 @@ class SupportScope(str, Enum):
     @staticmethod
     def ensure_satori(platform: str):
         return {
+            "red": SupportScope.qq_client,
             "chronocat": SupportScope.qq_client,
             "onebot": SupportScope.qq_client,
+            "nekobox": SupportScope.qq_client,
+            "lagrange": SupportScope.qq_client,
+            "lagrange.python": SupportScope.qq_client,
             "qq": SupportScope.qq_api,
             "telegram": SupportScope.telegram,
             "discord": SupportScope.discord,

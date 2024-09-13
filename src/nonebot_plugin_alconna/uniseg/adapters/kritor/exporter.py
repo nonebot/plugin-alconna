@@ -8,9 +8,22 @@ from nonebot.adapters.kritor.model import Contact, SceneType
 from nonebot.adapters.kritor.message import Message, MessageSegment
 from nonebot.adapters.kritor.protos.kritor.common import Button as ButtonModel
 from nonebot.adapters.kritor.protos.kritor.message import SendMessageResponse, SendMessageByResIdResponse
-from nonebot.adapters.kritor.event import MessageEvent, GroupApplyRequest, FriendApplyRequest, InvitedJoinGroupRequest
+from nonebot.adapters.kritor.event import (
+    MessageEvent,
+    GroupMessage, 
+    TempMessage,
+    FriendMessage,
+    StrangerMessage,
+    NearbyMessage,
+    GuildMessage,
+    GroupApplyRequest, 
+    FriendApplyRequest, 
+    InvitedJoinGroupRequest
+)
 from nonebot.adapters.kritor.protos.kritor.common import (
-    Sender,
+    #Sender,
+    PrivateSender,
+    GroupSender,
     ButtonAction,
     ButtonRender,
     PushMessageBody,
@@ -47,41 +60,48 @@ class KritorMessageExporter(MessageExporter["Message"]):
         return SupportAdapter.kritor
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+        if isinstance(event, GroupMessage):
+            return Target(
+                str(event.sender.group_id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
+        if isinstance(event, TempMessage):
+            return Target(
+                str(event.sender.uin or event.sender.uid),
+                parent_id=str(event.sender.group_id),
+                adapter=self.get_adapter(),
+                private=True,
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
+        if isinstance(event, (FriendMessage, StrangerMessage, NearbyMessage)):
+            return Target(
+                str(event.sender.uin or event.sender.uid),
+                adapter=self.get_adapter(),
+                private=True,
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
+        if isinstance(event, GuildMessage):
+            return Target(
+                str(event.sender.channel_id),
+                parent_id=str(event.sender.guild_id),
+                channel=True,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_guild,
+            )
         if isinstance(event, MessageEvent):
-            if event.contact.type is SceneType.GROUP:
-                return Target(
-                    str(event.contact.id),
-                    adapter=self.get_adapter(),
-                    self_id=bot.self_id if bot else None,
-                    scope=SupportScope.qq_client,
-                )
-            if event.contact.type in (SceneType.FRIEND, SceneType.STRANGER, SceneType.NEARBY):
-                return Target(
-                    str(event.contact.id),
-                    private=True,
-                    adapter=self.get_adapter(),
-                    self_id=bot.self_id if bot else None,
-                    scope=SupportScope.qq_client,
-                )
-            if event.contact.type is SceneType.GUILD:
-                return Target(
-                    str(event.contact.sub_id),
-                    parent_id=str(event.contact.id),
-                    channel=True,
-                    adapter=self.get_adapter(),
-                    self_id=bot.self_id if bot else None,
-                    scope=SupportScope.qq_guild,
-                )
-            if event.contact.type is SceneType.STRANGER_FROM_GROUP:
-                return Target(
-                    str(event.sender.uin or event.sender.uid),
-                    parent_id=str(event.contact.id),
-                    private=True,
-                    adapter=self.get_adapter(),
-                    self_id=bot.self_id if bot else None,
-                    scope=SupportScope.qq_client,
-                )
-        elif isinstance(event, FriendApplyRequest):
+            return Target(
+                str(event.contact.id),
+                parent_id=event.contact.sub_id or "",
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_client,
+            )
+        if isinstance(event, FriendApplyRequest):
             return Target(
                 str(event.applier_uin or event.applier_uid),
                 private=True,
@@ -89,7 +109,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.qq_client,
             )
-        elif isinstance(event, GroupApplyRequest):
+        if isinstance(event, GroupApplyRequest):
             return Target(
                 str(event.applier_uin or event.applier_uid),
                 parent_id=str(event.group_id),
@@ -98,7 +118,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.qq_client,
             )
-        elif isinstance(event, InvitedJoinGroupRequest):
+        if isinstance(event, InvitedJoinGroupRequest):
             return Target(
                 str(event.group_id),
                 adapter=self.get_adapter(),
@@ -178,7 +198,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
                     ForwardMessageBody(
                         message=PushMessageBody(
                             time=int(node.time.timestamp()),
-                            sender=Sender(uid=node.uid, uin=int(node.uid), nick=node.name),
+                            group=GroupSender(uin=int(node.uid), nick=node.name),
                             elements=content.to_elements(),
                         )
                     )
@@ -241,13 +261,18 @@ class KritorMessageExporter(MessageExporter["Message"]):
         if msg := message.include("$kritor:forward"):
             seg = msg[0]
             if _target.private:
-                contact = Contact(scene=SceneType.FRIEND, peer=_target.id, sub_peer=None)
+                contact = Contact(type=SceneType.FRIEND, id=_target.id, sub_id=None)
             else:
-                contact = Contact(scene=SceneType.GROUP, peer=_target.id, sub_peer=None)
+                contact = Contact(type=SceneType.GROUP, id=_target.id, sub_id=None)
             if "res_id" in seg.data:
                 return await bot.send_message_by_res_id(res_id=seg.data["res_id"], contact=contact)
             for node in seg.data["nodes"]:
-                node.message.contact = contact.dump()
+                node.message.scene = contact.type
+                if _target.private:
+                    node.message.private = PrivateSender(uin=node.message.group.uin, nick=node.message.group.nick)
+                    del node.message.group
+                else:
+                    node.message.group.group_id = contact.id
             return await bot.send_forward_message(contact, seg.data["nodes"])
         kb = None
         if message.has("$kritor:button"):
@@ -266,8 +291,13 @@ class KritorMessageExporter(MessageExporter["Message"]):
         if isinstance(target, Event):
             return await bot.send(target, message, **kwargs)  # type: ignore
         if _target.private:
+            if not _target.parent_id:
+                return await bot.send_message(
+                   contact=Contact(type=SceneType.FRIEND, id=_target.id), elements=message.to_elements()
+                )
             return await bot.send_message(
-                contact=Contact(scene=SceneType.FRIEND, peer=_target.id, sub_peer=None), elements=message.to_elements()
+                contact=Contact(type=SceneType.STRANGER_FROM_GROUP, id=_target.id, sub_id=_target.parent_id),
+                elements=message.to_elements(),
             )
         elif _target.channel:
             if not _target.parent_id:
@@ -277,7 +307,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
             )
         else:
             return await bot.send_message(
-                contact=Contact(scene=SceneType.GROUP, peer=_target.id, sub_peer=None), elements=message.to_elements()
+                contact=Contact(type=SceneType.GROUP, id=_target.id), elements=message.to_elements()
             )
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):

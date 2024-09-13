@@ -28,6 +28,7 @@ from .segment import (
 
 TS = TypeVar("TS", bound=Segment)
 TM = TypeVar("TM", bound=Message)
+TMS = TypeVar("TMS", bound=MessageSegment, covariant=True)
 
 
 def merge_text(msg: Message) -> Message:
@@ -102,27 +103,27 @@ async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[MessageSegment]]
-) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[MessageSegment]]: ...
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]]
+) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]]: ...
 
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[list[MessageSegment]]]
-) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[list[MessageSegment]]]: ...
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]]
+) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]]: ...
 
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[MessageSegment, list[MessageSegment]]]]
-) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[MessageSegment, list[MessageSegment]]]]: ...
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]]
+) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]]: ...
 
 
 def export(
     func: Union[
-        Callable[[Any, TS, Union[Bot, None]], Awaitable[MessageSegment]],
-        Callable[[Any, TS, Union[Bot, None]], Awaitable[list[MessageSegment]]],
-        Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[MessageSegment, list[MessageSegment]]]],
+        Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]],
+        Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]],
+        Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]],
     ]
 ):
     sig = inspect.signature(func)

@@ -95,7 +95,6 @@ async def test_lang_switch(app: App):
 @pytest.mark.asyncio()
 async def test_lang_list(app: App, mocker: MockerFixture):
     from nonebot_plugin_alconna.consts import lang
-
     from nonebot_plugin_alconna import load_builtin_plugin
 
     load_builtin_plugin("lang")
