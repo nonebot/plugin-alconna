@@ -22,7 +22,6 @@ from nonebot.message import run_postprocessor
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
 from tarina import is_awaitable, run_always_await
-from arclet.alconna.typing import ShortcutRegWrapper
 from nepattern import ANY, STRING, TPattern, AnyString
 from _weakref import _remove_dead_weakref  # type: ignore
 from nonebot import require, get_driver, get_plugin_config
@@ -30,6 +29,7 @@ from arclet.alconna.tools import AlconnaFormat, AlconnaString
 from nonebot.plugin.on import store_matcher, get_matcher_source
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from nonebot.compat import type_validate_json, type_validate_python
+from arclet.alconna.typing import ShortcutRegWrapper, _AllParamPattern
 from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
 from nonebot.exception import PausedException, FinishedException, RejectedException
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
@@ -103,10 +103,8 @@ def _validate(target: Arg[Any], arg: Segment):
     if arg.is_text():
         arg = arg.data["text"]
     res = value.validate(arg, default_val)
-    if target.optional and res.flag != "valid":
-        return
     if res.flag == "error":
-        return
+        return res.error()
     return res._value  # noqa
 
 
@@ -551,7 +549,7 @@ class AlconnaMatcher(Matcher):
         """
         path = merge_path(path, cls.basepath)
         if not (arg := extract_arg(path, cls.command())):
-            raise ValueError(Lang.nbp_alc.error.matcher_got_path(path=path, cmd=cls.command))
+            raise ValueError(Lang.nbp_alc.error.matcher_got_path(path=path, cmd=cls.command()))
 
         @annotation(event=Event, bot=Bot, matcher=AlconnaMatcher, state=T_State)
         async def _key_getter(event: Event, bot: Bot, matcher: AlconnaMatcher, state: T_State):
@@ -562,18 +560,36 @@ class AlconnaMatcher(Matcher):
                     await matcher.reject(prompt, fallback=fallback)
                 if not isinstance(msg, UniMessage):
                     msg = await UniMessage.generate(message=msg, event=event, bot=bot)
-                ms = msg[0]
-                if isinstance(ms, Text) and not ms.text.strip():
-                    await matcher.reject(prompt, fallback=fallback)
-                log("DEBUG", escape_tag(Lang.nbp_alc.log.got_path.ms(path=path, ms=ms)))
-                if (res := _validate(arg, ms)) is None:  # type: ignore
-                    log(
-                        "TRACE",
-                        escape_tag(Lang.nbp_alc.log.got_path.validate(path=path, validate=res)),
-                    )
-                    await matcher.reject(prompt, fallback=fallback)
-                if middleware:
-                    res = await run_always_await(middleware, event, bot, matcher.state, res)
+                if arg.value.alias == "*":
+                    if TYPE_CHECKING:
+                        assert isinstance(arg.value, _AllParamPattern)
+                    log("DEBUG", escape_tag(Lang.nbp_alc.log.got_path.ms(path=path, ms=msg)))
+                    if not arg.value.types:
+                        res = msg
+                    else:
+                        res = UniMessage()
+                        for seg in msg:
+                            if arg.value.validate(seg).flag == "valid":
+                                res.append(seg)
+                            elif arg.value.ignore:
+                                continue
+                            else:
+                                await matcher.reject(prompt, fallback=fallback)
+                        if not res:
+                            await matcher.reject(prompt, fallback=fallback)
+                else:
+                    ms = msg[0]
+                    if isinstance(ms, Text) and not ms.text.strip():
+                        await matcher.reject(prompt, fallback=fallback)
+                    log("DEBUG", escape_tag(Lang.nbp_alc.log.got_path.ms(path=path, ms=ms)))
+                    if isinstance(res := _validate(arg, ms), BaseException):  # type: ignore
+                        log(
+                            "TRACE",
+                            escape_tag(Lang.nbp_alc.log.got_path.validate(path=path, validate=repr(res))),
+                        )
+                        await matcher.reject(prompt, fallback=fallback)
+                    if middleware:
+                        res = await run_always_await(middleware, event, bot, matcher.state, res)
                 matcher.set_path_arg(path, res)
                 return
             if matcher.state.get(ALCONNA_ARG_KEY.format(key=path), ...) is not ...:
