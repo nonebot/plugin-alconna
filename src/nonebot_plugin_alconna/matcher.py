@@ -125,11 +125,16 @@ T1 = TypeVar("T1")
 
 
 class AlconnaMatcher(Matcher):
-    command: ClassVar[weakref.ReferenceType[Alconna]]
+    # command: ClassVar[weakref.ReferenceType[Alconna]]
     basepath: ClassVar[str]
     executor: ClassVar[ExtensionExecutor]
     _command_path: ClassVar[str]
     _tests: ClassVar[list[tuple[UniMessage, dict[str, Any] | None, bool]]]
+    _rule: ClassVar[Rule]
+
+    @classmethod
+    def command(cls) -> Alconna:
+        return list(cls._rule.checkers)[0].call.command()
 
     @classmethod
     @overload
@@ -345,7 +350,7 @@ class AlconnaMatcher(Matcher):
             default_state=state,
         )
         store_matcher(matcher)
-        matcher.command = cls.command
+        matcher._rule = cls._rule
         matcher.basepath = merge_path(path, cls.basepath)
         matcher.executor = cls.executor
         return matcher
@@ -1067,7 +1072,7 @@ def on_alconna(
 
     matchers[priority].append(NewMatcher)
     store_matcher(matcher)
-    matcher.command = weakref.ref(command)
+    matcher._rule = _rule
     matcher._command_path = command.path
     matcher.basepath = ""
     matcher.executor = executor

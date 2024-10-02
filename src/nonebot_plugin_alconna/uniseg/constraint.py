@@ -85,6 +85,7 @@ class SupportScope(str, Enum):
             "lagrange": SupportScope.qq_client,
             "lagrange.python": SupportScope.qq_client,
             "qq": SupportScope.qq_api,
+            "qqguild": SupportScope.qq_api,
             "telegram": SupportScope.telegram,
             "discord": SupportScope.discord,
             "feishu": SupportScope.feishu,

@@ -103,7 +103,14 @@ class AlconnaRule:
             self.use_origin = config.alconna_use_origin if use_origin is None else use_origin
         except ValueError:
             self.auto_send = True if auto_send_output is None else auto_send_output
-        self.command = weakref.ref(command)
+
+        def _update(cmd_id: int):
+            try:
+                self.command = weakref.ref(command_manager._resolve(cmd_id))
+            except (KeyError, AttributeError):
+                pass
+
+        self.command = weakref.ref(command, lambda _: _update(_.__hash__()))
         if _aliases:
             for alias in _aliases:
                 command.shortcut(alias, prefix=True)
