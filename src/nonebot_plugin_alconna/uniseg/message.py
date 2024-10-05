@@ -104,6 +104,21 @@ class UniMessage(list[TS]):
             ...
 
         @classmethod
+        def style(
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]], content: str, *style: str
+        ) -> "UniMessage[Union[TS1, Text]]":
+            """创建带样式的文本消息
+
+            参数:
+                content: 文本内容
+                style: 样式
+
+            返回:
+                构建的消息
+            """
+            ...
+
+        @classmethod
         def at(
             cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]], user_id: str  # type: ignore
         ) -> "UniMessage[Union[TS1, At]]":
@@ -385,6 +400,13 @@ class UniMessage(list[TS]):
                 cls_or_self.append(Text(text))
                 return cls_or_self
             return UniMessage(Text(text))
+
+        @_method
+        def style(cls_or_self, content: str, *style: str) -> "UniMessage[Union[TS1, Text]]":
+            if isinstance(cls_or_self, UniMessage):
+                cls_or_self.append(Text(content).mark(None, None, *style))
+                return cls_or_self
+            return UniMessage(Text(content).mark(None, None, *style))
 
         @_method
         def at(cls_or_self, user_id: str) -> "UniMessage[Union[TS1, At]]":

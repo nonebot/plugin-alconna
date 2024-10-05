@@ -69,6 +69,10 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
         seg._children = Message()
         return Other(seg)(*self.generate(children))
 
+    @build("br")
+    def br(self, seg: MessageSegment):
+        return Text("\n").mark(None, None, "br")
+
     @build("text")
     def text(self, seg: TextSegment):
         styles = {scale: [STYLE_TYPE_MAP.get(s, s) for s in _styles] for scale, _styles in seg.data["styles"].items()}

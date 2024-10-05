@@ -79,6 +79,8 @@ class SatoriMessageExporter(MessageExporter[Message]):
     async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         if not seg.styles:
             return MessageSegment.text(seg.text)
+        if seg.extract_most_style() == "br":
+            return MessageSegment.br()
         if seg.extract_most_style() == "link":
             if not getattr(seg, "_children", []):
                 return MessageSegment.link(seg.text)

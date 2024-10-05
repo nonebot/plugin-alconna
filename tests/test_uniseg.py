@@ -71,6 +71,8 @@ def test_unimsg():
     assert msg2.lstrip(At) == UniMessage.text("abc ")
     assert msg2.rstrip() == msg1 + Text("abc")
 
+    assert UniMessage.text("123").style("\n", "br").text("456").export_sync(adapter="OneBot V11") == Message("123\n456")
+
 
 def test_persistence():
     from nonebot_plugin_alconna import Image, UniMessage

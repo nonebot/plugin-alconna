@@ -10,7 +10,7 @@ from tests.fake import FAKE_SATORI_LOGIN, fake_message_event_satori
 
 
 def test_message_rollback():
-    from nonebot_plugin_alconna import Image, select
+    from nonebot_plugin_alconna import Image, select, UniMessage
 
     text = """\
 捏<chronocat:marketface tab-id="237834" face-id="a651cf5813ba41587b22d273682e01ae" key="e08787120cade0a5">
@@ -32,6 +32,14 @@ def test_message_rollback():
     res1 = alc.parse(msg1, {"$adapter.name": "Satori"})
     assert res1.matched
     assert res1.query[str]("img") == "http://127.0.0.1:5500/v1/assets/eyJ0eXBlIjoibWF..."
+
+    assert UniMessage.text("123").style("\n", "br").text("456").export_sync(adapter="Satori") == Message(
+        [
+            MessageSegment.text("123"),
+            MessageSegment.br(),
+            MessageSegment.text("456"),
+        ]
+    )
 
 
 @pytest.mark.asyncio()
