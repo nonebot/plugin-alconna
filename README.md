@@ -142,6 +142,8 @@ async def _():
 - ALCONNA_APPLY_FILEHOST: 是否启用文件托管
 - ALCONNA_APPLY_FETCH_TARGETS: 是否启动时拉取一次发送对象列表
 - ALCONNA_BUILTIN_PLUGINS: 需要加载的alc内置插件集合
+- ALCONNA_CONFLICT_RESOLVER: 命令冲突解决策略，default 为保留两个命令，raise 为抛出异常，ignore 为忽略新命令，replace 为替换旧命令
+- ALCONNA_RESPONSE_SELF: 是否允许响应自己的消息
 
 ## 插件示例
 
