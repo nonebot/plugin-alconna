@@ -10,7 +10,7 @@ from tests.fake import FAKE_SATORI_LOGIN, fake_message_event_satori
 
 
 def test_message_rollback():
-    from nonebot_plugin_alconna import Image, select, UniMessage
+    from nonebot_plugin_alconna import Image, UniMessage, select
 
     text = """\
 捏<chronocat:marketface tab-id="237834" face-id="a651cf5813ba41587b22d273682e01ae" key="e08787120cade0a5">

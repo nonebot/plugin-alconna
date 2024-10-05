@@ -25,6 +25,16 @@ from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT, log
 _modules = set()
 
 
+def check_self_send(bot: Bot, event: Event) -> bool:
+    try:
+        user_id = event.get_user_id()
+    except ValueError:
+        return False
+    if bot.adapter.get_name() == "Satori":
+        return user_id == bot.get_self_id()
+    return user_id == bot.self_id
+
+
 class AlconnaRule:
     """检查消息字符串是否能够通过此 Alconna 命令。
 
@@ -43,6 +53,7 @@ class AlconnaRule:
         "command",
         "skip",
         "auto_send",
+        "response_self",
         "comp_config",
         "use_origin",
         "executor",
@@ -66,6 +77,7 @@ class AlconnaRule:
         use_origin: Optional[bool] = None,
         use_cmd_start: Optional[bool] = None,
         use_cmd_sep: Optional[bool] = None,
+        response_self: Optional[bool] = None,
         _aliases: Optional[Union[set[str], tuple[str, ...]]] = None,
     ):
         self.comp_config = comp_config
@@ -77,6 +89,10 @@ class AlconnaRule:
                 self.auto_send = True if config.alconna_auto_send_output is None else config.alconna_auto_send_output
             else:
                 self.auto_send = auto_send_output
+            if response_self is None:
+                self.response_self = False if config.alconna_response_self is None else config.alconna_response_self
+            else:
+                self.response_self = response_self
             if use_cmd_start is None:
                 _use_cmd_start = False if config.alconna_use_command_start is None else config.alconna_use_command_start
             else:
@@ -271,6 +287,9 @@ class AlconnaRule:
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
         self.executor.select(bot, event)
         if not (msg := await self.executor.message_provider(event, state, bot, self.use_origin)):
+            self.executor.clear()
+            return False
+        if not self.response_self and check_self_send(bot, event):
             self.executor.clear()
             return False
         cmd = self.command()

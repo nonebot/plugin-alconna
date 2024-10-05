@@ -961,6 +961,7 @@ def on_alconna(
     use_origin: bool | None = None,
     use_cmd_start: bool | None = None,
     use_cmd_sep: bool | None = None,
+    response_self: bool | None = None,
     permission: Permission | T_PermissionChecker | None = None,
     *,
     handlers: list[T_Handler | Dependent] | None = None,
@@ -985,6 +986,7 @@ def on_alconna(
         use_origin: 是否使用未经 to_me 等处理过的消息
         use_cmd_start: 是否使用 nb 全局配置里的命令起始符
         use_cmd_sep: 是否使用 nb 全局配置里的命令分隔符
+        response_self: 是否响应自己发送的消息
         permission: 事件响应权限
         handlers: 事件处理函数列表
         temp: 是否为临时事件响应器（仅执行一次）
@@ -1023,6 +1025,7 @@ def on_alconna(
         use_origin,
         use_cmd_start,
         use_cmd_sep,
+        response_self,
         aliases,
     )
     executor = cast(ExtensionExecutor, list(_rule.checkers)[0].call.executor)  # type: ignore
@@ -1125,6 +1128,7 @@ def funcommand(
     use_origin: bool | None = None,
     use_cmd_start: bool | None = None,
     use_cmd_sep: bool | None = None,
+    response_self: bool | None = None,
     rule: Rule | T_RuleChecker | None = None,
     permission: Permission | T_PermissionChecker | None = None,
     *,
@@ -1155,6 +1159,7 @@ def funcommand(
             use_origin=use_origin,
             use_cmd_start=use_cmd_start,
             use_cmd_sep=use_cmd_sep,
+            response_self=response_self,
             permission=permission,
             handlers=handlers,
             temp=temp,
@@ -1196,6 +1201,7 @@ class Command(AlconnaString):
         use_origin: bool | None = None,
         use_cmd_start: bool | None = None,
         use_cmd_sep: bool | None = None,
+        response_self: bool | None = None,
         permission: Permission | T_PermissionChecker | None = None,
         *,
         handlers: list[T_Handler | Dependent] | None = None,

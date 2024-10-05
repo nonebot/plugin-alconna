@@ -38,3 +38,6 @@ class Config(BaseModel):
 
     alconna_conflict_resolver: Literal["raise", "default", "ignore", "replace"] = Field(default="default")
     """命令冲突解决策略，default 为保留两个命令，raise 为抛出异常，ignore 为忽略新命令，replace 为替换旧命令"""
+
+    alconna_response_self: bool = False
+    """是否响应自身发送的消息"""
