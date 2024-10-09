@@ -65,10 +65,16 @@ class UniMessageTemplate(Formatter):
         factory: 消息类型工厂，默认为 `str`
     """
 
-    def __init__(self, template: Union[str, "UniMessage[Any]"], factory: type["UniMessage[Any]"]) -> None:
+    def __init__(
+        self,
+        template: Union[str, "UniMessage[Any]"],
+        factory: type["UniMessage[Any]"],
+        private_getattr: bool = False,
+    ) -> None:
         self.template = template
         self.factory = factory
         self.format_specs: dict[str, FormatSpecFunc] = {}
+        self.private_getattr = private_getattr
 
     def __repr__(self) -> str:
         return f"UniMessageTemplate({self.template!r})"
@@ -208,6 +214,11 @@ class UniMessageTemplate(Formatter):
         first, rest = _string.formatter_field_name_split(field_name)
 
         obj = self.get_value(first, args, kwargs)
+
+        for is_attr, value in rest:
+            if not self.private_getattr and value.startswith("_"):
+                raise ValueError("Cannot access private attribute")
+            obj = getattr(obj, value) if is_attr else obj[value]
 
         return obj, first
 
