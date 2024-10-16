@@ -112,7 +112,7 @@ class AlconnaRule:
                         command.prefixes = list(global_config.command_start)
             if (config.alconna_use_command_sep if use_cmd_sep is None else use_cmd_sep) and global_config.command_sep:
                 with command_manager.update(command):
-                    command.separators = tuple(global_config.command_sep)
+                    command.separators = "".join(global_config.command_sep)
             if config.alconna_context_style:
                 with command_manager.update(command):
                     command.meta.context_style = config.alconna_context_style

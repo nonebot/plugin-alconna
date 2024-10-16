@@ -18,7 +18,7 @@ from nonebot.adapters.discord.message import (
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Emoji, Image, Other, Reply, Button, Keyboard
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Image, Other, Reply, Button, Keyboard
 
 
 class DiscordMessageBuilder(MessageBuilder):
@@ -44,11 +44,13 @@ class DiscordMessageBuilder(MessageBuilder):
 
     @build("custom_emoji")
     def custom_emoji(self, seg: CustomEmojiSegment):
-        return Emoji(seg.data["id"], seg.data["name"])
+        url = f"https://cdn.discordapp.com/emojis/{seg.data['id']}.{'gif' if seg.data['animated'] else 'png'}"
+        return Image(url=url, id=url, name=f"{seg.data['name']}.{'gif' if seg.data['animated'] else 'png'}")
 
     @build("sticker")
     def sticker(self, seg: StickerSegment):
-        return Emoji(str(seg.data["id"]))
+        url = f"https://cdn.discordapp.com/stickers/{seg.data['id']}.gif"
+        return Image(url=url, id=url, name=f"{seg.data['id']}.gif")
 
     @build("attachment")
     def attachment(self, seg: AttachmentSegment):

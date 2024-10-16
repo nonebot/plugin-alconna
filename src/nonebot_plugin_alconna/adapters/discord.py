@@ -44,14 +44,25 @@ from nonebot_plugin_alconna.uniseg import At, AtAll
 from nonebot_plugin_alconna.uniseg import Other, Reply
 from nonebot_plugin_alconna.typings import SegmentPattern
 from nonebot_plugin_alconna.uniseg import Image as UniImg
-from nonebot_plugin_alconna.uniseg import Emoji as UniEmoji
 
 Embed = SegmentPattern("embed", EmbedSegment, Other, MessageSegment.embed)
 Sticker = SegmentPattern("sticker", StickerSegment, Other, MessageSegment.sticker)
 Component = SegmentPattern("component", ComponentSegment, Other, MessageSegment.component)
 Timestamp = SegmentPattern("timestamp", TimestampSegment, Other, MessageSegment.timestamp)
-CustomEmoji = Emoji = SegmentPattern("emoji", CustomEmojiSegment, UniEmoji, MessageSegment.custom_emoji)
-Image = SegmentPattern("attachment", AttachmentSegment, UniImg, MessageSegment.attachment)
+CustomEmoji = SegmentPattern(
+    "emoji",
+    CustomEmojiSegment,
+    UniImg,
+    MessageSegment.custom_emoji,
+    lambda x: bool(x.url) and "cdn.discordapp.com/emojis" in x.url,
+)
+Image = SegmentPattern(
+    "attachment",
+    AttachmentSegment,
+    UniImg,
+    MessageSegment.attachment,
+    lambda x: not x.url or "cdn.discordapp.com/emojis" not in x.url,
+)
 MentionUser = SegmentPattern("mention_user", MentionUserSegment, At, MessageSegment.mention_user)
 MentionChannel = SegmentPattern("mention_channel", MentionChannelSegment, At, MessageSegment.mention_channel)
 MentionRole = SegmentPattern("mention_role", MentionRoleSegment, At, MessageSegment.mention_role)

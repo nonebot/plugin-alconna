@@ -105,7 +105,7 @@ class UniMessage(list[TS]):
 
         @classmethod
         def style(
-            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]], content: str, *style: str
+            cls_or_self: Union["UniMessage[TS1]", type["UniMessage[TS1]"]], content: str, *style: str  # type: ignore
         ) -> "UniMessage[Union[TS1, Text]]":
             """创建带样式的文本消息
 
