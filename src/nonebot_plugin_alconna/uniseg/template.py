@@ -156,8 +156,8 @@ class UniMessageTemplate(Formatter):
                     _kwargs = {}
                     for part in parts:
                         part = part.strip()
-                        if part.startswith("$") and (key := part.split(".")[0]) in kwargs:
-                            _args.append(_eval(part[1:], kwargs[key]))
+                        if part.startswith("$") and (key := (stmt := part[1:]).split(".")[0]) in kwargs:
+                            _args.append(_eval(stmt, kwargs[key]))
                         elif re.match(".+=.+", part):
                             k, v = part.split("=")
                             if v in kwargs:
