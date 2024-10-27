@@ -163,8 +163,8 @@ class UniMessageTemplate(Formatter):
                             if v in kwargs:
                                 _kwargs[k] = kwargs[v]
                                 used_args.add(v)
-                            elif v.startswith("$") and (key := v.split(".")[0]) in kwargs:
-                                _kwargs[k] = _eval(v[1:], kwargs[key])
+                            elif v.startswith("$") and (key := (stmt := part[1:]).split(".")[0]):
+                                _kwargs[k] = _eval(stmt, kwargs[key])
                             else:
                                 _kwargs[k] = v
                         elif part in kwargs:
