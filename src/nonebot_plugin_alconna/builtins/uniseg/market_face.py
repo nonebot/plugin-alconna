@@ -29,7 +29,7 @@ def mfbuild(builder: MessageBuilder, seg: BaseMessageSegment):
     elif builder.get_adapter() is SupportAdapter.red:
         return MarketFace(
             id=str(seg.data["emoji_id"]),
-            tab_id=hex(seg.data["package_id"]),
+            tab_id=hex(int(seg.data["package_id"])),
             key=seg.data.get("key"),
             summary=seg.data.get("face_name"),
         )
@@ -44,7 +44,7 @@ def mfbuild(builder: MessageBuilder, seg: BaseMessageSegment):
 def mfbuild_ob11(builder: MessageBuilder, seg: BaseMessageSegment):
     return MarketFace(
         id=str(seg.data["emoji_id"]),
-        tab_id=hex(seg.data["emoji_package_id"]),
+        tab_id=hex(int(seg.data["emoji_package_id"])),
         key=seg.data.get("key"),
         summary=seg.data.get("summary"),
     )
