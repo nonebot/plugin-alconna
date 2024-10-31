@@ -17,11 +17,11 @@ from .constraint import log
 
 
 async def reply_fetch(event: Event, bot: Bot):
-    from .adapters import BUILDER_MAPPING
+    from .adapters import alter_get_builder
 
     _adapter = bot.adapter
     adapter = _adapter.get_name()
-    if not (fn := BUILDER_MAPPING.get(adapter)):
+    if not (fn := alter_get_builder(adapter)):
         return
     return await fn.extract_reply(event, bot)
 

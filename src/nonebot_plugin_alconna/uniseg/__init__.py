@@ -56,7 +56,7 @@ from .constraint import SerializeFailed as SerializeFailed
 from .fallback import FallbackStrategy as FallbackStrategy
 from .segment import apply_media_to_url as apply_media_to_url
 from .constraint import SupportAdapterModule as SupportAdapterModule
-from .adapters import BUILDER_MAPPING, FETCHER_MAPPING, EXPORTER_MAPPING
+from .adapters import alter_get_builder, alter_get_fetcher, alter_get_exporter
 
 __version__ = "0.53.1"
 
@@ -118,7 +118,7 @@ def _register_hook():
     async def _(bot: Bot):
         async with FETCH_LOCK:
             TARGET_RECORD.pop(bot.self_id, None)
-            if fn := FETCHER_MAPPING.get(bot.adapter.get_name()):
+            if fn := alter_get_fetcher(bot.adapter.get_name()):
                 fn.cache.pop(bot.self_id, None)
 
 
@@ -134,7 +134,7 @@ def apply_fetch_targets():
 
 async def _refresh_bot(bot: Bot):
     TARGET_RECORD.pop(bot.self_id, None)
-    if not (fn := FETCHER_MAPPING.get(bot.adapter.get_name())):
+    if not (fn := alter_get_fetcher(bot.adapter.get_name())):
         log("WARNING", lang.require("nbp-uniseg", "unsupported").format(adapter=bot.adapter.get_name()))
         return
     try:
@@ -145,21 +145,21 @@ async def _refresh_bot(bot: Bot):
 
 
 def get_fetcher(bot: Bot):
-    if not (fn := FETCHER_MAPPING.get(bot.adapter.get_name())):
+    if not (fn := alter_get_fetcher(bot.adapter.get_name())):
         log("WARNING", lang.require("nbp-uniseg", "unsupported").format(adapter=bot.adapter.get_name()))
         return None
     return fn
 
 
 def get_builder(bot: Bot):
-    if not (fn := BUILDER_MAPPING.get(bot.adapter.get_name())):
+    if not (fn := alter_get_builder(bot.adapter.get_name())):
         log("WARNING", lang.require("nbp-uniseg", "unsupported").format(adapter=bot.adapter.get_name()))
         return None
     return fn
 
 
 def get_exporter(bot: Bot):
-    if not (fn := EXPORTER_MAPPING.get(bot.adapter.get_name())):
+    if not (fn := alter_get_exporter(bot.adapter.get_name())):
         log("WARNING", lang.require("nbp-uniseg", "unsupported").format(adapter=bot.adapter.get_name()))
         return None
     return fn

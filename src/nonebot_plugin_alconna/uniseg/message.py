@@ -20,8 +20,8 @@ from .target import Target
 from .exporter import MessageExporter
 from .constraint import SerializeFailed
 from .template import UniMessageTemplate
-from .adapters import BUILDER_MAPPING, EXPORTER_MAPPING
 from .fallback import FallbackMessage, FallbackStrategy
+from .adapters import alter_get_builder, alter_get_exporter
 from .segment import (
     At,
     File,
@@ -1227,7 +1227,7 @@ class UniMessage(list[TS]):
                     raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
             _adapter = bot.adapter
             adapter = _adapter.get_name()
-        if not (fn := BUILDER_MAPPING.get(adapter)):
+        if not (fn := alter_get_builder(adapter)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
         result = UniMessage(fn.generate(message))
         if (event and bot) and (_reply := await fn.extract_reply(event, bot)):
@@ -1262,7 +1262,7 @@ class UniMessage(list[TS]):
                     raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
             _adapter = bot.adapter
             adapter = _adapter.get_name()
-        if not (fn := BUILDER_MAPPING.get(adapter)):
+        if not (fn := alter_get_builder(adapter)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
         return UniMessage(fn.generate(message))
 
@@ -1283,7 +1283,7 @@ class UniMessage(list[TS]):
                     raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
             _adapter = bot.adapter
             adapter = _adapter.get_name()
-        if fn := EXPORTER_MAPPING.get(adapter):
+        if fn := alter_get_exporter(adapter):
             return fn.get_message_id(event)
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
@@ -1302,7 +1302,7 @@ class UniMessage(list[TS]):
                     raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
             _adapter = bot.adapter
             adapter = _adapter.get_name()
-        if fn := EXPORTER_MAPPING.get(adapter):
+        if fn := alter_get_exporter(adapter):
             return fn.get_target(event, bot)
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
@@ -1345,7 +1345,7 @@ class UniMessage(list[TS]):
                 pass
             self._handle_i18n(extra)
         try:
-            if fn := EXPORTER_MAPPING.get(adapter):
+            if fn := alter_get_exporter(adapter):
                 return await fn.export(self, bot, fallback)
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
         except SerializeFailed:
@@ -1412,7 +1412,7 @@ class UniMessage(list[TS]):
         msg = await self.export(bot, fallback)
         adapter = bot.adapter
         adapter_name = adapter.get_name()
-        if not (fn := EXPORTER_MAPPING.get(adapter_name)):
+        if not (fn := alter_get_exporter(adapter_name)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
         res = await fn.send_to(target, bot, msg, **kwargs)
         return Receipt(bot, target, fn, res if isinstance(res, list) else [res])

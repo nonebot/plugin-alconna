@@ -69,3 +69,62 @@ else:
                 RuntimeWarning,
                 15,
             )
+
+
+def alter_get_exporter(adapter_name: str):
+    if adapter_name in EXPORTER_MAPPING:
+        return EXPORTER_MAPPING[adapter_name]
+    if adapter_name in loaders:
+        try:
+            EXPORTER_MAPPING[adapter_name] = loaders[adapter_name].get_exporter()
+            return EXPORTER_MAPPING[adapter_name]
+        except Exception as e:
+            warn(f"Failed to load uniseg adapter {adapter_name}: {e}", RuntimeWarning, 6)
+            return None
+    warn(
+        f"Adapter {adapter_name} is not found in the uniseg.adapters,"
+        f"please go to the github repo and create an issue for it.",
+        RuntimeWarning,
+        6,
+    )
+    return None
+
+
+def alter_get_builder(adapter_name: str):
+    if adapter_name in BUILDER_MAPPING:
+        return BUILDER_MAPPING[adapter_name]
+    if adapter_name in loaders:
+        try:
+            BUILDER_MAPPING[adapter_name] = loaders[adapter_name].get_builder()
+            return BUILDER_MAPPING[adapter_name]
+        except Exception as e:
+            warn(f"Failed to load uniseg adapter {adapter_name}: {e}", RuntimeWarning, 6)
+            return None
+    warn(
+        f"Adapter {adapter_name} is not found in the uniseg.adapters,"
+        f"please go to the github repo and create an issue for it.",
+        RuntimeWarning,
+        6,
+    )
+    return None
+
+
+def alter_get_fetcher(adapter_name: str):
+    if adapter_name in FETCHER_MAPPING:
+        return FETCHER_MAPPING[adapter_name]
+    if adapter_name in loaders:
+        try:
+            FETCHER_MAPPING[adapter_name] = loaders[adapter_name].get_fetcher()
+            return FETCHER_MAPPING[adapter_name]
+        except NotImplementedError:
+            return None
+        except Exception as e:
+            warn(f"Failed to load uniseg adapter {adapter_name}: {e}", RuntimeWarning, 6)
+            return None
+    warn(
+        f"Adapter {adapter_name} is not found in the uniseg.adapters,"
+        f"please go to the github repo and create an issue for it.",
+        RuntimeWarning,
+        6,
+    )
+    return None
