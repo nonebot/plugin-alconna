@@ -42,9 +42,17 @@ def mfbuild(builder: MessageBuilder, seg: BaseMessageSegment):
 
 @custom_register(MarketFace, "mface")
 def mfbuild_ob11(builder: MessageBuilder, seg: BaseMessageSegment):
+    emoji_package_id = seg.data["emoji_package_id"]
+    if isinstance(emoji_package_id, str):
+        if emoji_package_id.isdigit():
+            tab_id = hex(int(emoji_package_id))
+        else:
+            tab_id = emoji_package_id
+    else:
+        tab_id = hex(emoji_package_id)
     return MarketFace(
         id=str(seg.data["emoji_id"]),
-        tab_id=hex(int(seg.data["emoji_package_id"])),
+        tab_id=tab_id,
         key=seg.data.get("key"),
         summary=seg.data.get("summary"),
     )

@@ -11,6 +11,7 @@ from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
+    File,
     Text,
     AtAll,
     Audio,
@@ -92,6 +93,13 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
+    async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
+        if seg.path:
+            return MessageSegment("$onebot11:file", {"file": Path(seg.path).resolve()})
+        else:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
+
+    @export
     async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
         assert seg.raw, lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg)
         return MessageSegment.xml(seg.raw) if seg.format == "xml" else MessageSegment.json(seg.raw)
@@ -149,6 +157,23 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                     "send_group_forward_msg",
                     group_id=int(_target.id),
                     messages=msg,
+                )
+        if msg := message.include("$onebot11:file"):
+            if _target.private:
+                return await bot.call_api(
+                    "upload_private_file",
+                    user_id=int(_target.id),
+                    file=msg[0].data["file"].as_posix(),
+                    name=msg[0].data["file"].name,
+                    **kwargs,
+                )
+            else:
+                return await bot.call_api(
+                    "upload_group_file",
+                    group_id=int(_target.id),
+                    file=msg[0].data["file"].as_posix(),
+                    name=msg[0].data["file"].name,
+                    **kwargs,
                 )
         if isinstance(target, Event):
             return await bot.send(target, message, **kwargs)  # type: ignore
