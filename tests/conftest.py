@@ -24,7 +24,7 @@ def pytest_configure(config: pytest.Config):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def load_bot():
+def after_nonebot_init(after_nonebot_init: None):
     # 加载适配器
     driver = nonebot.get_driver()
     driver.register_adapter(QQAdapter)
@@ -34,4 +34,5 @@ def load_bot():
     driver.register_adapter(SatoriAdapter)
 
     nonebot.require("nonebot_plugin_alconna")
+    nonebot.require("nonebot_plugin_filehost")
     return None

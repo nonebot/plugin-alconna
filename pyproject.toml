@@ -7,7 +7,7 @@ authors = [
 dependencies = [
     "tarina<0.7,>=0.6.3",
     "nepattern<1.0,>=0.7.4",
-    "arclet-alconna<2.0,>=1.8.31",
+    "arclet-alconna<2.0,>=1.8.33",
     "arclet-alconna-tools>=0.7.10",
     "importlib-metadata>=4.13.0",
     "nonebot2>=2.3.0",
@@ -112,3 +112,4 @@ format = { composite = ["isort ./src/ ./example/ ./tests/","black ./src/ ./examp
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"

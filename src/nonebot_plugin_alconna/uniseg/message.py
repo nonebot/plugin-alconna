@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoRetu
 from tarina import lang
 from tarina.lang.model import LangItem
 from tarina.context import ContextModel
+from nonebot.compat import custom_validation
 from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
@@ -1473,6 +1474,7 @@ class UniMessage(list[TS]):
         return cls(get_segment_class(seg_data["type"]).load(seg_data) for seg_data in _data)
 
 
+@custom_validation
 @dataclass
 class Receipt:
     bot: Bot
@@ -1608,3 +1610,13 @@ class Receipt:
     ):
         await self.send(message, fallback, at_sender, reply_to, delay, **kwargs)
         raise FinishedException
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls._validate
+
+    @classmethod
+    def _validate(cls, value) -> Self:
+        if isinstance(value, cls):
+            return value
+        raise ValueError(f"Type {type(value)} can not be converted to {cls}")

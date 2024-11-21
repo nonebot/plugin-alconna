@@ -2,7 +2,7 @@ from io import BytesIO
 from typing import Any
 
 from nonebot import require
-from nonebot.compat import model_dump
+from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump
 from nonebot.internal.matcher import current_bot, current_event
 
 from nonebot_plugin_alconna.uniseg.message import Text, AtAll, Receipt, UniMessage
@@ -55,8 +55,12 @@ class UnisegMessageId(MessageId):
     adapter_name: str
     message_id: Any
 
-    class Config:
-        arbitrary_types_allowed = True
+    if PYDANTIC_V2:
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+    else:
+
+        class Config:
+            arbitrary_types_allowed = True
 
 
 class UnisegReceipt(SaaReceipt):
@@ -66,8 +70,12 @@ class UnisegReceipt(SaaReceipt):
     async def revoke(self):
         return await self.data.recall()
 
-    class Config:
-        arbitrary_types_allowed = True
+    if PYDANTIC_V2:
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+    else:
+
+        class Config:
+            arbitrary_types_allowed = True
 
     @property
     def raw(self) -> Receipt:

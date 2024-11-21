@@ -64,6 +64,8 @@ async def test_bots(app: App):
         ctx.should_call_api("post_messages", {"channel_id": "789", "msg_id": "", "event_id": None, "content": "test"})
         await target3.send(UniMessage("test"))
 
+    await asyncio.sleep(0.05)
+
 
 @pytest.mark.asyncio()
 async def test_enable(app: App, mocker: MockerFixture):
@@ -118,3 +120,5 @@ async def test_enable(app: App, mocker: MockerFixture):
     driver = get_driver()
     driver._bot_connection_hook.clear()
     driver._bot_disconnection_hook.clear()
+
+    await asyncio.sleep(0.05)

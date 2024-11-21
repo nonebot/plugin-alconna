@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from nonebug import App
 from nonebot import get_adapter
@@ -194,6 +196,7 @@ async def test_uniseg_recv(app: App):
         )
         msg = await UniMessage.generate(event=event2, bot=bot)
         assert msg[UniReply, 0].msg
+    await asyncio.sleep(0.05)
 
 
 @pytest.mark.asyncio()
@@ -238,3 +241,4 @@ async def test_unimsg_send(app: App):
         )
         target = Target("456", adapter=adapter.get_name())
         await target.send("hello!")
+    await asyncio.sleep(0.05)
