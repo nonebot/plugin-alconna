@@ -1,8 +1,10 @@
 import os
+from typing import Any
 
 import pytest
 import nonebot
 from nonebug import NONEBOT_INIT_KWARGS
+from pytest_asyncio import is_async_test
 
 # 导入适配器
 from nonebot.adapters.qq import Adapter as QQAdapter
@@ -23,8 +25,20 @@ def pytest_configure(config: pytest.Config):
     os.environ["PLUGIN_ALCONNA_TESTENV"] = "1"
 
 
+def pytest_collection_modifyitems(items: Any) -> None:
+    """
+    Make all tests run on the same event loop.
+
+    See: https://pytest-asyncio.readthedocs.io/en/latest/how-to-guides/run_session_tests_in_same_loop.html
+    """
+    pytest_asyncio_tests = (item for item in items if is_async_test(item))
+    session_scope_marker = pytest.mark.asyncio(loop_scope="session")
+    for async_test in pytest_asyncio_tests:
+        async_test.add_marker(session_scope_marker, append=False)
+
+
 @pytest.fixture(scope="session", autouse=True)
-def after_nonebot_init(after_nonebot_init: None):
+async def after_nonebot_init(after_nonebot_init: None):
     # 加载适配器
     driver = nonebot.get_driver()
     driver.register_adapter(QQAdapter)
