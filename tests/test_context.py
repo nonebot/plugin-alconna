@@ -1,10 +1,9 @@
 import pytest
 from nonebug import App
 from nonebot import get_adapter
-from nonebot.adapters.satori import Adapter
 from nonebot.adapters.satori.models import User
-from nonebot.adapters.satori import Bot, Message
 from arclet.alconna import Args, Alconna, CommandMeta
+from nonebot.adapters.satori import Bot, Adapter, Message
 
 from tests.fake import FAKE_SATORI_LOGIN, fake_message_event_satori
 
