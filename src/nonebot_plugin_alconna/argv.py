@@ -9,7 +9,7 @@ from tarina import lang
 from nonebot.adapters import Message
 from arclet.alconna import NullMessage
 from nepattern import MatchMode, BasePattern, MatchFailed
-from arclet.alconna.argv import Argv, argv_config, set_default_argv_type
+from arclet.alconna.argv import Argv, argv_config, set_default_argv_type, set_namespace_argv_type
 
 from .uniseg import Text, Segment, UniMessage
 
@@ -183,3 +183,5 @@ def converter(data: str | list[str | Segment]) -> UniMessage:
 
 argv_config(MessageArgv, converter=converter)
 set_default_argv_type(MessageArgv)
+set_namespace_argv_type("nonebot", MessageArgv)
+set_namespace_argv_type("arclet", Argv)

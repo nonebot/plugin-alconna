@@ -7,6 +7,7 @@ MAPPING = {
     "Github": "github",
     "Kritor": "kritor",
     "Kaiheila": "kook",
+    "Mail": "mail",
     "Minecraft": "minecraft",
     "Mirai": "mirai",
     "ntchat": "ntchat",
