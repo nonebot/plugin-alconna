@@ -103,13 +103,13 @@ def AlconnaDuplication() -> Duplication: ...
 
 
 @overload
-def AlconnaDuplication(__t: type[T_Duplication]) -> T_Duplication: ...
+def AlconnaDuplication(_t: type[T_Duplication]) -> T_Duplication: ...
 
 
-def AlconnaDuplication(__t: Optional[type[T_Duplication]] = None) -> Duplication:
+def AlconnaDuplication(_t: Optional[type[T_Duplication]] = None) -> Duplication:
     def _alconna_match(state: T_State) -> Duplication:
         res = _alconna_result(state)
-        gt = __t or generate_duplication(res.source)
+        gt = _t or generate_duplication(res.source)
         return gt(res.result)
 
     return Depends(_alconna_match, use_cache=False)
