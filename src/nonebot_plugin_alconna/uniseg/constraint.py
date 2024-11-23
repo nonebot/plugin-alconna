@@ -19,6 +19,7 @@ class SupportAdapter(str, Enum):
     github = "GitHub"
     kritor = "Kritor"
     kook = "Kaiheila"
+    mail = "Mail"
     minecraft = "Minecraft"
     mirai = "Mirai"
     ntchat = "ntchat"
@@ -47,6 +48,7 @@ class SupportScope(str, Enum):
     feishu = "Feishu"
     dodo = "DoDo"
     kook = "Kaiheila"
+    mail = "Mail"
     minecraft = "Minecraft"
     github = "GitHub"
     console = "Console"
@@ -93,6 +95,7 @@ class SupportScope(str, Enum):
             "wecom": SupportScope.wecom,
             "kook": SupportScope.kook,
             "dingtalk": SupportScope.ding,
+            "mail": SupportScope.mail,
         }.get(platform, SupportScope.satori_other)
 
 
@@ -107,6 +110,7 @@ class SupportAdapterModule(str, Enum):
     github = "nonebot.adapters.github"
     kritor = "nonebot.adapters.kritor"
     kook = "nonebot.adapters.kaiheila"
+    mail = "nonebot.adapters.mail"
     minecraft = "nonebot.adapters.minecraft"
     mirai = "nonebot.adapters.mirai"
     ntchat = "nonebot.adapters.ntchat"

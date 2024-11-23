@@ -487,3 +487,14 @@ async def select_tailchat(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {SupportAdapter.tail_chat}:
         return False
     return True
+
+
+@_register(SupportScope.mail)
+async def select_mail(target: "Target", bot: Bot):
+    if not target.private:
+        return False
+    if bot.adapter.get_name() not in {SupportAdapter.mail, SupportAdapter.satori}:
+        return False
+    if hasattr(bot, "platform") and bot.platform != "mail":
+        return False
+    return True

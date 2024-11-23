@@ -1069,6 +1069,10 @@ env[Segment] = BasePattern(
     mode=MatchMode.KEEP,
     accepts=Union[Segment, str],
 )
+env[Media] = BasePattern(
+    mode=MatchMode.KEEP,
+    accepts=Media,
+)
 
 
 def apply_media_to_url(func: MediaToUrl):

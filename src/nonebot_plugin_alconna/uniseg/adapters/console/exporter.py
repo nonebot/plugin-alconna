@@ -21,6 +21,7 @@ class ConsoleMessageExporter(MessageExporter[Message]):
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         return Target(
             event.get_user_id(),
+            private=True,
             adapter=self.get_adapter(),
             self_id=bot.self_id if bot else None,
             scope=SupportScope.console,

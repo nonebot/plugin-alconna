@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:25dc9068e72a3c395e6dc4135d254fdcbb27cc110f59b6da58db3dd3231855a2"
+content_hash = "sha256:c3d804e2ee78f86593649b5fcb4f5502cfa252c40c8d7eec1e9c0b66e107ad3f"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -98,6 +98,14 @@ files = [
 ]
 
 [[package]]
+name = "aioimaplib"
+version = "1.1.0"
+summary = "Python asyncio IMAP4rev1 client library"
+files = [
+    {file = "aioimaplib-1.1.0-py3-none-any.whl", hash = "sha256:927b1d24b58e2fd918037bcb4b8dd7f6d42a111ee409969a7c472ed66c5b670f"},
+]
+
+[[package]]
 name = "aiosignal"
 version = "1.3.1"
 requires_python = ">=3.7"
@@ -108,6 +116,16 @@ dependencies = [
 files = [
     {file = "aiosignal-1.3.1-py3-none-any.whl", hash = "sha256:f8376fb07dd1e86a584e4fcdec80b36b7f81aac666ebc724e2c090300dd83b17"},
     {file = "aiosignal-1.3.1.tar.gz", hash = "sha256:54cd96e15e1649b75d6c87526a6ff0b6c1b0dd3459f43d9ca11d48c339b68cfc"},
+]
+
+[[package]]
+name = "aiosmtplib"
+version = "3.0.2"
+requires_python = ">=3.8"
+summary = "asyncio SMTP client"
+files = [
+    {file = "aiosmtplib-3.0.2-py3-none-any.whl", hash = "sha256:8783059603a34834c7c90ca51103c3aa129d5922003b5ce98dbaa6d4440f10fc"},
+    {file = "aiosmtplib-3.0.2.tar.gz", hash = "sha256:08fd840f9dbc23258025dca229e8a8f04d2ccf3ecb1319585615bfc7933f7f47"},
 ]
 
 [[package]]
@@ -415,6 +433,30 @@ summary = "Distribution utilities"
 files = [
     {file = "distlib-0.3.8-py2.py3-none-any.whl", hash = "sha256:034db59a0b96f8ca18035f36290806a9a6e6bd9d1ff91e45a7f172eb17e51784"},
     {file = "distlib-0.3.8.tar.gz", hash = "sha256:1530ea13e350031b6312d8580ddb6b27a104275a31106523b8f123787f494f64"},
+]
+
+[[package]]
+name = "dnspython"
+version = "2.7.0"
+requires_python = ">=3.9"
+summary = "DNS toolkit"
+files = [
+    {file = "dnspython-2.7.0-py3-none-any.whl", hash = "sha256:b4c34b7d10b51bcc3a5071e7b8dee77939f1e878477eeecc965e9835f63c6c86"},
+    {file = "dnspython-2.7.0.tar.gz", hash = "sha256:ce9c432eda0dc91cf618a5cedf1a4e142651196bbcd2c80e89ed5a907e5cfaf1"},
+]
+
+[[package]]
+name = "email-validator"
+version = "2.2.0"
+requires_python = ">=3.8"
+summary = "A robust email address syntax and deliverability validation library."
+dependencies = [
+    "dnspython>=2.0.0",
+    "idna>=2.0.0",
+]
+files = [
+    {file = "email_validator-2.2.0-py3-none-any.whl", hash = "sha256:561977c2d73ce3611850a06fa56b414621e0c8faa9d66f2611407d87465da631"},
+    {file = "email_validator-2.2.0.tar.gz", hash = "sha256:cb690f344c617a714f22e66ae771445a1ceb46821152df8e165c5f9a364582b7"},
 ]
 
 [[package]]
@@ -736,6 +778,15 @@ files = [
 ]
 
 [[package]]
+name = "ipaddress"
+version = "1.0.23"
+summary = "IPv4/IPv6 manipulation library"
+files = [
+    {file = "ipaddress-1.0.23-py2.py3-none-any.whl", hash = "sha256:6e0f4a39e66cb5bb9a137b00276a2eff74f93b71dcbdad6f10ff7df9d3557fcc"},
+    {file = "ipaddress-1.0.23.tar.gz", hash = "sha256:b7f8e0369580bb4a24d5ba1d7cc29660a4a6987763faf1d8a8046830e020e7e2"},
+]
+
+[[package]]
 name = "isort"
 version = "5.13.2"
 requires_python = ">=3.8.0"
@@ -771,6 +822,20 @@ dependencies = [
 files = [
     {file = "loguru-0.7.2-py3-none-any.whl", hash = "sha256:003d71e3d3ed35f0f8984898359d65b79e5b21943f78af86aa5491210429b8eb"},
     {file = "loguru-0.7.2.tar.gz", hash = "sha256:e671a53522515f34fd406340ee968cb9ecafbc4b36c679da03c18fd8d0bd51ac"},
+]
+
+[[package]]
+name = "mail-parser"
+version = "4.1.2"
+requires_python = ">=3.7"
+summary = "Improved wrapper for email standard library"
+dependencies = [
+    "ipaddress",
+    "six",
+]
+files = [
+    {file = "mail_parser-4.1.2-py3-none-any.whl", hash = "sha256:a6267daa42b9a2dd18a667aacb4891d662a50503c78749089d5f09ebf2a31d2b"},
+    {file = "mail_parser-4.1.2.tar.gz", hash = "sha256:35e3568b84361a3caba0f86b3a27a5756cebbd07e458fd91ab793c45f8a09160"},
 ]
 
 [[package]]
@@ -1079,6 +1144,23 @@ dependencies = [
 files = [
     {file = "nonebot_adapter_kritor-0.3.2-py3-none-any.whl", hash = "sha256:f43a33317254e779eb27e2324900882a81bf9cb7eb6058e3d808ead716df8edc"},
     {file = "nonebot_adapter_kritor-0.3.2.tar.gz", hash = "sha256:782247d7b8434bee9dab0d300786922ecb6f78e52bd2fe0c0681e01131fd25a9"},
+]
+
+[[package]]
+name = "nonebot-adapter-mail"
+version = "1.0.0a3"
+requires_python = "<4.0,>=3.9"
+summary = "Mail adapter for nonebot2"
+dependencies = [
+    "aioimaplib~=1.1",
+    "aiosmtplib~=3.0",
+    "mail-parser~=4.0",
+    "nonebot2~=2.3",
+    "pydantic[email]!=2.5.0,!=2.5.1,<3.0.0,>=1.10.0",
+]
+files = [
+    {file = "nonebot_adapter_mail-1.0.0a3-py3-none-any.whl", hash = "sha256:1e3d08150b65c8c4957d4e87665363b6bcbb5e3e84532fe98e0ba9c166593bc0"},
+    {file = "nonebot_adapter_mail-1.0.0a3.tar.gz", hash = "sha256:5fcf839dbb2dba3bdc6f89fc41cd88fd38cdff766fd8317ceb4c0b1b1c87bad4"},
 ]
 
 [[package]]
@@ -1577,6 +1659,21 @@ files = [
     {file = "pydantic_core-2.27.1-pp39-pypy39_pp73-musllinux_1_1_x86_64.whl", hash = "sha256:46ccfe3032b3915586e469d4972973f893c0a2bb65669194a5bdea9bacc088c2"},
     {file = "pydantic_core-2.27.1-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:62ba45e21cf6571d7f716d903b5b7b6d2617e2d5d67c0923dc47b9d41369f840"},
     {file = "pydantic_core-2.27.1.tar.gz", hash = "sha256:62a763352879b84aa31058fc931884055fd75089cccbd9d58bb6afd01141b235"},
+]
+
+[[package]]
+name = "pydantic"
+version = "2.10.1"
+extras = ["email"]
+requires_python = ">=3.8"
+summary = "Data validation using Python type hints"
+dependencies = [
+    "email-validator>=2.0.0",
+    "pydantic==2.10.1",
+]
+files = [
+    {file = "pydantic-2.10.1-py3-none-any.whl", hash = "sha256:a8d20db84de64cf4a7d59e899c2caf0fe9d660c7cfc482528e7020d7dd189a7e"},
+    {file = "pydantic-2.10.1.tar.gz", hash = "sha256:a4daca2dc0aa429555e0656d6bf94873a7dc5f54ee42b1f5873d666fb3f35560"},
 ]
 
 [[package]]

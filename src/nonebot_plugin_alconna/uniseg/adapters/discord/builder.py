@@ -1,3 +1,4 @@
+from mimetypes import guess_type
 from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
@@ -18,7 +19,7 @@ from nonebot.adapters.discord.message import (
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Image, Other, Reply, Button, Keyboard
+from nonebot_plugin_alconna.uniseg.segment import At, File, AtAll, Audio, Image, Other, Reply, Video, Button, Keyboard
 
 
 class DiscordMessageBuilder(MessageBuilder):
@@ -54,7 +55,17 @@ class DiscordMessageBuilder(MessageBuilder):
 
     @build("attachment")
     def attachment(self, seg: AttachmentSegment):
-        return Image(id=seg.data["attachment"].filename)
+        mtype = guess_type(seg.data["attachment"].filename)[0]
+        if mtype and mtype.startswith("image"):
+            return Image(id=seg.data["attachment"].filename, name=seg.data["attachment"].filename)
+        if mtype and mtype.startswith("video"):
+            return Video(id=seg.data["attachment"].filename, name=seg.data["attachment"].filename)
+        if mtype and mtype.startswith("audio"):
+            return Audio(id=seg.data["attachment"].filename, name=seg.data["attachment"].filename)
+        return File(
+            id=seg.data["attachment"].filename,
+            name=seg.data["attachment"].filename,
+        )
 
     @build("reference")
     def reference(self, seg: ReferenceSegment):

@@ -67,6 +67,7 @@ dev = [
     "pytest-mock>=3.14.0",
     "nonebot-plugin-localstore>=0.7.1",
     "pyyaml>=6.0.1",
+    "nonebot-adapter-mail>=1.0.0a3",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]
