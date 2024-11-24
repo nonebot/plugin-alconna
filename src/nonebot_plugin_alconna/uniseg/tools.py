@@ -27,6 +27,10 @@ async def reply_fetch(event: Event, bot: Bot):
 
 
 async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwargs) -> Optional[bytes]:
+    if img.raw:
+        return img.raw_bytes
+    if img.path:
+        return Path(img.path).read_bytes()
     adapter_name = bot.adapter.get_name()
     if adapter_name == "RedProtocol":
         origin = img.origin

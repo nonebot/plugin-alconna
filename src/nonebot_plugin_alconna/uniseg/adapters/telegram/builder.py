@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.telegram.message import Entity
 from nonebot.adapters.telegram.event import MessageEvent
 from nonebot.adapters.telegram.message import File as FileSegment
+from nonebot.adapters.telegram.message import Entity, UnCombinFile
 from nonebot.adapters.telegram.message import Reply as ReplySegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
@@ -34,19 +34,27 @@ class TelegramMessageBuilder(MessageBuilder):
 
     @build("video", "animation")
     def video(self, seg: FileSegment):
-        return Video(id=seg.data["file_id"])
+        return Video(id=seg.data["file"])
+
+    @build("sticker")
+    def sticker(self, seg: UnCombinFile):
+        return Image(id=seg.data["file"])
+
+    @build("video_note")
+    def video_note(self, seg: UnCombinFile):
+        return Video(id=seg.data["file"])
 
     @build("voice")
     def voice(self, seg: FileSegment):
-        return Voice(id=seg.data["file_id"])
+        return Voice(id=seg.data["file"])
 
     @build("audio")
     def audio(self, seg: FileSegment):
-        return Audio(id=seg.data["file_id"])
+        return Audio(id=seg.data["file"])
 
     @build("document")
     def document(self, seg: FileSegment):
-        return File(seg.data["file_id"], name=seg.data["file_name"])
+        return File(seg.data["file"], name=seg.data.get("file_name", "file. bin"))
 
     @build("reply")
     def reply(self, seg: ReplySegment):
