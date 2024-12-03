@@ -68,6 +68,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
             adapter=self.get_adapter(),
             self_id=bot.self_id if bot else None,
             scope=SupportScope.telegram,
+            extra={"message_thread_id": getattr(event, "message_thread_id", None)},
         )
 
     def get_message_id(self, event: Event) -> str:
@@ -179,6 +180,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         if isinstance(target, Event):
             assert isinstance(target, TgEvent)
             return await bot.send(event=target, message=message, reply_markup=reply_markup, **kwargs)
+        kwargs.setdefault("message_thread_id", target.extra.get("message_thread_id", None))
         return await bot.send_to(target.id, message=message, reply_markup=reply_markup, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
