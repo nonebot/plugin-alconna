@@ -7,6 +7,7 @@ from nonebot.typing import T_State
 from tarina import lang, init_spec
 from nonebot.matcher import Matcher
 from nonebot.utils import escape_tag
+from pydantic import ValidationError
 from nonebot.adapters import Bot, Event
 from nonebot.plugin.on import on_message
 from nonebot.internal.rule import Rule as Rule
@@ -123,8 +124,12 @@ class AlconnaRule:
                 with command_manager.update(command):
                     command.meta.context_style = config.alconna_context_style
             self.use_origin = config.alconna_use_origin if use_origin is None else use_origin
+        except ValidationError:
+            raise
         except ValueError:
             self.auto_send = True if auto_send_output is None else auto_send_output
+            self.response_self = False if response_self is None else response_self
+            self.use_origin = False if use_origin is None else use_origin
 
         def _update(cmd_id: int):
             try:
