@@ -1076,7 +1076,7 @@ class UniMessage(list[TS]):
         result_list: list[TS] = []
         for seg in self:
             if isinstance(seg, Text):
-                result_list.append(seg.replace(old, new))
+                result_list.append(seg.replace(old, new))  # type: ignore
             else:
                 result_list.append(seg)
         return self.__class__(result_list)

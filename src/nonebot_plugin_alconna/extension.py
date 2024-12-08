@@ -314,7 +314,7 @@ def load_from_path(path: str) -> None:
     attrs = filter(None, (match.group("attr") or "__extension__").split("."))
     ext = functools.reduce(getattr, attrs, module)
     if isinstance(ext, type) and issubclass(ext, Extension):
-        add_global_extension(ext)
+        add_global_extension(ext)  # type: ignore
     elif isinstance(ext, Extension):
         add_global_extension(ext)
     else:

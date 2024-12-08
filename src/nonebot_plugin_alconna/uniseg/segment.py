@@ -488,7 +488,7 @@ class Text(Segment):
             result.append(Text(part, _styles))
         return result
 
-    def replace(self, old: str, new: Union[str, "Text"]):
+    def replace(self, old: str, new: Union[str, "Text"]) -> "Text":
         text = self.text
         index = 0
         new_text = new if isinstance(new, str) else new.text
