@@ -3,15 +3,15 @@
   "description": "Schema for lang file",
   "type": "object",
   "properties": {
-    "completion": {
-      "title": "Completion",
-      "description": "Scope 'completion' of lang item",
+    "nbp-alc": {
+      "title": "Nbp-alc",
+      "description": "Scope 'nbp-alc' of lang item",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "nonebot": {
-          "title": "Nonebot",
-          "description": "Scope 'nonebot' of lang item",
+        "completion": {
+          "title": "Completion",
+          "description": "Scope 'completion' of lang item",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -46,15 +46,7 @@
               "type": "string"
             }
           }
-        }
-      }
-    },
-    "nbp-alc": {
-      "title": "Nbp-alc",
-      "description": "Scope 'nbp-alc' of lang item",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
+        },
         "log": {
           "title": "Log",
           "description": "Scope 'log' of lang item",

@@ -133,7 +133,7 @@ async def _():
 
 - ALCONNA_AUTO_SEND_OUTPUT : 是否全局启用输出信息自动发送
 - ALCONNA_USE_COMMAND_START : 是否将 COMMAND_START 作为全局命令前缀
-- ALCONNA_AUTO_COMPLETION: 是否全局启用补全会话功能
+- ALCONNA_GLOBAL_COMPLETION: 全局的补全会话配置 (不代表全局启用补全会话)
 - ALCONNA_USE_ORIGIN: 是否全局使用原始消息 (即未经过 to_me 等处理的)
 - ALCONNA_USE_PARAM: 是否使用特制的 Param 提供更好的依赖注入
 - ALCONNA_USE_CMD_SEP: 是否将 COMMAND_SEP 作为全局命令分隔符

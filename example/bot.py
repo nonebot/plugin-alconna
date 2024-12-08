@@ -10,7 +10,7 @@ driver = nonebot.get_driver()
 driver.register_adapter(SatoriAdapter)
 
 # nonebot.require("nonebot_plugin_alconna")
-nonebot.load_plugin("plugins.demo")
+nonebot.load_plugins("plugins")
 
 
 async def _():

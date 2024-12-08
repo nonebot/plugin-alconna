@@ -3,10 +3,10 @@
   "$schema": "./.template.schema.json",
   "scopes": [
     {
-      "scope": "completion",
+      "scope": "nbp-alc",
       "types": [
         {
-          "subtype": "nonebot",
+          "subtype": "completion",
           "types": [
             "tab",
             "enter",
@@ -15,12 +15,7 @@
             "timeout",
             "exited"
           ]
-        }
-      ]
-    },
-    {
-      "scope": "nbp-alc",
-      "types": [
+        },
         {
           "subtype": "log",
           "types": [

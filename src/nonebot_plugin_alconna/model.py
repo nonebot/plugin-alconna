@@ -1,5 +1,5 @@
-from typing_extensions import NotRequired
-from typing import Any, Union, Generic, Literal, TypeVar, Optional, TypedDict
+from typing_extensions import TypedDict, NotRequired
+from typing import Any, Union, Generic, Literal, TypeVar, Optional
 
 from pydantic import Field, BaseModel
 from arclet.alconna.action import Action

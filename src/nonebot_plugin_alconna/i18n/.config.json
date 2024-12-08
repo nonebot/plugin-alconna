@@ -1,10 +1,9 @@
 {
   "default": "zh-CN",
   "frozen": [
-    "completion.nonebot"
+    "nbp-alc:completion"
   ],
   "require": [
-    "completion.nonebot",
     "nbp-alc"
   ],
   "name": "nonebot_plugin_alconna"

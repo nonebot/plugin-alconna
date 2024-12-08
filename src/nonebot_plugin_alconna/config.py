@@ -2,6 +2,8 @@ from typing import Literal, Optional
 
 from pydantic import Field, BaseModel
 
+from .model import CompConfig
+
 
 class Config(BaseModel):
     """Plugin Config Here"""
@@ -11,6 +13,9 @@ class Config(BaseModel):
 
     alconna_use_command_start: bool = False
     """是否将 COMMAND_START 作为全局命令前缀"""
+
+    alconna_global_completion: Optional[CompConfig] = Field(None, strict=True)
+    """全局的补全会话配置 (不代表全局启用补全会话)"""
 
     alconna_use_origin: bool = False
     """是否全局使用原始消息 (即未经过 to_me 等处理的)"""

@@ -1,16 +1,14 @@
 {
   "$schema": ".lang.schema.json",
-  "completion": {
-    "nonebot": {
+  "nbp-alc": {
+    "completion": {
       "tab": "发送 {cmd} 切换提示",
       "enter": "发送 {cmd} 以使用提示内容作为输入",
       "exit": "发送 {cmd} 退出补全会话",
       "other": "以上选项之外的输入将作为参数输入",
       "timeout": "补全会话超时, 已自动退出",
       "exited": "补全会话已退出"
-    }
-  },
-  "nbp-alc": {
+    },
     "log": {
       "load_global_extensions": "正在从 {path} 加载全局扩展 。。。",
       "got_path": {

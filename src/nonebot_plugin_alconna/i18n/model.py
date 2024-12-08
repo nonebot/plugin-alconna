@@ -4,17 +4,13 @@
 from tarina.lang.model import LangItem, LangModel
 
 
-class CompletionNonebot:
-    tab: LangItem = LangItem("completion", "nonebot.tab")
-    enter: LangItem = LangItem("completion", "nonebot.enter")
-    exit: LangItem = LangItem("completion", "nonebot.exit")
-    other: LangItem = LangItem("completion", "nonebot.other")
-    timeout: LangItem = LangItem("completion", "nonebot.timeout")
-    exited: LangItem = LangItem("completion", "nonebot.exited")
-
-
-class Completion:
-    nonebot = CompletionNonebot
+class NbpAlcCompletion:
+    tab: LangItem = LangItem("nbp-alc", "completion.tab")
+    enter: LangItem = LangItem("nbp-alc", "completion.enter")
+    exit: LangItem = LangItem("nbp-alc", "completion.exit")
+    other: LangItem = LangItem("nbp-alc", "completion.other")
+    timeout: LangItem = LangItem("nbp-alc", "completion.timeout")
+    exited: LangItem = LangItem("nbp-alc", "completion.exited")
 
 
 class NbpAlcLogGotPath:
@@ -55,6 +51,7 @@ class NbpAlcTest:
 
 
 class NbpAlc:
+    completion = NbpAlcCompletion
     log = NbpAlcLog
     error = NbpAlcError
     test = NbpAlcTest
@@ -83,6 +80,5 @@ class NbpAlcBuiltin:
 
 
 class Lang(LangModel):
-    completion = Completion
     nbp_alc = NbpAlc
     nbp_alc_builtin = NbpAlcBuiltin

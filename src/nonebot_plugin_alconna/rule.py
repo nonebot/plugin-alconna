@@ -14,6 +14,7 @@ from nonebot import get_driver, get_plugin_config
 from arclet.alconna.exceptions import SpecialOptionTriggered
 from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
 
+from .i18n import Lang
 from .config import Config
 from .adapters import MAPPING
 from .uniseg import UniMsg, UniMessage
@@ -71,7 +72,7 @@ class AlconnaRule:
         command: Alconna,
         skip_for_unmatch: bool = True,
         auto_send_output: Optional[bool] = None,
-        comp_config: Optional[CompConfig] = None,
+        comp_config: Optional[Union[CompConfig, bool]] = None,
         extensions: Optional[list[Union[type[Extension], Extension]]] = None,
         exclude_ext: Optional[list[Union[type[Extension], str]]] = None,
         use_origin: Optional[bool] = None,
@@ -80,11 +81,16 @@ class AlconnaRule:
         response_self: Optional[bool] = None,
         _aliases: Optional[Union[set[str], tuple[str, ...]]] = None,
     ):
-        self.comp_config = comp_config
+        if isinstance(comp_config, bool):
+            self.comp_config = {} if comp_config else None
+        else:
+            self.comp_config = comp_config
         self.use_origin = use_origin or False
         try:
             global_config = get_driver().config
             config = get_plugin_config(Config)
+            if config.alconna_global_completion is not None and self.comp_config == {}:
+                self.comp_config = config.alconna_global_completion
             if auto_send_output is None:
                 self.auto_send = True if config.alconna_auto_send_output is None else config.alconna_auto_send_output
             else:
@@ -152,19 +158,11 @@ class AlconnaRule:
                 hides = {"tab", "enter", "exit"}
             hides |= disables
             if len(hides) < 3:
-                template = f"\n\n{{}}{{}}{{}}{lang.require('completion', 'nonebot.other')}\n"
+                template = f"\n\n{{}}{{}}{{}}{Lang.nbp_alc.completion.other()}\n"
                 self._comp_help = template.format(
-                    (f"{lang.require('completion', 'nonebot.tab').format(cmd=_tab)}\n" if "tab" not in hides else ""),
-                    (
-                        f"{lang.require('completion', 'nonebot.enter').format(cmd=_enter)}\n"
-                        if "enter" not in hides
-                        else ""
-                    ),
-                    (
-                        f"{lang.require('completion', 'nonebot.exit').format(cmd=_exit)}\n"
-                        if "exit" not in hides
-                        else ""
-                    ),
+                    (f"{Lang.nbp_alc.completion.tab(cmd=_tab)}\n" if "tab" not in hides else ""),
+                    (f"{Lang.nbp_alc.completion.enter(cmd=_enter)}\n" if "enter" not in hides else ""),
+                    (f"{Lang.nbp_alc.completion.exit(cmd=_exit)}\n" if "exit" not in hides else ""),
                 )
 
             async def _waiter_handle(_bot: Bot, _event: Event, _matcher: Matcher, content: UniMsg):
@@ -261,7 +259,7 @@ class AlconnaRule:
                 try:
                     await asyncio.wait_for(_futures[session_id], timeout=self.comp_config.get("timeout", 60))
                 except asyncio.TimeoutError:
-                    await self.send(lang.require("completion", "nonebot.timeout"), bot, event, res)
+                    await self.send(Lang.nbp_alc.completion.timeout(), bot, event, res)
                     _clear()
                     return res
                 finally:
@@ -270,7 +268,7 @@ class AlconnaRule:
                 ans: Union[UniMessage, bool, None] = _futures[session_id].result()
                 _futures[session_id] = asyncio.get_running_loop().create_future()
                 if ans is False:
-                    await self.send(lang.require("completion", "nonebot.exited"), bot, event, res)
+                    await self.send(Lang.nbp_alc.completion.exited(), bot, event, res)
                     _clear()
                     return res
                 elif ans is None:
@@ -326,14 +324,14 @@ class AlconnaRule:
         if not arp.matched and not may_help_text and self.skip:
             log(
                 "TRACE",
-                escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self._path, arp=arp)),
+                escape_tag(Lang.nbp_alc.log.parse(msg=msg, cmd=self._path, arp=arp)),
             )
             self.executor.clear()
             return False
         if arp.head_matched:
             log(
                 "DEBUG",
-                escape_tag(lang.require("nbp-alc", "log.parse").format(msg=msg, cmd=self._path, arp=arp)),
+                escape_tag(Lang.nbp_alc.log.parse(msg=msg, cmd=self._path, arp=arp)),
             )
         if not may_help_text and arp.error_info:
             may_help_text = str(arp.error_info)
