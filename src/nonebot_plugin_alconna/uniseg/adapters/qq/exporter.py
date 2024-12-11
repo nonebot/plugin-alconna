@@ -226,10 +226,6 @@ class QQMessageExporter(MessageExporter[Message]):
 
     @export
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
-        if TYPE_CHECKING:
-            assert isinstance(bot, QQBot)
-        if bot and bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 at
-            return MessageSegment.text(" ")
         if seg.flag == "channel":
             return MessageSegment.mention_channel(seg.target)
         elif seg.flag == "user":
@@ -241,9 +237,6 @@ class QQMessageExporter(MessageExporter[Message]):
 
     @export
     async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
-        assert isinstance(bot, QQBot)
-        if bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 at
-            return MessageSegment.text(" ")
         return MessageSegment.mention_everyone()
 
     @export
@@ -288,10 +281,6 @@ class QQMessageExporter(MessageExporter[Message]):
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
-        if TYPE_CHECKING:
-            assert isinstance(bot, QQBot)
-        if bot and bot.bot_info and bot.bot_info.is_group_bot:  # TODO: 等待 QQ 机器人支持群聊下的 reply
-            return MessageSegment.text(" ")
         return MessageSegment.reference(seg.id)
 
     def _button(self, seg: Button, bot: Union[Bot, None]):
@@ -368,6 +357,8 @@ class QQMessageExporter(MessageExporter[Message]):
 
         if isinstance(target, Event):
             assert isinstance(target, MessageEvent)
+            if isinstance(target, (C2CMessageCreateEvent, GroupAtMessageCreateEvent)):
+                message = message.exclude("mention_channel", "mention_user", "mention_everyone", "reference")
             return await bot.send(event=target, message=message, **kwargs)
 
         if target.channel:
@@ -384,6 +375,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     **kwargs,  # type: ignore
                 )
             return await bot.send_to_channel(channel_id=target.id, message=message, msg_id=target.source, **kwargs)
+        message = message.exclude("mention_channel", "mention_user", "mention_everyone", "reference")
         if target.private:
             res = await bot.send_to_c2c(
                 openid=target.id, message=message, msg_id=target.source, msg_seq=target.extra["qq.reply_seq"], **kwargs

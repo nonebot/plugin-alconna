@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:aa439e10a0a3fad97ca595a12f677383cb63deea46cfddd6d9f2d33383aca6e4"
+content_hash = "sha256:cef91ff597d9180a8b50c1cdc0e6a1541262a2c71dbfd33914aa48375b429d57"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -1239,15 +1239,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-satori"
-version = "0.12.6"
+version = "0.13.0"
 requires_python = ">=3.9"
 summary = "Satori Protocol Adapter for Nonebot2"
 dependencies = [
     "nonebot2>=2.3.0",
 ]
 files = [
-    {file = "nonebot_adapter_satori-0.12.6-py3-none-any.whl", hash = "sha256:b15d9a8d90e0ceb9a133d6443b505c9e3e1df65a5ae77719022a1c20b1d96f83"},
-    {file = "nonebot_adapter_satori-0.12.6.tar.gz", hash = "sha256:afce9c5ded45ca302b8c42c5ad13c675ca956d00dc47dc99e0bc5acf7e62d093"},
+    {file = "nonebot_adapter_satori-0.13.0-py3-none-any.whl", hash = "sha256:aa5d8fe3472958cc1b8f035d92fb53a21d88df08f3913444cf9bc80c554b9e6e"},
+    {file = "nonebot_adapter_satori-0.13.0.tar.gz", hash = "sha256:124c39389612b8aeb9c58c364cf98985b2ec61a3dce847a4378d6bcf5d24559e"},
 ]
 
 [[package]]
