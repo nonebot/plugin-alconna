@@ -1,13 +1,14 @@
 import nonebot
-from nonebot.adapters.satori import Adapter as SatoriAdapter
+from nonebot.adapters.onebot.v11 import Adapter as ONEBOT_V11Adapter
 
-# from nonebot.adapters.onebot.v11 import Adapter as ONEBOT_V11Adapter
+# from nonebot.adapters.satori import Adapter as SatoriAdapter
+
 
 nonebot.init()
 
 driver = nonebot.get_driver()
-# driver.register_adapter(ONEBOT_V11Adapter)
-driver.register_adapter(SatoriAdapter)
+driver.register_adapter(ONEBOT_V11Adapter)
+# driver.register_adapter(SatoriAdapter)
 
 # nonebot.require("nonebot_plugin_alconna")
 nonebot.load_plugins("plugins")

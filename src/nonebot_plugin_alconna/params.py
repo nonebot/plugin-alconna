@@ -313,6 +313,12 @@ class AlconnaParam(Param):
             return state[ALCONNA_ARG_KEY.format(key=path)]
         if self.extra["name"] in res.result.all_matched_args:
             return res.result.all_matched_args[self.extra["name"]]
+        if (
+            result := res.result.query(
+                f"{merge_path(self.extra['name'], getattr(matcher, 'basepath', ''))}.value", Empty
+            )
+        ) != Empty:
+            return result
         return self.default if self.default not in (..., Empty) else PydanticUndefined
 
     async def _check(self, state: T_State, **kwargs: Any) -> Any:

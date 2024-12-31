@@ -504,8 +504,8 @@ setu.shortcut(
 
 
 @setu.handle()
-async def setu_h(count: int, tags: Match[tuple[str, ...]]):
-    await setu.send(f"数量: {count}\n标签: {tags.result}")
+async def setu_h(count: int, tags: Match[tuple[str, ...]], r18: bool):
+    await setu.send(f"数量: {count}\n标签: {tags.result}\nR18: {r18}")
 
 
 from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
