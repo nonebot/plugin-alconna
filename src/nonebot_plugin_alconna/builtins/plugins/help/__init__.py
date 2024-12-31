@@ -5,8 +5,8 @@ from pathlib import Path
 from tarina import lang
 from nonebot.adapters import Bot
 from nonebot import get_plugin_config
+from nonebot.plugin import PluginMetadata
 from importlib_metadata import PackageNotFoundError, distribution
-from nonebot.plugin import PluginMetadata, inherit_supported_adapters
 from arclet.alconna import (
     Args,
     Field,
@@ -21,7 +21,7 @@ from arclet.alconna import (
     command_manager,
 )
 
-from nonebot_plugin_alconna import UniMessage, AlconnaMatcher, referent, on_alconna
+from nonebot_plugin_alconna import UniMessage, AlconnaMatcher, referent, on_alconna, __supported_adapters__
 
 from .config import Config
 
@@ -32,7 +32,7 @@ __plugin_meta__ = PluginMetadata(
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/help",
     config=Config,
-    supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
+    supported_adapters=__supported_adapters__,
 )
 
 

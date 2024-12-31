@@ -138,14 +138,14 @@ from .uniseg import SupportAdapterModule as SupportAdapterModule
 from .extension import add_global_extension as add_global_extension
 
 __version__ = "0.54.1"
-
+__supported_adapters__ = set(m.value for m in SupportAdapterModule.__members__.values())  # noqa: C401
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",
     description="提供 ArcletProject/Alconna 的 Nonebot2 适配版本与工具",
     usage="matcher = on_alconna(...)",
     homepage="https://github.com/nonebot/plugin-alconna",
     type="library",
-    supported_adapters=set(SupportAdapterModule.__members__.values()),
+    supported_adapters=__supported_adapters__,
     config=Config,
     extra={
         "author": "RF-Tar-Railt",

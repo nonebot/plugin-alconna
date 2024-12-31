@@ -1,9 +1,9 @@
 from nonebot.rule import to_me
 from arclet.alconna import namespace
 from nonebot import get_plugin_config
-from nonebot.plugin import PluginMetadata, inherit_supported_adapters
+from nonebot.plugin import PluginMetadata
 
-from nonebot_plugin_alconna import Command
+from nonebot_plugin_alconna import Command, __supported_adapters__
 from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
 
 from .config import Config
@@ -17,7 +17,7 @@ __plugin_meta__ = PluginMetadata(
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/echo",
     config=Config,
-    supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
+    supported_adapters=__supported_adapters__,
 )
 
 with namespace("builtin/echo") as ns:

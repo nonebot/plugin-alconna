@@ -4,9 +4,9 @@ import datetime
 
 from arclet.alconna import namespace
 from nonebot import get_plugin_config
-from nonebot.plugin import PluginMetadata, inherit_supported_adapters
+from nonebot.plugin import PluginMetadata
 
-from nonebot_plugin_alconna import Match, Command, MsgTarget, add_global_extension
+from nonebot_plugin_alconna import Match, Command, MsgTarget, add_global_extension, __supported_adapters__
 
 from .config import Config
 from .extension import PrefixAppendExtension
@@ -18,7 +18,7 @@ __plugin_meta__ = PluginMetadata(
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/with",
     config=Config,
-    supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
+    supported_adapters=__supported_adapters__,
 )
 
 

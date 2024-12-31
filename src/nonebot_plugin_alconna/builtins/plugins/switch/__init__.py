@@ -4,10 +4,10 @@ from tarina import lang
 from nonebot.adapters import Bot
 from nonebot import get_plugin_config
 from nonebot.permission import SUPERUSER
-from nonebot.plugin import PluginMetadata, inherit_supported_adapters
+from nonebot.plugin import PluginMetadata
 from arclet.alconna import Args, Field, Option, Alconna, Arparma, CommandMeta, namespace, store_true, command_manager
 
-from nonebot_plugin_alconna import on_alconna
+from nonebot_plugin_alconna import on_alconna, __supported_adapters__
 
 from .config import Config
 
@@ -18,7 +18,7 @@ __plugin_meta__ = PluginMetadata(
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/switch",
     config=Config,
-    supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
+    supported_adapters=__supported_adapters__,
 )
 
 

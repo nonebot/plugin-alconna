@@ -1,8 +1,8 @@
-from nonebot.plugin import PluginMetadata, inherit_supported_adapters
+from nonebot.plugin import PluginMetadata
 from arclet.alconna import Args, Field, Option, Alconna, CommandMeta, namespace
 
 from nonebot_plugin_alconna.i18n import Lang, lang
-from nonebot_plugin_alconna import Match, UniMessage, on_alconna
+from nonebot_plugin_alconna import Match, UniMessage, on_alconna, __supported_adapters__
 
 __plugin_meta__ = PluginMetadata(
     name="lang",
@@ -11,7 +11,7 @@ __plugin_meta__ = PluginMetadata(
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/lang.py",
     config=None,
-    supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna"),
+    supported_adapters=__supported_adapters__,
 )
 
 with namespace("builtin/lang") as ns:
