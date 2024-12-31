@@ -2,9 +2,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
 from nonebot.compat import type_validate_python
-from nonebot.adapters.satori.models import Login, LoginStatus
-
-FAKE_SATORI_LOGIN = Login(status=LoginStatus.ONLINE)
 
 if TYPE_CHECKING:
     from nonebot.adapters.qq import MessageCreateEvent as MessageCreateEvent
@@ -135,15 +132,20 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
     from pydantic import create_model
     from nonebot.adapters.satori import Message
     from nonebot.adapters.satori.event import MessageEvent
-    from nonebot.adapters.satori.models import User, Channel, ChannelType, MessageObject
+    from nonebot.adapters.satori.models import User, Login, Channel, ChannelType, LoginStatus, MessageObject
 
     _Fake = create_model("_Fake", __base__=MessageEvent)
 
     class FakeEvent(_Fake):
-        id: int = 1
+        sn: int = 1
         type: str = "message-created"
-        self_id: str = "123456789"
-        platform: str = "satori"
+        login: Login = Login(
+            sn="123456789",
+            adapter="test",
+            status=LoginStatus.ONLINE,
+            platform="satori",
+            user=User(id="123456789", name="test"),
+        )
         timestamp: datetime = datetime.fromtimestamp(1000000)
         channel: Channel = Channel(id="1", type=ChannelType.TEXT)
         user: User = User(id="1", name="test")
@@ -180,3 +182,20 @@ def fake_message_event_guild(**field) -> "MessageCreateEvent":
             extra = "forbid"
 
     return FakeEvent(**field)
+
+
+def fake_satori_bot_params(self_id: str = "test", platform: str = "test") -> dict:
+    from nonebot.adapters.satori.models import User, Login, LoginStatus
+
+    return {
+        "self_id": self_id,
+        "login": Login(
+            sn=self_id,
+            adapter="test",
+            status=LoginStatus.ONLINE,
+            platform=platform,
+            user=User(id=self_id, name="test"),
+        ),
+        "info": None,
+        "proxy_urls": [],
+    }

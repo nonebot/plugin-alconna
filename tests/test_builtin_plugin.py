@@ -4,7 +4,7 @@ from nonebot import get_adapter
 from pytest_mock import MockerFixture
 from nonebot.adapters.satori import Bot, Adapter, Message, MessageSegment
 
-from tests.fake import FAKE_SATORI_LOGIN, fake_message_event_satori
+from tests.fake import fake_satori_bot_params, fake_message_event_satori
 
 
 @pytest.mark.asyncio()
@@ -15,7 +15,7 @@ async def test_echo(app: App):
 
     async with app.test_matcher() as ctx:
         adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter, login=FAKE_SATORI_LOGIN, info=None)
+        bot = ctx.create_bot(base=Bot, adapter=adapter, **fake_satori_bot_params())
         msg = "/echo" + MessageSegment.image(raw=b"123", mime="image/png")
         event = fake_message_event_satori(message=msg, id=123)
         ctx.receive_event(bot, event)
@@ -43,7 +43,7 @@ async def test_help(app: App):
 
     async with app.test_matcher() as ctx:
         adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter, login=FAKE_SATORI_LOGIN, info=None)
+        bot = ctx.create_bot(base=Bot, adapter=adapter, **fake_satori_bot_params())
         msg = Message("/help")
         event = fake_message_event_satori(message=msg, id=123)
         ctx.receive_event(bot, event)
@@ -83,7 +83,7 @@ async def test_lang_switch(app: App):
 
     async with app.test_matcher() as ctx:
         adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter, login=FAKE_SATORI_LOGIN, info=None)
+        bot = ctx.create_bot(base=Bot, adapter=adapter, **fake_satori_bot_params())
         event1 = fake_message_event_satori(message=Message("/lang switch en-US"), id=123)
         ctx.receive_event(bot, event1)
         ctx.should_call_send(event1, Message("Switch to 'en-US' successfully."))
@@ -110,7 +110,7 @@ async def test_lang_list(app: App, mocker: MockerFixture):
 
     async with app.test_matcher() as ctx:
         adapter = get_adapter(Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter, login=FAKE_SATORI_LOGIN, info=None)
+        bot = ctx.create_bot(base=Bot, adapter=adapter, **fake_satori_bot_params())
         lang.select("zh-CN")
         event = fake_message_event_satori(message=Message("/lang list test-lang"), id=123)
         ctx.receive_event(bot, event)

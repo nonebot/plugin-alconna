@@ -15,10 +15,7 @@ from nonebot.adapters.onebot.v11 import Adapter as Onebot11Adapter
 from nonebot.adapters.onebot.v12 import Adapter as Onebot12Adapter
 from nonebot.adapters.satori.models import User, Guild, Channel, PageResult, ChannelType
 
-from tests.fake import FAKE_SATORI_LOGIN
-
-FAKE_SATORI_CHRONOCAT_LOGIN = FAKE_SATORI_LOGIN.model_copy(update={"platform": "chronocat"})
-FAKE_SATORI_QQ_LOGIN = FAKE_SATORI_LOGIN.model_copy(update={"platform": "qq"})
+from tests.fake import fake_satori_bot_params
 
 
 @pytest.mark.asyncio()
@@ -30,11 +27,9 @@ async def test_bots(app: App):
         qq_bot = ctx.create_bot(base=QQBot, adapter=qq_adapter, self_id="1", bot_info=None)
         satori_adapter = get_adapter(SatoriAdapter)
         satori_bot_cc = ctx.create_bot(
-            base=SatoriBot, adapter=satori_adapter, self_id="2", login=FAKE_SATORI_CHRONOCAT_LOGIN, info=None
+            base=SatoriBot, adapter=satori_adapter, **fake_satori_bot_params("2", "chronocat")
         )
-        satori_bot_qq = ctx.create_bot(
-            base=SatoriBot, adapter=satori_adapter, self_id="3", login=FAKE_SATORI_QQ_LOGIN, info=None
-        )
+        satori_bot_qq = ctx.create_bot(base=SatoriBot, adapter=satori_adapter, **fake_satori_bot_params("3", "qq"))
         onebot11_adapter = get_adapter(Onebot11Adapter)
         onebot11_bot = ctx.create_bot(base=Onebot11Bot, adapter=onebot11_adapter, self_id="4")
         onebot12_adapter = get_adapter(Onebot12Adapter)
@@ -76,9 +71,7 @@ async def test_enable(app: App, mocker: MockerFixture):
 
     async with app.test_api() as ctx:
         satori_adapter = get_adapter(SatoriAdapter)
-        satori_bot1 = ctx.create_bot(
-            base=SatoriBot, adapter=satori_adapter, self_id="1", login=FAKE_SATORI_CHRONOCAT_LOGIN, info=None
-        )
+        satori_bot1 = ctx.create_bot(base=SatoriBot, adapter=satori_adapter, **fake_satori_bot_params("1", "chronocat"))
 
         ctx.should_call_api("friend_list", {}, PageResult(data=[User(id="11", name="test1")]))
 
@@ -87,9 +80,7 @@ async def test_enable(app: App, mocker: MockerFixture):
             "channel_list", {"guild_id": "12"}, PageResult(data=[Channel(id="13", type=ChannelType.TEXT)])
         )
         await asyncio.sleep(0.1)
-        satori_bot2 = ctx.create_bot(
-            base=SatoriBot, adapter=satori_adapter, self_id="2", login=FAKE_SATORI_CHRONOCAT_LOGIN, info=None
-        )
+        satori_bot2 = ctx.create_bot(base=SatoriBot, adapter=satori_adapter, **fake_satori_bot_params("2", "chronocat"))
         ctx.should_call_api("friend_list", {}, PageResult(data=[User(id="21", name="test1")]))
 
         ctx.should_call_api(
