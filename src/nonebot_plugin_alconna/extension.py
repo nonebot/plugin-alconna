@@ -40,6 +40,7 @@ class Extension(metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs):
         cls._overrides = {
+            "message_provider": cls.message_provider != Extension.message_provider,
             "output_converter": cls.output_converter != Extension.output_converter,
             "send_wrapper": cls.send_wrapper != Extension.send_wrapper,
             "receive_wrapper": cls.receive_wrapper != Extension.receive_wrapper,
@@ -77,18 +78,7 @@ class Extension(metaclass=ABCMeta):
         self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
     ) -> Message | UniMessage | None:
         """提供消息对象以便 Alconna 进行处理。"""
-        if event.get_type() != "message":
-            return None
-        try:
-            msg: Message = event.get_message()
-        except (NotImplementedError, ValueError):
-            return None
-        if use_origin:
-            try:
-                msg: Message = getattr(event, "original_message", msg)  # type: ignore
-            except (NotImplementedError, ValueError):
-                return None
-        return msg
+        return None
 
     async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: TM) -> TM:
         """接收消息后的钩子函数。"""
@@ -216,17 +206,31 @@ class ExtensionExecutor:
     async def message_provider(
         self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
     ) -> Message | UniMessage | None:
+        if event.get_type() != "message":
+            msg = None
+        else:
+            try:
+                msg = event.get_message()
+            except (NotImplementedError, ValueError):
+                msg = None
+            if use_origin:
+                try:
+                    msg = getattr(event, "original_message", msg)  # type: ignore
+                except (NotImplementedError, ValueError):
+                    pass
         exc = None
         for ext in self.context:
+            if not ext._overrides["message_provider"]:
+                continue
             try:
-                if (msg := await ext.message_provider(event, state, bot, use_origin)) is not None:
-                    return msg
+                if (msg1 := await ext.message_provider(event, state, bot, use_origin)) is not None:
+                    return msg1
             except Exception as e:
                 exc = e
         if exc is not None:
             raise exc
 
-        return None
+        return msg
 
     async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: TM) -> TM:
         res = receive
