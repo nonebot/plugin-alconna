@@ -103,19 +103,19 @@ async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]]
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]],
 ) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]]: ...
 
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]]
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]],
 ) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]]: ...
 
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]]
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]],
 ) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]]: ...
 
 
@@ -124,7 +124,7 @@ def export(
         Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]],
         Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]],
         Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]],
-    ]
+    ],
 ):
     sig = inspect.signature(func)
     func.__export_target__ = sig.parameters["seg"].annotation

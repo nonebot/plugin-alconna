@@ -1038,7 +1038,7 @@ class _CustomMounter:
                     ["MessageExporter", TS, Union[Bot, None], Union[bool, FallbackStrategy]],
                     Awaitable[list[MessageSegment]],
                 ],
-            ]
+            ],
         ):
             cls.EXPORTERS[custom_type] = func  # type: ignore
             return func

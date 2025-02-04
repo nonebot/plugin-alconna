@@ -124,14 +124,14 @@ def select(
 
 @deprecated("Use `select().first` instead.")
 def select_first(
-    seg: Union[type[segment.TS], BasePattern[segment.TS, Segment, Any]]
+    seg: Union[type[segment.TS], BasePattern[segment.TS, Segment, Any]],
 ) -> BasePattern[segment.TS, Segment, Literal[MatchMode.TYPE_CONVERT]]:
     return select(seg).first
 
 
 @deprecated("Use `select().last` instead.")
 def select_last(
-    seg: Union[type[segment.TS], BasePattern[segment.TS, Segment, Any]]
+    seg: Union[type[segment.TS], BasePattern[segment.TS, Segment, Any]],
 ) -> BasePattern[segment.TS, Segment, Literal[MatchMode.TYPE_CONVERT]]:
     return select(seg).last
 

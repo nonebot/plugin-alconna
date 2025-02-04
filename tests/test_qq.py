@@ -4,7 +4,9 @@ import pytest
 from nonebug import App
 from arclet.alconna import Args, Alconna
 from nonebot import on_message, get_adapter
-from nonebot.adapters.qq.models import Action
+from nonebot.adapters.qq.models import (
+    Action,
+)
 from nonebot.adapters.qq.models import Button as QQButton
 from nonebot.adapters.qq import Bot, Adapter, Message, MessageSegment
 from nonebot.adapters.qq.models import (
