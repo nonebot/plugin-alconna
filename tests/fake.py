@@ -137,7 +137,7 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
         sn: int = 1
         type: str = "message-created"
         login: Login = Login(
-            sn="123456789",
+            sn=0,
             adapter="test",
             status=LoginStatus.ONLINE,
             platform="satori",
@@ -187,7 +187,7 @@ def fake_satori_bot_params(self_id: str = "test", platform: str = "test") -> dic
     return {
         "self_id": self_id,
         "login": Login(
-            sn=self_id,
+            sn=0,
             adapter="test",
             status=LoginStatus.ONLINE,
             platform=platform,

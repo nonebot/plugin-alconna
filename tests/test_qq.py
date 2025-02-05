@@ -2,9 +2,7 @@ import pytest
 from nonebug import App
 from arclet.alconna import Args, Alconna
 from nonebot import on_message, get_adapter
-from nonebot.adapters.qq.models import (
-    Action,
-)
+from nonebot.adapters.qq.models import Action
 from nonebot.adapters.qq.models import Button as QQButton
 from nonebot.adapters.qq import Bot, Adapter, Message, MessageSegment
 from nonebot.adapters.qq.models import (
@@ -40,7 +38,6 @@ async def test_send(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter, bot_info=None)
         event = fake_message_event_guild(message=Message("<@5678> test aaaa"), id="123")
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, "check running")
         ctx.should_call_send(event, "test!")
         ctx.should_finished()
 
