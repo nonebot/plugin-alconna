@@ -123,3 +123,4 @@ class TelegramMessageBuilder(MessageBuilder):
                 event.reply_to_message.original_message,
                 event.reply_to_message,
             )
+        return None

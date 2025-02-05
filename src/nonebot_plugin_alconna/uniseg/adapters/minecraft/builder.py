@@ -15,15 +15,15 @@ class MinecraftMessageBuilder(MessageBuilder):
         styles = []
         if "color" in data and data["color"] and data["color"] != TextColor.WHITE:
             styles.append(data["color"])
-        if "bold" in data and data["bold"]:
+        if data.get("bold"):
             styles.append("bold")
-        if "italic" in data and data["italic"]:
+        if data.get("italic"):
             styles.append("italic")
-        if "underlined" in data and data["underlined"]:
+        if data.get("underlined"):
             styles.append("underlined")
-        if "strikethrough" in data and data["strikethrough"]:
+        if data.get("strikethrough"):
             styles.append("strikethrough")
-        if "obfuscated" in data and data["obfuscated"]:
+        if data.get("obfuscated"):
             styles.append("obfuscated")
         return styles
 

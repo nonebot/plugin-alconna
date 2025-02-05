@@ -57,16 +57,13 @@ class FeishuTargetFetcher(TargetFetcher):
                         adapter=self.get_adapter(),
                         self_id=bot.self_id,
                     )
-        groups = []
         result = await bot.call_api("contact/v3/group/simplelist", method="GET")
-        for group in result["data"]["grouplist"]:
-            groups.append(group["id"])
+        groups = [group["id"] for group in result["data"]["grouplist"]]
         while result["data"]["has_more"]:
             result = await bot.call_api(
                 "contact/v3/group/simplelist", method="GET", params={"page_token": result["data"]["page_token"]}
             )
-            for group in result["data"]["grouplist"]:
-                groups.append(group["id"])
+            groups.extend(group["id"] for group in result["data"]["grouplist"])
         for group_id in groups:
             result = await bot.call_api(f"contact/v3/group/{group_id}/member/simplelist", method="GET")
             for user in result["data"]["memberlist"]:

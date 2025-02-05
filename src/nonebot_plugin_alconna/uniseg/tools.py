@@ -22,7 +22,7 @@ async def reply_fetch(event: Event, bot: Bot):
     _adapter = bot.adapter
     adapter = _adapter.get_name()
     if not (fn := alter_get_builder(adapter)):
-        return
+        return None
     return await fn.extract_reply(event, bot)
 
 
@@ -94,6 +94,7 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
         return await bot.get_msg_resource(message_id=event.message_id, file_key=img.id, type_="image")
     if adapter_name == "ntchat":
         raise NotImplementedError("ntchat image fetch not implemented")
+    return None
 
 
 @overload

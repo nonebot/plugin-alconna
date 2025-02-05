@@ -11,16 +11,16 @@ from nonebot_plugin_alconna.uniseg.segment import Emoji, custom_handler, custom_
 def get_satori_version():
     try:
         satori = distribution("nonebot-adapter-satori")
-        return satori.version
     except PackageNotFoundError:
         return None
+    else:
+        return satori.version
 
 
 class Loader(BaseLoader):
     def __init__(self):
-        if version := get_satori_version():
-            if tuple(map(int, version.split(".")[:2])) < (0, 12):
-                raise ImportError("nonebot-adapter-satori>=0.12 is required.")
+        if (version := get_satori_version()) and tuple(map(int, version.split(".")[:2])) < (0, 12):
+            raise ImportError("nonebot-adapter-satori>=0.12 is required.")
 
     def get_adapter(self) -> SupportAdapter:
         return SupportAdapter.satori
@@ -49,6 +49,7 @@ class Loader(BaseLoader):
                 return MessageSegment("chronocat:face", seg.data)(
                     await exporter.export(seg.children, bot, fallback)  # type: ignore
                 )
+            return None
 
         return SatoriMessageExporter()
 

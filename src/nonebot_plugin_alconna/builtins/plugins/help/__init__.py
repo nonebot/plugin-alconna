@@ -235,11 +235,11 @@ async def help_cmd_handle(arp: Arparma, bot: Bot, event):
         if not resp:
             await help_matcher.finish()
         resp = resp.extract_plain_text().strip().lower()
-        if resp == "a" or resp == "<":
+        if resp in {"a", "<"}:
             page -= 1
             if page < 1:
                 page = max_page
-        elif resp == "d" or resp == ">":
+        elif resp in {"d", ">"}:
             page += 1
             if page > max_page:
                 page = 1

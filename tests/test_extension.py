@@ -32,9 +32,7 @@ async def test_extension(app: App):
             return True
 
         def before_catch(self, name: str, annotation: Any, default: Any) -> bool:
-            if annotation is str:
-                return True
-            return False
+            return annotation is str
 
         async def send_wrapper(self, bot: Bot, event: Event, send):
             if isinstance(send, UniMessage):
@@ -47,6 +45,7 @@ async def test_extension(app: App):
                     "hello": "Hello!",
                     "world": "World!",
                 }.get(interface.name, interface.name)
+            return None
 
     add = on_alconna(Alconna("add", Args["a", float]["b", float]), extensions=[DemoExtension], comp_config={})
 

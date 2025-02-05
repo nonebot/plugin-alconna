@@ -85,19 +85,17 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
         }[name]
         if seg.raw:
             return method(seg.raw_bytes)
-        elif seg.path:
+        if seg.path:
             return method(Path(seg.path))
-        elif seg.url:
+        if seg.url:
             return method(seg.url)
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.path:
             return MessageSegment("$onebot11:file", {"file": Path(seg.path).resolve()})
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
     async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
@@ -152,12 +150,11 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                     user_id=int(_target.id),
                     messages=msg,
                 )
-            else:
-                return await bot.call_api(
-                    "send_group_forward_msg",
-                    group_id=int(_target.id),
-                    messages=msg,
-                )
+            return await bot.call_api(
+                "send_group_forward_msg",
+                group_id=int(_target.id),
+                messages=msg,
+            )
         if msg := message.include("$onebot11:file"):
             if _target.private:
                 return await bot.call_api(
@@ -167,14 +164,13 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                     name=msg[0].data["file"].name,
                     **kwargs,
                 )
-            else:
-                return await bot.call_api(
-                    "upload_group_file",
-                    group_id=int(_target.id),
-                    file=msg[0].data["file"].as_posix(),
-                    name=msg[0].data["file"].name,
-                    **kwargs,
-                )
+            return await bot.call_api(
+                "upload_group_file",
+                group_id=int(_target.id),
+                file=msg[0].data["file"].as_posix(),
+                name=msg[0].data["file"].name,
+                **kwargs,
+            )
         if isinstance(target, Event):
             return await bot.send(target, message, **kwargs)  # type: ignore
         if _target.private:
@@ -187,13 +183,11 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                     **kwargs,
                 )
             return await bot.send_msg(message_type="private", user_id=int(_target.id), message=message, **kwargs)
-        else:
-            return await bot.send_msg(message_type="group", group_id=int(_target.id), message=message, **kwargs)
+        return await bot.send_msg(message_type="group", group_id=int(_target.id), message=message, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, OnebotBot)
         await bot.delete_msg(message_id=mid["message_id"])
-        return
 
     def get_reply(self, mid: Any):
         return Reply(str(mid["message_id"]))

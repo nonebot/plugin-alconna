@@ -122,7 +122,7 @@ class DiscordSlashExtension(Extension):
 
     async def message_provider(self, event: Event, state: T_State, bot, use_origin: bool = False):
         if not isinstance(event, ApplicationCommandInteractionEvent):
-            return
+            return None
         data = event.data
         cmd = f"/{data.name}"
 

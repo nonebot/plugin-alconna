@@ -8,7 +8,7 @@ from weakref import finalize
 from dataclasses import dataclass
 from typing_extensions import Self
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Union, Generic, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Union, Generic, Literal, TypeVar, ClassVar
 
 from tarina import lang
 from nonebot.typing import T_State
@@ -94,7 +94,7 @@ class Extension(metaclass=ABCMeta):
 
     async def parse_wrapper(self, bot: Bot, state: T_State, event: Event, res: Arparma) -> None:
         """解析消息后的钩子函数。"""
-        ...
+        return
 
     async def send_wrapper(self, bot: Bot, event: Event, send: TM) -> TM:
         """发送消息前的钩子函数。"""
@@ -102,15 +102,15 @@ class Extension(metaclass=ABCMeta):
 
     def before_catch(self, name: str, annotation: Any, default: Any) -> bool:
         """依赖注入的绑定确认函数。"""
-        ...
+        raise NotImplementedError
 
     async def catch(self, interface: Interface) -> Any:
         """自定义依赖注入处理函数。"""
-        ...
+        raise NotImplementedError
 
     def post_init(self, alc: Alconna) -> None:
         """Alconna 初始化后的钩子函数。"""
-        ...
+        return
 
 
 class DefaultExtension(Extension):
@@ -127,7 +127,7 @@ _callbacks = set()
 
 
 class ExtensionExecutor:
-    globals: list[type[Extension] | Extension] = [DefaultExtension()]
+    globals: ClassVar[list[type[Extension] | Extension]] = [DefaultExtension()]
     _rule: AlconnaRule
 
     def __init__(

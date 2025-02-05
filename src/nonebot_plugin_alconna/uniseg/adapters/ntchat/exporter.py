@@ -58,12 +58,11 @@ class NTChatMessageExporter(MessageExporter["Message"]):
         }[name]
         if seg.path:
             return method(seg.path)
-        elif seg.raw:
+        if seg.raw:
             return method(seg.raw_bytes)
-        elif seg.url or seg.id:
+        if seg.url or seg.id:
             return method(seg.url or seg.id)  # type: ignore
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":

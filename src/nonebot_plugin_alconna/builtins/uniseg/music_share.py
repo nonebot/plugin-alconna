@@ -86,7 +86,7 @@ def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
             thumbnail=data["pic"],
             audio=data["audio"],
         )
-    elif builder.get_adapter() is SupportAdapter.mirai:
+    if builder.get_adapter() is SupportAdapter.mirai:
         data = seg.data
         return MusicShare(
             kind=MusicShareKind(data["kind"].value),
@@ -97,6 +97,7 @@ def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
             audio=data["music_url"],
             summary=data["brief"],
         )
+    return None
 
 
 @custom_handler(MusicShare)
@@ -156,3 +157,4 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Optional
         )
         res.data["subtype"] = platform
         return res
+    return None

@@ -141,8 +141,7 @@ def match_path(
     async def wrapper(event: Event, bot: Bot, state: T_State, result: Arparma):
         if path == "$main":
             return not result.components and (not additional or await additional(event, bot, state, result))
-        else:
-            return result.query(path, "\0") != "\0" and (not additional or await additional(event, bot, state, result))
+        return result.query(path, "\0") != "\0" and (not additional or await additional(event, bot, state, result))
 
     return wrapper
 
@@ -231,6 +230,7 @@ class ExtensionParam(Param):
     def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Optional["ExtensionParam"]:
         if cls.executor.before_catch(param.name, param.annotation, param.default):
             return cls(param.default, name=param.name, type=param.annotation, validate=True)
+        return None
 
     async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
         res = await self.executor.catch(event, state, self.extra["name"], self.extra["type"], self.default)
@@ -287,8 +287,7 @@ class AlconnaParam(Param):
         if t is Duplication:
             if anno := self.extra.get("anno"):
                 return anno(res.result)
-            else:
-                return generate_duplication(res.source)(res.result)
+            return generate_duplication(res.source)(res.result)
         if t is Extension:
             anno = self.extra["anno"]
             return next((i for i in state[ALCONNA_EXTENSION] if isinstance(i, anno)), None)  # type: ignore
@@ -321,16 +320,17 @@ class AlconnaParam(Param):
             return result
         return self.default if self.default not in (..., Empty) else PydanticUndefined
 
-    async def _check(self, state: T_State, **kwargs: Any) -> Any:
-        if self.extra["type"] == Any:
-            if (
-                self.extra["name"] in _alconna_result(state).result.all_matched_args
-                or ALCONNA_ARG_KEY.format(key=self.extra["name"]) in state
-                or ((path := state.get(ALCONNA_ARG_PATH)) and path.endswith(f".{self.extra['name']}"))
-            ):
-                return True
-            if self.default not in (..., Empty):
-                return True
+    # async def _check(self, state: T_State, **kwargs: Any) -> Any:
+    #     if self.extra["type"] == Any:
+    #         if (
+    #             self.extra["name"] in _alconna_result(state).result.all_matched_args
+    #             or ALCONNA_ARG_KEY.format(key=self.extra["name"]) in state
+    #             or ((path := state.get(ALCONNA_ARG_PATH)) and path.endswith(f".{self.extra['name']}"))
+    #         ):
+    #             return True
+    #         if self.default not in (..., Empty):
+    #             return True
+    #         return False
 
 
 class _Dispatch:

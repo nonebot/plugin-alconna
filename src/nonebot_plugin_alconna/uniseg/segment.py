@@ -353,8 +353,7 @@ class Text(Segment):
             result.append(f"\033[{prefix}m{text[scale[0] : scale[1]]}\033[0m")
         right = scales[-1][1]
         result.append(text[right:])
-        text = "".join(result)
-        return text
+        return "".join(result)
 
     def extract_most_style(self) -> str:
         if not self.styles:
@@ -635,7 +634,7 @@ class Media(Segment):
 
                 dir_ = get_data_dir("nonebot_plugin_alconna") / "media"
             except ImportError:
-                get_data_dir = None  # noqa
+                get_data_dir = None
                 dir_ = Path.cwd() / ".data" / "media"
         raw = self.raw.getvalue() if isinstance(self.raw, BytesIO) else self.raw
         header = raw[:128]
@@ -777,7 +776,9 @@ class CustomNode:
             content = data["content"]
         else:
             content = [get_segment_class(seg["type"]).load(seg) for seg in data["content"]]
-        return cls(data["uid"], data["name"], content, datetime.fromtimestamp(data["time"]), data["context"])
+        return cls(
+            data["uid"], data["name"], content, datetime.fromtimestamp(data["time"]), data["context"]  # noqa: DTZ006
+        )
 
 
 @dataclass
@@ -993,21 +994,26 @@ TMS = TypeVar("TMS", bound=MessageSegment)
 
 
 class _CustomMounter:
-    BUILDERS: dict[
-        Union[str, Callable[[MessageSegment], bool]], Callable[["MessageBuilder", MessageSegment], Union[Segment, None]]
+    BUILDERS: ClassVar[
+        dict[
+            Union[str, Callable[[MessageSegment], bool]],
+            Callable[["MessageBuilder", MessageSegment], Union[Segment, None]],
+        ]
     ] = {}
-    EXPORTERS: dict[
-        type[Segment],
-        Union[
-            Callable[
-                ["MessageExporter", Segment, Union[Bot, None], Union[bool, FallbackStrategy]],
-                Awaitable[Optional[MessageSegment]],
+    EXPORTERS: ClassVar[
+        dict[
+            type[Segment],
+            Union[
+                Callable[
+                    ["MessageExporter", Segment, Union[Bot, None], Union[bool, FallbackStrategy]],
+                    Awaitable[Optional[MessageSegment]],
+                ],
+                Callable[
+                    ["MessageExporter", Segment, Union[Bot, None], Union[bool, FallbackStrategy]],
+                    Awaitable[list[MessageSegment]],
+                ],
             ],
-            Callable[
-                ["MessageExporter", Segment, Union[Bot, None], Union[bool, FallbackStrategy]],
-                Awaitable[list[MessageSegment]],
-            ],
-        ],
+        ]
     ] = {}
 
     @classmethod
@@ -1025,6 +1031,7 @@ class _CustomMounter:
                     return func(builder, seg)
             elif condition(seg):
                 return func(builder, seg)
+        return None
 
     @classmethod
     def custom_handler(cls, custom_type: type[TS]):
@@ -1038,7 +1045,7 @@ class _CustomMounter:
                     ["MessageExporter", TS, Union[Bot, None], Union[bool, FallbackStrategy]],
                     Awaitable[list[MessageSegment]],
                 ],
-            ]
+            ],
         ):
             cls.EXPORTERS[custom_type] = func  # type: ignore
             return func

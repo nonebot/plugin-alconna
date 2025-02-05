@@ -19,9 +19,9 @@ _adapters = [path.stem for path in root.iterdir() if path.is_dir() and not path.
 for name in _adapters:
     try:
         module = importlib.import_module(f".{name}", __package__)
-        loader = cast(BaseLoader, getattr(module, "Loader")())
+        loader = cast(BaseLoader, module.Loader())
         loaders[loader.get_adapter().value] = loader
-    except Exception as e:
+    except Exception as e:  # noqa: PERF203
         warn(f"Failed to import uniseg adapter {name}: {e}", RuntimeWarning, 15)
 
 EXPORTER_MAPPING: dict[str, MessageExporter] = {
@@ -40,11 +40,11 @@ except Exception as e:
 if os.environ.get("PLUGIN_ALCONNA_TESTENV"):
     for adapter, loader in loaders.items():
         try:
-            EXPORTER_MAPPING[adapter] = loaders[adapter].get_exporter()
-            BUILDER_MAPPING[adapter] = loaders[adapter].get_builder()
+            EXPORTER_MAPPING[adapter] = loader.get_exporter()
+            BUILDER_MAPPING[adapter] = loader.get_builder()
             with suppress(NotImplementedError):
-                FETCHER_MAPPING[adapter] = loaders[adapter].get_fetcher()
-        except Exception as e:
+                FETCHER_MAPPING[adapter] = loader.get_fetcher()
+        except Exception as e:  # noqa: PERF203
             warn(f"Failed to load uniseg adapter {adapter}: {e}", RuntimeWarning, 15)
 elif not adapters:
     warn(

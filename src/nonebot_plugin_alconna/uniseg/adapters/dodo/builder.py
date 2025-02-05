@@ -61,3 +61,4 @@ class DodoMessageBuilder(MessageBuilder):
 
         if reply := event.reply:
             return Reply(reply.message_id, origin=reply)
+        return None

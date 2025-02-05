@@ -43,7 +43,7 @@ class KookMessageExporter(MessageExporter["Message"]):
     async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.extract_most_style() == "markdown":
             return MessageSegment.KMarkdown(seg.text)
-        elif seg.styles:
+        if seg.styles:
             return MessageSegment.KMarkdown(str(seg))
         return MessageSegment.text(seg.text)
 
@@ -51,10 +51,9 @@ class KookMessageExporter(MessageExporter["Message"]):
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "role":
             return MessageSegment.mention_role(seg.target)
-        elif seg.flag == "channel":
+        if seg.flag == "channel":
             return MessageSegment.KMarkdown(f"(chn){seg.target}(chn)")
-        else:
-            return MessageSegment.mention(seg.target)
+        return MessageSegment.mention(seg.target)
 
     @export
     async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
@@ -64,8 +63,7 @@ class KookMessageExporter(MessageExporter["Message"]):
     async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.name:
             return MessageSegment.KMarkdown(f"(emj){seg.name}(emj)[{seg.id}]")
-        else:
-            return MessageSegment.KMarkdown(f":{seg.id}:")
+        return MessageSegment.KMarkdown(f":{seg.id}:")
 
     @export
     async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
@@ -98,10 +96,9 @@ class KookMessageExporter(MessageExporter["Message"]):
         }[name]
         if seg.raw:
             return local_method(seg.raw_bytes)
-        elif seg.path:
+        if seg.path:
             return local_method(seg.path)
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
@@ -125,8 +122,7 @@ class KookMessageExporter(MessageExporter["Message"]):
 
         if target.private:
             return await bot.send_msg(message_type="private", user_id=target.id, message=message, **kwargs)
-        else:
-            return await bot.send_msg(message_type="channel", channel_id=target.id, message=message, **kwargs)
+        return await bot.send_msg(message_type="channel", channel_id=target.id, message=message, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
@@ -143,7 +139,6 @@ class KookMessageExporter(MessageExporter["Message"]):
             await bot.directMessage_delete(msg_id=_mid.msg_id)
         else:
             await bot.message_delete(msg_id=_mid.msg_id)
-        return
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         if TYPE_CHECKING:

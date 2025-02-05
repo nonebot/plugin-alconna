@@ -97,7 +97,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
         if seg.url:
             resp = await bot.upload_file(type="url", name=seg.name, url=seg.url)
             return method(resp["file_id"])
-        elif seg.path:
+        if seg.path:
             if seg.__class__.to_url:
                 resp = await bot.upload_file(
                     type="url",
@@ -109,7 +109,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
             else:
                 resp = await bot.upload_file(type="path", path=str(seg.path), name=Path(seg.path).name)
             return method(resp["file_id"])
-        elif seg.raw:
+        if seg.raw:
             if seg.__class__.to_url:
                 resp = await bot.upload_file(
                     type="url",
@@ -121,8 +121,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
             else:
                 resp = await bot.upload_file(type="data", data=seg.raw_bytes, name=seg.name)
             return method(resp["file_id"])
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
@@ -137,18 +136,16 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
             return await bot.send(target, message, **kwargs)  # type: ignore
         if target.private:
             return await bot.send_message(detail_type="private", user_id=target.id, message=message, **kwargs)
-        elif target.channel:
+        if target.channel:
             return await bot.send_message(
                 detail_type="channel", channel_id=target.id, guild_id=target.parent_id, message=message, **kwargs
             )
-        else:
-            return await bot.send_message(detail_type="group", group_id=target.id, message=message, **kwargs)
+        return await bot.send_message(detail_type="group", group_id=target.id, message=message, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, OnebotBot)
 
         await bot.delete_message(message_id=mid["message_id"])
-        return
 
     def get_reply(self, mid: Any):
         return Reply(mid["message_id"])

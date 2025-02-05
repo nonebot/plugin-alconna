@@ -47,8 +47,8 @@ def link(self, x: Text):
     if x.extract_most_style() == "link":
         if not getattr(x, "_children", []):
             return MessageSegment.link(x.text)
-        else:
-            return MessageSegment.link(x.text, x._children[0].text)  # type: ignore
+        return MessageSegment.link(x.text, x._children[0].text)  # type: ignore
+    return None
 
 
 Link = TextSegmentPattern("link", _Link, MessageSegment.link, link)

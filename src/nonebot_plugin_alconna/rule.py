@@ -54,19 +54,19 @@ class AlconnaRule:
     """
 
     __slots__ = (
-        "command",
-        "skip",
-        "auto_send",
-        "response_self",
-        "comp_config",
-        "use_origin",
-        "executor",
-        "_path",
-        "_namespace",
-        "_waiter",
-        "_tasks",
         "_comp_help",
         "_hide_tabs",
+        "_namespace",
+        "_path",
+        "_tasks",
+        "_waiter",
+        "auto_send",
+        "command",
+        "comp_config",
+        "executor",
+        "response_self",
+        "skip",
+        "use_origin",
     )
 
     def __init__(
@@ -174,19 +174,17 @@ class AlconnaRule:
                 if msg.startswith(_exit) and "exit" not in disables:
                     if msg == _exit:
                         return False
-                    else:
-                        await _matcher.send(
-                            lang.require("analyser", "param_unmatched").format(target=msg.replace(_exit, "", 1))
-                        )
-                        return
+                    await _matcher.send(
+                        lang.require("analyser", "param_unmatched").format(target=msg.replace(_exit, "", 1))
+                    )
+                    return None
                 if msg.startswith(_enter) and "enter" not in disables:
                     if msg == _enter:
                         return True
-                    else:
-                        await _matcher.send(
-                            lang.require("analyser", "param_unmatched").format(target=msg.replace(_enter, "", 1))
-                        )
-                        return
+                    await _matcher.send(
+                        lang.require("analyser", "param_unmatched").format(target=msg.replace(_enter, "", 1))
+                    )
+                    return None
                 if msg.startswith(_tab) and "tab" not in disables:
                     offset = msg.replace(_tab, "", 1).lstrip() or 1
                     try:
@@ -240,7 +238,7 @@ class AlconnaRule:
 
         while interface.available:
 
-            await self.send(f"{str(interface)}{self._comp_help}", bot, event, res)
+            await self.send(f"{interface!s}{self._comp_help}", bot, event, res)
             async for resp in w(timeout=self.comp_config.get("timeout", 60)):
                 if resp is None:
                     await self.send(Lang.nbp_alc.completion.timeout(), bot, event, res)

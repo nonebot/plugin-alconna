@@ -79,3 +79,4 @@ class RedMessageBuilder(MessageBuilder):
                 event.reply.sourceMsgTextElems,
                 origin=event.reply,
             )
+        return None

@@ -42,11 +42,11 @@ class ReplyRecordExtension(Extension):
 
     async def message_provider(self, event, state, bot, use_origin: bool = False):
         if event.get_type() != "message":
-            return
+            return None
         try:
             msg = event.get_message()
         except (NotImplementedError, ValueError):
-            return
+            return None
         uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
         if not (reply := await reply_fetch(event, bot)):
             return uni_msg
@@ -91,11 +91,11 @@ class ReplyMergeExtension(Extension):
 
     async def message_provider(self, event, state, bot, use_origin: bool = False):
         if event.get_type() != "message":
-            return
+            return None
         try:
             msg = event.get_message()
         except (NotImplementedError, ValueError):
-            return
+            return None
         uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
         if not (reply := await reply_fetch(event, bot)):
             return uni_msg

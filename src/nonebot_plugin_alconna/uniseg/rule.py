@@ -9,11 +9,11 @@ from .segment import At, Text, Reply
 
 async def _get_message(event: Event, bot: Bot):
     if event.get_type() != "message":
-        return
+        return None
     try:
         msg: Message = event.get_message()
     except (NotImplementedError, ValueError):
-        return
+        return None
     try:
         msg: Message = getattr(event, "original_message", msg)  # type: ignore
     except (NotImplementedError, ValueError):

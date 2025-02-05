@@ -51,3 +51,4 @@ class Onebot12MessageBuilder(MessageBuilder):
             assert isinstance(event, MessageEvent)
         if _reply := event.reply:
             return Reply(str(_reply.message_id), None, _reply)
+        return None

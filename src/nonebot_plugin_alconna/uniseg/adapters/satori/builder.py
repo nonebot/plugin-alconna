@@ -86,6 +86,7 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
             return At("user", seg.data["id"], seg.data.get("name"))(*self.generate(seg.children))
         if "role" in seg.data:
             return At("role", seg.data["role"], seg.data.get("name"))(*self.generate(seg.children))
+        return None
 
     @build("sharp")
     def sharp(self, seg: SharpSegment):
@@ -151,6 +152,7 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
     def quote(self, seg: RenderMessageSegment):
         if "id" in seg.data:
             return Reply(seg.data["id"], seg.content, seg)
+        return None
 
     @build("message")
     def message(self, seg: RenderMessageSegment):
@@ -176,3 +178,4 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
                 event.reply.content,
                 event.reply,
             )
+        return None

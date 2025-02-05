@@ -31,8 +31,8 @@ def link(self, x: Text):
     if x.extract_most_style() == "link":
         if not getattr(x, "_children", []):
             return MessageSegment.url(url=x.text)
-        else:
-            return MessageSegment.url(url=x.text, text=x._children[0].text)  # type: ignore
+        return MessageSegment.url(url=x.text, text=x._children[0].text)  # type: ignore
+    return None
 
 
 Url = TextSegmentPattern("url", MessageSegment, MessageSegment.url, link)
@@ -41,6 +41,7 @@ Url = TextSegmentPattern("url", MessageSegment, MessageSegment.url, link)
 def markdown(self, x: Text):
     if x.extract_most_style() == "markdown":
         return MessageSegment.md(x.text)
+    return None
 
 
 Markdown = TextSegmentPattern("markdown", MessageSegment, MessageSegment.md, markdown)
@@ -49,6 +50,7 @@ Markdown = TextSegmentPattern("markdown", MessageSegment, MessageSegment.md, mar
 def code(self, x: Text):
     if x.extract_most_style() == "code":
         return MessageSegment.code(x.text)
+    return None
 
 
 Code = TextSegmentPattern("code", MessageSegment, MessageSegment.code, code)

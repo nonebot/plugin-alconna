@@ -33,6 +33,7 @@ def mdbuild(builder: MessageBuilder, seg: BaseMessageSegment):
                 else None
             ),
         )
+    return None
 
 
 @custom_handler(Markdown)
@@ -50,6 +51,7 @@ async def music_export(exporter: MessageExporter, seg: Markdown, bot: Optional[B
 
     if seg.content:
         return (await exporter.export([Text(seg.content).markdown()], bot, fallback))[0]
+    return None
 
 
 local_patterns()[Markdown] = UnionPattern([Style("markdown"), BasePattern.of(Markdown)])

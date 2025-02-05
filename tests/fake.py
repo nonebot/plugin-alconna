@@ -17,9 +17,9 @@ def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11 import Message, GroupMessageEvent
 
-    _Fake = create_model("_Fake", __base__=GroupMessageEvent)
+    _fake = create_model("_fake", __base__=GroupMessageEvent)
 
-    class FakeEvent(_Fake):
+    class FakeEvent(_fake):
         time: int = 1000000
         self_id: int = 1
         post_type: Literal["message"] = "message"
@@ -49,9 +49,9 @@ def fake_private_message_event_v11(**field) -> "PrivateMessageEventV11":
     from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11 import Message, PrivateMessageEvent
 
-    _Fake = create_model("_Fake", __base__=PrivateMessageEvent)
+    _fake = create_model("_fake", __base__=PrivateMessageEvent)
 
-    class FakeEvent(_Fake):
+    class FakeEvent(_fake):
         time: int = 1000000
         self_id: int = 1
         post_type: Literal["message"] = "message"
@@ -75,21 +75,20 @@ def fake_discord_interaction_event(**field) -> "ApplicationCommandInteractionEve
     from pydantic import create_model
     from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
 
-    _Fake = create_model("_Fake", __base__=ApplicationCommandInteractionEvent)
+    _fake = create_model("_fake", __base__=ApplicationCommandInteractionEvent)
     field["type"] = 2
     field["id"] = 123456
     field["application_id"] = 123456789
-    field["token"] = "sometoken"
+    field["token"] = "sometoken"  # noqa: S105
     field["version"] = 1
 
-    class FakeEvent(_Fake):
+    class FakeEvent(_fake):
         pass
 
     return FakeEvent(**field)
 
 
 def fake_message_event_discord(content: str) -> "DiscordMessageEvent":
-    from nonebot.adapters.discord.api.model import User
     from nonebot.adapters.discord.api import MessageFlag, MessageType
     from nonebot.adapters.discord.event import GuildMessageCreateEvent
 
@@ -99,14 +98,12 @@ def fake_message_event_discord(content: str) -> "DiscordMessageEvent":
             "id": 11234,
             "channel_id": 5566,
             "guild_id": 6677,
-            "author": User(
-                **{
-                    "id": 3344,
-                    "username": "MyUser",
-                    "discriminator": "0",
-                    "avatar": "xxx",
-                }
-            ),
+            "author": {
+                "id": 3344,
+                "username": "MyUser",
+                "discriminator": "0",
+                "avatar": "xxx",
+            },
             "content": content,
             "timestamp": 123456,
             "edited_timestamp": None,
@@ -134,9 +131,9 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
     from nonebot.adapters.satori.event import MessageEvent
     from nonebot.adapters.satori.models import User, Login, Channel, ChannelType, LoginStatus, MessageObject
 
-    _Fake = create_model("_Fake", __base__=MessageEvent)
+    _fake = create_model("_fake", __base__=MessageEvent)
 
-    class FakeEvent(_Fake):
+    class FakeEvent(_fake):
         sn: int = 1
         type: str = "message-created"
         login: Login = Login(
@@ -146,7 +143,7 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
             platform="satori",
             user=User(id="123456789", name="test"),
         )
-        timestamp: datetime = datetime.fromtimestamp(1000000)
+        timestamp: datetime = datetime.fromtimestamp(1000000)  # noqa: DTZ006
         channel: Channel = Channel(id="1", type=ChannelType.TEXT)
         user: User = User(id="1", name="test")
         message: MessageObject = MessageObject(id="1", content="text")
@@ -168,9 +165,9 @@ def fake_message_event_guild(**field) -> "MessageCreateEvent":
     from nonebot.adapters.qq.models.guild import User
     from nonebot.adapters.qq.event import MessageCreateEvent
 
-    _Fake = create_model("_Fake", __base__=MessageCreateEvent)
+    _fake = create_model("_fake", __base__=MessageCreateEvent)
 
-    class FakeEvent(_Fake):
+    class FakeEvent(_fake):
         id: str = "1234"
         channel_id: str = "abcd"
         guild_id: str = "efgh"

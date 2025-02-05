@@ -26,18 +26,19 @@ class MarketFace(Segment):
 def mfbuild(builder: MessageBuilder, seg: BaseMessageSegment):
     if builder.get_adapter() is SupportAdapter.kritor:
         return MarketFace(id=seg.data["id"])
-    elif builder.get_adapter() is SupportAdapter.red:
+    if builder.get_adapter() is SupportAdapter.red:
         return MarketFace(
             id=str(seg.data["emoji_id"]),
             tab_id=hex(int(seg.data["package_id"])),
             key=seg.data.get("key"),
             summary=seg.data.get("face_name"),
         )
-    elif builder.get_adapter() is SupportAdapter.mirai:
+    if builder.get_adapter() is SupportAdapter.mirai:
         return MarketFace(
             id=str(seg.data["id"]),
             summary=seg.data["name"],
         )
+    return None
 
 
 @custom_register(MarketFace, "mface")

@@ -51,6 +51,7 @@ Reference = SegmentPattern("reference", _Reference, Reply, MessageSegment.refere
 def markdown(self, x: Text):
     if x.extract_most_style() == "markdown":
         return MessageSegment.markdown(x.text)
+    return None
 
 
 Markdown = TextSegmentPattern("markdown", _Markdown, MessageSegment.markdown, markdown)

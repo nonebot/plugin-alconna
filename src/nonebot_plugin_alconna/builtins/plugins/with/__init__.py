@@ -66,7 +66,7 @@ with namespace("builtin/with") as ns:
         data[key] = name.result
         if time.available:
             asyncio.get_running_loop().call_later(
-                abs((time.result - datetime.datetime.now()).total_seconds()), remove, key
+                abs((time.result - datetime.datetime.now()).total_seconds()), remove, key  # noqa: DTZ005
             )
 
         await with_.finish("设置前缀成功")

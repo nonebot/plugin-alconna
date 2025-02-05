@@ -76,26 +76,24 @@ class RedMessageExporter(MessageExporter[Message]):
         }[name]
         if seg.path:
             return method(Path(seg.path))
-        elif seg.raw:
+        if seg.raw:
             return method(seg.raw_bytes)
-        elif seg.url and bot:
+        if seg.url and bot:
             resp = await bot.adapter.request(Request("GET", seg.url))
             return method(resp.content)  # type: ignore
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def voice(self, seg: Union[Voice, Audio], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         if seg.path:
             return MessageSegment.voice(Path(seg.path), duration=seg.duration or 1)
-        elif seg.raw:
+        if seg.raw:
             return MessageSegment.voice(seg.raw_bytes, duration=seg.duration or 1)
-        elif seg.url and bot:
+        if seg.url and bot:
             resp = await bot.adapter.request(Request("GET", seg.url))
             return MessageSegment.voice(resp.content, duration=seg.duration or 1)  # type: ignore
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
@@ -130,14 +128,12 @@ class RedMessageExporter(MessageExporter[Message]):
 
         if target.private:
             return await bot.send_friend_message(target=target.id, message=message)
-        else:
-            return await bot.send_group_message(target=target.id, message=message)
+        return await bot.send_group_message(target=target.id, message=message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, RedBot)
         _mid: MessageModel = cast(MessageModel, mid)
         await bot.recall_message(_mid.chatType, _mid.peerUin, _mid.msgId)
-        return
 
     def get_reply(self, mid: Any):
         _mid: MessageModel = cast(MessageModel, mid)

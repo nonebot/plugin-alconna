@@ -1,6 +1,6 @@
-from datetime import datetime
 from functools import partial
 from abc import ABCMeta, abstractmethod
+from datetime import datetime, timezone
 from collections.abc import Awaitable, AsyncIterator
 from typing import TYPE_CHECKING, Any, Union, Callable
 
@@ -145,9 +145,9 @@ class Target:
             return False
         if self.self_id and other.self_id and self.self_id != other.self_id:
             return False
-        if self.extra.get("adapter") and other.extra.get("adapter") and self.extra["adapter"] != other.extra["adapter"]:
-            return False
-        return True
+        return not (
+            self.extra.get("adapter") and other.extra.get("adapter") and self.extra["adapter"] != other.extra["adapter"]
+        )
 
     def __eq__(self, other):
         return isinstance(other, Target) and self.verify(other)
@@ -274,7 +274,7 @@ class TargetFetcher(metaclass=ABCMeta):
     async def refresh(self, bot: Bot, target: Union[Target, None] = None):
         if bot.self_id in self.cache:
             del self.cache[bot.self_id]
-        self.last_refresh[bot.self_id] = datetime.now()
+        self.last_refresh[bot.self_id] = datetime.now(tz=timezone.utc)
         _cache = self.cache.setdefault(bot.self_id, set())
         async for tg in self.fetch(bot, target):
             _cache.add(tg)
@@ -292,7 +292,7 @@ class TargetFetcher(metaclass=ABCMeta):
                 for tg in targets:
                     if target.verify(tg):
                         return True
-            now = datetime.now()
+            now = datetime.now(tz=timezone.utc)
             if bot.self_id in self.last_refresh and (now - self.last_refresh[bot.self_id]).seconds < 600:
                 return False
             self.cache.pop(bot.self_id, None)
@@ -344,18 +344,14 @@ async def select_qq_guild(target: "Target", bot: Bot):
         return False
     if not target.channel:
         return False
-    if hasattr(bot, "platform") and bot.platform != "qqguild":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "qqguild"
 
 
 @_register(SupportScope.qq_api)
 async def select_qq_api(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {SupportAdapter.qq, SupportAdapter.satori}:
         return False
-    if hasattr(bot, "platform") and bot.platform != "qq":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "qq"
 
 
 @_register(SupportScope.onebot12_other)
@@ -372,9 +368,7 @@ async def select_satori_other(target: "Target", bot: Bot):
 async def select_telegram(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {SupportAdapter.telegram, SupportAdapter.satori}:
         return False
-    if hasattr(bot, "platform") and bot.platform != "telegram":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "telegram"
 
 
 @_register(SupportScope.discord)
@@ -383,18 +377,14 @@ async def select_discord(target: "Target", bot: Bot):
         return False
     if bot.adapter.get_name() not in {SupportAdapter.discord, SupportAdapter.satori, SupportAdapter.onebot12}:
         return False
-    if hasattr(bot, "platform") and bot.platform != "discord":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "discord"
 
 
 @_register(SupportScope.feishu)
 async def select_feishu(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {SupportAdapter.feishu, SupportAdapter.satori}:
         return False
-    if hasattr(bot, "platform") and bot.platform != "feishu":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "feishu"
 
 
 @_register(SupportScope.dodo)
@@ -410,9 +400,7 @@ async def select_kook(target: "Target", bot: Bot):
         return False
     if bot.adapter.get_name() not in {SupportAdapter.kook, SupportAdapter.satori, SupportAdapter.onebot12}:
         return False
-    if hasattr(bot, "platform") and bot.platform not in ("kook", "kaiheila"):
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform in {"kook", "kaiheila"}
 
 
 @_register(SupportScope.minecraft)
@@ -442,9 +430,7 @@ async def select_ding(target: "Target", bot: Bot):
         return False
     if bot.adapter.get_name() not in {SupportAdapter.ding, SupportAdapter.satori}:
         return False
-    if hasattr(bot, "platform") and bot.platform != "dingtalk":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "dingtalk"
 
 
 @_register(SupportScope.wechat)
@@ -453,9 +439,7 @@ async def select_wechat(target: "Target", bot: Bot):
         return False
     if bot.adapter.get_name() != SupportAdapter.onebot12:
         return False
-    if hasattr(bot, "platform") and bot.platform != "wechat":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "wechat"
 
 
 @_register(SupportScope.wechat_oap)
@@ -464,9 +448,7 @@ async def select_wechat_oap(target: "Target", bot: Bot):
         return False
     if bot.adapter.get_name() != SupportAdapter.satori:
         return False
-    if hasattr(bot, "platform") and bot.platform != "wechat-official":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "wechat-official"
 
 
 @_register(SupportScope.wecom)
@@ -475,18 +457,14 @@ async def select_wecom(target: "Target", bot: Bot):
         return False
     if bot.adapter.get_name() != SupportAdapter.satori:
         return False
-    if hasattr(bot, "platform") and bot.platform != "wecom":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "wecom"
 
 
 @_register(SupportScope.tail_chat)
 async def select_tailchat(target: "Target", bot: Bot):
     if not target.channel:
         return False
-    if bot.adapter.get_name() not in {SupportAdapter.tail_chat}:
-        return False
-    return True
+    return bot.adapter.get_name() == SupportAdapter.tail_chat
 
 
 @_register(SupportScope.mail)
@@ -495,6 +473,4 @@ async def select_mail(target: "Target", bot: Bot):
         return False
     if bot.adapter.get_name() not in {SupportAdapter.mail, SupportAdapter.satori}:
         return False
-    if hasattr(bot, "platform") and bot.platform != "mail":
-        return False
-    return True
+    return not hasattr(bot, "platform") or bot.platform == "mail"

@@ -115,7 +115,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
                     )
                 )
             continue
-        elif arg.value == ANY:
+        if arg.value == ANY:
             result.append(
                 StringOption(
                     name=arg.name,

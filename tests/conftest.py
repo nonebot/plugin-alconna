@@ -49,4 +49,3 @@ async def after_nonebot_init(after_nonebot_init: None):
 
     nonebot.require("nonebot_plugin_alconna")
     nonebot.require("nonebot_plugin_filehost")
-    return None

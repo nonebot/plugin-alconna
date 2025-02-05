@@ -15,7 +15,7 @@ try:
     from nonebot_plugin_saa.utils.exceptions import AdapterNotSupported
     from nonebot_plugin_saa.types.common_message_segment import Text, Image, Reply, Mention, MentionAll
 except ImportError:
-    raise ImportError("You need to install nonebot_plugin_saa to use this module.")
+    raise ImportError("You need to install nonebot_plugin_saa to use this module.") from None
 
 
 def convert(mf: MessageFactory) -> UniMessage:

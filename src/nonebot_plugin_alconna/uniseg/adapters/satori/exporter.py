@@ -60,7 +60,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
                     platform=bot.platform if bot else None,
                     scope=SupportScope.ensure_satori(bot.platform) if bot else SupportScope.satori_other,
                 )
-            elif event.user:
+            if event.user:
                 return Target(
                     event.user.id,
                     private=True,
@@ -84,8 +84,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
         if seg.extract_most_style() == "link":
             if not getattr(seg, "_children", []):
                 return MessageSegment.link(seg.text)
-            else:
-                return MessageSegment.link(seg.text, seg._children[0].text)  # type: ignore
+            return MessageSegment.link(seg.text, seg._children[0].text)  # type: ignore
         if seg.extract_most_style() == "markdown":
             return _Text("text", {"text": seg.text, "styles": {(0, len(seg.text)): ["chronocat:markdown"]}})
         styles = seg.styles.copy()
@@ -109,12 +108,11 @@ class SatoriMessageExporter(MessageExporter[Message]):
     async def button(self, seg: Button, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "action" and seg.id:
             return MessageSegment.action_button(seg.id, seg.style)(await self.export(seg.children, bot, True))  # type: ignore
-        elif seg.flag == "link" and seg.url:
+        if seg.flag == "link" and seg.url:
             return MessageSegment.link_button(seg.url, seg.style)(await self.export(seg.children, bot, True))  # type: ignore
-        elif seg.text:
+        if seg.text:
             return MessageSegment.input_button(seg.text, seg.style)(await self.export(seg.children, bot, True))  # type: ignore
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="button", seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="button", seg=seg))
 
     @export
     async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
@@ -185,8 +183,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
 
         if target.private:
             return await bot.send_private_message(target.id, message)
-        else:
-            return await bot.send_message(target.id, message)
+        return await bot.send_message(target.id, message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, SatoriBot)
@@ -202,7 +199,6 @@ class SatoriMessageExporter(MessageExporter[Message]):
                 assert isinstance(context, MessageEvent)
             channel = _mid.channel or context.channel
             await bot.message_delete(channel_id=channel.id, message_id=_mid.id)
-        return
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, SatoriBot)

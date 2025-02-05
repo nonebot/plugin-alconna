@@ -31,11 +31,11 @@ class PrefixAppendExtension(Extension):
 
     async def message_provider(self, event: Event, state: T_State, bot: Bot, use_origin: bool = False):
         if event.get_type() != "message":
-            return
+            return None
         try:
             msg = event.get_message()
         except (NotImplementedError, ValueError):
-            return
+            return None
         uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
         target = UniMessage.get_target(event, bot)
         prefix = self.supplier(target)  # type: ignore

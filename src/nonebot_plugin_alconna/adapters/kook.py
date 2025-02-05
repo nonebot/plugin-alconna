@@ -31,8 +31,7 @@ def mention_channel(channel_id: str):
 def emoji(id: str, name: str = ""):
     if name:
         return MessageSegment.KMarkdown(f"(emj){name}(emj)[{id}]")
-    else:
-        return MessageSegment.KMarkdown(f":{id}:")
+    return MessageSegment.KMarkdown(f":{id}:")
 
 
 Mention = At = SegmentPattern("mention", _Mention, UniAt, MessageSegment.mention)
@@ -53,6 +52,7 @@ Quote = SegmentPattern("quote", _Quote, Reply, MessageSegment.quote)
 def kmarkdown(self, text: UniText):
     if text.extract_most_style() == "markdown":
         return MessageSegment.KMarkdown(text.text, text.text)
+    return None
 
 
 KMarkdown = TextSegmentPattern("kmarkdown", _KMarkdown, MessageSegment.KMarkdown, kmarkdown)

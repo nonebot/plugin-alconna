@@ -84,7 +84,12 @@ class MiraiMessageBuilder(MessageBuilder):
                 nodes.append(RefNode(str(node.ref["id"]), str(node.ref["target"])))
             else:
                 nodes.append(
-                    CustomNode(str(node.uid), node.name, self.generate(node.message), datetime.fromtimestamp(node.time))
+                    CustomNode(
+                        str(node.uid),
+                        node.name,
+                        self.generate(node.message),
+                        datetime.fromtimestamp(node.time),  # noqa: DTZ006
+                    )
                 )
         return Reference()(*nodes)
 
@@ -105,3 +110,4 @@ class MiraiMessageBuilder(MessageBuilder):
             assert isinstance(event, MessageEvent)
         if event.reply:
             return Reply(str(event.reply.id), event.reply.origin, event.reply)
+        return None

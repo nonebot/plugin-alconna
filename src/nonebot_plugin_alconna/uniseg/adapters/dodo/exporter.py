@@ -35,16 +35,15 @@ class DoDoMessageExporter(MessageExporter[Message]):
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.dodo,
             )
-        else:
-            return Target(
-                event.get_user_id(),
-                island_id or "",
-                True,
-                True,
-                adapter=self.get_adapter(),
-                self_id=bot.self_id if bot else None,
-                scope=SupportScope.dodo,
-            )
+        return Target(
+            event.get_user_id(),
+            island_id or "",
+            True,
+            True,
+            adapter=self.get_adapter(),
+            self_id=bot.self_id if bot else None,
+            scope=SupportScope.dodo,
+        )
 
     def get_message_id(self, event: Event) -> str:
         assert isinstance(event, MessageEvent)
@@ -58,10 +57,9 @@ class DoDoMessageExporter(MessageExporter[Message]):
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "user":
             return MessageSegment.at_user(seg.target)
-        elif seg.flag == "channel":
+        if seg.flag == "channel":
             return MessageSegment.channel_link(seg.target)
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
 
     @export
     async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
@@ -84,8 +82,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
     async def video(self, seg: Video, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
             return MessageSegment.video(seg.url)
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="video", seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="video", seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
@@ -101,15 +98,15 @@ class DoDoMessageExporter(MessageExporter[Message]):
 
         if target.private:
             return await bot.send_to_personal(target.parent_id, target.id, message)
-        else:
-            return await bot.send_to_channel(target.id, message)
+        return await bot.send_to_channel(target.id, message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, DoDoBot)
         if isinstance(context, Target) and not context.private:
             return await bot.set_channel_message_withdraw(message_id=mid)
-        elif hasattr(context, "channel_id"):
+        if hasattr(context, "channel_id"):
             return await bot.set_channel_message_withdraw(message_id=mid)
+        return None
 
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, DoDoBot)
@@ -117,8 +114,9 @@ class DoDoMessageExporter(MessageExporter[Message]):
             assert isinstance(new, Message)
         if isinstance(context, Target) and not context.private:
             return await bot.set_channel_message_edit(message_id=mid, message_body=new.to_message_body()[0])
-        elif hasattr(context, "channel_id"):
+        if hasattr(context, "channel_id"):
             return await bot.set_channel_message_edit(message_id=mid, message_body=new.to_message_body()[0])
+        return None
 
     def get_reply(self, mid: Any):
         return Reply(mid)

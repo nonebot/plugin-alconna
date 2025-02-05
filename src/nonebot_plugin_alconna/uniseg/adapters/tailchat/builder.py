@@ -98,3 +98,4 @@ class TailChatMessageBuilder(MessageBuilder):
     async def extract_reply(self, event: Event, bot: Bot):
         if isinstance(event, DefaultMessageEvent) and event.reply:
             return Reply(event.reply.id, event.reply.content, event.reply)
+        return None

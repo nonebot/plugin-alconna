@@ -159,12 +159,11 @@ class KritorMessageExporter(MessageExporter["Message"]):
         }[name]
         if seg.raw:
             return method(raw=seg.raw_bytes)
-        elif seg.path:
+        if seg.path:
             return method(path=Path(seg.path))
-        elif seg.url:
+        if seg.url:
             return method(url=seg.url)
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
@@ -298,22 +297,20 @@ class KritorMessageExporter(MessageExporter["Message"]):
                 contact=Contact(type=SceneType.STRANGER_FROM_GROUP, id=_target.id, sub_id=_target.parent_id),
                 elements=message.to_elements(),
             )
-        elif _target.channel:
+        if _target.channel:
             if not _target.parent_id:
                 raise NotImplementedError
             return await bot.send_channel_message(
                 guild_id=int(_target.parent_id), channel_id=int(_target.id), message=str(message), **kwargs
             )
-        else:
-            return await bot.send_message(
-                contact=Contact(type=SceneType.GROUP, id=_target.id), elements=message.to_elements()
-            )
+        return await bot.send_message(
+            contact=Contact(type=SceneType.GROUP, id=_target.id), elements=message.to_elements()
+        )
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, KritorBot)
         assert isinstance(mid, (SendMessageByResIdResponse, SendMessageResponse))
         await bot.recall_message(message_id=mid.message_id)
-        return
 
     def get_reply(self, mid: Any):
         return Reply(str(mid["message_id"]))

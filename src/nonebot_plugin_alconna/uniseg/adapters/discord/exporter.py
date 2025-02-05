@@ -68,7 +68,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.discord,
             )
-        elif isinstance(event, Channel):
+        if isinstance(event, Channel):
             return Target(
                 str(event.id),
                 channel=True,
@@ -87,10 +87,9 @@ class DiscordMessageExporter(MessageExporter[Message]):
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "role":
             return MessageSegment.mention_role(int(seg.target))
-        elif seg.flag == "channel":
+        if seg.flag == "channel":
             return MessageSegment.mention_channel(int(seg.target))
-        else:
-            return MessageSegment.mention_user(int(seg.target))
+        return MessageSegment.mention_user(int(seg.target))
 
     @export
     async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
@@ -107,17 +106,16 @@ class DiscordMessageExporter(MessageExporter[Message]):
         if seg.raw and (seg.id or seg.name):
             content = seg.raw_bytes
             return MessageSegment.attachment(seg.id or seg.name, content=content)
-        elif seg.path:
+        if seg.path:
             path = Path(seg.path)
             return MessageSegment.attachment(path.name, content=path.read_bytes())
-        elif bot and seg.url and (seg.id or seg.name):
+        if bot and seg.url and (seg.id or seg.name):
             resp = await bot.adapter.request(Request("GET", seg.url))
             return MessageSegment.attachment(
                 seg.id or seg.name,
                 content=resp.content,  # type: ignore
             )
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":

@@ -9,6 +9,7 @@ Attachment = SegmentPattern("attachment", MessageSegment, Media, MessageSegment.
 def is_html(self, text: Text):
     if text.extract_most_style().startswith("html"):
         return MessageSegment.html(text.text)
+    return None
 
 
 Markup = TextSegmentPattern("html", MessageSegment, MessageSegment.html, is_html)

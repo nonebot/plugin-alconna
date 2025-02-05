@@ -115,3 +115,4 @@ class DiscordMessageBuilder(MessageBuilder):
                 event.message_reference.message_id,  # type: ignore
                 origin=event.message_reference,  # type: ignore
             )
+        return None

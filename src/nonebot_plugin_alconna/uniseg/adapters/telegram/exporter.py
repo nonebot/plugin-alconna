@@ -79,18 +79,16 @@ class TelegramMessageExporter(MessageExporter[Message]):
     async def text(self, seg: Text, bot: Union[Bot, None]):
         if not seg.styles:
             return Entity.text(seg.text)
-        else:
-            style = seg.extract_most_style()
-            if style == "link":
-                if not getattr(seg, "_children", []):
-                    return Entity.url(seg.text)
-                else:
-                    return Entity.text_link(seg._children[0].text, seg.text)  # type: ignore
-            res = []
-            for part in seg.style_split():
-                style = part.extract_most_style()
-                res.append(Entity(STYLE_TYPE_MAP.get(style, style), {"text": part.text}))
-            return res
+        style = seg.extract_most_style()
+        if style == "link":
+            if not getattr(seg, "_children", []):
+                return Entity.url(seg.text)
+            return Entity.text_link(seg._children[0].text, seg.text)  # type: ignore
+        res = []
+        for part in seg.style_split():
+            style = part.extract_most_style()
+            res.append(Entity(STYLE_TYPE_MAP.get(style, style), {"text": part.text}))
+        return res
 
     @export
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
@@ -132,10 +130,9 @@ class TelegramMessageExporter(MessageExporter[Message]):
         label = str(seg.label)
         if seg.flag == "link":
             return InlineKeyboardButton(text=label, url=seg.url)
-        elif seg.flag == "action":
+        if seg.flag == "action":
             return InlineKeyboardButton(text=label, callback_data=seg.id)
-        else:
-            return InlineKeyboardButton(text=label, switch_inline_query_current_chat=seg.text)
+        return InlineKeyboardButton(text=label, switch_inline_query_current_chat=seg.text)
 
     @export
     async def button(self, seg: Button, bot: Union[Bot, None]):
@@ -148,10 +145,8 @@ class TelegramMessageExporter(MessageExporter[Message]):
         buttons = [self._button(but, bot) for but in seg.children]
         if len(buttons) < 10 and not seg.row:
             return MessageSegment("$telegram:button_row", {"buttons": buttons})
-        rows = []
-        for i in range(0, len(buttons), seg.row or 9):
-            rows.append(buttons[i : i + (seg.row or 9)])
-        return MessageSegment("$telegram:keyboard", {"buttons": buttons})
+        rows = [buttons[i : i + (seg.row or 9)] for i in range(0, len(buttons), seg.row or 9)]
+        return MessageSegment("$telegram:keyboard", {"buttons": rows})
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, TgBot)
@@ -160,9 +155,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         if buttons := message.get("$telegram:button"):
             message = message.exclude("$telegram:button")
             buts = [but.data["button"] for but in buttons]
-            rows = []
-            for i in range(0, len(buttons), 9):
-                rows.append(buts[i : i + 9])
+            rows = [buts[i : i + 9] for i in range(0, len(buttons), 9)]
             reply_markup = InlineKeyboardMarkup(inline_keyboard=rows)
         if rows := message.get("$telegram:button_row"):
             message = message.exclude("$telegram:button_row")
@@ -195,6 +188,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         res = await bot.edit_message_text(text=text, chat_id=_mid.chat.id, message_id=_mid.message_id)
         if isinstance(res, MessageModel):
             return res
+        return None
 
     def get_reply(self, mid: Any):
         _mid: MessageModel = cast(MessageModel, mid)

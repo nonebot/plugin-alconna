@@ -173,7 +173,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     scope=SupportScope.qq_api,
                     extra={"qq.interaction": True},
                 )
-            elif event.channel_id:
+            if event.channel_id:
                 return Target(
                     event.channel_id,
                     event.guild_id or "",
@@ -183,15 +183,14 @@ class QQMessageExporter(MessageExporter[Message]):
                     self_id=bot.self_id if bot else None,
                     scope=SupportScope.qq_api,
                 )
-            else:
-                return Target(
-                    event.get_user_id(),
-                    private=True,
-                    source=str(event.id),
-                    adapter=self.get_adapter(),
-                    self_id=bot.self_id if bot else None,
-                    scope=SupportScope.qq_api,
-                )
+            return Target(
+                event.get_user_id(),
+                private=True,
+                source=str(event.id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.qq_api,
+            )
         if isinstance(event, FriendRobotEvent):
             return Target(
                 event.openid,
@@ -220,7 +219,7 @@ class QQMessageExporter(MessageExporter[Message]):
     async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.extract_most_style() == "markdown":
             return MessageSegment.markdown(seg.text)
-        elif seg.styles:
+        if seg.styles:
             return MessageSegment.markdown(str(seg))
         return MessageSegment.text(seg.text)
 
@@ -228,12 +227,11 @@ class QQMessageExporter(MessageExporter[Message]):
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "channel":
             return MessageSegment.mention_channel(seg.target)
-        elif seg.flag == "user":
+        if seg.flag == "user":
             return MessageSegment.mention_user(seg.target)
-        else:
-            raise SerializeFailed(
-                lang.require("nbp-uniseg", "failed_segment").format(adapter="qq", seg=seg, target="mention")
-            )
+        raise SerializeFailed(
+            lang.require("nbp-uniseg", "failed_segment").format(adapter="qq", seg=seg, target="mention")
+        )
 
     @export
     async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
@@ -274,10 +272,9 @@ class QQMessageExporter(MessageExporter[Message]):
         }[name]
         if seg.raw:
             return file_method(seg.raw_bytes)
-        elif seg.path:
+        if seg.path:
             return file_method(Path(seg.path))
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
@@ -324,9 +321,9 @@ class QQMessageExporter(MessageExporter[Message]):
         buttons = [self._button(child, bot) for child in seg.children]
         if len(buttons) < 6 and not seg.row:
             return ButtonRowSegment("$qq:button_row", {"buttons": buttons})
-        rows = []
-        for i in range(0, len(buttons), seg.row or 5):
-            rows.append(InlineKeyboardRow(buttons=buttons[i : i + (seg.row or 5)]))
+        rows = [
+            InlineKeyboardRow(buttons=buttons[i : i + (seg.row or 5)]) for i in range(0, len(buttons), seg.row or 5)
+        ]
         return MessageSegment.keyboard(MessageKeyboard(content=InlineKeyboard(rows=rows)))
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
@@ -338,9 +335,7 @@ class QQMessageExporter(MessageExporter[Message]):
         if message.has("$qq:button"):
             buttons = [seg.data["button"] for seg in message.get("$qq:button")]
             message = message.exclude("$qq:button")
-            rows = []
-            for i in range(0, len(buttons), 5):
-                rows.append(InlineKeyboardRow(buttons=buttons[i : i + 5]))
+            rows = [InlineKeyboardRow(buttons=buttons[i : i + 5]) for i in range(0, len(buttons), 5)]
             kb = MessageKeyboard(content=InlineKeyboard(rows=rows))
 
         if message.has("$qq:button_row"):
@@ -381,8 +376,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 openid=target.id, message=message, msg_id=target.source, msg_seq=target.extra["qq.reply_seq"], **kwargs
             )
         elif target.extra.get("qq.interaction", False):
-            res = await bot.send_to_group(group_openid=target.id, message=message, event_id=target.source, **kwargs)
-            return res
+            return await bot.send_to_group(group_openid=target.id, message=message, event_id=target.source, **kwargs)
         else:
             res = await bot.send_to_group(
                 group_openid=target.id,
@@ -443,8 +437,6 @@ class QQMessageExporter(MessageExporter[Message]):
                     openid=context.author.id,
                     message_id=mid.id,  # type: ignore
                 )
-
-        return
 
     def get_reply(self, mid: Any):
         if isinstance(mid, GuildMessage):

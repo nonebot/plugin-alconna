@@ -10,7 +10,7 @@ try:
     require("nonebot_plugin_filehost")
     from nonebot_plugin_filehost import FileHost
 except ImportError:
-    raise ImportError("You need to install nonebot_plugin_filehost to use this module.")
+    raise ImportError("You need to install nonebot_plugin_filehost to use this module.") from None
 
 
 async def to_url(data: Union[str, Path, bytes, BytesIO], bot: ..., name: Union[str, None] = None) -> str:

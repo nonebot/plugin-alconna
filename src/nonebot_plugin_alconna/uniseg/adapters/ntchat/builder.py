@@ -54,3 +54,4 @@ class NTChatMessageBuilder(MessageBuilder):
             assert isinstance(event, QuoteMessageEvent)
         if event.type == 11061:  # type: ignore
             return Reply(event.quote_message_id, origin=event)  # type: ignore
+        return None

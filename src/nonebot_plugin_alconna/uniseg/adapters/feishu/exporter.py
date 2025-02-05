@@ -33,7 +33,7 @@ class FeishuMessageExporter(MessageExporter[Message]):
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.feishu,
             )
-        elif isinstance(event, PrivateMessageEvent):
+        if isinstance(event, PrivateMessageEvent):
             return Target(
                 event.get_user_id(),
                 private=True,

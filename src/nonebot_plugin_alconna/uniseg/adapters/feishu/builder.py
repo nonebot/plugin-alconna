@@ -61,3 +61,4 @@ class FeishuMessageBuilder(MessageBuilder):
             assert isinstance(event, MessageEvent)
         if event.reply:
             return Reply(event.reply.message_id, event.reply.body.content, event.reply)
+        return None

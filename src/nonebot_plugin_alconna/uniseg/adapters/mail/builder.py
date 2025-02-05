@@ -51,3 +51,4 @@ class MailMessageBuilder(MessageBuilder[MessageSegment]):
 
         if event.reply:
             return Reply(event.reply.id, msg=event.reply.message, origin=event.reply)
+        return None

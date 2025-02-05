@@ -63,17 +63,17 @@ except ValueError:
 def extract_arg(path: str, target: ArgsMounter | None) -> Arg | None:
     """从 Alconna 中提取参数"""
     if not target:
-        return
+        return None
     parts = path.split(".")
     if len(parts) == 1:
         return next((arg for arg in target.args.argument if arg.name == path), None)
     _parts, end = parts[:-1], parts[-1]
     if not (options := getattr(target, "options", None)):
-        return
+        return None
     for opt in options:
         if opt.dest == _parts[0]:
             return extract_arg(".".join(_parts[1:] + [end]), opt)
-    return
+    return None
 
 
 def _validate(target: Arg[Any], arg: Segment):
@@ -88,7 +88,7 @@ def _validate(target: Arg[Any], arg: Segment):
     res = value.validate(arg, default_val)
     if res.flag == "error":
         return res.error()
-    return res._value  # noqa
+    return res._value  # type: ignore
 
 
 class _method:
@@ -117,7 +117,7 @@ class AlconnaMatcher(Matcher):
 
     @classmethod
     def command(cls) -> Alconna:
-        return list(cls._rule.checkers)[0].call.command()
+        return list(cls._rule.checkers)[0].call.command()  # noqa: RUF015
 
     @classmethod
     @overload
@@ -134,7 +134,6 @@ class AlconnaMatcher(Matcher):
         Raises:
             ValueError: 快捷命令操作失败时抛出
         """
-        ...
 
     @classmethod
     @overload
@@ -166,7 +165,6 @@ class AlconnaMatcher(Matcher):
         Raises:
             ValueError: 快捷命令操作失败时抛出
         """
-        ...
 
     @classmethod
     def shortcut(cls, key: str | TPattern, args: ShortcutArgs | None = None, **kwargs):
@@ -399,7 +397,7 @@ class AlconnaMatcher(Matcher):
             override: 是否定制优先级
         """
 
-        async def _receive(event: Event, matcher: Matcher) -> None | NoReturn:
+        async def _receive(event: Event, matcher: Matcher) -> None:
             nonlocal id
             if not id:
                 try:
@@ -687,9 +685,7 @@ class AlconnaMatcher(Matcher):
         _message = await cls.executor.send_wrapper(bot, event, cls.convert(message))
         if isinstance(_message, UniMessage):
             return await _message.send(target=event, bot=bot, fallback=fallback, no_wrapper=True, **kwargs)
-        else:
-            res = _message
-        return await bot.send(event=event, message=res, **kwargs)
+        return await bot.send(event=event, message=_message, **kwargs)
 
     @classmethod
     async def finish(
@@ -846,7 +842,7 @@ class AlconnaMatcher(Matcher):
 
         res = await wait.wait(timeout=timeout)
         if res is None:
-            return
+            return None
         return await UniMessage.generate(message=cast(Message, res))
 
     @classmethod
@@ -989,7 +985,7 @@ def on_alconna(
         response_self,
         aliases,
     )
-    executor = cast(ExtensionExecutor, list(_rule.checkers)[0].call.executor)  # type: ignore
+    executor = cast(ExtensionExecutor, next(iter(_rule.checkers)).call.executor)  # type: ignore
     params = (
         (ExtensionParam.new(executor),)
         + Matcher.HANDLER_PARAM_TYPES[:-1]
@@ -1021,7 +1017,8 @@ def on_alconna(
             ),
             "temp": temp,
             "expire_time": (
-                expire_time and (expire_time if isinstance(expire_time, datetime) else datetime.now() + expire_time)
+                expire_time
+                and (expire_time if isinstance(expire_time, datetime) else datetime.now() + expire_time)  # noqa: DTZ005
             ),
             "priority": priority,
             "block": block,
@@ -1065,17 +1062,18 @@ def referent(cmd: str | Alconna | None) -> type[AlconnaMatcher] | None:
     若不存在则返回 None
     """
     if not cmd:
-        return
+        return None
     if isinstance(cmd, str):
         try:
             cmd = command_manager.get_command(cmd)
         except ValueError:
-            return
-    try:
-        if "matcher" in cmd.meta.extra:
+            return None
+    if "matcher" in cmd.meta.extra:
+        try:
             return cmd.meta.extra["matcher"]()
-    except KeyError:
-        return
+        except KeyError:
+            return None
+    return None
 
 
 @run_postprocessor

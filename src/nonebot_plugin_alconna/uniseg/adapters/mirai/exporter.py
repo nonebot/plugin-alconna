@@ -54,7 +54,7 @@ class MiraiMessageExporter(MessageExporter[Message]):
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.qq_client,
             )
-        elif isinstance(event, MessageEvent):
+        if isinstance(event, MessageEvent):
             return Target(
                 str(event.sender.id),
                 private=True,
@@ -62,28 +62,28 @@ class MiraiMessageExporter(MessageExporter[Message]):
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.qq_client,
             )
-        elif isinstance(event, (BotMuteEvent, BotUnmuteEvent)):
+        if isinstance(event, (BotMuteEvent, BotUnmuteEvent)):
             return Target(
                 str(event.operator.group.id),
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.qq_client,
             )
-        elif isinstance(event, MemberEvent):
+        if isinstance(event, MemberEvent):
             return Target(
                 str(event.member.group.id),
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.qq_client,
             )
-        elif isinstance(event, GroupEvent):
+        if isinstance(event, GroupEvent):
             return Target(
                 str(event.group.id),
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.qq_client,
             )
-        elif isinstance(event, FriendEvent):
+        if isinstance(event, FriendEvent):
             return Target(
                 str(event.friend.id),
                 private=True,
@@ -91,7 +91,7 @@ class MiraiMessageExporter(MessageExporter[Message]):
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.qq_client,
             )
-        elif isinstance(event, NudgeEvent):
+        if isinstance(event, NudgeEvent):
             return Target(
                 str(event.subject.id),  # type: ignore
                 private=event.scene != "group",
@@ -131,16 +131,15 @@ class MiraiMessageExporter(MessageExporter[Message]):
         }[name]
         if seg.id:
             return method(seg.id)
-        elif seg.url:
+        if seg.url:
             return method(url=seg.url)
-        elif seg.path:
+        if seg.path:
             return method(path=str(seg.path))
-        elif seg.__class__.to_url and seg.raw:
+        if seg.__class__.to_url and seg.raw:
             return method(
                 url=await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
             )
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def video(self, seg: Video, bot: Union[Bot, None]) -> "MessageSegment":
@@ -222,15 +221,13 @@ class MiraiMessageExporter(MessageExporter[Message]):
 
         if target.private:
             return await bot.send_friend_message(target=int(target.id), message=message)
-        else:
-            return await bot.send_group_message(target=int(target.id), message=message)
+        return await bot.send_group_message(target=int(target.id), message=message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         if TYPE_CHECKING:
             assert isinstance(mid, ActiveMessage)
             assert isinstance(bot, MiraiBot)
         await bot.recall_message(message=mid)
-        return
 
     def get_reply(self, mid: Any):
         if TYPE_CHECKING:

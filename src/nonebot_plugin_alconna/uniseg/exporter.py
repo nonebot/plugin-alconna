@@ -74,7 +74,7 @@ async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
     if isinstance(seg, Button):
         if seg.flag == "link":
             return [Text(f"[{seg.label}]({seg.url})")]
-        elif seg.flag != "action":
+        if seg.flag != "action":
             return [Text(f"[{seg.label}]{seg.text} ")]
         return [Text(f"[{seg.label}]")]
     if isinstance(seg, Keyboard):
@@ -97,25 +97,24 @@ async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
             else:
                 msg.append(Text(f"> msg:{node.id}"))
         return msg
-    else:
-        return [Text(str(seg))]
+    return [Text(str(seg))]
 
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]]
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]],
 ) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]]: ...
 
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]]
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]],
 ) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]]: ...
 
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]]
+    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]],
 ) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]]: ...
 
 
@@ -124,7 +123,7 @@ def export(
         Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]],
         Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]],
         Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]],
-    ]
+    ],
 ):
     sig = inspect.signature(func)
     func.__export_target__ = sig.parameters["seg"].annotation
@@ -194,7 +193,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
             elif isinstance(fallback, FallbackStrategy) and fallback != FallbackStrategy.forbid:
                 if fallback == FallbackStrategy.ignore:
                     continue
-                elif fallback == FallbackStrategy.to_text:
+                if fallback == FallbackStrategy.to_text:
                     message += str(seg)
                 elif fallback == FallbackStrategy.rollback:
                     if not seg.children:

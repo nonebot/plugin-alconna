@@ -214,7 +214,7 @@ def command_from_yaml(file: str | Path) -> Command:
     try:
         from yaml import safe_load
     except ImportError:
-        raise ImportError("Please install pyyaml first")
+        raise ImportError("Please install pyyaml first") from None
     path = Path(file)
     if not path.exists():
         raise FileNotFoundError(path)
@@ -247,7 +247,7 @@ def commands_from_yaml(file: str | Path) -> dict[str, Command]:
     try:
         from yaml import safe_load
     except ImportError:
-        raise ImportError("Please install pyyaml first")
+        raise ImportError("Please install pyyaml first") from None
     path = Path(file)
     if not path.exists():
         raise FileNotFoundError(path)

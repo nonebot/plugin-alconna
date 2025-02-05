@@ -19,12 +19,12 @@ def test_shortcut():
         if slot == "mode":
             if content in ("对战", "双人"):
                 return "--battle"
-            return
-        elif slot == "order":
+            return None
+        if slot == "order":
             if content in ("后手", "执黑"):
                 return "--black"
-            return
-        elif slot == "level":
+            return None
+        if slot == "level":
             return f"--level {content or 1}"
         return content
 

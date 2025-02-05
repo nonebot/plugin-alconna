@@ -123,7 +123,7 @@ def _register_hook():
 
 
 def apply_fetch_targets():
-    global _enable_fetch_targets
+    global _enable_fetch_targets  # noqa: PLW0603
 
     if _enable_fetch_targets:
         return

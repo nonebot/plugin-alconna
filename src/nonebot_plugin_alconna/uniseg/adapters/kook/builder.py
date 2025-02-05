@@ -178,3 +178,4 @@ class KookMessageBuilder(MessageBuilder):
         )
         if message.quote:
             return Reply(message.quote.id_, origin=message.quote)
+        return None

@@ -14,6 +14,8 @@ FILE1 = Path(__file__).parent / "test_koishi_command1.yml"
 
 @pytest.mark.asyncio()
 async def test_command(app: App):
+    from nonebot.matcher import Matcher
+
     from nonebot_plugin_alconna import Command, command_from_yaml, commands_from_yaml
 
     book = (
@@ -49,8 +51,8 @@ async def test_command(app: App):
     for matcher in books:
 
         @matcher.handle()
-        async def _(arp: Arparma):
-            await matcher.send(str(arp.options))
+        async def _(arp: Arparma, m: Matcher):
+            await m.send(str(arp.options))
 
     async with app.test_matcher(books) as ctx:  # type: ignore
         adapter = get_adapter(Adapter)

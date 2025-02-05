@@ -132,3 +132,4 @@ class KritorMessageBuilder(MessageBuilder):
             return Reply(
                 str(_reply.data["message_id"]), event.replied_message.message if event.replied_message else None, _reply
             )
+        return None

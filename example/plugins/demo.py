@@ -328,7 +328,7 @@ class TestExtension(DemoExtension):
     async def message_provider(self, event, state, bot: Bot, use_origin: bool = False):
         if not isinstance(event, GroupMessageDeleteEvent):
             return None
-        return UniMessage(f"/recall {str(event.group_id)} {str(event.user_id)} {str(event.message_id)}")
+        return UniMessage(f"/recall {event.group_id} {event.user_id} {event.message_id}")
 
 
 recall = on_alconna(

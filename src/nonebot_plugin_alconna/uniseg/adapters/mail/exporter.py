@@ -43,18 +43,16 @@ class MailMessageExporter(MessageExporter[Message]):
         if style == "link":
             if not getattr(seg, "_children", []):
                 return MessageSegment.html(f'<a href="{seg.text}">{seg.text}</a>')
-            else:
-                return MessageSegment.html(f'<a href="{seg.text}">{seg._children[0].text}</a>')  # type: ignore
+            return MessageSegment.html(f'<a href="{seg.text}">{seg._children[0].text}</a>')  # type: ignore
         return MessageSegment.html(str(seg))
 
     @export
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.flag == "user":
             return MessageSegment.html(f'<a href="mailto:{seg.target}">@{seg.target}</a>')
-        elif seg.flag == "channel":
+        if seg.flag == "channel":
             return MessageSegment.html(f" #{seg.target}")
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
 
     @export
     async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
@@ -62,23 +60,22 @@ class MailMessageExporter(MessageExporter[Message]):
 
         if seg.raw and (seg.id or seg.name):
             return MessageSegment.attachment(seg.raw, seg.id or seg.name, seg.mimetype)
-        elif seg.path:
+        if seg.path:
             path = Path(seg.path)
             return MessageSegment.attachment(path, path.name)
-        elif bot and seg.url:
+        if bot and seg.url:
             if name == "image":
                 return MessageSegment.html(f'<img src="{seg.url}" />')
-            elif name == "video":
+            if name == "video":
                 return MessageSegment.html(f'<video src="{seg.url}" controls />')
-            elif name in ["audio", "voice"]:
+            if name in ["audio", "voice"]:
                 return MessageSegment.html(f'<audio src="{seg.url}" controls />')
             resp = await bot.adapter.request(Request("GET", seg.url))
             return MessageSegment.attachment(
                 resp.content,  # type: ignore
                 seg.id or seg.name or seg.url.split("/")[-1],
             )
-        else:
-            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":

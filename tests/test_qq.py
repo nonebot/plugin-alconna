@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 from nonebug import App
 from arclet.alconna import Args, Alconna
@@ -25,7 +23,6 @@ async def test_send(app: App):
     from nonebot_plugin_alconna import At, on_alconna
 
     def check(name: str):
-        asyncio.create_task(bot.send(event, "check running"))
         if isinstance(name, str):
             return name
         return None

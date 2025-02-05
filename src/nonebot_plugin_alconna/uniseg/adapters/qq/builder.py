@@ -41,6 +41,7 @@ class QQMessageBuilder(MessageBuilder):
     def markdown(self, seg: MarkdownSegment):
         if content := seg.data["markdown"].content:
             return Text(content).mark(0, len(content), "markdown")
+        return None
 
     @build("mention_user")
     def mention(self, seg: MentionUserSegment):
@@ -173,3 +174,4 @@ class QQMessageBuilder(MessageBuilder):
                 rpl.content,
                 rpl,
             )
+        return None

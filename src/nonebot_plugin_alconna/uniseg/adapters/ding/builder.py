@@ -24,4 +24,4 @@ class DingMessageBuilder(MessageBuilder):
             return AtAll()
         if "atDingtalkIds" in seg.data:
             return At("user", seg.data["atDingtalkIds"][0])
-        return
+        return None

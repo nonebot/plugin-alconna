@@ -30,15 +30,14 @@ class TailChatMessageExporter(MessageExporter["Message"]):
                     self_id=event.self_id,
                     scope=SupportScope.tail_chat,
                 )
-            else:
-                return Target(
-                    event.get_converse_id(),
-                    private=True,
-                    channel=True,
-                    adapter=self.get_adapter(),
-                    self_id=event.self_id,
-                    scope=SupportScope.tail_chat,
-                )
+            return Target(
+                event.get_converse_id(),
+                private=True,
+                channel=True,
+                adapter=self.get_adapter(),
+                self_id=event.self_id,
+                scope=SupportScope.tail_chat,
+            )
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
@@ -52,8 +51,7 @@ class TailChatMessageExporter(MessageExporter["Message"]):
         if seg.extract_most_style() == "link":
             if not getattr(seg, "_children", []):
                 return MessageSegment.url(url=seg.text)
-            else:
-                return MessageSegment.url(url=seg.text, text=seg._children[0].text)  # type: ignore
+            return MessageSegment.url(url=seg.text, text=seg._children[0].text)  # type: ignore
         if seg.extract_most_style() == "markdown":
             return MessageSegment.md(seg.text)
         if seg.extract_most_style() == "code":

@@ -101,7 +101,7 @@ async def enable_cmd_handle(arp: Arparma, bot: Bot, event):
             slot = cmds[index]
             command_manager.set_enabled(slot, enabled=True)
             return await enable_matcher.finish(f"已启用 {slot.header_display}")
-        elif slot := next((i for i in cmds if query == i.command), None):
+        if slot := next((i for i in cmds if query == i.command), None):
             command_manager.set_enabled(slot, enabled=True)
             return await enable_matcher.finish(f"已启用 {slot.header_display}")
         command_string = "\n".join(
@@ -143,11 +143,11 @@ async def enable_cmd_handle(arp: Arparma, bot: Bot, event):
         if not resp:
             await enable_matcher.finish()
         resp = resp.extract_plain_text().strip().lower()
-        if resp == "a" or resp == "<":
+        if resp in {"a", "<"}:
             page -= 1
             if page < 1:
                 page = max_page
-        elif resp == "d" or resp == ">":
+        elif resp in {"d", ">"}:
             page += 1
             if page > max_page:
                 page = 1
@@ -174,7 +174,7 @@ async def disable_cmd_handle(arp: Arparma, bot: Bot, event):
             slot = cmds[index]
             command_manager.set_enabled(slot, enabled=False)
             return await disable_matcher.finish(f"已禁用 {slot.header_display}")
-        elif slot := next((i for i in cmds if query == i.command), None):
+        if slot := next((i for i in cmds if query == i.command), None):
             command_manager.set_enabled(slot, enabled=False)
             return await disable_matcher.finish(f"已禁用 {slot.header_display}")
         command_string = "\n".join(
@@ -216,11 +216,11 @@ async def disable_cmd_handle(arp: Arparma, bot: Bot, event):
         if not resp:
             await disable_matcher.finish()
         resp = resp.extract_plain_text().strip().lower()
-        if resp == "a" or resp == "<":
+        if resp in {"a", "<"}:
             page -= 1
             if page < 1:
                 page = max_page
-        elif resp == "d" or resp == ">":
+        elif resp in {"d", ">"}:
             page += 1
             if page > max_page:
                 page = 1
