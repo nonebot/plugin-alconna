@@ -9,11 +9,13 @@ from nonebot.matcher import Matcher
 from nonebot.utils import escape_tag
 from pydantic import ValidationError
 from nonebot.adapters import Bot, Event
-from nonebot.plugin.on import on_message
 from nonebot.internal.rule import Rule as Rule
-from nonebot import get_driver, get_plugin_config
+from nonebot import require, get_driver, get_plugin_config
 from arclet.alconna.exceptions import SpecialOptionTriggered
 from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
+
+require("nonebot_plugin_waiter")
+from nonebot_plugin_waiter import waiter
 
 from .i18n import Lang
 from .config import Config
@@ -62,10 +64,9 @@ class AlconnaRule:
         "_path",
         "_namespace",
         "_waiter",
-        "_matchers",
-        "_futures",
-        "_interfaces",
+        "_tasks",
         "_comp_help",
+        "_hide_tabs",
     )
 
     def __init__(
@@ -146,9 +147,7 @@ class AlconnaRule:
         self.executor.post_init(command)
         self._path = command.path
         self._namespace = command.namespace
-        self._futures: dict[str, dict[str, asyncio.Future]] = {}
-        self._matchers: dict[str, type[Matcher]] = {}
-        self._interfaces: dict[str, CompSession] = {}
+        self._tasks: dict[str, asyncio.Task] = {}
 
         self._comp_help = ""
         if self.comp_config is not None:
@@ -157,9 +156,9 @@ class AlconnaRule:
             _exit = self.comp_config.get("exit") or ".exit"
             disables = self.comp_config.get("disables", set())
             hides = self.comp_config.get("hides", set())
-            hide_tabs = self.comp_config.get("hide_tabs", False)
+            self._hide_tabs = self.comp_config.get("hide_tabs", False)
             if self.comp_config.get("lite", False):
-                hide_tabs = True
+                self._hide_tabs = True
                 hides = {"tab", "enter", "exit"}
             hides |= disables
             if len(hides) < 3:
@@ -170,43 +169,31 @@ class AlconnaRule:
                     (f"{Lang.nbp_alc.completion.exit(cmd=_exit)}\n" if "exit" not in hides else ""),
                 )
 
-            async def _waiter_handle(_bot: Bot, _event: Event, _matcher: Matcher, content: UniMsg):
+            async def _waiter_handle(_event: Event, _matcher: Matcher, content: UniMsg):
                 msg = str(content).lstrip()
-                _future = self._futures[_bot.self_id][_event.get_session_id()]
-                _interface = self._interfaces[_event.get_session_id()]
                 if msg.startswith(_exit) and "exit" not in disables:
                     if msg == _exit:
-                        _future.set_result(False)
-                        await _matcher.finish()
+                        return False
                     else:
-                        _future.set_result(None)
-                        await _matcher.pause(
+                        await _matcher.send(
                             lang.require("analyser", "param_unmatched").format(target=msg.replace(_exit, "", 1))
                         )
-                elif msg.startswith(_enter) and "enter" not in disables:
+                        return
+                if msg.startswith(_enter) and "enter" not in disables:
                     if msg == _enter:
-                        _future.set_result(True)
-                        await _matcher.finish()
+                        return True
                     else:
-                        _future.set_result(None)
-                        await _matcher.pause(
+                        await _matcher.send(
                             lang.require("analyser", "param_unmatched").format(target=msg.replace(_enter, "", 1))
                         )
-                elif msg.startswith(_tab) and "tab" not in disables:
+                        return
+                if msg.startswith(_tab) and "tab" not in disables:
                     offset = msg.replace(_tab, "", 1).lstrip() or 1
                     try:
-                        offset = int(offset)
+                        return int(offset)
                     except ValueError:
-                        _future.set_result(None)
-                        await _matcher.pause(lang.require("analyser", "param_unmatched").format(target=offset))
-                    else:
-                        _interface.tab(offset)
-                        await _matcher.pause(
-                            f"* {_interface.current()}" if hide_tabs else "\n".join(_interface.lines())
-                        )
-                else:
-                    _future.set_result(content)
-                    await _matcher.finish()
+                        await _matcher.send(lang.require("analyser", "param_unmatched").format(target=offset))
+                return content
 
             self._waiter = _waiter_handle
 
@@ -223,68 +210,59 @@ class AlconnaRule:
         self, cmd: Alconna, bot: Bot, event: Event, state: T_State, msg: UniMessage
     ) -> Union[Arparma, Literal[False]]:
         ctx = await self.executor.context_provider(event, bot, state)
-        if self.comp_config is None:
+        try:
+            session_id = event.get_session_id()
+        except ValueError:
+            session_id = None
+        if self.comp_config is None or not session_id:
             return cmd.parse(msg, ctx)
         res = None
-        session_id = event.get_session_id()
-        if session_id not in self._interfaces:
-            self._interfaces[session_id] = CompSession(cmd)
-        with self._interfaces[session_id]:
+        interface = CompSession(cmd)
+        with interface:
             res = cmd.parse(msg, ctx)
         if res:
-            self._interfaces[session_id].exit()
-            del self._interfaces[session_id]
+            interface.exit()
             return res
         if not await self.executor.permission_check(bot, event, cmd):
             return False
 
-        def _checker(_event: Event):
-            return session_id == _event.get_session_id()
-
-        self._matchers[session_id] = on_message(priority=0, block=True, rule=Rule(_checker), handlers=[self._waiter])
         res = Arparma(
             cmd._hash,
             msg,
             False,
             error_info=SpecialOptionTriggered("completion"),
         )
-        _futures = self._futures.setdefault(bot.self_id, {})
-        _futures[session_id] = asyncio.get_running_loop().create_future()
 
-        def _clear():
-            self._interfaces[session_id].exit()
-            self._matchers[session_id].destroy()
-            del _futures[session_id]
-            del self._matchers[session_id]
-            del self._interfaces[session_id]
+        def _checker(_event: Event):
+            return session_id == _event.get_session_id()
 
-        while self._interfaces[session_id].available:
-            await self.send(f"{str(self._interfaces[session_id])}{self._comp_help}", bot, event, res)
-            while True:
-                try:
-                    await asyncio.wait_for(_futures[session_id], timeout=self.comp_config.get("timeout", 60))
-                except asyncio.TimeoutError:
+        w = waiter(["message"], Matcher, keep_session=True, block=False, rule=Rule(_checker))(self._waiter)
+
+        while interface.available:
+
+            await self.send(f"{str(interface)}{self._comp_help}", bot, event, res)
+            async for resp in w(timeout=self.comp_config.get("timeout", 60)):
+                if resp is None:
                     await self.send(Lang.nbp_alc.completion.timeout(), bot, event, res)
-                    _clear()
+                    interface.exit()
                     return res
-                finally:
-                    if not _futures[session_id].done():
-                        _futures[session_id].cancel()
-                ans: Union[UniMessage, bool, None] = _futures[session_id].result()
-                _futures[session_id] = asyncio.get_running_loop().create_future()
-                if ans is False:
+                if resp is False:
                     await self.send(Lang.nbp_alc.completion.exited(), bot, event, res)
-                    _clear()
+                    interface.exit()
                     return res
-                elif ans is None:
+                if isinstance(resp, int):
+                    interface.tab(resp)
+                    await self.send(
+                        f"* {interface.current()}" if self._hide_tabs else "\n".join(interface.lines()), bot, event, res
+                    )
                     continue
-                _res = self._interfaces[session_id].enter(None if ans is True else ans)
+                _res = interface.enter(None if resp is True else resp)
                 if _res.result:
                     res = _res.result
                 elif _res.exception and not isinstance(_res.exception, SpecialOptionTriggered):
                     await self.send(str(_res.exception), bot, event, res)
                 break
-        _clear()
+        interface.exit()
         return res
 
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
@@ -295,6 +273,12 @@ class AlconnaRule:
         if not self.response_self and check_self_send(bot, event):
             self.executor.clear()
             return False
+        try:
+            session_id = event.get_session_id()
+        except ValueError:
+            session_id = None
+        if session_id and session_id in self._tasks:
+            await self._tasks[session_id]
         cmd = self.command()
         if not cmd:
             self.executor.clear()
@@ -315,8 +299,12 @@ class AlconnaRule:
 
         with output_manager.capture(cmd.name) as cap:
             output_manager.set_action(lambda x: x, cmd.name)
+            task = asyncio.create_task(self.handle(cmd, bot, event, state, _msg))
+            if session_id:
+                self._tasks[session_id] = task
+                task.add_done_callback(lambda _: self._tasks.pop(session_id, None))
             try:
-                arp = await self.handle(cmd, bot, event, state, _msg)
+                arp = await task
                 if arp is False:
                     self.executor.clear()
                     return False

@@ -38,8 +38,9 @@ class MessageArgv(Argv[UniMessage]):
         return self
 
     def exit(self) -> dict[str, Any]:
-        argv_ctx.reset(self.context["__token__"])
-        del self.context["__token__"]
+        if "__token__" in self.context:
+            argv_ctx.reset(self.context["__token__"])
+            del self.context["__token__"]
         return super().exit()
 
     def build(self, data: str | list[str] | Message | UniMessage) -> Self:
@@ -138,6 +139,8 @@ class _Text(BasePattern[Text, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]]
 
     def spliter(self, x: str):
         current_argv = argv_ctx.get()
+        if "__styles__" not in current_argv.context:
+            return Text(x)
         styles = current_argv.context["__styles__"]
         start = styles["msg"].find(x, styles["index"])
         if start == -1:
