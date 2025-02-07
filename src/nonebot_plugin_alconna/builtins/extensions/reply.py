@@ -1,6 +1,8 @@
 from typing import Optional
 
 from tarina import LRU
+from arclet.alconna import Alconna
+from nonebot.internal.adapter import Bot, Event
 
 from nonebot_plugin_alconna.uniseg import reply_fetch
 from nonebot_plugin_alconna import Reply, Extension, UniMessage
@@ -40,19 +42,12 @@ class ReplyRecordExtension(Extension):
     def get_reply(self, message_id: str) -> Optional[Reply]:
         return self.cache.get(message_id, None)
 
-    async def message_provider(self, event, state, bot, use_origin: bool = False):
-        if event.get_type() != "message":
-            return None
-        try:
-            msg = event.get_message()
-        except (NotImplementedError, ValueError):
-            return None
-        uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
+    async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:
         if not (reply := await reply_fetch(event, bot)):
-            return uni_msg
+            return receive
         msg_id = UniMessage.get_message_id(event, bot)
         self.cache[msg_id] = reply
-        return uni_msg
+        return receive
 
 
 class ReplyMergeExtension(Extension):
@@ -81,6 +76,8 @@ class ReplyMergeExtension(Extension):
         self.add_left = add_left
         self.sep = sep
 
+    cache: "LRU[int, UniMessage]" = LRU(20)
+
     @property
     def priority(self) -> int:
         return 14
@@ -90,6 +87,9 @@ class ReplyMergeExtension(Extension):
         return "builtins.extensions.reply:ReplyMergeExtension"
 
     async def message_provider(self, event, state, bot, use_origin: bool = False):
+        event_id = id(event)
+        if event_id in self.cache:
+            return self.cache[event_id]
         if event.get_type() != "message":
             return None
         try:
@@ -97,6 +97,7 @@ class ReplyMergeExtension(Extension):
         except (NotImplementedError, ValueError):
             return None
         uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
+        self.cache[event_id] = uni_msg
         if not (reply := await reply_fetch(event, bot)):
             return uni_msg
         if not reply.msg:
@@ -108,9 +109,11 @@ class ReplyMergeExtension(Extension):
         if self.add_left:
             uni_msg_reply += self.sep
             uni_msg_reply.extend(uni_msg)
+            self.cache[event_id] = uni_msg_reply
             return uni_msg_reply
         uni_msg += self.sep
         uni_msg.extend(uni_msg_reply)
+        self.cache[event_id] = uni_msg
         return uni_msg
 
 

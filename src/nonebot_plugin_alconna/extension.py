@@ -10,7 +10,7 @@ from typing_extensions import Self
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Any, Union, Generic, Literal, TypeVar, ClassVar
 
-from tarina import lang
+from tarina import LRU, lang
 from nonebot.typing import T_State
 from arclet.alconna import Alconna, Arparma
 from nonebot.compat import PydanticUndefined
@@ -76,11 +76,11 @@ class Extension(metaclass=ABCMeta):
 
     async def message_provider(
         self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
-    ) -> Message | UniMessage | None:
+    ) -> UniMessage | None:
         """提供消息对象以便 Alconna 进行处理。"""
         return None
 
-    async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: TM) -> TM:
+    async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:
         """接收消息后的钩子函数。"""
         return receive
 
@@ -124,6 +124,8 @@ class DefaultExtension(Extension):
 
 
 _callbacks = set()
+
+unimsg_cache: LRU[int, UniMessage] = LRU(16)
 
 
 class ExtensionExecutor:
@@ -205,8 +207,11 @@ class ExtensionExecutor:
 
     async def message_provider(
         self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
-    ) -> Message | UniMessage | None:
-        if event.get_type() != "message":
+    ) -> UniMessage | None:
+        event_id = id(event)
+        if (uni_msg := unimsg_cache.get(event_id)) is not None:
+            msg = uni_msg
+        elif event.get_type() != "message":
             msg = None
         else:
             try:
@@ -218,6 +223,9 @@ class ExtensionExecutor:
                     msg = getattr(event, "original_message", msg)  # type: ignore
                 except (NotImplementedError, ValueError):
                     pass
+            if msg is not None:
+                msg = UniMessage.generate_without_reply(message=msg, bot=bot)
+                unimsg_cache[event_id] = msg
         exc = None
         for ext in self.context:
             if not ext._overrides["message_provider"]:
@@ -232,7 +240,7 @@ class ExtensionExecutor:
 
         return msg
 
-    async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: TM) -> TM:
+    async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:
         res = receive
         for ext in self.context:
             if ext._overrides["receive_wrapper"]:

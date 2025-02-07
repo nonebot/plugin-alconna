@@ -5,7 +5,7 @@ from arclet.alconna import Alconna
 from nonebot.adapters import Event
 from nonebot.typing import T_State
 from nonebot.adapters.discord import Bot
-from nonebot.adapters.discord.message import Message, parse_message
+from nonebot.adapters.discord.message import parse_message
 from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
 from nonebot.adapters.discord.commands.matcher import ApplicationCommandConfig
 from nonebot.adapters.discord.commands.storage import _application_command_storage
@@ -142,7 +142,7 @@ class DiscordSlashExtension(Extension):
             cmd += " "
             cmd += " ".join(_handle_options(data.options))
 
-        return Message(cmd.rstrip())
+        return UniMessage(cmd.rstrip())
 
     @classmethod
     async def send_deferred_response(cls) -> None:

@@ -1,6 +1,5 @@
 import asyncio
 import weakref
-import importlib
 from typing import Any, Union, Literal, Optional
 
 from nonebot.typing import T_State
@@ -19,7 +18,6 @@ from nonebot_plugin_waiter import waiter
 
 from .i18n import Lang
 from .config import Config
-from .adapters import MAPPING
 from .uniseg import UniMsg, UniMessage
 from .model import CompConfig, CommandResult
 from .uniseg.constraint import UNISEG_MESSAGE
@@ -286,18 +284,11 @@ class AlconnaRule:
             return False
         msg = await self.executor.receive_wrapper(bot, event, cmd, msg)
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
-        adapter_name = bot.adapter.get_name()
-        if adapter_name in MAPPING and MAPPING[adapter_name] not in _modules:
-            importlib.import_module(f"nonebot_plugin_alconna.adapters.{MAPPING[adapter_name]}")
-        if isinstance(msg, UniMessage):
-            _msg = msg
-        else:
-            _msg = await UniMessage.generate(message=msg, adapter=adapter_name)
-        state[UNISEG_MESSAGE] = _msg
+        state[UNISEG_MESSAGE] = msg
 
         with output_manager.capture(cmd.name) as cap:
             output_manager.set_action(lambda x: x, cmd.name)
-            task = asyncio.create_task(self.handle(cmd, bot, event, state, _msg))
+            task = asyncio.create_task(self.handle(cmd, bot, event, state, msg))
             if session_id:
                 self._tasks[session_id] = task
                 task.add_done_callback(lambda _: self._tasks.pop(session_id, None))
