@@ -356,6 +356,9 @@ class QQMessageExporter(MessageExporter[Message]):
                 message = message.exclude("mention_channel", "mention_user", "mention_everyone", "reference")
             return await bot.send(event=target, message=message, **kwargs)
 
+        if target.extra.get("qq.reply_seq"):
+            target.extra["qq.reply_seq"] += 1
+
         if target.channel:
             if target.private:
                 if not target.parent_id:
@@ -385,8 +388,6 @@ class QQMessageExporter(MessageExporter[Message]):
                 msg_seq=target.extra.get("qq.reply_seq"),
                 **kwargs,
             )
-        if target.extra.get("qq.reply_seq"):
-            target.extra["qq.reply_seq"] += 1
         return res
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
