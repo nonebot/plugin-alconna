@@ -26,15 +26,15 @@ class Onebot11MessageBuilder(MessageBuilder):
 
     @build("image")
     def image(self, seg: MessageSegment):
-        return Image(url=seg.data.get("file"), id=seg.data["file"])
+        return Image(url=seg.data.get("url") or seg.data.get("file"), id=seg.data["file"])
 
     @build("video")
     def video(self, seg: MessageSegment):
-        return Video(url=seg.data.get("file"), id=seg.data["file"])
+        return Video(url=seg.data.get("url") or seg.data.get("file"), id=seg.data["file"])
 
     @build("record")
     def record(self, seg: MessageSegment):
-        return Voice(url=seg.data.get("file"), id=seg.data["file"])
+        return Voice(url=seg.data.get("url") or seg.data.get("file"), id=seg.data["file"])
 
     @build("reply")
     def reply(self, seg: MessageSegment):
