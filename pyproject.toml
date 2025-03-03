@@ -33,7 +33,7 @@ build-backend = "pdm.backend"
 [tool.pdm]
 [tool.pdm.dev-dependencies]
 dev = [
-    "isort!=6.0.0",
+    "isort==5.13.2",
     "black>=25.1.0",
     "loguru>=0.7.2",
     "ruff>=0.8.4",
