@@ -376,7 +376,11 @@ class QQMessageExporter(MessageExporter[Message]):
         message = message.exclude("mention_channel", "mention_user", "mention_everyone", "reference")
         if target.private:
             res = await bot.send_to_c2c(
-                openid=target.id, message=message, msg_id=target.source, msg_seq=target.extra.get("qq.reply_seq"), **kwargs
+                openid=target.id,
+                message=message,
+                msg_id=target.source,
+                msg_seq=target.extra.get("qq.reply_seq"),
+                **kwargs,
             )
         elif target.extra.get("qq.interaction", False):
             return await bot.send_to_group(group_openid=target.id, message=message, event_id=target.source, **kwargs)
