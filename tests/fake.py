@@ -12,6 +12,13 @@ if TYPE_CHECKING:
     from nonebot.adapters.discord.event import GuildMessageCreateEvent as DiscordMessageEvent
 
 
+_msg_ids = iter(range(1000000))
+
+
+def get_msg_id() -> int:
+    return next(_msg_ids)
+
+
 def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
     from pydantic import create_model
     from nonebot.adapters.onebot.v11.event import Sender
@@ -27,7 +34,6 @@ def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
         user_id: int = 10
         message_type: Literal["group"] = "group"
         group_id: int = 10000
-        message_id: int = 1
         message: Message = Message("test")
         raw_message: str = "test"
         font: int = 0
@@ -41,7 +47,7 @@ def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
         class Config:
             extra = "allow"
 
-    return FakeEvent(**field)
+    return FakeEvent(message_id=get_msg_id(), **field)
 
 
 def fake_private_message_event_v11(**field) -> "PrivateMessageEventV11":
@@ -58,7 +64,6 @@ def fake_private_message_event_v11(**field) -> "PrivateMessageEventV11":
         sub_type: str = "friend"
         user_id: int = 10
         message_type: Literal["private"] = "private"
-        message_id: int = 1
         message: Message = Message("test")
         raw_message: str = "test"
         font: int = 0
@@ -68,7 +73,7 @@ def fake_private_message_event_v11(**field) -> "PrivateMessageEventV11":
         class Config:
             extra = "forbid"
 
-    return FakeEvent(**field)
+    return FakeEvent(message_id=get_msg_id(), **field)
 
 
 def fake_discord_interaction_event(**field) -> "ApplicationCommandInteractionEvent":
@@ -77,7 +82,7 @@ def fake_discord_interaction_event(**field) -> "ApplicationCommandInteractionEve
 
     _fake = create_model("_fake", __base__=ApplicationCommandInteractionEvent)
     field["type"] = 2
-    field["id"] = 123456
+    field["id"] = get_msg_id() + 123456
     field["application_id"] = 123456789
     field["token"] = "sometoken"  # noqa: S105
     field["version"] = 1
@@ -95,7 +100,7 @@ def fake_message_event_discord(content: str) -> "DiscordMessageEvent":
     return type_validate_python(
         GuildMessageCreateEvent,
         {
-            "id": 11234,
+            "id": get_msg_id() + 11234,
             "channel_id": 5566,
             "guild_id": 6677,
             "author": {
@@ -153,7 +158,7 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
             extra = "allow"
 
     _message = field.pop("message", Message("test"))
-    event = FakeEvent(message={"id": "1", "content": "text"}, **field)  # type: ignore
+    event = FakeEvent(message={"id": str(get_msg_id()), "content": "text"}, **field)  # type: ignore
     event._message = _message
     event.original_message = _message
     return event
@@ -168,7 +173,6 @@ def fake_message_event_guild(**field) -> "MessageCreateEvent":
     _fake = create_model("_fake", __base__=MessageCreateEvent)
 
     class FakeEvent(_fake):
-        id: str = "1234"
         channel_id: str = "abcd"
         guild_id: str = "efgh"
         content: str = "test"
@@ -178,7 +182,7 @@ def fake_message_event_guild(**field) -> "MessageCreateEvent":
         class Config:
             extra = "forbid"
 
-    return FakeEvent(**field)
+    return FakeEvent(id=str(get_msg_id() + 5555), **field)
 
 
 def fake_satori_bot_params(self_id: str = "test", platform: str = "test") -> dict:

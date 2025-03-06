@@ -48,7 +48,7 @@ async def test_send(app: App):
     async with app.test_matcher(cmd) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter, bot_info=None)
-        event = fake_message_event_guild(message=Message("test aaaa"), id="123", user_id="5678")
+        event = fake_message_event_guild(message=Message("test aaaa"), user_id="5678")
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, Message("测试!"))
         ctx.should_call_send(event, MessageSegment.mention_user("5678") + " 你好!")
@@ -60,7 +60,7 @@ async def test_send(app: App):
     async with app.test_matcher(cmd) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter, bot_info=None)
-        event = fake_message_event_guild(message=Message("test aaaa"), id="123", user_id="5678")
+        event = fake_message_event_guild(message=Message("test aaaa"), user_id="5678")
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, Message("test!"))
         ctx.should_call_send(event, MessageSegment.mention_user("5678") + " hello!")

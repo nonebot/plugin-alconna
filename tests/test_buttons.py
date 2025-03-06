@@ -110,7 +110,7 @@ async def test_button(app: App):
 
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter, bot_info=None)
-        event = fake_message_event_guild(message=Message("test 3"), id="123")
+        event = fake_message_event_guild(message=Message("test 3"))
         ctx.receive_event(bot, event)
         ctx.should_call_send(
             event,

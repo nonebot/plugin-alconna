@@ -1,6 +1,6 @@
 from typing import Optional
 
-from tarina import lang
+from tarina import LRU, lang
 from arclet.alconna import Alconna
 from nonebot.adapters import Event
 from nonebot.typing import T_State
@@ -71,6 +71,7 @@ class DiscordSlashExtension(Extension):
         self.nsfw = nsfw
         super().__init__()
         self.using = False
+        self.cache: "LRU[int, UniMessage]" = LRU(20)  # noqa: UP037
 
     def post_init(self, alc: Alconna) -> None:
         if "/" not in alc.prefixes or (
@@ -123,6 +124,8 @@ class DiscordSlashExtension(Extension):
     async def message_provider(self, event: Event, state: T_State, bot, use_origin: bool = False):
         if not isinstance(event, ApplicationCommandInteractionEvent):
             return None
+        if event.id in self.cache:
+            return self.cache[event.id]
         data = event.data
         cmd = f"/{data.name}"
 
@@ -142,7 +145,9 @@ class DiscordSlashExtension(Extension):
             cmd += " "
             cmd += " ".join(_handle_options(data.options))
 
-        return UniMessage(cmd.rstrip())
+        res = UniMessage(cmd.rstrip())
+        self.cache[event.id] = res
+        return res
 
     @classmethod
     async def send_deferred_response(cls) -> None:

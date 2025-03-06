@@ -125,7 +125,7 @@ class DefaultExtension(Extension):
 
 _callbacks = set()
 
-unimsg_cache: LRU[int, UniMessage] = LRU(16)
+unimsg_cache: LRU[str, UniMessage] = LRU(16)
 
 
 class ExtensionExecutor:
@@ -208,24 +208,17 @@ class ExtensionExecutor:
     async def message_provider(
         self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
     ) -> UniMessage | None:
-        event_id = id(event)
-        if (uni_msg := unimsg_cache.get(event_id)) is not None:
-            msg = uni_msg
-        elif event.get_type() != "message":
-            msg = None
-        else:
-            try:
-                msg = event.get_message()
-            except (NotImplementedError, ValueError):
-                msg = None
+        if event.get_type().startswith("message"):
+            msg = event.get_message()
             if use_origin:
-                try:
-                    msg = getattr(event, "original_message", msg)  # type: ignore
-                except (NotImplementedError, ValueError):
-                    pass
-            if msg is not None:
+                msg = getattr(event, "original_message", None) or msg  # type: ignore
+            msg_id = UniMessage.get_message_id(event, bot)
+            if (uni_msg := unimsg_cache.get(msg_id)) is not None:
+                msg = uni_msg
+            else:
                 msg = UniMessage.generate_without_reply(message=msg, bot=bot)
-                unimsg_cache[event_id] = msg
+                unimsg_cache[msg_id] = msg
+            return msg
         exc = None
         for ext in self.context:
             if not ext._overrides["message_provider"]:
@@ -238,7 +231,7 @@ class ExtensionExecutor:
         if exc is not None:
             raise exc
 
-        return msg
+        return None
 
     async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:
         res = receive

@@ -36,7 +36,7 @@ async def test_send(app: App):
     async with app.test_matcher(cmd) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter, bot_info=None)
-        event = fake_message_event_guild(message=Message("<@5678> test aaaa"), id="123")
+        event = fake_message_event_guild(message=Message("<@5678> test aaaa"))
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, "test!")
         ctx.should_finished()
@@ -63,7 +63,7 @@ async def test_send(app: App):
     async with app.test_matcher(matcher) as ctx:
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter, bot_info=None)
-        event = fake_message_event_guild(message=Message("<@5678> test aaaa"), id="123")
+        event = fake_message_event_guild(message=Message("<@5678> test aaaa"))
         ctx.receive_event(bot, event)
         ctx.should_call_send(
             event,

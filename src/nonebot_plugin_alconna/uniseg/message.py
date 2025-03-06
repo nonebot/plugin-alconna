@@ -1268,6 +1268,8 @@ class UniMessage(list[TS]):
                 event = current_event.get()
             except LookupError as e:
                 raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
+        if hasattr(event, "__uniseg_message_id__"):
+            return event.__uniseg_message_id__  # type: ignore
         if not adapter:
             if not bot:
                 try:
@@ -1277,7 +1279,8 @@ class UniMessage(list[TS]):
             _adapter = bot.adapter
             adapter = _adapter.get_name()
         if fn := alter_get_exporter(adapter):
-            return fn.get_message_id(event)
+            setattr(event, "__uniseg_message_id__", msg_id := fn.get_message_id(event))
+            return msg_id
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
     @staticmethod

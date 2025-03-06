@@ -1,6 +1,7 @@
 from typing import Union, Literal
 
 from nonebot import require
+from nonebot.internal.adapter import Event
 from nonebot.adapters.onebot.v12 import Bot
 from importlib_metadata import distributions
 from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
@@ -516,3 +517,43 @@ preview = Command("preview <...content>", "预览").build(auto_send_output=True,
 @preview.handle()
 async def preview_h(content: UniMessage):
     await preview.finish("rendering preview:\n" + content)
+
+
+from arclet.alconna.tools.debug import analyse_header
+
+
+class TestExtension1(Extension):
+    @property
+    def priority(self) -> int:
+        return 12
+
+    @property
+    def id(self) -> str:
+        return "test1"
+
+    def post_init(self, alc: Alconna) -> None:
+        def test_func(msg: str):
+            test_res = analyse_header(alc.prefixes, alc.command, msg, raise_exception=False)
+            return test_res and test_res.matched
+
+        self.test_func = test_func
+
+    async def call_llm(self, msg: str):
+        return "calculate " + "".join(c for c in msg if ord(c) < 256)
+
+    async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:
+        msg = receive.extract_plain_text()
+        if self.test_func(msg):
+            return receive
+        output = await self.call_llm(msg)
+        return UniMessage(output)
+
+
+calculate = Command("calculate <expression>", "计算").build(
+    auto_send_output=True, extensions=[TestExtension1()], use_cmd_start=False
+)
+
+
+@calculate.handle()
+async def calculate_h(expression: str):
+    await calculate.finish(expression)

@@ -23,7 +23,7 @@ class PrefixAppendExtension(Extension):
     prefixes: list[str]
     command: str
     sep: str
-    cache: "LRU[int, UniMessage]" = LRU(20)
+    cache: "LRU[str, UniMessage]" = LRU(20)
 
     def post_init(self, alc: Alconna) -> None:
         self.prefixes = [pf for pf in alc.prefixes if isinstance(pf, str)]
@@ -31,13 +31,13 @@ class PrefixAppendExtension(Extension):
         self.sep = alc.separators[0]
 
     async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:
-        event_id = id(event)
-        if event_id in self.cache:
-            return self.cache[event_id]
+        msg_id = UniMessage.get_message_id(event, bot)
+        if msg_id in self.cache:
+            return self.cache[msg_id]
         target = UniMessage.get_target(event, bot)
         prefix = self.supplier(target)
         if not prefix or not command.header_display.endswith(prefix):
             return receive
         res = UniMessage.text(random.choice(self.prefixes) + prefix + self.sep) + receive
-        self.cache[event_id] = res
+        self.cache[msg_id] = res
         return res

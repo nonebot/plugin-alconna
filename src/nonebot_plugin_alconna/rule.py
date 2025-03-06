@@ -2,6 +2,7 @@ import asyncio
 import weakref
 from typing import Any, Union, Literal, Optional
 
+import nonebot
 from nonebot.typing import T_State
 from tarina import lang, init_spec
 from nonebot.matcher import Matcher
@@ -13,9 +14,6 @@ from nonebot import require, get_driver, get_plugin_config
 from arclet.alconna.exceptions import SpecialOptionTriggered
 from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
 
-require("nonebot_plugin_waiter")
-from nonebot_plugin_waiter import waiter
-
 from .i18n import Lang
 from .config import Config
 from .uniseg import UniMsg, UniMessage
@@ -24,7 +22,14 @@ from .uniseg.constraint import UNISEG_MESSAGE
 from .extension import Extension, ExtensionExecutor
 from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT, log
 
-_modules = set()
+try:
+    if nonebot._driver:
+        require("nonebot_plugin_waiter")
+        from nonebot_plugin_waiter import waiter
+    else:
+        waiter = None
+except (RuntimeError, ValueError):
+    waiter = None
 
 
 def check_self_send(bot: Bot, event: Event) -> bool:
@@ -232,7 +237,7 @@ class AlconnaRule:
         def _checker(_event: Event):
             return session_id == _event.get_session_id()
 
-        w = waiter(["message"], Matcher, keep_session=True, block=False, rule=Rule(_checker))(self._waiter)
+        w = waiter(["message"], Matcher, keep_session=True, block=False, rule=Rule(_checker))(self._waiter)  # type: ignore
 
         while interface.available:
 

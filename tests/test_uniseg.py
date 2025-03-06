@@ -156,7 +156,7 @@ async def test_unimsg_template(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         event = fake_group_message_event_v11(message=Message("test_unimsg_template"), user_id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, MessageSegment.reply(1) + MessageSegment.at(23))
+        ctx.should_call_send(event, MessageSegment.reply(event.message_id) + MessageSegment.at(23))
         ctx.should_finished(matcher)
 
 
@@ -169,7 +169,6 @@ async def test_uniseg_recv(app: App):
         adapter = get_adapter(Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         event2 = fake_group_message_event_v11(
-            message_id=2,
             message=Message(
                 [
                     MessageSegment.reply(1),
@@ -183,7 +182,6 @@ async def test_uniseg_recv(app: App):
                 Reply,
                 model_dump(
                     fake_group_message_event_v11(
-                        message_id=1,
                         real_id=1,
                         message=Message("test_uniseg_recv"),
                         user_id=123,
@@ -205,7 +203,7 @@ async def test_unimsg_send(app: App):
     @matcher.handle()
     async def handle(msg: MsgId):
         receipt = await UniMessage("hello!").send(at_sender=True, reply_to=msg)
-        receipt.msg_ids[0] = {"message_id": 2}
+        receipt.msg_ids[0] = {"message_id": int(msg) + 1}
         await UniMessage("world!").send(at_sender=True, reply_to=receipt.get_reply())
         assert receipt.recallable
         await receipt.recall(1)
@@ -217,13 +215,13 @@ async def test_unimsg_send(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(
             event,
-            MessageSegment.reply(1) + MessageSegment.at(123) + MessageSegment.text("hello!"),
+            MessageSegment.reply(event.message_id) + MessageSegment.at(123) + MessageSegment.text("hello!"),
         )
         ctx.should_call_send(
             event,
-            MessageSegment.reply(2) + MessageSegment.at(123) + MessageSegment.text("world!"),
+            MessageSegment.reply(event.message_id + 1) + MessageSegment.at(123) + MessageSegment.text("world!"),
         )
-        ctx.should_call_api("delete_msg", {"message_id": 2})
+        ctx.should_call_api("delete_msg", {"message_id": event.message_id + 1})
 
     async with app.test_api() as ctx1:
         adapter = get_adapter(Adapter)

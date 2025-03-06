@@ -76,7 +76,7 @@ class ReplyMergeExtension(Extension):
         self.add_left = add_left
         self.sep = sep
 
-    cache: "LRU[int, UniMessage]" = LRU(20)
+    cache: "LRU[str, UniMessage]" = LRU(20)
 
     @property
     def priority(self) -> int:
@@ -87,17 +87,17 @@ class ReplyMergeExtension(Extension):
         return "builtins.extensions.reply:ReplyMergeExtension"
 
     async def message_provider(self, event, state, bot, use_origin: bool = False):
-        event_id = id(event)
-        if event_id in self.cache:
-            return self.cache[event_id]
         if event.get_type() != "message":
             return None
         try:
             msg = event.get_message()
         except (NotImplementedError, ValueError):
             return None
+        msg_id = UniMessage.get_message_id(event, bot)
+        if msg_id in self.cache:
+            return self.cache[msg_id]
         uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
-        self.cache[event_id] = uni_msg
+        self.cache[msg_id] = uni_msg
         if not (reply := await reply_fetch(event, bot)):
             return uni_msg
         if not reply.msg:
@@ -109,11 +109,11 @@ class ReplyMergeExtension(Extension):
         if self.add_left:
             uni_msg_reply += self.sep
             uni_msg_reply.extend(uni_msg)
-            self.cache[event_id] = uni_msg_reply
+            self.cache[msg_id] = uni_msg_reply
             return uni_msg_reply
         uni_msg += self.sep
         uni_msg.extend(uni_msg_reply)
-        self.cache[event_id] = uni_msg
+        self.cache[msg_id] = uni_msg
         return uni_msg
 
 
