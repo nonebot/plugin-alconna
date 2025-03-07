@@ -87,9 +87,9 @@ class RedMessageExporter(MessageExporter[Message]):
     async def voice(self, seg: Union[Voice, Audio], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         if seg.path:
-            return MessageSegment.voice(Path(seg.path), duration=seg.duration or 1)
+            return MessageSegment.voice(Path(seg.path), duration=int(seg.duration or 1))
         if seg.raw:
-            return MessageSegment.voice(seg.raw_bytes, duration=seg.duration or 1)
+            return MessageSegment.voice(seg.raw_bytes, duration=int(seg.duration or 1))
         if seg.url and bot:
             resp = await bot.adapter.request(Request("GET", seg.url))
             return MessageSegment.voice(resp.content, duration=seg.duration or 1)  # type: ignore

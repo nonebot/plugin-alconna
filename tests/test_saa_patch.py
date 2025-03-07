@@ -33,6 +33,6 @@ async def test_patch(app: App):
         msg = "test" + MessageSegment.at("234")
         event = fake_message_event_satori(message=msg, id=123)
         ctx.receive_event(bot, event)
-        ctx.should_call_send(event, MessageSegment.text("ok\n") + MessageSegment.at("234"))
+        ctx.should_call_send(event, MessageSegment.text("ok\n") + MessageSegment.at("234"))  # type: ignore
 
     dispose()

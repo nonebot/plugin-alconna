@@ -81,7 +81,7 @@ class FeishuMessageExporter(MessageExporter[Message]):
     async def audio(self, seg: Union[Voice, Audio], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         if seg.id:
-            return MessageSegment.audio(seg.id, seg.duration)
+            return MessageSegment.audio(seg.id, int(seg.duration) if seg.duration else None)
         if not bot:
             raise NotImplementedError
         if seg.url:
@@ -98,7 +98,7 @@ class FeishuMessageExporter(MessageExporter[Message]):
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
         file_key = result["data"]["file_key"]
-        return MessageSegment.audio(file_key, seg.duration)
+        return MessageSegment.audio(file_key, int(seg.duration) if seg.duration else None)
 
     @export
     async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
