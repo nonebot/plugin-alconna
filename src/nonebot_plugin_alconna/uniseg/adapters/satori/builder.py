@@ -110,7 +110,9 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
         if src.startswith("data:"):
             mime, b64 = src[5:].split(";", 1)
             return Image(raw=b64decode(b64[7:]), mimetype=mime)(*self.generate(seg.children))
-        return Image(seg.data["src"])(*self.generate(seg.children))
+        return Image(seg.data["src"], width=seg.data.get("width"), height=seg.data.get("height"))(
+            *self.generate(seg.children)
+        )
 
     @build("audio")
     def audio(self, seg: AudioSegment):
@@ -122,7 +124,7 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
         if src.startswith("data:"):
             mime, b64 = src[5:].split(";", 1)
             return Audio(raw=b64decode(b64[7:]), mimetype=mime)(*self.generate(seg.children))
-        return Audio(seg.data["src"])(*self.generate(seg.children))
+        return Audio(seg.data["src"], duration=seg.data.get("duration"))(*self.generate(seg.children))
 
     @build("video")
     def video(self, seg: VideoSegment):
@@ -134,7 +136,10 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
         if src.startswith("data:"):
             mime, b64 = src[5:].split(";", 1)
             return Video(raw=b64decode(b64[7:]), mimetype=mime)(*self.generate(seg.children))
-        return Video(seg.data["src"])(*self.generate(seg.children))
+        thumb = None
+        if poster := seg.data.get("poster"):
+            thumb = Image(url=poster, width=seg.data.get("width"), height=seg.data.get("height"))
+        return Video(seg.data["src"], thumbnail=thumb)(*self.generate(seg.children))
 
     @build("file")
     def file(self, seg: FileSegment):

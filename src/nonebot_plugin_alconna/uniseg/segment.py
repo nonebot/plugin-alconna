@@ -652,6 +652,8 @@ class Media(Segment):
 class Image(Media):
     """Image对象, 表示一类图片元素"""
 
+    width: Optional[int] = field(default=None)
+    height: Optional[int] = field(default=None)
     name: str = field(default="image.png")
 
     __default_name__ = "image.png"
@@ -661,7 +663,7 @@ class Image(Media):
 class Audio(Media):
     """Audio对象, 表示一类音频元素"""
 
-    duration: Optional[int] = field(default=None)
+    duration: Optional[float] = field(default=None)
     name: str = field(default="audio.mp3")
 
     __default_name__ = "audio.mp3"
@@ -671,7 +673,7 @@ class Audio(Media):
 class Voice(Media):
     """Voice对象, 表示一类语音元素"""
 
-    duration: Optional[int] = field(default=None)
+    duration: Optional[float] = field(default=None)
     name: str = field(default="voice.wav")
 
     __default_name__ = "voice.wav"
