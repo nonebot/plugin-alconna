@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot.adapters.kaiheila.message import Card as _Card
 from nonebot.adapters.kaiheila.message import File as _File
 from nonebot.adapters.kaiheila.message import MessageSegment
@@ -22,6 +24,13 @@ from nonebot_plugin_alconna.uniseg import Emoji as UniEmoji
 from nonebot_plugin_alconna.uniseg import Image as UniImage
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
+
+warn(
+    "nonebot_plugin_alconna.adapters.kook is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 def mention_channel(channel_id: str):

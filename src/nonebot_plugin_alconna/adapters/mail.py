@@ -1,8 +1,16 @@
+from warnings import warn
+
 from nonebot.adapters.mail.message import MessageSegment
 
 from nonebot_plugin_alconna.uniseg.segment import Text, Media
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
+warn(
+    "nonebot_plugin_alconna.adapters.mail is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 Attachment = SegmentPattern("attachment", MessageSegment, Media, MessageSegment.attachment)
 
 

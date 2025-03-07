@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nepattern import UnionPattern
 from nonebot.adapters.telegram.message import File
 from nonebot.adapters.telegram.message import Reply as _Reply
@@ -14,6 +16,12 @@ from nonebot_plugin_alconna.uniseg import Reply as UniReply
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.uniseg import Voice as UniVoice
 
+warn(
+    "nonebot_plugin_alconna.adapters.telegram is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 Location = SegmentPattern("location", MessageSegment, Other, MessageSegment.location)
 Venue = SegmentPattern("venue", MessageSegment, Other, MessageSegment.venue)
 Poll = SegmentPattern("poll", MessageSegment, Other, MessageSegment.poll)

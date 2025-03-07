@@ -1,8 +1,16 @@
+from warnings import warn
+
 from nonebot.adapters.ding.message import MessageSegment
 
 from nonebot_plugin_alconna.typings import SegmentPattern
 from nonebot_plugin_alconna.uniseg import AtAll, Image, Other
 
+warn(
+    "nonebot_plugin_alconna.adapters.ding is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 AtAll = SegmentPattern("at", MessageSegment, AtAll, MessageSegment.atAll)
 AtMobiles = SegmentPattern(
     "at", MessageSegment, Other, MessageSegment.atMobiles, lambda x: "atMobiles" in x.origin.data

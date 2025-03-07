@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
 
 from nonebot_plugin_alconna.uniseg import Hyper
@@ -7,6 +9,12 @@ from nonebot_plugin_alconna.uniseg import File as UniFile
 from nonebot_plugin_alconna.uniseg import Image as UniImage
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 
+warn(
+    "nonebot_plugin_alconna.adapters.ntchat is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 RoomAtMsg = SegmentPattern("room_at_msg", MessageSegment, Other, MessageSegment.room_at_msg)
 Card = SegmentPattern(
     "card",

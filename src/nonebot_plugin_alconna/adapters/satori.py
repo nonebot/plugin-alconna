@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot.adapters.satori.message import At as _At
 from nonebot.adapters.satori.message import File as _File
 from nonebot.adapters.satori.message import Link as _Link
@@ -21,6 +23,12 @@ from nonebot_plugin_alconna.uniseg import Reply as UniReply
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
+warn(
+    "nonebot_plugin_alconna.adapters.satori is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 At = SegmentPattern("at", _At, UniAt, MessageSegment.at, lambda x: x.origin is not None and "id" in x.origin.data)
 AtRole = SegmentPattern(
     "at", _At, UniAt, MessageSegment.at_role, lambda x: x.origin is not None and "role" in x.origin.data

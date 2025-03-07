@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot.adapters.kritor.message import MessageSegment
 from nonebot.adapters.kritor.message import Markdown as _Markdown
 
@@ -13,6 +15,12 @@ from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.uniseg import Voice as UniVoice
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
+warn(
+    "nonebot_plugin_alconna.adapters.kritor is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 At = SegmentPattern(
     "at",
     MessageSegment,

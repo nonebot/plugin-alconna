@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot.adapters.red.message import MessageSegment
 
 from nonebot_plugin_alconna.uniseg import Other
@@ -12,6 +14,12 @@ from nonebot_plugin_alconna.uniseg import Reply as UniReply
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.uniseg import Voice as UniVoice
 
+warn(
+    "nonebot_plugin_alconna.adapters.red is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 At = SegmentPattern("at", MessageSegment, UniAt, MessageSegment.at)
 AtAll = SegmentPattern("at_all", MessageSegment, UniAtAll, MessageSegment.at_all)
 Face = SegmentPattern("face", MessageSegment, Emoji, MessageSegment.face)

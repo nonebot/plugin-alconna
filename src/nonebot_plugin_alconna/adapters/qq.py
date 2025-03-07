@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot.compat import type_validate_python
 from nonebot.adapters.qq.models import MessageArk
 from nonebot.adapters.qq.message import Ark as _Ark
@@ -24,6 +26,12 @@ from nonebot_plugin_alconna.uniseg import Image as UniImage
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
+warn(
+    "nonebot_plugin_alconna.adapters.qq is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 Ark = SegmentPattern(
     "ark",
     _Ark,

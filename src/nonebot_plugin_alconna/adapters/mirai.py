@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot.adapters.mirai.message import MessageSegment
 from nonebot.adapters.mirai.message import File as MiraiFile
 
@@ -12,6 +14,12 @@ from nonebot_plugin_alconna.uniseg import Image as UniImage
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 from nonebot_plugin_alconna.uniseg import Voice as UniVoice
 
+warn(
+    "nonebot_plugin_alconna.adapters.mirai is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 Quote = SegmentPattern("reply", MessageSegment, Reply, MessageSegment.reply)
 Plain = str
 At = SegmentPattern("at", MessageSegment, UniAt, MessageSegment.at)

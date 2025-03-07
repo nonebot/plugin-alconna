@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot_adapter_tailchat.message import MessageSegment
 
 from nonebot_plugin_alconna.uniseg import Text
@@ -7,6 +9,12 @@ from nonebot_plugin_alconna.uniseg import File as UniFile
 from nonebot_plugin_alconna.uniseg import Image as UniImage
 from nonebot_plugin_alconna.typings import SegmentPattern, TextSegmentPattern
 
+warn(
+    "nonebot_plugin_alconna.adapters.tailchat is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 At = SegmentPattern(
     "at",
     MessageSegment,

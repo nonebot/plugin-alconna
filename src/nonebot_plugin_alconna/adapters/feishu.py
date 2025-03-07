@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot.adapters.feishu.message import MessageSegment
 
 from nonebot_plugin_alconna.uniseg import Hyper
@@ -10,6 +12,12 @@ from nonebot_plugin_alconna.uniseg import Audio as UniAudio
 from nonebot_plugin_alconna.uniseg import Image as UniImage
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 
+warn(
+    "nonebot_plugin_alconna.adapters.feishu is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 Text = str
 At = SegmentPattern("at", MessageSegment, UniAt, MessageSegment.at)
 AtAll = SegmentPattern(

@@ -1,3 +1,5 @@
+from warnings import warn
+
 from nonebot.adapters.dodo.message import (
     CardSegment,
     FileSegment,
@@ -20,6 +22,12 @@ from nonebot_plugin_alconna.uniseg import AtAll as UniAtAll
 from nonebot_plugin_alconna.uniseg import Image as UniImage
 from nonebot_plugin_alconna.uniseg import Video as UniVideo
 
+warn(
+    "nonebot_plugin_alconna.adapters.dodo is deprecated and will be removed in 0.57.0, "
+    "please use nonebot_plugin_alconna.uniseg.segment instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 At = AtUser = SegmentPattern("at_user", AtUserSegment, UniAt, MessageSegment.at_user)
 ChannelLink = SegmentPattern("channel_link", ChannelLinkSegment, UniAt, MessageSegment.channel_link)
 Reference = SegmentPattern("reference", ReferenceSegment, Reply, MessageSegment.reference)
