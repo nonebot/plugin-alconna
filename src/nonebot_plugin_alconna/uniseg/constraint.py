@@ -17,6 +17,7 @@ class SupportAdapter(str, Enum):
     dodo = "DoDo"
     feishu = "Feishu"
     github = "GitHub"
+    heybox = "Heybox"
     kritor = "Kritor"
     kook = "Kaiheila"
     mail = "Mail"
@@ -30,6 +31,7 @@ class SupportAdapter(str, Enum):
     satori = "Satori"
     telegram = "Telegram"
     tail_chat = "Tailchat"
+    wxmp = "WXMP"
 
     nonebug = "fake"
 
@@ -47,6 +49,7 @@ class SupportScope(str, Enum):
     discord = "Discord"
     feishu = "Feishu"
     dodo = "DoDo"
+    heybox = "Heybox"
     kook = "Kaiheila"
     mail = "Mail"
     minecraft = "Minecraft"
@@ -96,6 +99,7 @@ class SupportScope(str, Enum):
             "kook": SupportScope.kook,
             "dingtalk": SupportScope.ding,
             "mail": SupportScope.mail,
+            "heybox": SupportScope.heybox,
         }.get(platform, SupportScope.satori_other)
 
 
@@ -108,6 +112,7 @@ class SupportAdapterModule(str, Enum):
     dodo = "nonebot.adapters.dodo"
     feishu = "nonebot.adapters.feishu"
     github = "nonebot.adapters.github"
+    heybox = "nonebot.adapters.heybox"
     kritor = "nonebot.adapters.kritor"
     kook = "nonebot.adapters.kaiheila"
     mail = "nonebot.adapters.mail"
@@ -121,6 +126,7 @@ class SupportAdapterModule(str, Enum):
     satori = "nonebot.adapters.satori"
     telegram = "nonebot.adapters.telegram"
     tail_chat = "nonebot_adapter_tailchat"
+    wxmp = "nonebot.adapters.wxmp"
 
 
 UNISEG_MESSAGE: Literal["_alc_uniseg_message"] = "_alc_uniseg_message"

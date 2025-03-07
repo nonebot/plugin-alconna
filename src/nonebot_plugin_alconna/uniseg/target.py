@@ -439,14 +439,14 @@ async def select_wechat(target: "Target", bot: Bot):
         return False
     if bot.adapter.get_name() != SupportAdapter.onebot12:
         return False
-    return not hasattr(bot, "platform") or bot.platform == "wechat"
+    return hasattr(bot, "platform") and bot.platform == "wechat"
 
 
 @_register(SupportScope.wechat_oap)
 async def select_wechat_oap(target: "Target", bot: Bot):
     if target.channel:
         return False
-    if bot.adapter.get_name() != SupportAdapter.satori:
+    if bot.adapter.get_name() not in {SupportAdapter.wxmp, SupportAdapter.satori}:
         return False
     return not hasattr(bot, "platform") or bot.platform == "wechat-official"
 
@@ -457,7 +457,7 @@ async def select_wecom(target: "Target", bot: Bot):
         return False
     if bot.adapter.get_name() != SupportAdapter.satori:
         return False
-    return not hasattr(bot, "platform") or bot.platform == "wecom"
+    return hasattr(bot, "platform") and bot.platform == "wecom"
 
 
 @_register(SupportScope.tail_chat)
@@ -474,3 +474,12 @@ async def select_mail(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {SupportAdapter.mail, SupportAdapter.satori}:
         return False
     return not hasattr(bot, "platform") or bot.platform == "mail"
+
+
+@_register(SupportScope.heybox)
+async def select_heybox(target: "Target", bot: Bot):
+    if not target.channel:
+        return False
+    if bot.adapter.get_name() not in {SupportAdapter.heybox, SupportAdapter.satori}:
+        return False
+    return not hasattr(bot, "platform") or bot.platform == "heybox"

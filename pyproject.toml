@@ -14,7 +14,7 @@ dependencies = [
     "nonebot-plugin-waiter>=0.6.0",
 ]
 dynamic = ["version"]
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 readme = "README.md"
 license = {text = "MIT"}
 keywords = [
@@ -69,6 +69,8 @@ dev = [
     "nonebot-plugin-localstore>=0.7.1",
     "pyyaml>=6.0.1",
     "fix-future-annotations>=0.5.0",
+    "nonebot-adapter-heybox>=0.1.1; python_version >= \"3.11\"",
+    "nonebot-adapter-wxmp>=0.1.4; python_version >= \"3.10\"",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

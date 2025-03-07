@@ -356,7 +356,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 message = message.exclude("mention_channel", "mention_user", "mention_everyone", "reference")
             return await bot.send(event=target, message=message, **kwargs)
 
-        if target.extra.get("qq.reply_seq"):
+        if target.extra.get("qq.reply_seq") is not None:
             target.extra["qq.reply_seq"] += 1
 
         if target.channel:

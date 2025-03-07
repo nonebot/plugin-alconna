@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:dd547573c8224a717623fa8ed847ebe65a2d770258084827662a09c539ee8ea5"
+content_hash = "sha256:70ec5edf2dc986624a248c3c834edce23319f0eafbbb738912e5b8be2162273c"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -209,19 +209,6 @@ dependencies = [
 ]
 files = [
     {file = "async-asgi-testclient-1.4.11.tar.gz", hash = "sha256:4449ac85d512d661998ec61f91c9ae01851639611d748d81ae7f816736551792"},
-]
-
-[[package]]
-name = "async-timeout"
-version = "4.0.3"
-requires_python = ">=3.7"
-summary = "Timeout context manager for asyncio programs"
-dependencies = [
-    "typing-extensions>=3.6.5; python_version < \"3.8\"",
-]
-files = [
-    {file = "async-timeout-4.0.3.tar.gz", hash = "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f"},
-    {file = "async_timeout-4.0.3-py3-none-any.whl", hash = "sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028"},
 ]
 
 [[package]]
@@ -1241,6 +1228,19 @@ files = [
 ]
 
 [[package]]
+name = "nonebot-adapter-heybox"
+version = "0.1.1"
+requires_python = ">=3.11"
+summary = "heybox adapter for nonebot2"
+dependencies = [
+    "nonebot2>=2.0.0",
+]
+files = [
+    {file = "nonebot_adapter_heybox-0.1.1-py3-none-any.whl", hash = "sha256:1c0cb1acd0189442fd213baca16c9948937a54f89acbe70814988cebf0175c56"},
+    {file = "nonebot_adapter_heybox-0.1.1.tar.gz", hash = "sha256:d7d564955d1d9cde3b096283d7d0131bac9dce86241ca3293315ffba12d22aa7"},
+]
+
+[[package]]
 name = "nonebot-adapter-kaiheila"
 version = "0.3.4"
 requires_python = "<4.0,>=3.8"
@@ -1402,6 +1402,20 @@ dependencies = [
 files = [
     {file = "nonebot-adapter-telegram-0.1.0b20.tar.gz", hash = "sha256:fc17df61cbdb3162f29dbada1e5712b26f37c185da87602b613694bca32c9ada"},
     {file = "nonebot_adapter_telegram-0.1.0b20-py3-none-any.whl", hash = "sha256:a90acf29b8a9c8a16d4aaa93fb930debde4648d514f2050af945e973cd37a8d4"},
+]
+
+[[package]]
+name = "nonebot-adapter-wxmp"
+version = "0.1.4"
+requires_python = ">=3.10"
+summary = "Nonebot2 Adapter for Weixin Official Accounts Platform"
+dependencies = [
+    "nonebot2>=2.3.0",
+    "xmltodict>=0.14.0",
+]
+files = [
+    {file = "nonebot_adapter_wxmp-0.1.4-py3-none-any.whl", hash = "sha256:e81d1cf55a88f8280f14d62ba0be95d4b7f3d74a1c042ad73484d4fd436cd633"},
+    {file = "nonebot_adapter_wxmp-0.1.4.tar.gz", hash = "sha256:7ceff43fbcbd359f14d8f60817babaa6983ad4638595222d63a0a977c1d19b6f"},
 ]
 
 [[package]]
@@ -2268,16 +2282,6 @@ files = [
 ]
 
 [[package]]
-name = "tomli"
-version = "2.0.1"
-requires_python = ">=3.7"
-summary = "A lil' TOML parser"
-files = [
-    {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
-    {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
-]
-
-[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 requires_python = ">=3.8"
@@ -2568,6 +2572,16 @@ dependencies = [
 files = [
     {file = "wsproto-1.2.0-py3-none-any.whl", hash = "sha256:b9acddd652b585d75b20477888c56642fdade28bdfd3579aa24a4d2c037dd736"},
     {file = "wsproto-1.2.0.tar.gz", hash = "sha256:ad565f26ecb92588a3e43bc3d96164de84cd9902482b130d0ddbaa9664a85065"},
+]
+
+[[package]]
+name = "xmltodict"
+version = "0.14.2"
+requires_python = ">=3.6"
+summary = "Makes working with XML feel like you are working with JSON"
+files = [
+    {file = "xmltodict-0.14.2-py2.py3-none-any.whl", hash = "sha256:20cc7d723ed729276e808f26fb6b3599f786cbc37e06c65e192ba77c40f20aac"},
+    {file = "xmltodict-0.14.2.tar.gz", hash = "sha256:201e7c28bb210e374999d1dde6382923ab0ed1a8a5faeece48ab525b7810a553"},
 ]
 
 [[package]]
