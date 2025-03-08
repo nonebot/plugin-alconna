@@ -209,6 +209,17 @@ class ExtensionExecutor:
     async def message_provider(
         self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
     ) -> UniMessage | None:
+        exc = None
+        for ext in self.context:
+            if not ext._overrides["message_provider"]:
+                continue
+            try:
+                if (msg1 := await ext.message_provider(event, state, bot, use_origin)) is not None:
+                    return msg1
+            except Exception as e:
+                exc = e
+        if exc is not None:
+            raise exc
         if event.get_type().startswith("message"):
             msg_id = UniMessage.get_message_id(event, bot)
             if use_origin and (uni_msg := unimsg_origin_cache.get(msg_id)) is not None:
@@ -224,18 +235,6 @@ class ExtensionExecutor:
                 if use_origin:
                     return ori_uni_msg
             return uni_msg
-        exc = None
-        for ext in self.context:
-            if not ext._overrides["message_provider"]:
-                continue
-            try:
-                if (msg1 := await ext.message_provider(event, state, bot, use_origin)) is not None:
-                    return msg1
-            except Exception as e:
-                exc = e
-        if exc is not None:
-            raise exc
-
         return None
 
     async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:
