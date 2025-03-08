@@ -69,8 +69,30 @@ dev = [
     "nonebot-plugin-localstore>=0.7.1",
     "pyyaml>=6.0.1",
     "fix-future-annotations>=0.5.0",
-    "nonebot-adapter-heybox>=0.1.1; python_version >= \"3.11\"",
-    "nonebot-adapter-wxmp>=0.1.4; python_version >= \"3.10\"",
+    # "nonebot-adapter-heybox>=0.1.1; python_version >= \"3.11\"",
+    # "nonebot-adapter-wxmp>=0.1.4; python_version >= \"3.10\"",
+]
+test = [
+    "nonebug>=0.4.3",
+    "pytest-xdist>=3.6.1",
+    "pytest-asyncio>=0.25.3",
+    "fastapi>=0.110.2",
+    "uvicorn[standard]>=0.28.1",
+    "nonebot2[httpx,websockets]>=2.3.0",
+    "nonebot-adapter-qq>=1.6.2",
+    "nonebot-adapter-satori>=0.13.4",
+    "nonebot-adapter-discord>=0.1.8",
+    "nonebot-adapter-minecraft>=1.3.2",
+    "nonebot-adapter-onebot>=2.4.5",
+    "nonebot-plugin-filehost>=1.1.1",
+    "nonebot-plugin-send-anything-anywhere>=0.7.1",
+    "pytest-sugar>=1.0.0",
+    "pytest-mock>=3.14.0",
+    "nonebot-plugin-localstore>=0.7.1",
+    "pyyaml>=6.0.1",
+    "nonebot-adapter-telegram>=0.1.0b18",
+    "nonebot-adapter-kaiheila>=0.3.4",
+    "nonebot-adapter-console>=0.6.0",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

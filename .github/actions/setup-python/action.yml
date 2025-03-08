@@ -5,7 +5,7 @@ inputs:
   python-version:
     description: Python version
     required: false
-    default: "3.10"
+    default: "3.11"
 
 runs:
   using: "composite"
@@ -17,5 +17,5 @@ runs:
         architecture: "x64"
         cache: true
 
-    - run: pdm sync -G:all
+    - run: pdm sync -G default -v
       shell: bash
