@@ -14,7 +14,7 @@ dependencies = [
     "nonebot-plugin-waiter>=0.6.0",
 ]
 dynamic = ["version"]
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "MIT"}
 keywords = [

@@ -126,6 +126,7 @@ class DefaultExtension(Extension):
 _callbacks = set()
 
 unimsg_cache: LRU[str, UniMessage] = LRU(16)
+unimsg_origin_cache: LRU[str, UniMessage] = LRU(16)
 
 
 class ExtensionExecutor:
@@ -209,16 +210,20 @@ class ExtensionExecutor:
         self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
     ) -> UniMessage | None:
         if event.get_type().startswith("message"):
-            msg = event.get_message()
-            if use_origin:
-                msg = getattr(event, "original_message", None) or msg  # type: ignore
             msg_id = UniMessage.get_message_id(event, bot)
+            if use_origin and (uni_msg := unimsg_origin_cache.get(msg_id)) is not None:
+                return uni_msg
             if (uni_msg := unimsg_cache.get(msg_id)) is not None:
-                msg = uni_msg
-            else:
-                msg = UniMessage.generate_without_reply(message=msg, bot=bot)
-                unimsg_cache[msg_id] = msg
-            return msg
+                return uni_msg
+            msg = event.get_message()
+            uni_msg = UniMessage.generate_without_reply(message=msg, bot=bot)
+            unimsg_cache[msg_id] = uni_msg
+            if (ori_msg := getattr(event, "original_message", None)) is not None:
+                ori_uni_msg = UniMessage.generate_without_reply(message=ori_msg, bot=bot)
+                unimsg_origin_cache[msg_id] = ori_uni_msg
+                if use_origin:
+                    return ori_uni_msg
+            return uni_msg
         exc = None
         for ext in self.context:
             if not ext._overrides["message_provider"]:
