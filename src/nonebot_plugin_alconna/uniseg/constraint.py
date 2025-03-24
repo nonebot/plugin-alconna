@@ -16,6 +16,7 @@ class SupportAdapter(str, Enum):
     discord = "Discord"
     dodo = "DoDo"
     feishu = "Feishu"
+    gewechat = "gewechat"
     github = "GitHub"
     heybox = "Heybox"
     kritor = "Kritor"
@@ -94,6 +95,7 @@ class SupportScope(str, Enum):
             "telegram": SupportScope.telegram,
             "discord": SupportScope.discord,
             "feishu": SupportScope.feishu,
+            "gewechat": SupportScope.wechat,
             "wechat-official": SupportScope.wechat_oap,
             "wecom": SupportScope.wecom,
             "kook": SupportScope.kook,
@@ -111,6 +113,7 @@ class SupportAdapterModule(str, Enum):
     discord = "nonebot.adapters.discord"
     dodo = "nonebot.adapters.dodo"
     feishu = "nonebot.adapters.feishu"
+    gewechat = "nonebot.adapters.gewechat"
     github = "nonebot.adapters.github"
     heybox = "nonebot.adapters.heybox"
     kritor = "nonebot.adapters.kritor"

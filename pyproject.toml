@@ -62,6 +62,8 @@ dev = [
     "nonebot-adapter-telegram>=0.1.0b18",
     "nonebot-adapter-kritor>=0.3.2",
     "nonebot-adapter-tailchat>=0.1.0b12",
+    "nonebot-adapter-gewechat==0.4.6",
+    "nonebot-adapter-wxmp>=0.1.8",
     "nonebot-plugin-filehost>=1.1.1",
     "nonebot-plugin-send-anything-anywhere>=0.7.1",
     "pytest-sugar>=1.0.0",
@@ -70,7 +72,6 @@ dev = [
     "pyyaml>=6.0.1",
     "fix-future-annotations>=0.5.0",
     # "nonebot-adapter-heybox>=0.1.1; python_version >= \"3.11\"",
-    # "nonebot-adapter-wxmp>=0.1.4; python_version >= \"3.10\"",
 ]
 test = [
     "nonebug>=0.4.3",

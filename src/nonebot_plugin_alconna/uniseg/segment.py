@@ -684,6 +684,7 @@ class Video(Media):
     """Video对象, 表示一类视频元素"""
 
     thumbnail: Optional[Image] = field(default=None)
+    duration: Optional[float] = field(default=None)
     name: str = field(default="video.mp4")
 
     __default_name__ = "video.mp4"

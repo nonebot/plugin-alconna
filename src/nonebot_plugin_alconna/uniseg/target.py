@@ -437,9 +437,14 @@ async def select_ding(target: "Target", bot: Bot):
 async def select_wechat(target: "Target", bot: Bot):
     if target.channel:
         return False
-    if bot.adapter.get_name() != SupportAdapter.onebot12:
+    if bot.adapter.get_name() not in {
+        SupportAdapter.onebot12,
+        SupportAdapter.satori,
+        SupportAdapter.gewechat,
+        SupportAdapter.ntchat,
+    }:
         return False
-    return hasattr(bot, "platform") and bot.platform == "wechat"
+    return hasattr(bot, "platform") and bot.platform in ("wechat", "gewechat")
 
 
 @_register(SupportScope.wechat_oap)
