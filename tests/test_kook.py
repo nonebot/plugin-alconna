@@ -29,3 +29,11 @@ def test_kook():
     assert res1.matched
     assert res1.some_arg == "[(met)123456(met)](42345)"
     assert res1.some_arg1 == "12345678"
+
+    msg2 = Message(MessageSegment.KMarkdown("/foo 1:2:3"))
+    alc2 = Alconna("/foo", Args["some_arg", str])
+    res2 = alc2.parse(msg2, ctx)
+    assert res2.matched
+    assert res2.some_arg == "1:2:3"
+    assert alc2.parse(Message(MessageSegment.text("/foo :aaa:")), ctx).matched
+    assert alc2.parse(Message([MessageSegment.text("/foo "), MessageSegment.KMarkdown(":aaa:")]), ctx).matched

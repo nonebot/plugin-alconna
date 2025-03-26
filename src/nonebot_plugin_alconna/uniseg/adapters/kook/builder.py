@@ -18,10 +18,8 @@ from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, 
 
 CHN = re.compile(r"\(chn\)(?P<id>.+?)\(chn\)")
 EMJ = re.compile(r"\(emj\)(?P<name>.+?)\(emj\)\[(?P<id>[^\[]+?)\]")
-EMJ1 = re.compile(r":(?P<id>.+?):")
 NO_CHN = re.compile(r"\[\(chn\)(?P<id>.+?)\(chn\)\]\(.+\)")
 NO_EMJ = re.compile(r"\[\(emj\)(?P<name>.+?)\(emj\)\[(?P<id>[^\[]+?)\]\]\(.+\)")
-NO_EMJ1 = re.compile(r"\[:(?P<id>.+?):\]\(.+\)")
 
 
 class KookMessageBuilder(MessageBuilder):
@@ -58,18 +56,11 @@ class KookMessageBuilder(MessageBuilder):
             for mat in EMJ.finditer(content):
                 mats[mat.start()] = MessageSegment("emoji", {"id": mat.group("id"), "name": mat.group("name")})
                 spans[mat.start()] = mat.end()
-            for mat in EMJ1.finditer(content):
-                mats[mat.start()] = MessageSegment("emoji", {"id": mat.group("id")})
-                spans[mat.start()] = mat.end()
             for mat in NO_CHN.finditer(content):
                 if mat.start() + 1 in spans:
                     del spans[mat.start() + 1]
                     del mats[mat.start() + 1]
             for mat in NO_EMJ.finditer(content):
-                if mat.start() + 1 in spans:
-                    del spans[mat.start() + 1]
-                    del mats[mat.start() + 1]
-            for mat in NO_EMJ1.finditer(content):
                 if mat.start() + 1 in spans:
                     del spans[mat.start() + 1]
                     del mats[mat.start() + 1]
@@ -88,7 +79,7 @@ class KookMessageBuilder(MessageBuilder):
                         text = ""
                     res.append(mats[_index])
                     continue
-                if _index >= spans[current]:
+                if current in spans and _index >= spans[current]:
                     in_mat = False
                 if not in_mat:
                     text += char
@@ -108,8 +99,6 @@ class KookMessageBuilder(MessageBuilder):
             mat = re.search(r"\(emj\)(?P<name>[^()\[\]]+)\(emj\)\[(?P<id>[^\[\]]+)\]", content)
             if mat:
                 return Emoji(mat["id"], mat["name"])
-        if content.startswith(":") and (mat := re.search(r":(?P<id>[^:]+):", content)):
-            return Emoji(mat["id"])
         return Text(seg.data["content"]).mark(0, len(seg.data["content"]), "markdown")
 
     @build("mention")
