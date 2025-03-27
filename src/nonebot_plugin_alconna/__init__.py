@@ -1,4 +1,5 @@
 import contextlib
+from typing_extensions import deprecated
 
 import nonebot
 
@@ -62,7 +63,6 @@ from .uniseg import at_in as at_in
 from .uniseg import at_me as at_me
 from .typings import Style as Style
 from .params import assign as assign
-from .rule import alconna as alconna
 from .uniseg import Button as Button
 from .uniseg import FORBID as FORBID
 from .uniseg import IGNORE as IGNORE
@@ -91,6 +91,7 @@ from .params import AlcContext as AlcContext
 from .params import AlcMatches as AlcMatches
 from .params import AlconnaArg as AlconnaArg
 from .params import match_path as match_path
+from .rule import AlconnaRule as AlconnaRule
 from .uniseg import CustomNode as CustomNode
 from .uniseg import UniMessage as UniMessage
 from .extension import Extension as Extension
@@ -194,3 +195,8 @@ with contextlib.suppress(ValueError, LookupError):
         apply_fetch_targets()
     if _config.alconna_builtin_plugins:
         load_builtin_plugins(*_config.alconna_builtin_plugins)
+
+
+@deprecated("`alconna(...)` are no longer supported and will be removed in the future. Use `AlconnaRule(...)` instead.")
+def alconna(*args, **kwargs):
+    return AlconnaRule(*args, **kwargs).rule

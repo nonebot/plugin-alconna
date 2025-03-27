@@ -33,10 +33,10 @@ from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, Messag
 from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
 
 from .i18n import Lang
-from .rule import alconna
 from .config import Config
 from .util import annotation
 from .model import CompConfig
+from .rule import AlconnaRule
 from .uniseg import Text, Segment, UniMessage
 from .uniseg.fallback import FallbackStrategy
 from .uniseg.template import UniMessageTemplate
@@ -113,11 +113,11 @@ class AlconnaMatcher(Matcher):
     executor: ClassVar[ExtensionExecutor]
     _command_path: ClassVar[str]
     _tests: ClassVar[list[tuple[UniMessage, dict[str, Any] | None, bool]]]
-    _rule: ClassVar[Rule]
+    _rule: ClassVar[AlconnaRule]
 
     @classmethod
     def command(cls) -> Alconna:
-        return list(cls._rule.checkers)[0].call.command()  # noqa: RUF015
+        return cls._rule.command()  # type: ignore
 
     @classmethod
     @overload
@@ -972,7 +972,7 @@ def on_alconna(
                 command.formatter.add(command)
     except ValueError:
         pass
-    _rule = alconna(
+    _rule = AlconnaRule(
         command,
         skip_for_unmatch,
         auto_send_output,
@@ -985,7 +985,7 @@ def on_alconna(
         response_self,
         aliases,
     )
-    executor = cast(ExtensionExecutor, next(iter(_rule.checkers)).call.executor)  # type: ignore
+    executor = _rule.executor
     params = (
         (ExtensionParam.new(executor),)
         + Matcher.HANDLER_PARAM_TYPES[:-1]
@@ -1001,7 +1001,7 @@ def on_alconna(
         {
             "_source": source,
             "type": "",
-            "rule": _rule & rule,
+            "rule": rule & _rule.rule,
             "permission": Permission() | permission,
             "handlers": (
                 [

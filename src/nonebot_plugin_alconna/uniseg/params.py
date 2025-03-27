@@ -2,28 +2,40 @@ from typing import Annotated
 
 from nonebot.typing import T_State
 from nonebot.internal.params import Depends
+from nonebot.exception import SkippedException
 from nonebot.internal.adapter import Bot, Event
 
-from .exporter import Target
 from .message import TS, UniMessage
+from .exporter import Target, SerializeFailed
 from .constraint import UNISEG_TARGET, UNISEG_MESSAGE, UNISEG_MESSAGE_ID
 
 
 async def _uni_msg(bot: Bot, event: Event, state: T_State) -> UniMessage:
     if UNISEG_MESSAGE in state:
         return state[UNISEG_MESSAGE]
+    try:
+        event.get_message()
+    except ValueError:
+        raise SkippedException from None
     return await UniMessage.generate(event=event, bot=bot)
 
 
 def _target(bot: Bot, event: Event, state: T_State) -> Target:
     if UNISEG_TARGET in state:
         return state[UNISEG_TARGET]
-    return UniMessage.get_target(event=event, bot=bot)
+    try:
+        return UniMessage.get_target(event=event, bot=bot)
+    except (SerializeFailed, NotImplementedError, ValueError):
+        raise SkippedException from None
 
 
 def _msg_id(bot: Bot, event: Event, state: T_State) -> str:
     if UNISEG_MESSAGE_ID in state:
         return state[UNISEG_MESSAGE_ID]
+    try:
+        event.get_message()
+    except ValueError:
+        raise SkippedException from None
     return UniMessage.get_message_id(event=event, bot=bot)
 
 

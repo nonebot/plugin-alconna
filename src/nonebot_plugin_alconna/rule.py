@@ -3,8 +3,8 @@ import weakref
 from typing import Any, Union, Literal, Optional
 
 import nonebot
+from tarina import lang
 from nonebot.typing import T_State
-from tarina import lang, init_spec
 from nonebot.matcher import Matcher
 from nonebot.utils import escape_tag
 from pydantic import ValidationError
@@ -198,6 +198,10 @@ class AlconnaRule:
 
             self._waiter = _waiter_handle
 
+    @property
+    def rule(self) -> Rule:
+        return Rule(self)
+
     def __repr__(self) -> str:
         return f"Alconna(command={self.command()!r})"
 
@@ -348,8 +352,3 @@ class AlconnaRule:
             return await bot.send(event, await msg.export(bot, fallback=True))  # type: ignore
         except NotImplementedError:
             return await bot.send(event, event.get_message().__class__(text))
-
-
-@init_spec(AlconnaRule)
-def alconna(rule: AlconnaRule) -> Rule:
-    return Rule(rule)
