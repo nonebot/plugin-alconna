@@ -4,7 +4,7 @@ from arclet.alconna import Args, Alconna
 def test_kook():
     from nonebot.adapters.kaiheila.message import Message, MessageSegment
 
-    from nonebot_plugin_alconna.adapters.kook import Mention, KMarkdown
+    from nonebot_plugin_alconna import At, Text
 
     msg = (
         Message()
@@ -13,13 +13,12 @@ def test_kook():
         + MessageSegment.KMarkdown("12345678")
     )
 
-    alc = Alconna("/command", Args["some_arg", Mention]["some_arg1", KMarkdown])
+    alc = Alconna("/command", Args["some_arg", At]["some_arg1", Text])
     ctx = {"$adapter.name": "Kaiheila"}
     res = alc.parse(msg, ctx)
     assert res.matched
-    assert res.some_arg.type == "mention"
-    assert res.some_arg.data["user_id"] == "123456"
-    assert res.some_arg1.data["content"] == "12345678"
+    assert res.some_arg.origin.type == "mention"
+    assert res.some_arg.origin.data["user_id"] == "123456"
 
     msg1 = Message([MessageSegment.text("/command1 "), MessageSegment.KMarkdown("[(met)123456(met)](42345) 12345678")])
 

@@ -197,6 +197,7 @@ ignore = [
     "RUF003",  # 中文注释里用全角符号怎么你了
     "SLOT000", # 动态类型需求，主要是 json5 backend
     "PLR0911", "PLR0912", "PLR0915",  # 复杂度高点怎么你了
+    "PYI019", # 用 `Self` 替代 `self: T` 的 T
     "PYI041", # int 和 float 在运行时的类型没有交集（互不成立 issubclass）
     "PLW2901",  # shallow 怎么你了
     "S101", # assert 怎么你了，非要 RuntimeError 吗
