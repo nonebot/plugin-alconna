@@ -243,5 +243,5 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
     async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
         raise NotImplementedError
 
-    def get_reply(self, mid: Any):
+    def get_reply(self, mid: Any) -> Reply:
         raise NotImplementedError

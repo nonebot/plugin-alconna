@@ -1,8 +1,9 @@
+from nonebot.adapters import Bot, Event
 from nonebot.adapters.gewechat.message import MessageSegment  # type: ignore
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, Text, AtAll, Emoji, Hyper, Image
+from nonebot_plugin_alconna.uniseg.segment import At, Text, AtAll, Emoji, Hyper, Image, Reply
 
 
 class GeWeChatMessageBuilder(MessageBuilder):
@@ -34,9 +35,9 @@ class GeWeChatMessageBuilder(MessageBuilder):
     def xml(self, seg: "MessageSegment"):
         return Hyper("xml", seg.data["xml"])
 
-    # async def extract_reply(self, event: Event, bot: Bot):
-    #     from nonebot.adapters.gewechat.event import QuoteMessageEvent
-    #
-    #     if isinstance(event, QuoteMessageEvent):
-    #         return Reply(event.original_message, origin=event)  # type: ignore
-    #     return None
+    async def extract_reply(self, event: Event, bot: Bot):
+        from nonebot.adapters.gewechat.event import QuoteMessageEvent
+
+        if isinstance(event, QuoteMessageEvent) and event.refer_msg:
+            return Reply(event.refer_id, event.refer_msg, origin=event)
+        return None

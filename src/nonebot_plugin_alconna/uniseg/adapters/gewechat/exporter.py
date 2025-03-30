@@ -1,9 +1,13 @@
 import asyncio
-from typing import TYPE_CHECKING, Union
+from typing import Any, Union, cast
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
+from nonebot.compat import type_validate_python
+from nonebot.adapters.gewechat.utils import resp_json
 from nonebot.adapters.gewechat.bot import Bot as GeWeChatBot
+from nonebot.adapters.gewechat.api_model import postMessageResponse
+from nonebot.adapters.gewechat.message import Message, MessageSegment
 from nonebot.adapters.gewechat.event import (
     PokeEvent,
     NoticeEvent,
@@ -15,11 +19,8 @@ from nonebot.adapters.gewechat.event import (
 )
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Hyper, Image, Video, Voice
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-
-if TYPE_CHECKING:
-    from nonebot.adapters.gewechat.message import Message, MessageSegment
 
 
 class GeWeChatMessageExporter(MessageExporter["Message"]):
@@ -90,6 +91,10 @@ class GeWeChatMessageExporter(MessageExporter["Message"]):
     @export
     async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
         return MessageSegment.at_all()
+
+    @export
+    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+        return MessageSegment.emoji(seg.id, len(seg.id))
 
     @export
     async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
@@ -190,14 +195,23 @@ class GeWeChatMessageExporter(MessageExporter["Message"]):
         assert isinstance(bot, GeWeChatBot)
 
         if isinstance(target, Event):
-            return await bot.send(target, message, **kwargs)  # type: ignore
+            resps = await bot.send(target, message, **kwargs)  # type: ignore
+        else:
+            to_wxid = target.id
+            tasks = []
+            for api, data in message.to_payload():
+                data["toWxid"] = to_wxid
+                data["appId"] = bot.adapter.adapter_config.appid
 
-        to_wxid = target.id
-        tasks = []
-        for api, data in message.to_payload():
-            data["toWxid"] = to_wxid
-            data["appId"] = bot.adapter.adapter_config.appid
+                tasks.append(bot.call_api(api, **data))
 
-            tasks.append(bot.call_api(api, **data))
+            resps = [
+                type_validate_python(postMessageResponse, resp_json(resp)) for resp in await asyncio.gather(*tasks)
+            ]
+        return resps
 
-        return await asyncio.gather(*tasks)
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        assert isinstance(bot, GeWeChatBot)
+        mid = cast(postMessageResponse, mid)
+        resp = mid.data
+        await bot.revokeMsg(resp.toWxid, str(resp.msgId), str(resp.newMsgId), str(resp.createTime))

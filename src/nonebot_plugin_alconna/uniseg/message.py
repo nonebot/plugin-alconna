@@ -1498,9 +1498,20 @@ class Receipt:
     def editable(self) -> bool:
         return self.exporter.__class__.edit != MessageExporter.edit
 
-    def get_reply(self, index: int = -1) -> Reply | None:
+    @overload
+    def get_reply(self) -> list[Reply] | None: ...
+
+    @overload
+    def get_reply(self, index: int) -> Reply | None: ...
+
+    def get_reply(self, index: int | None = None):
         if not self.msg_ids:
             return None
+        if index is None:
+            try:
+                return [self.exporter.get_reply(msg_id) for msg_id in self.msg_ids]
+            except NotImplementedError:
+                return None
         try:
             msg_id = self.msg_ids[index]
         except IndexError:
@@ -1512,23 +1523,31 @@ class Receipt:
         except NotImplementedError:
             return None
 
-    async def recall(self, delay: float = 0, index: int = -1):
+    async def recall(self, delay: float = 0, index: int | None = None):
         if not self.msg_ids:
             return self
         if delay > 1e-4:
             await asyncio.sleep(delay)
-        try:
-            msg_id = self.msg_ids[index]
-        except IndexError:
-            msg_id = self.msg_ids[0]
-        if not msg_id:
-            return self
-        try:
-            await self.exporter.recall(msg_id, self.bot, self.context)
-        except NotImplementedError:
-            pass
+        if index is None:
+            try:
+                await asyncio.gather(*(self.exporter.recall(msg_id, self.bot, self.context) for msg_id in self.msg_ids))
+            except NotImplementedError:
+                pass
+            else:
+                self.msg_ids.clear()
         else:
-            self.msg_ids.remove(msg_id)
+            try:
+                msg_id = self.msg_ids[index]
+            except IndexError:
+                msg_id = self.msg_ids[0]
+            if not msg_id:
+                return self
+            try:
+                await self.exporter.recall(msg_id, self.bot, self.context)
+            except NotImplementedError:
+                pass
+            else:
+                self.msg_ids.remove(msg_id)
         return self
 
     async def edit(

@@ -204,7 +204,7 @@ async def test_unimsg_send(app: App):
     async def handle(msg: MsgId):
         receipt = await UniMessage("hello!").send(at_sender=True, reply_to=msg)
         receipt.msg_ids[0] = {"message_id": int(msg) + 1}
-        await UniMessage("world!").send(at_sender=True, reply_to=receipt.get_reply())
+        await UniMessage("world!").send(at_sender=True, reply_to=receipt.get_reply(0))
         assert receipt.recallable
         await receipt.recall(1)
 
