@@ -1,5 +1,5 @@
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.gewechat.message import MessageSegment  # type: ignore
+from nonebot.adapters.gewechat.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
@@ -17,7 +17,7 @@ class GeWeChatMessageBuilder(MessageBuilder):
 
     @build("at")
     def at(self, seg: "MessageSegment"):
-        return At("user", seg.data["wxid"])
+        return At("user", seg.data["wxid"], seg.data.get("nickname"))
 
     @build("at_all")
     def at_all(self, seg: "MessageSegment"):
@@ -38,6 +38,11 @@ class GeWeChatMessageBuilder(MessageBuilder):
     async def extract_reply(self, event: Event, bot: Bot):
         from nonebot.adapters.gewechat.event import QuoteMessageEvent
 
-        if isinstance(event, QuoteMessageEvent) and event.refer_msg:
-            return Reply(event.refer_id, event.refer_msg, origin=event)
+        if isinstance(event, QuoteMessageEvent):
+            reply_id = event.reply.id if event.reply else event.original_message["quote", 0].data["svrId"]
+            return Reply(
+                reply_id,
+                event.reply.msg if event.reply else Message(event.original_message[0].data["content"]),
+                origin=event,
+            )
         return None

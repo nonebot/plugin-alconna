@@ -1242,19 +1242,19 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-gewechat"
-version = "0.4.8"
+version = "0.5.2"
 requires_python = "<4.0,>=3.9"
 summary = "NoneBot adapter for WeChat"
 dependencies = [
     "nonebot2>=2.4.2",
     "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=1.10.0",
     "qrcode<9.0,>=8.0",
-    "selectolax<0.4.0,>=0.3.28",
+    "selectolax<1.0.0,>=0.3.28",
     "ujson<6.0.0,>=5.10.0",
 ]
 files = [
-    {file = "nonebot_adapter_gewechat-0.4.8-py3-none-any.whl", hash = "sha256:b1db2715837179843caaae481e3ecf7fd4eae89af342cc407105706256e48458"},
-    {file = "nonebot_adapter_gewechat-0.4.8.tar.gz", hash = "sha256:885ee506f8bbed908d5bc97f2478b5cef4a854247225155b224bc5c06e5e3ec2"},
+    {file = "nonebot_adapter_gewechat-0.5.2-py3-none-any.whl", hash = "sha256:dab5cc594f936803ef59a57cb737df5abd34f4ebf7fbe6fb7c19cbd3654c0148"},
+    {file = "nonebot_adapter_gewechat-0.5.2.tar.gz", hash = "sha256:ad431fd2337645c990d124a6c73ac2e15b61e993d69fa5c8ce81397fc431b42b"},
 ]
 
 [[package]]

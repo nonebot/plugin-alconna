@@ -19,8 +19,8 @@ from nonebot.adapters.gewechat.event import (
 )
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice
 
 
 class GeWeChatMessageExporter(MessageExporter["Message"]):
@@ -190,6 +190,15 @@ class GeWeChatMessageExporter(MessageExporter["Message"]):
         if seg.format != "xml" or not seg.raw:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg))
         return MessageSegment.xml(seg.raw)
+
+    @export
+    async def reply(self, seg: Reply, bot: Union[Bot, None]):
+        if not bot:
+            return []
+        assert isinstance(bot, GeWeChatBot)
+        if not (origin_event := bot.getMessageEventByMsgId(seg.id)):
+            return []
+        return MessageSegment.quote(origin_event.FromUserName, origin_event.ToUserName, seg.id)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: "Message", **kwargs):
         assert isinstance(bot, GeWeChatBot)
