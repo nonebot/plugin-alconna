@@ -88,6 +88,7 @@ class CompConfig(TypedDict):
     hides: NotRequired[set[Literal["tab", "enter", "exit"]]]
     disables: NotRequired[set[Literal["tab", "enter", "exit"]]]
     lite: NotRequired[bool]
+    block: NotRequired[bool]
 
 
 class SubcommandModel(BaseModel):

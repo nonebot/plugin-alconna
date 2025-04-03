@@ -241,7 +241,7 @@ class AlconnaRule:
         def _checker(_event: Event):
             return session_id == _event.get_session_id()
 
-        w = waiter(["message"], Matcher, keep_session=True, block=False, rule=Rule(_checker))(self._waiter)  # type: ignore
+        w = waiter(["message"], Matcher, keep_session=True, block=self.comp_config.get("block", False), rule=Rule(_checker))(self._waiter)  # type: ignore
 
         while interface.available:
 
