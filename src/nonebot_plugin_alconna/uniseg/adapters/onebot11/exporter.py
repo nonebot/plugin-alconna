@@ -7,7 +7,7 @@ from nonebot.adapters.onebot.v11.event import MessageEvent
 from nonebot.adapters.onebot.v11.bot import Bot as OnebotBot
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportScope
+from nonebot_plugin_alconna.uniseg.constraint import SupportScope, log
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
@@ -193,6 +193,43 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
             await bot.delete_msg(message_id=int(mid))
         elif not mid and isinstance(context, MessageEvent):
             await bot.delete_msg(message_id=context.message_id)
+
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        assert isinstance(bot, OnebotBot)
+        info = await bot.get_version_info()
+        app_name = info["app_name"]
+        message_id = mid["message_id"] if isinstance(mid, dict) else mid
+        if app_name == "LLOneBot":
+            await bot.call_api(
+                "unset_msg_emoji_like" if delete else "set_msg_emoji_like",
+                message_id=int(message_id),
+                emoji_id=emoji.id,
+            )
+        elif app_name == "Lagrange.OneBot":
+            if isinstance(context, Target):
+                if context.private or context.channel:
+                    return
+                group_id = int(context.id)
+            else:
+                if not hasattr(context, "group_id"):
+                    return
+                group_id = int(context.group_id)  # type: ignore
+            await bot.call_api(
+                "set_group_reaction",
+                group_id=group_id,
+                message_id=int(message_id),
+                code=emoji.id,
+                is_add=not delete,
+            )
+        elif app_name == "NapCat.Onebot":
+            await bot.call_api(
+                "set_msg_emoji_like",
+                message_id=int(message_id),
+                emoji_id=emoji.id,
+                set=not delete,
+            )
+        else:
+            log("WARNING", f"Unsupported Client: {app_name} for message reaction!")
 
     def get_reply(self, mid: Any):
         return Reply(str(mid["message_id"]))

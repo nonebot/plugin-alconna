@@ -461,19 +461,22 @@ class QQMessageExporter(MessageExporter[Message]):
 
     async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
         assert isinstance(bot, QQBot)
+        assert emoji.id.isdigit()
+        # https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#EmojiType
+        emj_type = 1 if int(emoji.id) < 5000 else 2
         if isinstance(mid, GuildMessage):
             if delete:
                 await bot.delete_own_message_reaction(
                     channel_id=mid.channel_id,
                     message_id=mid.id,
-                    type=1,
+                    type=emj_type,
                     id=emoji.id,
                 )
             else:
                 await bot.put_message_reaction(
                     channel_id=mid.channel_id,
                     message_id=mid.id,
-                    type=1,
+                    type=emj_type,
                     id=emoji.id,
                 )
         elif isinstance(mid, str) and isinstance(context, GuildMessageEvent):
@@ -481,14 +484,14 @@ class QQMessageExporter(MessageExporter[Message]):
                 await bot.delete_own_message_reaction(
                     channel_id=context.channel_id,
                     message_id=mid,
-                    type=1,
+                    type=emj_type,
                     id=emoji.id,
                 )
             else:
                 await bot.put_message_reaction(
                     channel_id=context.channel_id,
                     message_id=mid,
-                    type=1,
+                    type=emj_type,
                     id=emoji.id,
                 )
 
