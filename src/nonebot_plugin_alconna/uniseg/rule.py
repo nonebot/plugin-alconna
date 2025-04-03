@@ -3,6 +3,7 @@ from nonebot.internal.rule import Rule
 from nonebot.adapters import Bot, Event, Message
 
 from .message import UniMessage
+from .functions import get_target
 from .constraint import SupportScope
 from .segment import At, Text, Reply
 
@@ -50,7 +51,7 @@ class AtMeRule:
         if isinstance(msg[0], Reply):
             msg.pop(0)
         if not msg or not isinstance(msg[0], At):
-            target = UniMessage.get_target(event=event, bot=bot)
+            target = get_target(event=event, bot=bot)
             if target.scope is SupportScope.qq_api and not target.channel:  # QQ API 群聊下会吞 At
                 msg.insert(0, At("user", bot.self_id))
             else:

@@ -6,7 +6,7 @@ from copy import deepcopy
 from json import dumps, loads
 from types import FunctionType
 from collections.abc import Iterable, Sequence, Awaitable
-from typing_extensions import Self, TypeAlias, SupportsIndex
+from typing_extensions import Self, TypeAlias, SupportsIndex, deprecated
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Protocol, overload
 
 from tarina import lang
@@ -20,6 +20,7 @@ from .target import Target
 from .receipt import Receipt
 from .constraint import SerializeFailed
 from .template import UniMessageTemplate
+from .functions import get_target, get_message_id
 from .fallback import FallbackMessage, FallbackStrategy
 from .adapters import alter_get_builder, alter_get_exporter
 from .segment import (
@@ -1274,64 +1275,14 @@ class UniMessage(list[TS]):
     generate_without_reply = generate_sync
 
     @staticmethod
+    @deprecated("`UniMessage.get_message_id` is deprecated and will be removed in 0.59.0\nUse `get_message_id` instead")
     def get_message_id(event: Event | None = None, bot: Bot | None = None, adapter: str | None = None) -> str:
-        if not event:
-            try:
-                event = current_event.get()
-            except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
-        if hasattr(event, "__uniseg_message_id__"):
-            return event.__uniseg_message_id__  # type: ignore
-        if not adapter:
-            if not bot:
-                try:
-                    bot = current_bot.get()
-                except LookupError as e:
-                    raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-            _adapter = bot.adapter
-            adapter = _adapter.get_name()
-        if fn := alter_get_exporter(adapter):
-            setattr(event, "__uniseg_message_id__", msg_id := fn.get_message_id(event))
-            return msg_id
-        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
+        return get_message_id(event, bot, adapter)
 
     @staticmethod
+    @deprecated("`UniMessage.get_target` is deprecated and will be removed in 0.59.0\nUse `get_target` instead")
     def get_target(event: Event | None = None, bot: Bot | None = None, adapter: str | None = None) -> Target:
-        if not event:
-            try:
-                event = current_event.get()
-            except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
-        if not adapter:
-            if not bot:
-                try:
-                    bot = current_bot.get()
-                except LookupError as e:
-                    raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-            _adapter = bot.adapter
-            adapter = _adapter.get_name()
-        if fn := alter_get_exporter(adapter):
-            return fn.get_target(event, bot)
-        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
-
-    @staticmethod
-    async def recall(message_id: str | None = None, event: Event | None = None, bot: Bot | None = None, adapter: str | None = None):
-        if not event:
-            try:
-                event = current_event.get()
-            except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
-        if not bot:
-            try:
-                bot = current_bot.get()
-            except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-        if not adapter:
-            _adapter = bot.adapter
-            adapter = _adapter.get_name()
-        if fn := alter_get_exporter(adapter):
-            return await fn.recall(message_id or fn.get_message_id(event), bot, event)
-        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
+        return get_target(event, bot, adapter)
 
     def _handle_i18n(self, extra: dict, *args, **kwargs):
         segments = [*self]
@@ -1365,8 +1316,8 @@ class UniMessage(list[TS]):
             try:
                 event = current_event.get()
                 extra["$event"] = event
-                extra["$target"] = self.get_target(event, bot, adapter)
-                msg_id = self.get_message_id(event, bot, adapter)
+                extra["$target"] = get_target(event, bot, adapter)
+                msg_id = get_message_id(event, bot, adapter)
                 extra["$message_id"] = msg_id
             except (LookupError, NotImplementedError, SerializeFailed):
                 pass
@@ -1430,7 +1381,7 @@ class UniMessage(list[TS]):
             else:
                 if isinstance(reply_to, bool):
                     if isinstance(target, Event):
-                        reply_to = self.get_message_id(target, bot)
+                        reply_to = get_message_id(target, bot)
                     else:
                         raise TypeError("reply_to must be str when target is not Event")
                 self.insert(0, Reply(reply_to))  # type: ignore
@@ -1455,24 +1406,6 @@ class UniMessage(list[TS]):
     ) -> NoReturn:
         await self.send(target, bot, fallback, at_sender, reply_to, **kwargs)
         raise FinishedException
-
-    async def edit(self, message_id: str | None = None, event: Event | None = None, bot: Bot | None = None, adapter: str | None = None):
-        if not event:
-            try:
-                event = current_event.get()
-            except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
-        if not bot:
-            try:
-                bot = current_bot.get()
-            except LookupError as e:
-                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-        if not adapter:
-            _adapter = bot.adapter
-            adapter = _adapter.get_name()
-        if fn := alter_get_exporter(adapter):
-            return await fn.edit(self, message_id or fn.get_message_id(event), bot, event)
-        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
     @overload
     def dump(self, media_save_dir: str | Path | bool | None = None) -> list[dict]: ...

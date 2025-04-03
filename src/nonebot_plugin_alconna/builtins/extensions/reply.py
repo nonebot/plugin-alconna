@@ -4,8 +4,8 @@ from tarina import LRU
 from arclet.alconna import Alconna
 from nonebot.internal.adapter import Bot, Event
 
-from nonebot_plugin_alconna.uniseg import reply_fetch
 from nonebot_plugin_alconna import Reply, Extension, UniMessage
+from nonebot_plugin_alconna.uniseg import reply_fetch, get_message_id
 
 
 class ReplyRecordExtension(Extension):
@@ -45,7 +45,7 @@ class ReplyRecordExtension(Extension):
     async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:
         if not (reply := await reply_fetch(event, bot)):
             return receive
-        msg_id = UniMessage.get_message_id(event, bot)
+        msg_id = get_message_id(event, bot)
         self.cache[msg_id] = reply
         return receive
 
@@ -93,7 +93,7 @@ class ReplyMergeExtension(Extension):
             msg = event.get_message()
         except (NotImplementedError, ValueError):
             return None
-        msg_id = UniMessage.get_message_id(event, bot)
+        msg_id = get_message_id(event, bot)
         if msg_id in self.cache:
             return self.cache[msg_id]
         uni_msg = UniMessage.generate_sync(message=msg, bot=bot)

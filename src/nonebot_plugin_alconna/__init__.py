@@ -94,6 +94,7 @@ from .params import match_path as match_path
 from .rule import AlconnaRule as AlconnaRule
 from .uniseg import CustomNode as CustomNode
 from .uniseg import UniMessage as UniMessage
+from .uniseg import get_target as get_target
 from .extension import Extension as Extension
 from .extension import Interface as Interface
 from .matcher import on_alconna as on_alconna
@@ -105,6 +106,7 @@ from .pattern import select_last as select_last
 from .params import AlconnaMatch as AlconnaMatch
 from .params import AlconnaQuery as AlconnaQuery
 from .uniseg import SupportScope as SupportScope
+from .uniseg import message_edit as message_edit
 from .model import CommandResult as CommandResult
 from .pattern import select_first as select_first
 from .params import AlcExecResult as AlcExecResult
@@ -117,6 +119,8 @@ from .params import AlconnaMatches as AlconnaMatches
 from .uniseg import SupportAdapter as SupportAdapter
 from .uniseg import apply_filehost as apply_filehost
 from .uniseg import custom_handler as custom_handler
+from .uniseg import get_message_id as get_message_id
+from .uniseg import message_recall as message_recall
 from .matcher import AlconnaMatcher as AlconnaMatcher
 from .consts import ALCONNA_ARG_KEY as ALCONNA_ARG_KEY
 from .uniseg import SerializeFailed as SerializeFailed

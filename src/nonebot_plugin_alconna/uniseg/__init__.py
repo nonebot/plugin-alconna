@@ -43,9 +43,13 @@ from .message import UniMessage as UniMessage
 from .segment import CustomNode as CustomNode
 from .tools import image_fetch as image_fetch
 from .tools import reply_fetch as reply_fetch
+from .functions import get_target as get_target
 from .params import MessageTarget as MessageTarget
+from .functions import message_edit as message_edit
 from .constraint import SupportScope as SupportScope
 from .segment import custom_handler as custom_handler
+from .functions import get_message_id as get_message_id
+from .functions import message_recall as message_recall
 from .segment import custom_register as custom_register
 from .constraint import SupportAdapter as SupportAdapter
 from .fallback import FallbackMessage as FallbackMessage

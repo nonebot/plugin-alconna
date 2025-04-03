@@ -7,6 +7,7 @@ from nonebot.internal.adapter import Bot, Event
 
 from .message import TS, UniMessage
 from .exporter import Target, SerializeFailed
+from .functions import get_target, get_message_id
 from .constraint import UNISEG_TARGET, UNISEG_MESSAGE, UNISEG_MESSAGE_ID
 
 
@@ -24,7 +25,7 @@ def _target(bot: Bot, event: Event, state: T_State) -> Target:
     if UNISEG_TARGET in state:
         return state[UNISEG_TARGET]
     try:
-        return UniMessage.get_target(event=event, bot=bot)
+        return get_target(event=event, bot=bot)
     except (SerializeFailed, NotImplementedError, ValueError):
         raise SkippedException from None
 
@@ -36,7 +37,7 @@ def _msg_id(bot: Bot, event: Event, state: T_State) -> str:
         event.get_message()
     except ValueError:
         raise SkippedException from None
-    return UniMessage.get_message_id(event=event, bot=bot)
+    return get_message_id(event=event, bot=bot)
 
 
 def MessageTarget() -> Target:

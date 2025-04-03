@@ -16,7 +16,7 @@ from arclet.alconna import Alconna, Arparma
 from nonebot.compat import PydanticUndefined
 from nonebot.adapters import Bot, Event, Message
 
-from .uniseg import UniMessage
+from .uniseg import UniMessage, get_message_id
 
 OutputType = Literal["help", "shortcut", "completion", "error"]
 TM = TypeVar("TM", bound=Union[str, Message, UniMessage])
@@ -221,7 +221,7 @@ class ExtensionExecutor:
         if exc is not None:
             raise exc
         if event.get_type().startswith("message"):
-            msg_id = UniMessage.get_message_id(event, bot)
+            msg_id = get_message_id(event, bot)
             if use_origin and (uni_msg := unimsg_origin_cache.get(msg_id)) is not None:
                 return uni_msg
             if (uni_msg := unimsg_cache.get(msg_id)) is not None:

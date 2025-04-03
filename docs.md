@@ -656,15 +656,15 @@ async def send(
 
 ```python
 from nonebot import Event, Bot
-from nonebot_plugin_alconna.uniseg import UniMessage, Target
+from nonebot_plugin_alconna.uniseg import Target, get_message_id, get_target
 
 
 matcher = on_xxx(...)
 
 @matcher.handle()
-asycn def _(bot: Bot, event: Event):
-    target: Target = UniMessage.get_target(event, bot)
-    msg_id: str = UniMessage.get_message_id(event, bot)
+async def _(bot: Bot, event: Event):
+    target: Target = get_target(event, bot)
+    msg_id: str = get_message_id(event, bot)
 
 ```
 

@@ -5,7 +5,7 @@ from tarina import LRU
 from arclet.alconna import Alconna
 from nonebot.internal.adapter import Bot, Event
 
-from nonebot_plugin_alconna import Target, Extension, UniMessage
+from nonebot_plugin_alconna import Target, Extension, UniMessage, get_target, get_message_id
 
 
 class PrefixAppendExtension(Extension):
@@ -31,10 +31,10 @@ class PrefixAppendExtension(Extension):
         self.sep = alc.separators[0]
 
     async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:
-        msg_id = UniMessage.get_message_id(event, bot)
+        msg_id = get_message_id(event, bot)
         if msg_id in self.cache:
             return self.cache[msg_id]
-        target = UniMessage.get_target(event, bot)
+        target = get_target(event, bot)
         prefix = self.supplier(target)
         if not prefix or not command.header_display.endswith(prefix):
             return receive

@@ -37,11 +37,11 @@ from .config import Config
 from .util import annotation
 from .model import CompConfig
 from .rule import AlconnaRule
-from .uniseg import Text, Segment, UniMessage
 from .uniseg.fallback import FallbackStrategy
 from .uniseg.template import UniMessageTemplate
 from .uniseg.message import current_send_wrapper
 from .extension import Extension, ExtensionExecutor
+from .uniseg import Text, Segment, UniMessage, get_target, get_message_id
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_PATH, log
 from .params import CHECK, MIDDLEWARE, Check, AlconnaParam, ExtensionParam, assign, _seminal, _Dispatch, merge_path
 
@@ -401,7 +401,7 @@ class AlconnaMatcher(Matcher):
             nonlocal id
             if not id:
                 try:
-                    id = UniMessage.get_message_id(event, current_bot.get())
+                    id = get_message_id(event, current_bot.get())
                 except Exception:
                     pass
             matcher.set_target(RECEIVE_KEY.format(id=id))
@@ -620,9 +620,9 @@ class AlconnaMatcher(Matcher):
         if isinstance(message, MessageTemplate):
             return message.format(**state[ALCONNA_RESULT].result.all_matched_args, **state)
         if isinstance(message, UniMessageTemplate):
-            extra = {"$event": event, "$target": UniMessage.get_target(event, bot)}
+            extra = {"$event": event, "$target": get_target(event, bot)}
             try:
-                msg_id = UniMessage.get_message_id(event, bot)
+                msg_id = get_message_id(event, bot)
             except Exception:
                 pass
             else:
@@ -652,10 +652,10 @@ class AlconnaMatcher(Matcher):
             **state[ALCONNA_RESULT].result.all_matched_args,
             **state,
             "$event": event,
-            "$target": UniMessage.get_target(event, bot),
+            "$target": get_target(event, bot),
         }
         try:
-            msg_id = UniMessage.get_message_id(event, bot)
+            msg_id = get_message_id(event, bot)
         except Exception:
             pass
         else:
