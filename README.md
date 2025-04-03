@@ -29,7 +29,7 @@ _✨ All Receive in One, And One Send All ✨_
 - 完整的 Alconna 特性支持
 - 自动回复命令帮助信息选项
 - 跨平台的接收与发送消息(被动+主动)
-- 对**20种适配器**的收发消息支持
+- 对**22种适配器**的收发消息支持
 - 比 `got-reject` 更强大的补全会话机制
 - 多种内置插件 (echo，help，lang)
 - i18n 支持
@@ -48,7 +48,7 @@ NoneBot 文档: [📖这里](https://nonebot.dev/docs/next/best-practice/alconna
 
 ```python
 from nonebot import get_driver
-from nonebot_plugin_alconna import Target, UniMessage, SupportScope, on_alconna
+from nonebot_plugin_alconna import Target, UniMessage, SupportScope, on_alconna, message_recall
 
 driver = get_driver()
 test = on_alconna("test")
@@ -62,7 +62,8 @@ async def handle_test():
 
 @test.got("foo", prompt=UniMessage.template("{:Reply($message_id)}请输入图片"))
 async def handle_foo():
-    await test.send("图片已收到")
+    await test.send("图片已收到, 即将撤回")
+    await message_recall()
 
 @driver.on_startup
 async def _():
@@ -114,7 +115,7 @@ async def _():
 | 元素\适配器           | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | _钉钉_ | Console | 开黑啦 | Mirai | _Ntchat_ | MineCraft | Discord | _Red_ | Satori | Dodo IM | Kritor | Tailchat | Mail | 微信公众号 | 黑盒语音 | Gewechat |
 |------------------|------------|------------|----------|----|--------|--------|------|---------|-----|-------|----------|-----------|---------|-------|--------|---------|--------|----------|------|-------|------|----------|
 | 文本 Text          | ✅          | ✅          | ✅        | ✅  | ✅      | ✅      | ✅    | ✅       | ✅   | ✅     | ✅        | ✅         | ✅       | ✅     | ✅      | ✅       | ✅      | ✅        | ✅    | ✅     | ✅    | ✅        |
-| 样式文本 Styled Text | 🚫         | 🚫         | ✅        | 🚫 | ✅      | ✅      | ❌    | ✅       | ✅   | 🚫    | 🚫       | ✅         | 🚫      | 🚫    | ✅      | 🚫      | 🚫     | ✅        | ✅    | 🚫    | 🚫   | 🚫       | 
+| 样式文本 Styled Text | 🚫         | 🚫         | ✅        | ❌  | ✅      | ✅      | ❌    | ✅       | ✅   | 🚫    | 🚫       | ✅         | 🚫      | 🚫    | ✅      | 🚫      | 🚫     | ✅        | ✅    | 🚫    | 🚫   | 🚫       | 
 | 提及用户 At(user)    | ✅          | ✅          | ✅        | ✅  | ⬆️     | ✅      | ✅    | 🚫      | ✅   | ✅     | ❌        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅      | ✅        | ⬆️   | 🚫    | ⬆️   | ✅        |
 | 提及角色 At(role)    | 🚫         | 🚫         | 🚫       | 🚫 | 🚫     | 🚫     | 🚫   | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | 🚫     | 🚫       | 🚫   | 🚫    | 🚫   | 🚫       |
 | 提及频道 At(channel) | 🚫         | 🚫         | 🚫       | 🚫 | 🚫     | ✅      | 🚫   | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | 🚫     | ✅        | ⬆️   | 🚫    | 🚫   | 🚫       |
@@ -126,22 +127,29 @@ async def _():
 | 视频 Video         | ✅          | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | ⬆️      | ✅     | ✅      | ✅       | ✅      | 🚫       | ✅    | ✅     | 🚫   | ❌        |
 | 文件 File          | ⬇️,⬆️(🚧)  | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | ⬆️      | ✅     | ✅      | ⬇️      | ⬇️     | ✅        | ✅    | 🚫    | 🚫   | ❌        |
 | 回复 Reply         | ✅          | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅      | ✅        | ✅    | 🚫    | ⬆️   | ✅        |
-| 引用转发 Reference   | ✅          | 🚫         | 🚫       | 🚫 | 🚫     | 🚫     | 🚫   | 🚫      | 🚫  | ✅     | 🚫       | 🚫        | 🚫      | ✅     | ✅      | 🚫      | ✅      | 🚫       | 🚫   | 🚫    | 🚫   | ❌        |
+| 引用转发 Reference   | ✅          | 🚫         | 🚫       | ❌  | 🚫     | 🚫     | 🚫   | 🚫      | 🚫  | ✅     | 🚫       | 🚫        | 🚫      | ✅     | ✅      | 🚫      | ✅      | 🚫       | 🚫   | 🚫    | 🚫   | ❌        |
 | 超级消息 Hyper       | ✅          | 🚫         | 🚫       | ⬇️ | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | 🚫      | ✅     | 🚫     | 🚫      | ✅      | 🚫       | 🚫   | ✅     | 🚫   | ✅        |
 | 按钮 Button        | 🚫         | 🚫         | ⬆️       | 🚫 | 🚫     | ✅      | 🚫   | 🚫      | 🚫  | 🚫    | 🚫       | ⬆️        | ✅       | 🚫    | ✅      | 🚫      | ✅      | 🚫       | 🚫   | 🚫    | 🚫   | 🚫       |
 | 其余 Other         | ✅          | ✅          | ✅        | ✅  | ➖      | ✅      | ✅    | ➖       | ✅   | ✅     | ✅        | ➖         | ✅       | ✅     | ✅      | ✅       | ✅      | ✅        | ➖    | ✅     | ➖    | ✅        |
 
-#### 消息 reaction
 
-- onebot11 (🚧)
-- qq
-- dodo
-- discord
-- feishu
-- kritor (react)
-- kook
-- satori
-- telegram
+### 支持的消息操作
+
+- ✅: 支持
+- ❌: 插件/适配器未支持
+- 🚫: 协议未支持
+- (🚧): 计划中或部分支持或为实验性支持
+
+> [!WARNING]
+> 斜体的协议名称意味着其协议或其适配器长时间未维护或已失效
+
+| 操作\适配器        | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | _钉钉_ | Console | 开黑啦 | Mirai | _Ntchat_ | MineCraft | Discord | _Red_ | Satori | Dodo IM | Kritor | Tailchat | Mail | 微信公众号 | 黑盒语音 | Gewechat |
+|---------------|------------|------------|----------|----|--------|--------|------|---------|-----|-------|----------|-----------|---------|-------|--------|---------|--------|----------|------|-------|------|----------|
+| 发送 Send       | ✅          | ✅          | ✅        | ✅  | ✅      | ✅      | ✅    | ✅       | ✅   | ✅     | ✅        | ✅         | ✅       | ✅     | ✅      | ✅       | ✅      | ✅        | ✅    | ✅     | ✅    | ✅        |
+| 撤回 Recall     | ✅          | ✅          | ✅        | ✅  | ❌      | ✅      | ❌    | 🚫      | ✅   | ✅     | ❌        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅      | ✅        | 🚫   | 🚫    | 🚫   | ✅        |
+| 编辑 Edit       | 🚫         | 🚫         | ✅        | ✅  | ❌      | 🚫     | ❌    | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | 🚫     | 🚫       | ❌    | 🚫    | 🚫   | 🚫       |
+| 表情响应 Reaction | ✅(🚧)      | 🚫         | ✅        | ✅  | ❌      | ✅      | 🚫   | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | ✅      | ❌        | 🚫   | 🚫    | 🚫   | 🚫       |
+
 
 ## 配置项
 

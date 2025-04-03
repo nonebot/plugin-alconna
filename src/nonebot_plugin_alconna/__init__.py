@@ -129,6 +129,7 @@ from .extension import load_from_path as load_from_path
 from .uniseg import FallbackStrategy as FallbackStrategy
 from .uniseg import UniversalMessage as UniversalMessage
 from .uniseg import UniversalSegment as UniversalSegment
+from .uniseg import message_reaction as message_reaction
 from .params import AlconnaExecResult as AlconnaExecResult
 from .params import AlconnaDuplication as AlconnaDuplication
 from .shortcut import command_from_json as command_from_json
@@ -142,7 +143,7 @@ from .uniseg import apply_fetch_targets as apply_fetch_targets
 from .uniseg import SupportAdapterModule as SupportAdapterModule
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.56.2"
+__version__ = "0.57.0"
 __supported_adapters__ = set(m.value for m in SupportAdapterModule.__members__.values())  # noqa: C401
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

@@ -58,11 +58,12 @@ from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
 from .constraint import SerializeFailed as SerializeFailed
 from .fallback import FallbackStrategy as FallbackStrategy
+from .functions import message_reaction as message_reaction
 from .segment import apply_media_to_url as apply_media_to_url
 from .constraint import SupportAdapterModule as SupportAdapterModule
 from .adapters import alter_get_builder, alter_get_fetcher, alter_get_exporter
 
-__version__ = "0.56.2"
+__version__ = "0.57.0"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",
