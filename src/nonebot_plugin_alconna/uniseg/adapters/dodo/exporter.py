@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, cast
+from typing import TYPE_CHECKING, Any, Union, Sequence, cast
 
 from tarina import lang
 from nonebot.drivers import Request
@@ -10,7 +10,7 @@ from nonebot.adapters.dodo.event import Event as DoDoEvent
 from nonebot.adapters.dodo.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, Text, Image, Reply, Video
+from nonebot_plugin_alconna.uniseg.segment import At, Text, Image, Reply, Video, Segment
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 
@@ -108,14 +108,13 @@ class DoDoMessageExporter(MessageExporter[Message]):
             return await bot.set_channel_message_withdraw(message_id=mid)
         return None
 
-    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, DoDoBot)
-        if TYPE_CHECKING:
-            assert isinstance(new, Message)
+        new_msg = await self.export(new, bot, True)
         if isinstance(context, Target) and not context.private:
-            return await bot.set_channel_message_edit(message_id=mid, message_body=new.to_message_body()[0])
+            return await bot.set_channel_message_edit(message_id=mid, message_body=new_msg.to_message_body()[0])
         if hasattr(context, "channel_id"):
-            return await bot.set_channel_message_edit(message_id=mid, message_body=new.to_message_body()[0])
+            return await bot.set_channel_message_edit(message_id=mid, message_body=new_msg.to_message_body()[0])
         return None
 
     def get_reply(self, mid: Any):

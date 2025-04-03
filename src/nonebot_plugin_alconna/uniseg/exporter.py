@@ -31,7 +31,7 @@ TM = TypeVar("TM", bound=Message)
 TMS = TypeVar("TMS", bound=MessageSegment, covariant=True)
 
 
-def merge_text(msg: Message) -> Message:
+def merge_text(msg: TM) -> TM:
     if not msg:
         return msg
     result = []
@@ -240,7 +240,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         raise NotImplementedError
 
-    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
         raise NotImplementedError
 
     def get_reply(self, mid: Any) -> Reply:

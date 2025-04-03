@@ -221,6 +221,9 @@ class GeWeChatMessageExporter(MessageExporter["Message"]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, GeWeChatBot)
-        mid = cast(postMessageResponse, mid)
-        resp = mid.data
-        await bot.revokeMsg(resp.toWxid, str(resp.msgId), str(resp.newMsgId), str(resp.createTime))
+        if isinstance(mid, (str, int)) and isinstance(context, MessageEvent):
+            await bot.revokeMsg(context.ToUserName, str(context.MsgId), str(context.NewMsgId), str(context.CreateTime))
+        else:
+            mid = cast(postMessageResponse, mid)
+            resp = mid.data
+            await bot.revokeMsg(resp.toWxid, str(resp.msgId), str(resp.newMsgId), str(resp.createTime))

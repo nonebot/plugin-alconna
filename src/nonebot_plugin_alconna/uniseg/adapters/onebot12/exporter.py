@@ -145,7 +145,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, OnebotBot)
 
-        await bot.delete_message(message_id=mid["message_id"])
+        await bot.delete_message(message_id=mid["message_id"] if isinstance(mid, dict) else mid)
 
     def get_reply(self, mid: Any):
         return Reply(mid["message_id"])

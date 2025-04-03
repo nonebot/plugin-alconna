@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Union, cast
+from typing import TYPE_CHECKING, Any, Union, Sequence, cast
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
@@ -9,7 +9,20 @@ from nonebot.adapters.kaiheila.message import Message, MessageSegment, MessageSe
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Emoji,
+    Hyper,
+    Image,
+    Reply,
+    Video,
+    Voice,
+    Segment,
+)
 
 
 class KookMessageExporter(MessageExporter["Message"]):
@@ -125,6 +138,11 @@ class KookMessageExporter(MessageExporter["Message"]):
         return await bot.send_msg(message_type="channel", channel_id=target.id, message=message, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        if isinstance(mid, str):
+            if isinstance(context, PrivateMessageEvent):
+                await bot.directMessage_delete(msg_id=mid)
+            else:
+                await bot.message_delete(msg_id=mid)
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
 
         assert _mid.msg_id
@@ -140,17 +158,19 @@ class KookMessageExporter(MessageExporter["Message"]):
         else:
             await bot.message_delete(msg_id=_mid.msg_id)
 
-    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
         if TYPE_CHECKING:
-            assert isinstance(new, self.get_message_type())
             assert isinstance(bot, KBot)
 
-        _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
-        if not _mid.msg_id:
-            return
-        data = await MessageSerializer(new).serialize(bot=bot)
+        data = await MessageSerializer(await self.export(new, bot, True)).serialize(bot=bot)
         data.pop("type", None)
-        data["msg_id"] = _mid.msg_id
+        if isinstance(mid, str):
+            data["msg_id"] = mid
+        else:
+            _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+            if not _mid.msg_id:
+                return
+            data["msg_id"] = _mid.msg_id
         if isinstance(context, Target):
             if context.private:
                 data.pop("quote", None)

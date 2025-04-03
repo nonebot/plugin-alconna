@@ -121,11 +121,15 @@ class TailChatMessageExporter(MessageExporter["Message"]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, TailChatBot)
-        assert isinstance(mid, MessageRet)
+        if isinstance(mid, str):
+            message_id = mid
+        else:
+            assert isinstance(mid, MessageRet)
+            message_id = mid.id
         try:
-            return await bot.recallMessage(messageId=mid.id)
+            return await bot.recallMessage(messageId=message_id)
         except Exception:
-            return await bot.deleteMessage(messageId=mid.id)
+            return await bot.deleteMessage(messageId=message_id)
 
     def get_reply(self, mid: Any):
         assert isinstance(mid, MessageRet)

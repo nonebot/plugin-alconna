@@ -442,6 +442,22 @@ class QQMessageExporter(MessageExporter[Message]):
                     openid=context.author.id,
                     message_id=mid.id,  # type: ignore
                 )
+        elif isinstance(mid, str):
+            if isinstance(context, GuildMessageEvent):
+                await bot.delete_message(
+                    channel_id=context.channel_id,
+                    message_id=mid,
+                )
+            elif isinstance(context, C2CMessageCreateEvent):
+                await bot.delete_c2c_message(
+                    openid=context.author.id,
+                    message_id=mid,
+                )
+            elif isinstance(context, GroupAtMessageCreateEvent):
+                await bot.delete_group_message(
+                    group_openid=context.group_openid,
+                    message_id=mid,
+                )
 
     def get_reply(self, mid: Any):
         if isinstance(mid, GuildMessage):

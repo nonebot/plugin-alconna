@@ -132,6 +132,9 @@ class RedMessageExporter(MessageExporter[Message]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, RedBot)
+        if isinstance(mid, str) and isinstance(context, MessageEvent):
+            _id, _ = mid.split("#", 1)
+            return await bot.recall_message(context.chatType, context.peerUin, _id)
         _mid: MessageModel = cast(MessageModel, mid)
         await bot.recall_message(_mid.chatType, _mid.peerUin, _mid.msgId)
 

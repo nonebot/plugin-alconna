@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Union, Sequence
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
@@ -9,8 +9,8 @@ from nonebot.adapters.feishu.message import Message, MessageSegment
 from nonebot.adapters.feishu.event import MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice, Segment
 
 
 class FeishuMessageExporter(MessageExporter[Message]):
@@ -174,15 +174,15 @@ class FeishuMessageExporter(MessageExporter[Message]):
         assert isinstance(bot, FeishuBot)
 
         params = {"method": "DELETE"}
-        return await bot.call_api(f"im/v1/messages/{mid['message_id']}", **params)
+        message_id = mid if isinstance(mid, str) else mid["message_id"]
+        return await bot.call_api(f"im/v1/messages/{message_id}", **params)
 
-    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, FeishuBot)
-        if TYPE_CHECKING:
-            assert isinstance(new, self.get_message_type())
-
-        msg_type, content = new.serialize()
-        return await bot.edit_msg(mid["message_id"], content=content, msg_type=msg_type)
+        new_msg = await self.export(new, bot, True)
+        msg_type, content = new_msg.serialize()
+        message_id = mid if isinstance(mid, str) else mid["message_id"]
+        return await bot.edit_msg(message_id, content=content, msg_type=msg_type)
 
     def get_reply(self, mid: Any):
         return Reply(mid["message_id"])

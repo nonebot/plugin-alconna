@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import asyncio
 from io import BytesIO
 from pathlib import Path
 from copy import deepcopy
 from json import dumps, loads
 from types import FunctionType
-from dataclasses import dataclass
 from collections.abc import Iterable, Sequence, Awaitable
 from typing_extensions import Self, TypeAlias, SupportsIndex
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Protocol, overload
@@ -14,13 +12,12 @@ from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoRetu
 from tarina import lang
 from tarina.lang.model import LangItem
 from tarina.context import ContextModel
-from nonebot.compat import custom_validation
 from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
 
 from .target import Target
-from .exporter import MessageExporter
+from .receipt import Receipt
 from .constraint import SerializeFailed
 from .template import UniMessageTemplate
 from .fallback import FallbackMessage, FallbackStrategy
@@ -1317,6 +1314,25 @@ class UniMessage(list[TS]):
             return fn.get_target(event, bot)
         raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
+    @staticmethod
+    async def recall(message_id: str | None = None, event: Event | None = None, bot: Bot | None = None, adapter: str | None = None):
+        if not event:
+            try:
+                event = current_event.get()
+            except LookupError as e:
+                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
+        if not bot:
+            try:
+                bot = current_bot.get()
+            except LookupError as e:
+                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+        if not adapter:
+            _adapter = bot.adapter
+            adapter = _adapter.get_name()
+        if fn := alter_get_exporter(adapter):
+            return await fn.recall(message_id or fn.get_message_id(event), bot, event)
+        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
+
     def _handle_i18n(self, extra: dict, *args, **kwargs):
         segments = [*self]
         self.clear()
@@ -1350,7 +1366,7 @@ class UniMessage(list[TS]):
                 event = current_event.get()
                 extra["$event"] = event
                 extra["$target"] = self.get_target(event, bot, adapter)
-                msg_id = UniMessage.get_message_id(event, bot, adapter)
+                msg_id = self.get_message_id(event, bot, adapter)
                 extra["$message_id"] = msg_id
             except (LookupError, NotImplementedError, SerializeFailed):
                 pass
@@ -1426,7 +1442,7 @@ class UniMessage(list[TS]):
         if not (fn := alter_get_exporter(adapter_name)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
         res = await fn.send_to(target, bot, msg, **kwargs)
-        return Receipt(bot, target, fn, res if isinstance(res, list) else [res])
+        return Receipt(bot, target, fn, res if isinstance(res, list) else [res], UniMessage)
 
     async def finish(
         self,
@@ -1439,6 +1455,24 @@ class UniMessage(list[TS]):
     ) -> NoReturn:
         await self.send(target, bot, fallback, at_sender, reply_to, **kwargs)
         raise FinishedException
+
+    async def edit(self, message_id: str | None = None, event: Event | None = None, bot: Bot | None = None, adapter: str | None = None):
+        if not event:
+            try:
+                event = current_event.get()
+            except LookupError as e:
+                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
+        if not bot:
+            try:
+                bot = current_bot.get()
+            except LookupError as e:
+                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+        if not adapter:
+            _adapter = bot.adapter
+            adapter = _adapter.get_name()
+        if fn := alter_get_exporter(adapter):
+            return await fn.edit(self, message_id or fn.get_message_id(event), bot, event)
+        raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
 
     @overload
     def dump(self, media_save_dir: str | Path | bool | None = None) -> list[dict]: ...
@@ -1480,172 +1514,3 @@ class UniMessage(list[TS]):
         else:
             _data = data
         return cls(get_segment_class(seg_data["type"]).load(seg_data) for seg_data in _data)
-
-
-@custom_validation
-@dataclass
-class Receipt:
-    bot: Bot
-    context: Event | Target
-    exporter: MessageExporter
-    msg_ids: list[Any]
-
-    @property
-    def recallable(self) -> bool:
-        return self.exporter.__class__.recall != MessageExporter.recall
-
-    @property
-    def editable(self) -> bool:
-        return self.exporter.__class__.edit != MessageExporter.edit
-
-    @overload
-    def get_reply(self) -> list[Reply] | None: ...
-
-    @overload
-    def get_reply(self, index: int) -> Reply | None: ...
-
-    def get_reply(self, index: int | None = None):
-        if not self.msg_ids:
-            return None
-        if index is None:
-            try:
-                return [self.exporter.get_reply(msg_id) for msg_id in self.msg_ids]
-            except NotImplementedError:
-                return None
-        try:
-            msg_id = self.msg_ids[index]
-        except IndexError:
-            msg_id = self.msg_ids[0]
-        if not msg_id:
-            return None
-        try:
-            return self.exporter.get_reply(msg_id)
-        except NotImplementedError:
-            return None
-
-    async def recall(self, delay: float = 0, index: int | None = None):
-        if not self.msg_ids:
-            return self
-        if delay > 1e-4:
-            await asyncio.sleep(delay)
-        if index is None:
-            try:
-                await asyncio.gather(*(self.exporter.recall(msg_id, self.bot, self.context) for msg_id in self.msg_ids))
-            except NotImplementedError:
-                pass
-            else:
-                self.msg_ids.clear()
-        else:
-            try:
-                msg_id = self.msg_ids[index]
-            except IndexError:
-                msg_id = self.msg_ids[0]
-            if not msg_id:
-                return self
-            try:
-                await self.exporter.recall(msg_id, self.bot, self.context)
-            except NotImplementedError:
-                pass
-            else:
-                self.msg_ids.remove(msg_id)
-        return self
-
-    async def edit(
-        self,
-        message: str | Iterable[str] | Iterable[Segment] | Iterable[str | Segment] | Segment,
-        delay: float = 0,
-        index: int = -1,
-    ):
-        if not self.msg_ids:
-            return self
-        if delay > 1e-4:
-            await asyncio.sleep(delay)
-        message = UniMessage(message)
-        msg = await self.exporter.export(message, self.bot, True)
-        try:
-            msg_id = self.msg_ids[index]
-        except IndexError:
-            msg_id = self.msg_ids[0]
-        if not msg_id:
-            return self
-        try:
-            res = await self.exporter.edit(msg, msg_id, self.bot, self.context)
-        except NotImplementedError:
-            return self
-        else:
-            if res:
-                if isinstance(res, list):
-                    self.msg_ids.remove(msg_id)
-                    self.msg_ids.extend(res)
-                else:
-                    self.msg_ids[index] = res
-            return self
-
-    async def send(
-        self,
-        message: str | Iterable[str] | Iterable[Segment] | Iterable[str | Segment] | Segment,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
-        at_sender: str | bool = False,
-        reply_to: str | bool | Reply | None = False,
-        delay: float = 0,
-        **kwargs,
-    ):
-        if delay > 1e-4:
-            await asyncio.sleep(delay)
-        message = UniMessage(message)
-        if at_sender:
-            if isinstance(at_sender, str):
-                message.insert(0, At("user", at_sender))  # type: ignore
-            elif isinstance(self.context, Event):
-                message.insert(0, At("user", self.context.get_user_id()))  # type: ignore
-            else:
-                raise TypeError("at_sender must be str when target is not Event")
-        if reply_to:
-            if isinstance(reply_to, Reply):
-                message.insert(0, reply_to)  # type: ignore
-            else:
-                if isinstance(reply_to, bool):
-                    if isinstance(self.context, Event):
-                        reply_to = self.exporter.get_message_id(self.context)
-                    else:
-                        raise TypeError("reply_to must be str when target is not Event")
-                self.insert(0, Reply(reply_to))  # type: ignore
-        if (wrapper := current_send_wrapper.get(None)) and isinstance(self.context, Event):
-            message = await wrapper(self.bot, self.context, message)
-        msg = await self.exporter.export(message, self.bot, fallback)
-        res = await self.exporter.send_to(self.context, self.bot, msg, **kwargs)
-        self.msg_ids.extend(res if isinstance(res, list) else [res])
-        return self
-
-    async def reply(
-        self,
-        message: str | Iterable[str] | Iterable[Segment] | Iterable[str | Segment] | Segment,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
-        at_sender: str | bool = False,
-        index: int = -1,
-        delay: float = 0,
-        **kwargs,
-    ):
-        return await self.send(message, fallback, at_sender, self.get_reply(index), delay, **kwargs)
-
-    async def finish(
-        self,
-        message: str | Iterable[str] | Iterable[Segment] | Iterable[str | Segment] | Segment,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
-        at_sender: str | bool = False,
-        reply_to: str | bool | Reply | None = False,
-        delay: float = 0,
-        **kwargs,
-    ):
-        await self.send(message, fallback, at_sender, reply_to, delay, **kwargs)
-        raise FinishedException
-
-    @classmethod
-    def __get_validators__(cls):
-        yield cls._validate
-
-    @classmethod
-    def _validate(cls, value) -> Self:
-        if isinstance(value, cls):
-            return value
-        raise ValueError(f"Type {type(value)} can not be converted to {cls}")

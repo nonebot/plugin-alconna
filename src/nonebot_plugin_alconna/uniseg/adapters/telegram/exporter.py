@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Union, cast
+from typing import Any, Union, Sequence, cast
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
@@ -28,6 +28,7 @@ from nonebot_plugin_alconna.uniseg.segment import (
     Video,
     Voice,
     Button,
+    Segment,
     Keyboard,
 )
 
@@ -178,14 +179,21 @@ class TelegramMessageExporter(MessageExporter[Message]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, TgBot)
-        _mid: MessageModel = cast(MessageModel, mid)
-        await bot.delete_message(chat_id=_mid.chat.id, message_id=_mid.message_id)
+        if isinstance(mid, (str, int)) and isinstance(context, MessageEvent):
+            await bot.delete_message(chat_id=context.chat.id, message_id=int(mid))
+        else:
+            _mid: MessageModel = cast(MessageModel, mid)
+            await bot.delete_message(chat_id=_mid.chat.id, message_id=_mid.message_id)
 
-    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, TgBot)
-        _mid: MessageModel = cast(MessageModel, mid)
-        text = new.extract_plain_text()
-        res = await bot.edit_message_text(text=text, chat_id=_mid.chat.id, message_id=_mid.message_id)
+        new_msg = await self.export(new, bot, True)
+        text = new_msg.extract_plain_text()
+        if isinstance(mid, (str, int)) and isinstance(context, MessageEvent):
+            res = await bot.edit_message_text(text=text, chat_id=context.chat.id, message_id=int(mid))
+        else:
+            _mid: MessageModel = cast(MessageModel, mid)
+            res = await bot.edit_message_text(text=text, chat_id=_mid.chat.id, message_id=_mid.message_id)
         if isinstance(res, MessageModel):
             return res
         return None

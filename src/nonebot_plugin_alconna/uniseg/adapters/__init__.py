@@ -1,36 +1,38 @@
 import os
 import importlib
-from typing import cast
 from pathlib import Path
 from warnings import warn
 from contextlib import suppress
+from typing import TYPE_CHECKING, cast
 
 from nonebot import get_adapters
 
-from ..loader import BaseLoader
-from ..target import TargetFetcher
-from ..builder import MessageBuilder
-from ..exporter import MessageExporter
 from ..constraint import SupportAdapter
 
+if TYPE_CHECKING:
+    from ..loader import BaseLoader
+    from ..target import TargetFetcher
+    from ..builder import MessageBuilder
+    from ..exporter import MessageExporter
+
 root = Path(__file__).parent
-loaders: dict[str, BaseLoader] = {}
+loaders: dict[str, "BaseLoader"] = {}
 _adapters = [path.stem for path in root.iterdir() if path.is_dir() and not path.stem.startswith("_")]
 for name in _adapters:
     try:
         module = importlib.import_module(f".{name}", __package__)
-        loader = cast(BaseLoader, module.Loader())
+        loader = cast("BaseLoader", module.Loader())
         loaders[loader.get_adapter().value] = loader
     except Exception as e:  # noqa: PERF203
         warn(f"Failed to import uniseg adapter {name}: {e}", RuntimeWarning, 15)
 
-EXPORTER_MAPPING: dict[str, MessageExporter] = {
+EXPORTER_MAPPING: dict[str, "MessageExporter"] = {
     SupportAdapter.nonebug.value: loaders[SupportAdapter.nonebug.value].get_exporter()
 }
-BUILDER_MAPPING: dict[str, MessageBuilder] = {
+BUILDER_MAPPING: dict[str, "MessageBuilder"] = {
     SupportAdapter.nonebug.value: loaders[SupportAdapter.nonebug.value].get_builder()
 }
-FETCHER_MAPPING: dict[str, TargetFetcher] = {}
+FETCHER_MAPPING: dict[str, "TargetFetcher"] = {}
 adapters = {}
 try:
     adapters = get_adapters()

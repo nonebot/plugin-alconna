@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Union, cast
+from typing import TYPE_CHECKING, Any, Union, Sequence, cast
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
@@ -24,6 +24,7 @@ from nonebot_plugin_alconna.uniseg.segment import (
     Voice,
     Button,
     RefNode,
+    Segment,
     Keyboard,
     Reference,
 )
@@ -187,6 +188,9 @@ class SatoriMessageExporter(MessageExporter[Message]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, SatoriBot)
+        if isinstance(context, MessageEvent) and isinstance(mid, str):
+            await bot.message_delete(channel_id=context.channel.id, message_id=mid)
+            return
         _mid: MessageObject = cast(MessageObject, mid)
         if isinstance(context, Target):
             if context.private:
@@ -200,21 +204,21 @@ class SatoriMessageExporter(MessageExporter[Message]):
             channel = _mid.channel or context.channel
             await bot.message_delete(channel_id=channel.id, message_id=_mid.id)
 
-    async def edit(self, new: Message, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, SatoriBot)
-        if TYPE_CHECKING:
-            assert isinstance(new, self.get_message_type())
-
+        new_msg = await self.export(new, bot, True)
+        if isinstance(context, MessageEvent) and isinstance(mid, str):
+            return await bot.update_message(context.channel.id, mid, new_msg)
         _mid: MessageObject = cast(MessageObject, mid)
         if isinstance(context, Target):
             if context.private:
                 channel = await bot.user_channel_create(user_id=context.id)
-                return await bot.update_message(channel.id, _mid.id, new)
-            return await bot.update_message(context.id, _mid.id, new)
+                return await bot.update_message(channel.id, _mid.id, new_msg)
+            return await bot.update_message(context.id, _mid.id, new_msg)
         if TYPE_CHECKING:
             assert isinstance(context, MessageEvent)
         channel = mid.channel or context.channel
-        return await bot.update_message(channel.id, _mid.id, new)
+        return await bot.update_message(channel.id, _mid.id, new_msg)
 
     def get_reply(self, mid: Any):
         _mid: MessageObject = cast(MessageObject, mid)

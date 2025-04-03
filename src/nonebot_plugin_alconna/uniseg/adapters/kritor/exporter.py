@@ -309,8 +309,11 @@ class KritorMessageExporter(MessageExporter["Message"]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, KritorBot)
-        assert isinstance(mid, (SendMessageByResIdResponse, SendMessageResponse))
-        await bot.recall_message(message_id=mid.message_id)
+        if isinstance(mid, str):
+            await bot.recall_message(message_id=mid)
+        else:
+            assert isinstance(mid, (SendMessageByResIdResponse, SendMessageResponse))
+            await bot.recall_message(message_id=mid.message_id)
 
     def get_reply(self, mid: Any):
         return Reply(str(mid["message_id"]))
