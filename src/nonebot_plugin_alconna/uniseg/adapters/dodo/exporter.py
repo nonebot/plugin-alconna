@@ -7,10 +7,11 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.dodo.bot import Bot as DoDoBot
 from nonebot.adapters.dodo.event import MessageEvent
 from nonebot.adapters.dodo.event import Event as DoDoEvent
+from nonebot.adapters.dodo.models import Emoji as DodoEmoji
 from nonebot.adapters.dodo.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, Text, Image, Reply, Video, Segment
+from nonebot_plugin_alconna.uniseg.segment import At, Text, Emoji, Image, Reply, Video, Segment
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 
 
@@ -116,6 +117,14 @@ class DoDoMessageExporter(MessageExporter[Message]):
         if hasattr(context, "channel_id"):
             return await bot.set_channel_message_edit(message_id=mid, message_body=new_msg.to_message_body()[0])
         return None
+
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        assert isinstance(bot, DoDoBot)
+        emj = DodoEmoji(type=1, id=emoji.id)
+        if delete:
+            await bot.set_channel_message_reaction_remove(message_id=mid, emoji=emj)
+        else:
+            await bot.set_channel_message_reaction_add(message_id=mid, emoji=emj)
 
     def get_reply(self, mid: Any):
         return Reply(mid)

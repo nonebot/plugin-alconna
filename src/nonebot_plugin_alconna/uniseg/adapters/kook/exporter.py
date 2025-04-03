@@ -184,6 +184,28 @@ class KookMessageExporter(MessageExporter["Message"]):
             await bot.message_update(**data)
         return
 
+    async def reaction(
+        self,
+        emoji: Emoji,
+        mid: Any,
+        bot: Bot,
+        context: Union[Target, Event],
+        delete: bool = False,
+    ):
+        assert isinstance(bot, KBot)
+        if isinstance(mid, str):
+            if delete:
+                await bot.message_deleteReaction(msg_id=mid, emoji=emoji.name or emoji.id)
+            else:
+                await bot.message_addReaction(msg_id=mid, emoji=emoji.name or emoji.id)
+        _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+        if not _mid.msg_id:
+            return
+        if delete:
+            await bot.message_deleteReaction(msg_id=_mid.msg_id, emoji=emoji.name or emoji.id)
+        else:
+            await bot.message_addReaction(msg_id=_mid.msg_id, emoji=emoji.name or emoji.id)
+
     def get_reply(self, mid: Any):
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
         if not _mid.msg_id:

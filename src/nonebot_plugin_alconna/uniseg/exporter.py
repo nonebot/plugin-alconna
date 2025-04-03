@@ -243,5 +243,8 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
     async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
         raise NotImplementedError
 
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        raise NotImplementedError
+
     def get_reply(self, mid: Any) -> Reply:
         raise NotImplementedError

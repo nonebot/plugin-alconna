@@ -195,6 +195,40 @@ class DiscordMessageExporter(MessageExporter[Message]):
             return await bot.edit_message(channel_id=context.channel_id, message_id=int(mid), **parse_message(new_msg))
         return await bot.edit_message(channel_id=mid.channel_id, message_id=_mid.id, **parse_message(new_msg))
 
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        assert isinstance(bot, DiscordBot)
+        if isinstance(mid, (str, SnowflakeType)):
+            assert isinstance(context, MessageEvent)
+            if delete:
+                await bot.delete_own_reaction(
+                    channel_id=context.channel_id,
+                    message_id=int(mid),
+                    emoji=emoji.name or emoji.id,
+                    emoji_id=int(emoji.id) if emoji.name else None,
+                )
+            else:
+                await bot.create_reaction(
+                    channel_id=context.channel_id,
+                    message_id=int(mid),
+                    emoji=emoji.name or emoji.id,
+                    emoji_id=int(emoji.id) if emoji.name else None,
+                )
+        _mid: MessageGet = cast(MessageGet, mid)
+        if delete:
+            await bot.delete_own_reaction(
+                channel_id=_mid.channel_id,
+                message_id=_mid.id,
+                emoji=emoji.name or emoji.id,
+                emoji_id=int(emoji.id) if emoji.name else None,
+            )
+        else:
+            await bot.create_reaction(
+                channel_id=_mid.channel_id,
+                message_id=_mid.id,
+                emoji=emoji.name or emoji.id,
+                emoji_id=int(emoji.id) if emoji.name else None,
+            )
+
     def get_reply(self, mid: Any):
         _mid: MessageGet = cast(MessageGet, mid)
         return Reply(str(_mid.id), origin=_mid.id)

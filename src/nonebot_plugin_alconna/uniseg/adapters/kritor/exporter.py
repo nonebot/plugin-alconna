@@ -315,5 +315,27 @@ class KritorMessageExporter(MessageExporter["Message"]):
             assert isinstance(mid, (SendMessageByResIdResponse, SendMessageResponse))
             await bot.recall_message(message_id=mid.message_id)
 
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        assert isinstance(bot, KritorBot)
+        if isinstance(context, Event):
+            assert isinstance(context, MessageEvent)
+            contact = context.contact
+        elif context.private:
+            if context.parent_id:
+                contact = Contact(type=SceneType.STRANGER_FROM_GROUP, id=context.id, sub_id=context.parent_id)
+            else:
+                contact = Contact(type=SceneType.FRIEND, id=context.id)
+        elif context.channel:
+            contact = Contact(type=SceneType.GUILD, id=context.parent_id, sub_id=context.id)
+        else:
+            contact = Contact(type=SceneType.GROUP, id=context.id)
+        if isinstance(mid, str):
+            await bot.set_message_comment_emoji(contact=contact, message_id=mid, emoji=int(emoji.id), is_set=not delete)
+        else:
+            assert isinstance(mid, (SendMessageByResIdResponse, SendMessageResponse))
+            await bot.set_message_comment_emoji(
+                contact=contact, message_id=mid.message_id, emoji=int(emoji.id), is_set=not delete
+            )
+
     def get_reply(self, mid: Any):
         return Reply(str(mid["message_id"]))

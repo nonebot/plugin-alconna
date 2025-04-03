@@ -13,7 +13,7 @@ from nonebot.adapters.telegram.message import Reply as TgReply
 from nonebot.adapters.telegram.message import Message as TgMessage
 from nonebot.adapters.telegram.model import Message as MessageModel
 from nonebot.adapters.telegram.event import MessageEvent, EventWithChat
-from nonebot.adapters.telegram.model import InlineKeyboardButton, InlineKeyboardMarkup
+from nonebot.adapters.telegram.model import ReactionTypeEmoji, InlineKeyboardButton, InlineKeyboardMarkup
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
@@ -197,6 +197,22 @@ class TelegramMessageExporter(MessageExporter[Message]):
         if isinstance(res, MessageModel):
             return res
         return None
+
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        assert isinstance(bot, TgBot)
+        if delete:
+            return  # FIXME:  how to delete reaction in telegram?
+        if isinstance(mid, (str, int)) and isinstance(context, MessageEvent):
+            await bot.set_message_reaction(
+                chat_id=context.chat.id, message_id=int(mid), reaction=[ReactionTypeEmoji(emoji=emoji.name or emoji.id)]
+            )
+        else:
+            _mid: MessageModel = cast(MessageModel, mid)
+            await bot.set_message_reaction(
+                chat_id=_mid.chat.id,
+                message_id=_mid.message_id,
+                reaction=[ReactionTypeEmoji(emoji=emoji.name or emoji.id)],
+            )
 
     def get_reply(self, mid: Any):
         _mid: MessageModel = cast(MessageModel, mid)

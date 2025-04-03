@@ -11,9 +11,9 @@ from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event
 
 from .target import Target
-from .segment import Reply, Segment
 from .exporter import MessageExporter
 from .fallback import FallbackStrategy
+from .segment import Emoji, Reply, Segment
 
 if TYPE_CHECKING:
     from .message import UniMessage
@@ -35,6 +35,10 @@ class Receipt:
     @property
     def editable(self) -> bool:
         return self.exporter.__class__.edit != MessageExporter.edit
+
+    @property
+    def reactionable(self) -> bool:
+        return self.exporter.__class__.reaction != MessageExporter.reaction
 
     @overload
     def get_reply(self) -> list[Reply] | None: ...
@@ -86,6 +90,30 @@ class Receipt:
                 pass
             else:
                 self.msg_ids.remove(msg_id)
+        return self
+
+    async def reaction(
+        self,
+        emoji: str | Emoji,
+        delay: float = 0,
+        index: int = -1,
+        delete: bool = False,
+    ):
+        if not self.msg_ids:
+            return self
+        if delay > 1e-4:
+            await asyncio.sleep(delay)
+        emj = Emoji(emoji) if isinstance(emoji, str) else emoji
+        try:
+            msg_id = self.msg_ids[index]
+        except IndexError:
+            msg_id = self.msg_ids[0]
+        if not msg_id:
+            return self
+        try:
+            await self.exporter.reaction(emj, msg_id, self.bot, self.context, delete)
+        except NotImplementedError:
+            pass
         return self
 
     async def edit(

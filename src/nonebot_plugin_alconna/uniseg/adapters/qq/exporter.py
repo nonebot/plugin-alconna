@@ -459,6 +459,39 @@ class QQMessageExporter(MessageExporter[Message]):
                     message_id=mid,
                 )
 
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        assert isinstance(bot, QQBot)
+        if isinstance(mid, GuildMessage):
+            if delete:
+                await bot.delete_own_message_reaction(
+                    channel_id=mid.channel_id,
+                    message_id=mid.id,
+                    type=1,
+                    id=emoji.id,
+                )
+            else:
+                await bot.put_message_reaction(
+                    channel_id=mid.channel_id,
+                    message_id=mid.id,
+                    type=1,
+                    id=emoji.id,
+                )
+        elif isinstance(mid, str) and isinstance(context, GuildMessageEvent):
+            if delete:
+                await bot.delete_own_message_reaction(
+                    channel_id=context.channel_id,
+                    message_id=mid,
+                    type=1,
+                    id=emoji.id,
+                )
+            else:
+                await bot.put_message_reaction(
+                    channel_id=context.channel_id,
+                    message_id=mid,
+                    type=1,
+                    id=emoji.id,
+                )
+
     def get_reply(self, mid: Any):
         if isinstance(mid, GuildMessage):
             return Reply(mid.id)

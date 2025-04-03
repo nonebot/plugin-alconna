@@ -18,6 +18,7 @@ from nonebot_plugin_alconna.uniseg.segment import (
     Text,
     AtAll,
     Audio,
+    Emoji,
     Image,
     Reply,
     Video,
@@ -211,14 +212,41 @@ class SatoriMessageExporter(MessageExporter[Message]):
             return await bot.update_message(context.channel.id, mid, new_msg)
         _mid: MessageObject = cast(MessageObject, mid)
         if isinstance(context, Target):
+            channel_id = mid.channel.id if mid.channel else context.id
             if context.private:
-                channel = await bot.user_channel_create(user_id=context.id)
-                return await bot.update_message(channel.id, _mid.id, new_msg)
-            return await bot.update_message(context.id, _mid.id, new_msg)
+                channel_id = (await bot.user_channel_create(user_id=context.id)).id
+            return await bot.update_message(channel_id, _mid.id, new_msg)
         if TYPE_CHECKING:
             assert isinstance(context, MessageEvent)
         channel = mid.channel or context.channel
         return await bot.update_message(channel.id, _mid.id, new_msg)
+
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        assert isinstance(bot, SatoriBot)
+        if isinstance(context, MessageEvent) and isinstance(mid, str):
+            if delete:
+                return await bot.reaction_delete(
+                    channel_id=context.channel.id, message_id=mid, emoji=emoji.name or emoji.id
+                )
+            return await bot.reaction_create(
+                channel_id=context.channel.id, message_id=mid, emoji=emoji.name or emoji.id
+            )
+        _mid: MessageObject = cast(MessageObject, mid)
+        if isinstance(context, Target):
+            channel_id = mid.channel.id if mid.channel else context.id
+            if context.private:
+                channel_id = (await bot.user_channel_create(user_id=context.id)).id
+            if delete:
+                return await bot.reaction_delete(
+                    channel_id=channel_id, message_id=_mid.id, emoji=emoji.name or emoji.id
+                )
+            return await bot.reaction_create(channel_id=channel_id, message_id=_mid.id, emoji=emoji.name or emoji.id)
+        if TYPE_CHECKING:
+            assert isinstance(context, MessageEvent)
+        channel = mid.channel or context.channel
+        if delete:
+            return await bot.reaction_delete(channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id)
+        return await bot.reaction_create(channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id)
 
     def get_reply(self, mid: Any):
         _mid: MessageObject = cast(MessageObject, mid)

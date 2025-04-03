@@ -10,7 +10,19 @@ from nonebot.adapters.feishu.event import MessageEvent, GroupMessageEvent, Priva
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Image, Reply, Video, Voice, Segment
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    File,
+    Text,
+    AtAll,
+    Audio,
+    Emoji,
+    Image,
+    Reply,
+    Video,
+    Voice,
+    Segment,
+)
 
 
 class FeishuMessageExporter(MessageExporter[Message]):
@@ -172,10 +184,8 @@ class FeishuMessageExporter(MessageExporter[Message]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, FeishuBot)
-
-        params = {"method": "DELETE"}
         message_id = mid if isinstance(mid, str) else mid["message_id"]
-        return await bot.call_api(f"im/v1/messages/{message_id}", **params)
+        return await bot.delete_msg(message_id)
 
     async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, FeishuBot)
@@ -183,6 +193,25 @@ class FeishuMessageExporter(MessageExporter[Message]):
         msg_type, content = new_msg.serialize()
         message_id = mid if isinstance(mid, str) else mid["message_id"]
         return await bot.edit_msg(message_id, content=content, msg_type=msg_type)
+
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        assert isinstance(bot, FeishuBot)
+        message_id = mid if isinstance(mid, str) else mid["message_id"]
+        if delete:
+            queries = {"reaction_type": emoji.name or emoji.id}
+            resp = await bot.call_api(f"im/v1/messages/{message_id}/reactions", method="GET", params=queries)
+            if items := resp.get("items"):
+                reaction_id = items[0]["reaction_id"]
+                return await bot.call_api(f"im/v1/messages/{message_id}/reactions/{reaction_id}", method="DELETE")
+        else:
+            params = {
+                "method": "POST",
+                "data": {
+                    "emoji": emoji.name,
+                    "reaction_type": {"emoji_type": emoji.name or emoji.id},
+                },
+            }
+            return await bot.call_api(f"im/v1/messages/{message_id}/reactions", **params)
 
     def get_reply(self, mid: Any):
         return Reply(mid["message_id"])
