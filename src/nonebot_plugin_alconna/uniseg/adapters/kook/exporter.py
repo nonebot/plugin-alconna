@@ -194,17 +194,27 @@ class KookMessageExporter(MessageExporter["Message"]):
     ):
         assert isinstance(bot, KBot)
         if isinstance(mid, str):
-            if delete:
-                await bot.message_deleteReaction(msg_id=mid, emoji=emoji.name or emoji.id)
-            else:
-                await bot.message_addReaction(msg_id=mid, emoji=emoji.name or emoji.id)
-        _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
-        if not _mid.msg_id:
-            return
-        if delete:
-            await bot.message_deleteReaction(msg_id=_mid.msg_id, emoji=emoji.name or emoji.id)
+            msg_id = mid
         else:
-            await bot.message_addReaction(msg_id=_mid.msg_id, emoji=emoji.name or emoji.id)
+            _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
+            if not _mid.msg_id:
+                return
+            msg_id = _mid.msg_id
+        if isinstance(context, Target):
+            if context.private:
+                if delete:
+                    return await bot.directMessage_deleteReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+                return await bot.directMessage_addReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+            if delete:
+                return await bot.message_deleteReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+            return await bot.message_addReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+        if isinstance(context, PrivateMessageEvent):
+            if delete:
+                return await bot.directMessage_deleteReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+            return await bot.directMessage_addReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+        if delete:
+            return await bot.message_deleteReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+        return await bot.message_addReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
 
     def get_reply(self, mid: Any):
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)
