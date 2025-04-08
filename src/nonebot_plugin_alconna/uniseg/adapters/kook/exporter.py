@@ -203,18 +203,18 @@ class KookMessageExporter(MessageExporter["Message"]):
         if isinstance(context, Target):
             if context.private:
                 if delete:
-                    return await bot.directMessage_deleteReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
-                return await bot.directMessage_addReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+                    return await bot.directMessage_deleteReaction(msg_id=msg_id, emoji=emoji.id)
+                return await bot.directMessage_addReaction(msg_id=msg_id, emoji=emoji.id)
             if delete:
-                return await bot.message_deleteReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
-            return await bot.message_addReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+                return await bot.message_deleteReaction(msg_id=msg_id, emoji=emoji.id)
+            return await bot.message_addReaction(msg_id=msg_id, emoji=emoji.id)
         if isinstance(context, PrivateMessageEvent):
             if delete:
-                return await bot.directMessage_deleteReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
-            return await bot.directMessage_addReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+                return await bot.directMessage_deleteReaction(msg_id=msg_id, emoji=emoji.id)
+            return await bot.directMessage_addReaction(msg_id=msg_id, emoji=emoji.id)
         if delete:
-            return await bot.message_deleteReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
-        return await bot.message_addReaction(msg_id=msg_id, emoji=emoji.name or emoji.id)
+            return await bot.message_deleteReaction(msg_id=msg_id, emoji=emoji.id)
+        return await bot.message_addReaction(msg_id=msg_id, emoji=emoji.id)
 
     def get_reply(self, mid: Any):
         _mid: MessageCreateReturn = cast(MessageCreateReturn, mid)

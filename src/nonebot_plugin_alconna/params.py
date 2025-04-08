@@ -16,7 +16,7 @@ from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
 from .typings import CHECK, MIDDLEWARE
 from .model import T, Match, Query, CommandResult
-from .extension import Extension, ExtensionExecutor
+from .extension import Extension, ExtensionExecutor, SelectedExtensions
 from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_PATH, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
@@ -204,8 +204,8 @@ def Check(fn: CHECK) -> bool:
 
 def AlconnaExtension(target: type[T_Extension]) -> T_Extension:
     def _alconna_extension(state: T_State):
-        exts = state[ALCONNA_EXTENSION]
-        return next((i for i in exts if isinstance(i, target)), None)  # type: ignore
+        selected: SelectedExtensions = state[ALCONNA_EXTENSION]
+        return next((i for i in selected.context if isinstance(i, target)), None)
 
     return Depends(_alconna_extension, use_cache=False)
 
@@ -261,6 +261,8 @@ class AlconnaParam(Param):
             return cls(..., type=Alconna)
         if annotation is Duplication:
             return cls(..., type=Duplication)
+        if annotation is SelectedExtensions:
+            return cls(..., type=SelectedExtensions)
         if inspect.isclass(annotation) and issubclass(annotation, Duplication):
             return cls(..., anno=param.annotation, type=Duplication)
         if inspect.isclass(annotation) and issubclass(annotation, Extension):
@@ -288,9 +290,11 @@ class AlconnaParam(Param):
             if anno := self.extra.get("anno"):
                 return anno(res.result)
             return generate_duplication(res.source)(res.result)
+        if t is SelectedExtensions:
+            return state[ALCONNA_EXTENSION]
         if t is Extension:
             anno = self.extra["anno"]
-            return next((i for i in state[ALCONNA_EXTENSION] if isinstance(i, anno)), None)  # type: ignore
+            return next((i for i in state[ALCONNA_EXTENSION].context if isinstance(i, anno)), None)  # type: ignore
         if t is Match:
             target = res.result.all_matched_args.get(self.extra["name"], Empty)
             return Match(target, target != Empty)
@@ -319,18 +323,6 @@ class AlconnaParam(Param):
         ) != Empty:
             return result
         return self.default if self.default not in (..., Empty) else PydanticUndefined
-
-    # async def _check(self, state: T_State, **kwargs: Any) -> Any:
-    #     if self.extra["type"] == Any:
-    #         if (
-    #             self.extra["name"] in _alconna_result(state).result.all_matched_args
-    #             or ALCONNA_ARG_KEY.format(key=self.extra["name"]) in state
-    #             or ((path := state.get(ALCONNA_ARG_PATH)) and path.endswith(f".{self.extra['name']}"))
-    #         ):
-    #             return True
-    #         if self.default not in (..., Empty):
-    #             return True
-    #         return False
 
 
 class _Dispatch:

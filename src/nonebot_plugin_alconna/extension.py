@@ -6,7 +6,6 @@ import functools
 import importlib as imp
 from weakref import finalize
 from dataclasses import dataclass
-from typing_extensions import Self
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Any, Union, Generic, Literal, TypeVar, ClassVar
 
@@ -129,82 +128,9 @@ unimsg_cache: LRU[str, UniMessage] = LRU(16)
 unimsg_origin_cache: LRU[str, UniMessage] = LRU(16)
 
 
-class ExtensionExecutor:
-    globals: ClassVar[list[type[Extension] | Extension]] = [DefaultExtension()]
-    _rule: AlconnaRule
-
-    def __init__(
-        self,
-        rule: AlconnaRule,
-        extensions: list[type[Extension] | Extension] | None = None,
-        excludes: list[str | type[Extension]] | None = None,
-    ):
-        self.extensions: list[Extension] = []
-        for ext in self.globals:
-            if isinstance(ext, type):
-                self.extensions.append(ext())
-            else:
-                self.extensions.append(ext)
-        for ext in extensions or []:
-            if isinstance(ext, type):
-                self.extensions.append(ext())
-            else:
-                self.extensions.append(ext)
-        for exl in excludes or []:
-            if isinstance(exl, str) and exl.startswith("!"):
-                raise ValueError(lang.require("nbp-alc", "error.extension.forbid_exclude"))
-        self._excludes = set(excludes or [])
-        self.extensions = [
-            ext
-            for ext in self.extensions
-            if ext.id not in self._excludes
-            and ext.__class__ not in self._excludes
-            and (not (ns := ext.namespace) or ns == rule._namespace)
-        ]
-        self.context: list[Extension] = []
-        self._rule = rule
-
-        _callbacks.add(self._callback)
-
-        finalize(self, _callbacks.remove, self._callback)
-
-    def _callback(self, *append_global_ext: type[Extension] | Extension):
-        for _ext in append_global_ext:
-            if isinstance(_ext, type):
-                _ext = _ext()
-            if _ext.id in self._excludes or _ext.__class__ in self._excludes:
-                continue
-            if (ns := _ext.namespace) and ns != self._rule._namespace:
-                continue
-            self.extensions.append(_ext)
-            _ext.post_init(self._rule.command())  # type: ignore
-
-    def __enter__(self) -> Self:
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.clear()
-
-    def select(self, bot: Bot, event: Event) -> Self:
-        self.context = [ext for ext in self.extensions if ext.validate(bot, event)]
-        self.context.sort(key=lambda ext: ext.priority)
-        return self
-
-    def clear(self) -> None:
-        self.context.clear()
-
-    async def output_converter(self, output_type: OutputType, content: str) -> UniMessage:
-        exc = None
-        for ext in self.context:
-            if not ext._overrides["output_converter"]:
-                continue
-            try:
-                return await ext.output_converter(output_type, content)
-            except Exception as e:
-                exc = e
-        if not exc:
-            return UniMessage()
-        raise exc  # type: ignore
+@dataclass
+class SelectedExtensions:
+    context: list[Extension]
 
     async def message_provider(
         self, event: Event, state: T_State, bot: Bot, use_origin: bool = False
@@ -269,12 +195,81 @@ class ExtensionExecutor:
             *(ext.parse_wrapper(bot, state, event, res) for ext in self.context if ext._overrides["parse_wrapper"])
         )
 
+    async def output_converter(self, output_type: OutputType, content: str) -> UniMessage:
+        exc = None
+        for ext in self.context:
+            if not ext._overrides["output_converter"]:
+                continue
+            try:
+                return await ext.output_converter(output_type, content)
+            except Exception as e:
+                exc = e
+        if not exc:
+            return UniMessage()
+        raise exc  # type: ignore
+
     async def send_wrapper(self, bot: Bot, event: Event, send: TM) -> TM:
         res = send
         for ext in self.context:
             if ext._overrides["send_wrapper"]:
                 res = await ext.send_wrapper(bot, event, res)
         return res
+
+
+class ExtensionExecutor(SelectedExtensions):
+    globals: ClassVar[list[type[Extension] | Extension]] = [DefaultExtension()]
+    _rule: AlconnaRule
+
+    def __init__(
+        self,
+        rule: AlconnaRule,
+        extensions: list[type[Extension] | Extension] | None = None,
+        excludes: list[str | type[Extension]] | None = None,
+    ):
+        self.extensions: list[Extension] = []
+        for ext in self.globals:
+            if isinstance(ext, type):
+                self.extensions.append(ext())
+            else:
+                self.extensions.append(ext)
+        for ext in extensions or []:
+            if isinstance(ext, type):
+                self.extensions.append(ext())
+            else:
+                self.extensions.append(ext)
+        for exl in excludes or []:
+            if isinstance(exl, str) and exl.startswith("!"):
+                raise ValueError(lang.require("nbp-alc", "error.extension.forbid_exclude"))
+        self._excludes = set(excludes or [])
+        self.extensions = [
+            ext
+            for ext in self.extensions
+            if ext.id not in self._excludes
+            and ext.__class__ not in self._excludes
+            and (not (ns := ext.namespace) or ns == rule._namespace)
+        ]
+        self.context = self.extensions
+        self._rule = rule
+
+        _callbacks.add(self._callback)
+
+        finalize(self, _callbacks.remove, self._callback)
+
+    def _callback(self, *append_global_ext: type[Extension] | Extension):
+        for _ext in append_global_ext:
+            if isinstance(_ext, type):
+                _ext = _ext()
+            if _ext.id in self._excludes or _ext.__class__ in self._excludes:
+                continue
+            if (ns := _ext.namespace) and ns != self._rule._namespace:
+                continue
+            self.extensions.append(_ext)
+            _ext.post_init(self._rule.command())  # type: ignore
+
+    def select(self, bot: Bot, event: Event) -> SelectedExtensions:
+        context = [ext for ext in self.extensions if ext.validate(bot, event)]
+        context.sort(key=lambda ext: ext.priority)
+        return SelectedExtensions(context)
 
     def before_catch(self, name: str, annotation: Any, default: Any) -> bool:
         for ext in self.extensions:

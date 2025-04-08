@@ -17,7 +17,6 @@ from nonebot.utils import escape_tag
 from tarina.lang.model import LangItem
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
-from nonebot.message import run_postprocessor
 from arclet.alconna.tools import AlconnaFormat
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
@@ -1074,9 +1073,3 @@ def referent(cmd: str | Alconna | None) -> type[AlconnaMatcher] | None:
         except KeyError:
             return None
     return None
-
-
-@run_postprocessor
-@annotation(matcher=AlconnaMatcher)
-def _exit_executor(matcher: AlconnaMatcher):
-    matcher.executor.clear()

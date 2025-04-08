@@ -19,7 +19,7 @@ from .config import Config
 from .uniseg import UniMsg, UniMessage
 from .model import CompConfig, CommandResult
 from .uniseg.constraint import UNISEG_MESSAGE
-from .extension import Extension, ExtensionExecutor
+from .extension import Extension, ExtensionExecutor, SelectedExtensions
 from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT, log
 
 try:
@@ -212,9 +212,9 @@ class AlconnaRule:
         return hash(self.command.__hash__())
 
     async def handle(
-        self, cmd: Alconna, bot: Bot, event: Event, state: T_State, msg: UniMessage
+        self, selected: SelectedExtensions, cmd: Alconna, bot: Bot, event: Event, state: T_State, msg: UniMessage
     ) -> Union[Arparma, Literal[False]]:
-        ctx = await self.executor.context_provider(event, bot, state)
+        ctx = await selected.context_provider(event, bot, state)
         try:
             session_id = event.get_session_id()
         except ValueError:
@@ -228,7 +228,7 @@ class AlconnaRule:
         if res:
             interface.exit()
             return res
-        if not await self.executor.permission_check(bot, event, cmd):
+        if not await selected.permission_check(bot, event, cmd):
             return False
 
         res = Arparma(
@@ -271,12 +271,10 @@ class AlconnaRule:
         return res
 
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
-        self.executor.select(bot, event)
-        if not (msg := await self.executor.message_provider(event, state, bot, self.use_origin)):
-            self.executor.clear()
+        selected = self.executor.select(bot, event)
+        if not (msg := await selected.message_provider(event, state, bot, self.use_origin)):
             return False
         if not self.response_self and check_self_send(bot, event):
-            self.executor.clear()
             return False
         try:
             session_id = event.get_session_id()
@@ -286,38 +284,33 @@ class AlconnaRule:
             await self._tasks[session_id]
         cmd = self.command()
         if not cmd:
-            self.executor.clear()
             return False
         if command_manager.is_disable(cmd):
-            self.executor.clear()
             return False
-        msg = await self.executor.receive_wrapper(bot, event, cmd, msg)
+        msg = await selected.receive_wrapper(bot, event, cmd, msg)
         Arparma._additional.update(bot=lambda: bot, event=lambda: event, state=lambda: state)
         state[UNISEG_MESSAGE] = msg
 
         with output_manager.capture(cmd.name) as cap:
             output_manager.set_action(lambda x: x, cmd.name)
-            task = asyncio.create_task(self.handle(cmd, bot, event, state, msg))
+            task = asyncio.create_task(self.handle(selected, cmd, bot, event, state, msg))
             if session_id:
                 self._tasks[session_id] = task
                 task.add_done_callback(lambda _: self._tasks.pop(session_id, None))
             try:
                 arp = await task
                 if arp is False:
-                    self.executor.clear()
                     return False
             except Exception as e:
                 arp = Arparma(cmd._hash, msg, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
         if not arp.head_matched:
-            self.executor.clear()
             return False
         if not arp.matched and not may_help_text and self.skip:
             log(
                 "TRACE",
                 escape_tag(Lang.nbp_alc.log.parse(msg=msg, cmd=self._path, arp=arp)),
             )
-            self.executor.clear()
             return False
         if arp.head_matched:
             log(
@@ -328,18 +321,15 @@ class AlconnaRule:
             may_help_text = str(arp.error_info)
         if self.auto_send and may_help_text:
             await self.send(may_help_text, bot, event, arp)
-            self.executor.clear()
             return False
         if self.skip and may_help_text:
-            self.executor.clear()
             return False
-        if not await self.executor.permission_check(bot, event, cmd):
-            self.executor.clear()
+        if not await selected.permission_check(bot, event, cmd):
             return False
-        await self.executor.parse_wrapper(bot, state, event, arp)
+        await selected.parse_wrapper(bot, state, event, arp)
         state[ALCONNA_RESULT] = CommandResult(result=arp, output=may_help_text)
         state[ALCONNA_EXEC_RESULT] = cmd.exec_result
-        state[ALCONNA_EXTENSION] = self.executor.context
+        state[ALCONNA_EXTENSION] = selected
         return True
 
     async def send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Any:
