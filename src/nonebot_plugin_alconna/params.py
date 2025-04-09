@@ -17,7 +17,7 @@ from arclet.alconna import Empty, Alconna, Arparma, Duplication
 from .typings import CHECK, MIDDLEWARE
 from .model import T, Match, Query, CommandResult
 from .extension import Extension, ExtensionExecutor, SelectedExtensions
-from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_PATH, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
+from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_KEYS, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 T_Extension = TypeVar("T_Extension", bound=Extension)
@@ -310,10 +310,11 @@ class AlconnaParam(Param):
             return q
         if t == Literal["context"]:
             return res.result.context
-        if (key := ALCONNA_ARG_KEY.format(key=self.extra["name"])) in state:
-            return state[key]
-        if (path := state.get(ALCONNA_ARG_PATH)) and path.endswith(f".{self.extra['name']}"):
-            return state[ALCONNA_ARG_KEY.format(key=path)]
+        keys: list[str] = state.get(ALCONNA_ARG_KEYS, [])
+        if (key := self.extra["name"]) in keys:
+            return state[ALCONNA_ARG_KEY.format(key=key)]
+        if any(k := key for key in keys if key.endswith(f".{self.extra['name']}")):
+            return state[ALCONNA_ARG_KEY.format(key=k)]
         if self.extra["name"] in res.result.all_matched_args:
             return res.result.all_matched_args[self.extra["name"]]
         if (

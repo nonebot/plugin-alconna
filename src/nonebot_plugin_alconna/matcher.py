@@ -41,7 +41,7 @@ from .uniseg.template import UniMessageTemplate
 from .uniseg.message import current_send_wrapper
 from .extension import Extension, ExtensionExecutor
 from .uniseg import Text, Segment, UniMessage, get_target, get_message_id
-from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_PATH, log
+from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_KEYS, log
 from .params import CHECK, MIDDLEWARE, Check, AlconnaParam, ExtensionParam, assign, _seminal, _Dispatch, merge_path
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
@@ -219,7 +219,7 @@ class AlconnaMatcher(Matcher):
                 state = current_matcher.get().state
             key = merge_path(path, cls_or_self.basepath)
             state[ALCONNA_ARG_KEY.format(key=key)] = content
-            state[ALCONNA_ARG_PATH] = key
+            state.setdefault(ALCONNA_ARG_KEYS, []).append(key)
 
         @_method
         def get_path_arg(cls_or_self, path: str, default: Any) -> Any:
@@ -228,7 +228,8 @@ class AlconnaMatcher(Matcher):
                 state = cls_or_self.state
             else:
                 state = current_matcher.get().state
-            return state.get(ALCONNA_ARG_KEY.format(key=merge_path(path, cls_or_self.basepath)), default)
+            key = merge_path(path, cls_or_self.basepath)
+            return state.get(ALCONNA_ARG_KEY.format(key), default)
 
     @classmethod
     def assign(
@@ -620,6 +621,9 @@ class AlconnaMatcher(Matcher):
             return message.format(**state[ALCONNA_RESULT].result.all_matched_args, **state)
         if isinstance(message, UniMessageTemplate):
             extra = {"$event": event, "$target": get_target(event, bot)}
+            if keys := state.get(ALCONNA_ARG_KEYS, []):
+                for key in keys:
+                    extra[key.split(".")[-1]] = state.get(ALCONNA_ARG_KEY.format(key=key))
             try:
                 msg_id = get_message_id(event, bot)
             except Exception:

@@ -1,7 +1,7 @@
 import pytest
 from nonebug import App
 from nonebot import get_adapter
-from arclet.alconna import Alconna
+from arclet.alconna import Args, Alconna
 from nonebot.adapters.onebot.v11.event import Reply
 from nonebot.compat import model_dump, type_validate_python
 from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment
@@ -135,7 +135,7 @@ async def test_fallback(app: App):
 @pytest.mark.asyncio()
 async def test_unimsg_template(app: App):
     from nonebot_plugin_alconna.uniseg import FallbackSegment
-    from nonebot_plugin_alconna import At, Text, Other, UniMessage, on_alconna
+    from nonebot_plugin_alconna import At, Text, Match, Other, UniMessage, on_alconna
 
     assert UniMessage.template("{} {}").format("hello", Other(FallbackSegment.text("123"))) == UniMessage(
         [Text("hello "), Other(FallbackSegment.text("123"))]
@@ -158,6 +158,43 @@ async def test_unimsg_template(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, MessageSegment.reply(event.message_id) + MessageSegment.at(23))
         ctx.should_finished(matcher)
+
+    matcher1 = on_alconna(Alconna("test_unimsg_template1", Args["foo?", str]["bar?", str]))
+
+    @matcher1.handle()
+    async def _(foo: Match[str], bar: Match[str]):
+        if foo.available:
+            matcher1.set_path_arg("foo", foo.result)
+        if bar.available:
+            matcher1.set_path_arg("bar", bar.result)
+
+    @matcher1.got_path(
+        "foo",
+        prompt=UniMessage.template("{:At(user, $event.get_user_id())} 请确认目标 foo"),
+    )
+    @matcher1.got_path(
+        "bar",
+        prompt=UniMessage.template("{:At(user, $event.get_user_id())} 请确认目标 bar"),
+    )
+    async def _():
+        await matcher1.send(
+            UniMessage.template("{:At(user, $event.get_user_id())} 已确认目标为 {foo}, {bar}"),
+        )
+
+    async with app.test_matcher(matcher1) as ctx1:
+        adapter = get_adapter(Adapter)
+        bot = ctx1.create_bot(base=Bot, adapter=adapter)
+        event = fake_group_message_event_v11(message=Message("test_unimsg_template1"), user_id=123)
+        ctx1.receive_event(bot, event)
+        ctx1.should_call_send(event, MessageSegment.at(123) + " 请确认目标 foo")
+        ctx1.should_rejected(matcher1)
+        event1 = fake_group_message_event_v11(message=Message("123"), user_id=123)
+        ctx1.receive_event(bot, event1)
+        ctx1.should_call_send(event1, MessageSegment.at(123) + " 请确认目标 bar")
+        ctx1.should_rejected(matcher1)
+        event2 = fake_group_message_event_v11(message=Message("456"), user_id=123)
+        ctx1.receive_event(bot, event2)
+        ctx1.should_call_send(event2, MessageSegment.at(123) + " 已确认目标为 123, 456")
 
 
 @pytest.mark.asyncio()
