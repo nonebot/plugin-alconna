@@ -271,6 +271,8 @@ class AlconnaRule:
         return res
 
     async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
+        if event.get_type() == "meta_event":
+            return False
         selected = self.executor.select(bot, event)
         if not (msg := await selected.message_provider(event, state, bot, self.use_origin)):
             return False
