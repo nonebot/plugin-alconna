@@ -213,21 +213,22 @@ class DiscordMessageExporter(MessageExporter[Message]):
                     emoji=emoji.name or emoji.id,
                     emoji_id=int(emoji.id) if emoji.name else None,
                 )
-        _mid: MessageGet = cast(MessageGet, mid)
-        if delete:
-            await bot.delete_own_reaction(
-                channel_id=_mid.channel_id,
-                message_id=_mid.id,
-                emoji=emoji.name or emoji.id,
-                emoji_id=int(emoji.id) if emoji.name else None,
-            )
         else:
-            await bot.create_reaction(
-                channel_id=_mid.channel_id,
-                message_id=_mid.id,
-                emoji=emoji.name or emoji.id,
-                emoji_id=int(emoji.id) if emoji.name else None,
-            )
+            _mid: MessageGet = cast(MessageGet, mid)
+            if delete:
+                await bot.delete_own_reaction(
+                    channel_id=_mid.channel_id,
+                    message_id=_mid.id,
+                    emoji=emoji.name or emoji.id,
+                    emoji_id=int(emoji.id) if emoji.name else None,
+                )
+            else:
+                await bot.create_reaction(
+                    channel_id=_mid.channel_id,
+                    message_id=_mid.id,
+                    emoji=emoji.name or emoji.id,
+                    emoji_id=int(emoji.id) if emoji.name else None,
+                )
 
     def get_reply(self, mid: Any):
         _mid: MessageGet = cast(MessageGet, mid)
