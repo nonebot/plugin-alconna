@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
 from tarina import lang
@@ -52,6 +53,14 @@ class HeyboxMessageExporter(MessageExporter[Message]):
     async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
             return MessageSegment.image(url=seg.url, width=seg.width or 0, height=seg.height or 0)
+        if seg.path:
+            path = Path(seg.path)
+            return MessageSegment.local_image(
+                path.read_bytes(),
+                width=seg.width or 0,
+                height=seg.height or 0,
+                filename=path.name if seg.name == seg.__default_name__ else seg.name,
+            )
         if seg.raw:
             return MessageSegment.local_image(
                 seg.raw_bytes, width=seg.width or 0, height=seg.height or 0, filename=seg.name

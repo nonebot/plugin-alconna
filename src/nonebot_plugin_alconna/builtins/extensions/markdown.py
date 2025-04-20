@@ -12,7 +12,7 @@ from nonebot_plugin_alconna import Text, Image, Extension, UniMessage
 
 class MarkdownOutputExtension(Extension):
     """
-    用于将 Alconna 的自动输出转+换为 Markdown 格式
+    用于将 Alconna 的自动输出转换为 Markdown 格式
 
     Example:
         >>> from nonebot_plugin_alconna import MsgId, on_alconna

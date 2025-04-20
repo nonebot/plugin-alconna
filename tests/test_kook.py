@@ -17,8 +17,8 @@ def test_kook():
     ctx = {"$adapter.name": "Kaiheila"}
     res = alc.parse(msg, ctx)
     assert res.matched
-    assert res.some_arg.origin.type == "mention"
-    assert res.some_arg.origin.data["user_id"] == "123456"
+    assert res["some_arg"].origin.type == "mention"
+    assert res["some_arg"].origin.data["user_id"] == "123456"
 
     msg1 = Message([MessageSegment.text("/command1 "), MessageSegment.KMarkdown("[(met)123456(met)](42345) 12345678")])
 

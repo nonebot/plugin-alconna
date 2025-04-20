@@ -66,16 +66,18 @@ class DoDoMessageExporter(MessageExporter[Message]):
     async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if TYPE_CHECKING:
             assert isinstance(bot, DoDoBot)
+        filename = None
         if seg.raw:
             data = seg.raw_bytes
         elif seg.path:
             data = Path(seg.path)
+            filename = data.name if seg.name == seg.__default_name__ else seg.name
         elif seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             data = cast(bytes, resp.content)
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
-        res = await bot.set_resouce_picture_upload(file=data)
+        res = await bot.set_resouce_picture_upload(file=data, file_name=filename)
 
         return MessageSegment.picture(res.url, res.width, res.height)
 

@@ -101,7 +101,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
             if seg.__class__.to_url:
                 resp = await bot.upload_file(
                     type="url",
-                    name=Path(seg.path).name,
+                    name=Path(seg.path).name if seg.name == seg.__default_name__ else seg.name,
                     url=await seg.__class__.to_url(
                         seg.path, bot, None if seg.name == seg.__default_name__ else seg.name
                     ),

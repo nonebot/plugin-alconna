@@ -25,4 +25,4 @@ def test_tg():
     assert res1.matched
     assert isinstance(res1.foo, str)
     assert isinstance(res1.bar, Text)
-    assert res1.baz.text == "baz"
+    assert res1["baz"].text == "baz"

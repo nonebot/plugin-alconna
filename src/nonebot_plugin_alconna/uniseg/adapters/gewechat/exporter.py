@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 from typing import Any, Union, cast
 
 from tarina import lang
@@ -138,7 +139,7 @@ class GeWeChatMessageExporter(MessageExporter["Message"]):
         if seg.__class__.to_url and seg.path:
             return MessageSegment.file(
                 await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name),
-                seg.name,
+                Path(seg.path).name if seg.name == seg.__default_name__ else seg.name,
             )
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 

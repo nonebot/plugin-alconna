@@ -39,6 +39,11 @@ with namespace("builtin/switch") as ns:
                 unmatch_tips=lambda x: f"预期输入为某个命令的id或者名称，而不是 {x}\n例如：/enable 0",
             ),
         ],
+        Option(
+            "--page",
+            Args["index", int],
+            help_text="查看指定页数的命令",
+        ),
         Option("--hide", alias=["-H", "隐藏"], help_text="是否列出隐藏命令", action=store_true, default=False),
         meta=CommandMeta(
             description="启用某个命令",
@@ -61,7 +66,7 @@ with namespace("builtin/switch") as ns:
         Option(
             "--page",
             Args["index", int],
-            help_text="查看指定页数的命令帮助",
+            help_text="查看指定页数的命令",
         ),
         Option("--hide", alias=["-H", "隐藏"], help_text="是否列出隐藏命令", action=store_true, default=False),
         meta=CommandMeta(

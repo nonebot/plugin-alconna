@@ -52,13 +52,13 @@ async def test_satori(app: App):
 
     res = alc.parse(msg, {"$adapter.name": "Satori"})
     assert res.matched
-    some_arg = res.some_arg
+    some_arg: MessageSegment = res["some_arg"]
     assert some_arg.type == "text"
     assert str(some_arg) == "<bold>s<italic>ome</italic>_arg</bold>"
-    some_arg1 = res.some_arg1
+    some_arg1: MessageSegment = res["some_arg1"]
     assert some_arg1.type == "text"
     assert some_arg1.data["styles"] == {(0, 8): ["underline"]}
-    some_arg2 = res.some_arg2
+    some_arg2: MessageSegment = res["some_arg2"]
     assert some_arg2.type == "text"
     assert some_arg2.data["styles"] == {(0, 8): ["bold", "italic"]}
 
@@ -69,8 +69,8 @@ async def test_satori(app: App):
     res1 = alc1.parse(msg1)
     assert res1.matched
     assert isinstance(res1.foo, str)
-    assert res1.bar.type == "text"
-    assert res1.baz.data["text"] == "baz"
+    assert res1["bar"].type == "text"
+    assert res1["baz"].data["text"] == "baz"
 
     msg2 = "/command " + Bold("foo bar baz")
 

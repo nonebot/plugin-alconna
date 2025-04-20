@@ -94,7 +94,13 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
     @export
     async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.path:
-            return MessageSegment("$onebot11:file", {"file": Path(seg.path).resolve()})
+            return MessageSegment(
+                "$onebot11:file",
+                {
+                    "file": Path(seg.path).resolve(),
+                    "name": Path(seg.path).name if seg.name == seg.__default_name__ else seg.name,
+                },
+            )
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
@@ -161,14 +167,14 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                     "upload_private_file",
                     user_id=int(_target.id),
                     file=msg[0].data["file"].as_posix(),
-                    name=msg[0].data["file"].name,
+                    name=msg[0].data["name"],
                     **kwargs,
                 )
             return await bot.call_api(
                 "upload_group_file",
                 group_id=int(_target.id),
                 file=msg[0].data["file"].as_posix(),
-                name=msg[0].data["file"].name,
+                name=msg[0].data["name"],
                 **kwargs,
             )
         if isinstance(target, Event):

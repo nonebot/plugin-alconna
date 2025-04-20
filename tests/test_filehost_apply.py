@@ -26,7 +26,7 @@ async def test_patch(app: App):
         ctx.receive_event(bot, event)
         ctx.should_call_send(
             event,
-            Message(MessageSegment.image("http://filehost.example.com/filehost/test.png")),
+            Message(MessageSegment.image("http://filehost.example.com/filehost/test.png", name="test.png")),
         )
 
     dispose()

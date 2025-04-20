@@ -110,7 +110,8 @@ class DiscordMessageExporter(MessageExporter[Message]):
             return MessageSegment.attachment(seg.id or seg.name, content=content)
         if seg.path:
             path = Path(seg.path)
-            return MessageSegment.attachment(path.name, content=path.read_bytes())
+            filename = path.name if seg.name == seg.__default_name__ else seg.name
+            return MessageSegment.attachment(filename, content=path.read_bytes())
         if bot and seg.url and (seg.id or seg.name):
             resp = await bot.adapter.request(Request("GET", seg.url))
             return MessageSegment.attachment(

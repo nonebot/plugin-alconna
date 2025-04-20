@@ -62,7 +62,8 @@ class MailMessageExporter(MessageExporter[Message]):
             return MessageSegment.attachment(seg.raw, seg.id or seg.name, seg.mimetype)
         if seg.path:
             path = Path(seg.path)
-            return MessageSegment.attachment(path, path.name)
+            filename = path.name if seg.name == seg.__default_name__ else seg.name
+            return MessageSegment.attachment(path, filename)
         if bot and seg.url:
             if name == "image":
                 return MessageSegment.html(f'<img src="{seg.url}" />')
@@ -71,10 +72,8 @@ class MailMessageExporter(MessageExporter[Message]):
             if name in ["audio", "voice"]:
                 return MessageSegment.html(f'<audio src="{seg.url}" controls />')
             resp = await bot.adapter.request(Request("GET", seg.url))
-            return MessageSegment.attachment(
-                resp.content,  # type: ignore
-                seg.id or seg.name or seg.url.split("/")[-1],
-            )
+            name = seg.id or (seg.url.split("/")[-1] if seg.name == seg.__default_name__ else seg.name)
+            return MessageSegment.attachment(resp.content, name)  # type: ignore
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export

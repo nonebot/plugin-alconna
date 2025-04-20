@@ -83,6 +83,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         if TYPE_CHECKING:
             assert isinstance(bot, KBot)
         name = seg.__class__.__name__.lower()
+        title = None if seg.name == seg.__default_name__ else seg.name
         method = {
             "image": MessageSegment.image,
             "voice": MessageSegment.audio,
@@ -91,14 +92,14 @@ class KookMessageExporter(MessageExporter["Message"]):
             "file": MessageSegment.file,
         }[name]
         if seg.id or seg.url:
-            return method(seg.id or seg.url)
+            return method(seg.id or seg.url, title)
         if seg.__class__.to_url and seg.raw:
             return method(
-                await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
+                await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name), title
             )
         if seg.__class__.to_url and seg.path:
             return method(
-                await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
+                await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name), title
             )
         local_method = {
             "image": MessageSegment.local_image,
@@ -108,9 +109,9 @@ class KookMessageExporter(MessageExporter["Message"]):
             "file": MessageSegment.local_file,
         }[name]
         if seg.raw:
-            return local_method(seg.raw_bytes)
+            return local_method(seg.raw_bytes, title)
         if seg.path:
-            return local_method(seg.path)
+            return local_method(seg.path, title)
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export

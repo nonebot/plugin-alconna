@@ -59,7 +59,7 @@ class TailChatMessageBuilder(MessageBuilder):
 
     @build("rich")
     def rich(self, seg: MessageSegment):
-        tags = [t.__name__ for t in seg.tags]
+        tags: list[str] = [t.__name__ for t in seg.tags]
         return Text(seg.data["text"]).mark(0, len(seg.data["text"]), *[STYLE_TYPE_MAP.get(t, t) for t in tags])
 
     @build("url")

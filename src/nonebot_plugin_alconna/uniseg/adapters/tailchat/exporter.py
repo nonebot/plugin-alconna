@@ -75,13 +75,13 @@ class TailChatMessageExporter(MessageExporter["Message"]):
     @export
     async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
-            return MessageSegment.img(seg.url)
+            return MessageSegment.img(seg.url, width=seg.width, height=seg.height)
         if seg.__class__.to_url and seg.path:
             url = await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
-            return MessageSegment.img(url)
+            return MessageSegment.img(url, width=seg.width, height=seg.height)
         if seg.__class__.to_url and seg.raw:
             url = await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
-            return MessageSegment.img(url)
+            return MessageSegment.img(url, width=seg.width, height=seg.height)
         raise SerializeFailed("tailchat image segment must have url")
 
     @export

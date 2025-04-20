@@ -24,6 +24,7 @@ from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
+    File,
     Text,
     AtAll,
     Audio,
@@ -176,6 +177,18 @@ class MiraiMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="video", seg=seg))
 
     @export
+    async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
+        if seg.path:
+            return MessageSegment(
+                "mirai:file",
+                {
+                    "data": Path(seg.path).read_bytes(),
+                    "name": Path(seg.path).name if seg.name == seg.__default_name__ else seg.name,
+                },
+            )
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
+
+    @export
     async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
         assert seg.raw, lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg)
         return MessageSegment.xml(seg.raw) if seg.format == "xml" else MessageSegment.app(seg.raw)
@@ -217,9 +230,22 @@ class MiraiMessageExporter(MessageExporter[Message]):
             assert isinstance(message, self.get_message_type())
 
         if isinstance(target, Event):
+            _target = self.get_target(target, bot)
+        else:
+            _target = target
+
+        if msg := message.include("mirai:file"):
+            if _target.private:
+                method = UploadMethod.Friend
+            else:
+                method = UploadMethod.Group
+            return await bot.upload_file(
+                data=msg[0].data["data"], method=method, name=msg[0].data["name"], target=int(_target.id)
+            )
+        if isinstance(target, Event):
             return await bot.send(target, message)  # type: ignore
 
-        if target.private:
+        if _target.private:
             return await bot.send_friend_message(target=int(target.id), message=message)
         return await bot.send_group_message(target=int(target.id), message=message)
 

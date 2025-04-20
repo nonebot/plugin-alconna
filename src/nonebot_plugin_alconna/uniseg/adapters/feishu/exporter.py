@@ -96,16 +96,18 @@ class FeishuMessageExporter(MessageExporter[Message]):
             return MessageSegment.audio(seg.id, int(seg.duration) if seg.duration else None)
         if not bot:
             raise NotImplementedError
+        filename = seg.name
         if seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             raw = resp.content
         elif seg.path:
             raw = Path(seg.path).read_bytes()
+            filename = Path(seg.path).name if seg.name == seg.__default_name__ else seg.name
         elif seg.raw:
             raw = seg.raw_bytes
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
-        data = {"file_type": "stream", "file_name": seg.name}
+        data = {"file_type": "stream", "file_name": filename}
         files = {"file": ("file", raw)}
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
@@ -118,16 +120,18 @@ class FeishuMessageExporter(MessageExporter[Message]):
             return MessageSegment.file(seg.id, seg.name)
         if not bot:
             raise NotImplementedError
+        filename = seg.name
         if seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             raw = resp.content
         elif seg.path:
             raw = Path(seg.path).read_bytes()
+            filename = Path(seg.path).name if seg.name == seg.__default_name__ else seg.name
         elif seg.raw:
             raw = seg.raw_bytes
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
-        data = {"file_type": "stream", "file_name": seg.name}
+        data = {"file_type": "stream", "file_name": filename}
         files = {"file": ("file", raw)}
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)
@@ -140,16 +144,18 @@ class FeishuMessageExporter(MessageExporter[Message]):
             return MessageSegment.sticker(seg.id)
         if not bot:
             raise NotImplementedError
+        filename = seg.name
         if seg.url:
             resp = await bot.adapter.request(Request("GET", seg.url))
             raw = resp.content
         elif seg.path:
             raw = Path(seg.path).read_bytes()
+            filename = Path(seg.path).name if seg.name == seg.__default_name__ else seg.name
         elif seg.raw:
             raw = seg.raw_bytes
         else:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="video", seg=seg))
-        data = {"file_type": "stream", "file_name": seg.name}
+        data = {"file_type": "stream", "file_name": filename}
         files = {"file": ("file", raw)}
         params = {"method": "POST", "data": data, "files": files}
         result = await bot.call_api("im/v1/files", **params)

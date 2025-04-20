@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union, Sequence, cast
 
 from tarina import lang
@@ -132,26 +133,31 @@ class SatoriMessageExporter(MessageExporter[Message]):
             "audio": MessageSegment.audio,
             "file": MessageSegment.file,
         }[name]
+        filename = None if seg.name == seg.__default_name__ else seg.name
         if seg.id or seg.url:
-            return method(url=seg.id or seg.url)(await self.export(seg.children, bot, True))  # type: ignore
+            return method(url=seg.id or seg.url, name=filename)(await self.export(seg.children, bot, True))  # type: ignore
         if seg.__class__.to_url and seg.path:
+            filename = filename or Path(seg.path).name
             return method(
-                await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
+                await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name),
+                name=filename,
             )(
                 await self.export(seg.children, bot, True)  # type: ignore
             )  # type: ignore
         if seg.__class__.to_url and seg.raw:
             return method(
-                await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
+                await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name),
+                name=filename,
             )(
                 await self.export(seg.children, bot, True)  # type: ignore
             )  # type: ignore
         if seg.path:
-            return method(path=seg.path)(await self.export(seg.children, bot, True))  # type: ignore
+            filename = filename or Path(seg.path).name
+            return method(path=seg.path, name=filename)(await self.export(seg.children, bot, True))  # type: ignore
         if seg.raw:
             data = seg.raw_bytes
             if seg.mimetype:
-                return method(raw=data, mime=seg.mimetype)(await self.export(seg.children, bot, True))  # type: ignore
+                return method(raw=data, mime=seg.mimetype, name=filename)(await self.export(seg.children, bot, True))  # type: ignore
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export

@@ -34,6 +34,7 @@ from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
+    File,
     Text,
     AtAll,
     Audio,
@@ -166,6 +167,15 @@ class KritorMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
+    async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
+        if seg.path:
+            return MessageSegment(
+                "$kritor:file",
+                {"file": seg.path, "name": Path(seg.path).name if seg.name == seg.__default_name__ else seg.name},
+            )
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
+
+    @export
     async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
         assert seg.raw, lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg)
         return MessageSegment.xml(seg.raw) if seg.format == "xml" else MessageSegment.json(seg.raw)
@@ -272,6 +282,18 @@ class KritorMessageExporter(MessageExporter["Message"]):
                 else:
                     node.message.group.group_id = contact.id
             return await bot.send_forward_message(contact, seg.data["nodes"])
+
+        if msg := message.include("$kritor:file"):
+            if _target.private:
+                uid = (await bot.get_uid_by_uin(target_uins=[int(_target.id)]))[int(_target.id)]
+                return await bot.upload_private_file(
+                    target_uin=int(_target.id),
+                    target_uid=uid,
+                    path=msg[0].data["file"],
+                    name=msg[0].data["name"],
+                )
+            return await bot.upload_group_file(group=_target.id, path=msg[0].data["file"], name=msg[0].data["name"])
+
         kb = None
         if message.has("$kritor:button"):
             buttons = [seg.data["button"] for seg in message.get("$kritor:button")]
