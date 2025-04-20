@@ -117,7 +117,7 @@ class TelegramMessageBuilder(MessageBuilder):
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:
             assert isinstance(event, MessageEvent)
-        if event.reply_to_message:
+        if event.reply_to_message and isinstance(event.reply_to_message, MessageEvent):
             return Reply(
                 f"{event.reply_to_message.message_id}",
                 event.reply_to_message.original_message,
