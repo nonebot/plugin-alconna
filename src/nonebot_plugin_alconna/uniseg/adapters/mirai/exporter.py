@@ -6,6 +6,7 @@ from nonebot.adapters import Bot, Event
 from nonebot.internal.driver import Request
 from nonebot.adapters.mirai.bot import UploadMethod
 from nonebot.adapters.mirai.bot import Bot as MiraiBot
+from nonebot.adapters.mirai.model.common import FileInfo
 from nonebot.adapters.mirai.message import Video as VideoSegment
 from nonebot.adapters.mirai.message import Message, MessageSegment
 from nonebot.adapters.mirai.event import (
@@ -250,10 +251,18 @@ class MiraiMessageExporter(MessageExporter[Message]):
         return await bot.send_group_message(target=int(target.id), message=message)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        if TYPE_CHECKING:
-            assert isinstance(mid, ActiveMessage)
-            assert isinstance(bot, MiraiBot)
-        await bot.recall_message(message=mid)
+        assert isinstance(bot, MiraiBot)
+        if isinstance(mid, FileInfo):
+            if isinstance(context, Event):
+                _target = self.get_target(context, bot)
+            else:
+                _target = context
+            if mid.id:
+                await bot.delete_file(target=int(_target.id), id=mid.id)
+        else:
+            if TYPE_CHECKING:
+                assert isinstance(mid, ActiveMessage)
+            await bot.recall_message(message=mid)
 
     def get_reply(self, mid: Any):
         if TYPE_CHECKING:

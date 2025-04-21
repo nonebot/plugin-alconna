@@ -8,6 +8,7 @@ from nonebot.adapters.kritor.model import Contact, SceneType
 from nonebot.adapters.kritor.message import Message, MessageSegment
 from nonebot.adapters.kritor.protos.kritor.common import Button as ButtonModel
 from nonebot.adapters.kritor.protos.kritor.message import SendMessageResponse, SendMessageByResIdResponse
+from nonebot.adapters.kritor.protos.kritor.group import UploadGroupFileResponse
 from nonebot.adapters.kritor.protos.kritor.common import (  # Sender,
     GroupSender,
     ButtonAction,
@@ -331,7 +332,13 @@ class KritorMessageExporter(MessageExporter["Message"]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, KritorBot)
-        if isinstance(mid, str):
+        if isinstance(context, Event):
+            _target = self.get_target(context, bot)
+        else:
+            _target = context
+        if isinstance(mid, UploadGroupFileResponse):
+            await bot.delete_file(group=int(_target.id), file_id=mid.file_id, bus_id=mid.file_bizid)  # type: ignore
+        elif isinstance(mid, str):
             await bot.recall_message(message_id=mid)
         else:
             assert isinstance(mid, (SendMessageByResIdResponse, SendMessageResponse))
