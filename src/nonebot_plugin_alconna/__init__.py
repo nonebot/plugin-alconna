@@ -143,7 +143,7 @@ from .uniseg import apply_fetch_targets as apply_fetch_targets
 from .uniseg import SupportAdapterModule as SupportAdapterModule
 from .extension import add_global_extension as add_global_extension
 
-__version__ = "0.57.2"
+__version__ = "0.57.3"
 __supported_adapters__ = set(m.value for m in SupportAdapterModule.__members__.values())  # noqa: C401
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",
@@ -182,9 +182,12 @@ def load_builtin_plugins(*plugins: str):
     参数:
         plugins: 插件名称列表
     """
-    return load_all_plugins(
+    ans = load_all_plugins(
         [f"nonebot_plugin_alconna.builtins.plugins.{p}" for p in plugins if p not in __BUILTIN_LOADED], []
     )
+    for plugin in ans:
+        __BUILTIN_LOADED[plugin.name] = plugin
+    return ans
 
 
 with contextlib.suppress(ValueError, LookupError):

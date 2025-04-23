@@ -7,8 +7,8 @@ from nonebot.adapters.kritor.bot import Bot as KritorBot
 from nonebot.adapters.kritor.model import Contact, SceneType
 from nonebot.adapters.kritor.message import Message, MessageSegment
 from nonebot.adapters.kritor.protos.kritor.common import Button as ButtonModel
-from nonebot.adapters.kritor.protos.kritor.message import SendMessageResponse, SendMessageByResIdResponse
 from nonebot.adapters.kritor.protos.kritor.group import UploadGroupFileResponse
+from nonebot.adapters.kritor.protos.kritor.message import SendMessageResponse, SendMessageByResIdResponse
 from nonebot.adapters.kritor.protos.kritor.common import (  # Sender,
     GroupSender,
     ButtonAction,
