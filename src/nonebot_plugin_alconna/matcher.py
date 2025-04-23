@@ -229,7 +229,7 @@ class AlconnaMatcher(Matcher):
             else:
                 state = current_matcher.get().state
             key = merge_path(path, cls_or_self.basepath)
-            return state.get(ALCONNA_ARG_KEY.format(key), default)
+            return state.get(ALCONNA_ARG_KEY.format(key=key), default)
 
     @classmethod
     def assign(
