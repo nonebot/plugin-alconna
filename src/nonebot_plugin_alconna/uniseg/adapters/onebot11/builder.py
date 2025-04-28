@@ -16,9 +16,11 @@ class Onebot11MessageBuilder(MessageBuilder):
 
     @build("at")
     def at(self, seg: MessageSegment):
-        if seg.data["qq"] != "all":
-            return At("user", str(seg.data["qq"]))
-        return AtAll()
+        if seg.data["qq"] == "all":
+            return AtAll()
+        if int(seg.data["qq"]) == 0:
+            return AtAll()
+        return At("user", str(seg.data["qq"]))
 
     @build("face")
     def face(self, seg: MessageSegment):

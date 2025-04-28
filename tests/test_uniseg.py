@@ -9,6 +9,11 @@ from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment
 from tests.fake import fake_group_message_event_v11
 
 
+def ansi(*code) -> str:
+    codes = ";".join(str(c) for c in code)
+    return f"\033[{codes}m"
+
+
 def test_uniseg():
     from nonebot_plugin_alconna.uniseg import FallbackSegment
     from nonebot_plugin_alconna import Text, Other, Video, Segment, select
@@ -28,7 +33,7 @@ def test_uniseg():
         Text("man").italic(0, 1),
     ]
     assert text1.replace("o", "e") == Text("helle werld man").color("red", 0, -3).italic(3, -2)
-
+    assert f"{text1:#}" == f"{ansi(31)}hel{ansi(31, 3)}lo world {ansi(3)}m{ansi(0)}an"
     pat = select(Text)
     assert pat.first.validate(Text("foobar")).value() == Text("foobar")
     assert pat.first.validate(Video(url="foobar")(Text("foobar"))).value() == Text("foobar")
@@ -60,6 +65,7 @@ def test_unimsg():
         "At(flag='channel', target='456', display=None), "
         "At(flag='role', target='789', display=None)]"
     )
+    assert f"{msg1:*}" == "[at:flag=user,target=123][at:flag=channel,target=456][at:flag=role,target=789]"
     assert msg1.select(At).filter(lambda x: x.flag == "user") == UniMessage.at("123")
     assert msg1.select(At).map(lambda x: x.target) == ["123", "456", "789"]
     assert UniMessage.text("123").at("456").export_sync(adapter="OneBot V11") == MessageSegment.text(

@@ -53,6 +53,16 @@ class Segment:
     def __str__(self):
         return f"[{self.__class__.__name__.lower()}]"
 
+    def __format__(self, format_spec):
+        if format_spec == "*":
+            if not isinstance(self, Text):
+                attrs = ",".join(f"{k}={v}" for k, v in self.data.items() if v is not None)
+                return f"[{self.__class__.__name__.lower()}:{attrs}]"
+            return self.__str__()
+        if format_spec == "#":
+            return self.__rich__() if isinstance(self, Text) else self.__str__()
+        return format(self.__str__(), format_spec)
+
     @overload
     def __add__(self: TS, item: str) -> "UniMessage[Union[TS, Text]]": ...
 
@@ -161,8 +171,8 @@ STYLE_TYPE_MAP = {
     "underline": "4",
     "flash": "5",
     "blink": "5",
-    "rapid": "6",
     "sparkle": "5",
+    "rapid": "6",
     "code": "7",
     "inverse": "7",
     "spoiler": "8",
@@ -170,6 +180,7 @@ STYLE_TYPE_MAP = {
     "strikethrough": "9",
     "delete": "9",
     "cross": "9",
+    "normal": "22",
     "black": "30",
     "red": "31",
     "green": "32",
@@ -350,7 +361,8 @@ class Text(Segment):
         result.append(text[:left])
         for scale in scales:
             prefix = ";".join(f"{STYLE_TYPE_MAP[style]}" for style in styles[scale])
-            result.append(f"\033[{prefix}m{text[scale[0] : scale[1]]}\033[0m")
+            result.append(f"\033[{prefix}m{text[scale[0] : scale[1]]}")
+        result.append("\033[0m")
         right = scales[-1][1]
         result.append(text[right:])
         return "".join(result)

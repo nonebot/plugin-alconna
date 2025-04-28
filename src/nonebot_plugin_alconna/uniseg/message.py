@@ -626,6 +626,11 @@ class UniMessage(list[TS]):
     def __repr__(self) -> str:
         return "[" + ", ".join(repr(seg) for seg in self) + "]"
 
+    def __format__(self, format_spec):
+        if format_spec in ("#", "*"):
+            return "".join(format(seg, format_spec) for seg in self)
+        return format(self.__str__(), format_spec)
+
     @classmethod
     def template(cls, format_string: str | UniMessage) -> UniMessageTemplate:
         """创建消息模板。
