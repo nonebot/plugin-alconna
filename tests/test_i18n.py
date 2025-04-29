@@ -9,8 +9,8 @@ from tests.fake import fake_message_event_guild
 
 @pytest.mark.asyncio()
 async def test_send(app: App):
-    from nonebot_plugin_alconna import UniMessage, lang, on_alconna
     from nonebot_plugin_alconna.uniseg.segment import I18n
+    from nonebot_plugin_alconna import UniMessage, lang, on_alconna
 
     cmd = on_alconna(Alconna("test", Args["name", str]))
 
