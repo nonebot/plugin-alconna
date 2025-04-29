@@ -985,10 +985,8 @@ class I18n(Segment):
         self.kwargs = mapping or {}
         self.kwargs.update(kwargs)
 
-    def tp(self):
-        from .message import UniMessage
-
-        return UniMessage.template(lang.require(self.item.scope, self.item.type))
+    def __str__(self):
+        return lang.require(self.item.scope, self.item.type)
 
     def dump(self, **kwargs):
         return {

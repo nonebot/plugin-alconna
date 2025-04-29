@@ -1296,7 +1296,7 @@ class UniMessage(list[TS]):
             if not isinstance(seg, I18n):
                 self.append(seg)
             else:
-                msg = seg.tp().format(*args, *seg.args, **kwargs, **seg.kwargs, **extra)
+                msg = self.template(str(seg)).format(*args, *seg.args, **kwargs, **seg.kwargs, **extra)
                 if msg.has(I18n):
                     msg._handle_i18n(extra, *seg.args, **seg.kwargs)
                 self.extend(msg)  # type: ignore

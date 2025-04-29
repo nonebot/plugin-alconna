@@ -5,6 +5,7 @@ from typing_extensions import TypeAlias
 from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Union, TypeVar, Callable, Optional, cast
 
+from tarina import lang
 import _string  # type: ignore
 from tarina.tools import gen_subclass
 
@@ -18,6 +19,7 @@ FormatSpecFunc_T = TypeVar("FormatSpecFunc_T", bound=FormatSpecFunc)
 
 _MAPPING = {cls.__name__: cls for cls in gen_subclass(Segment)}
 _PATTERN = re.compile("(" + "|".join(_MAPPING.keys()) + r")\((.*)\)$")
+_I18N_PATTERN = re.compile(r"[^@]+\s*@\s*[^@]+")
 
 
 def _eval(route: str, obj: Any):
@@ -150,6 +152,27 @@ class UniMessageTemplate(Formatter):
 
             # if there's a field, output it
             if field_name is not None:
+                if mat := _I18N_PATTERN.match(field_name):
+                    scope, key = mat[0].split("@")
+                    ans = lang.require(scope.strip(), key.strip())
+                    if format_spec:
+                        _kwargs = {}
+                        for part in format_spec.split(","):
+                            if re.match(".+=.+", part):
+                                k, v = part.split("=")
+                                if v in kwargs:
+                                    _kwargs[k] = kwargs[v]
+                                    used_args.add(v)
+                                elif v.startswith("$") and (key := v.split(".")[0]) in kwargs:
+                                    _kwargs[k] = _eval(v[1:], kwargs[key])
+                                else:
+                                    _kwargs[k] = v
+                            elif part in kwargs:
+                                _kwargs[part] = kwargs[part]
+                        if _kwargs:
+                            ans = ans.format_map(_kwargs)
+                    results.append(ans)
+                    continue
                 if field_name == "" and format_spec and (mat := _PATTERN.match(format_spec)):
                     cls, parts = _MAPPING[mat[1]], mat[2].split(",")
                     _args = []

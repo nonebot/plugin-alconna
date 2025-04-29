@@ -9,7 +9,7 @@ from tests.fake import fake_message_event_guild
 
 @pytest.mark.asyncio()
 async def test_send(app: App):
-    from nonebot_plugin_alconna import lang, on_alconna
+    from nonebot_plugin_alconna import UniMessage, lang, on_alconna
     from nonebot_plugin_alconna.uniseg.segment import I18n
 
     cmd = on_alconna(Alconna("test", Args["name", str]))
@@ -32,7 +32,7 @@ async def test_send(app: App):
                 "command.test.1": "test!",
                 "command.test.2": "{:At(user, $event.get_user_id())} hello!",
                 "command.test.3": "This is {abcd} test!",
-                "command.test.4": "This is nested: {:I18n(test-i18n, command.test.1)}",
+                "command.test.4": "This is nested: {test-i18n@command.test.1}",
             }
         },
     )
@@ -42,6 +42,7 @@ async def test_send(app: App):
         await cmd.send(I18n("test-i18n", "command.test.1"))
         await cmd.send(I18n("test-i18n", "command.test.2"))
         await cmd.send(cmd.i18n("test-i18n", "command.test.3", abcd="test"))
+        await cmd.send(UniMessage.template("{test-i18n @ command.test.3:abcd=test1}"))
         await cmd.finish(cmd.i18n("test-i18n", "command.test.4"))
 
     lang.select("zh-CN")
@@ -53,6 +54,7 @@ async def test_send(app: App):
         ctx.should_call_send(event, Message("测试!"))
         ctx.should_call_send(event, MessageSegment.mention_user("5678") + " 你好!")
         ctx.should_call_send(event, Message("这是 test 测试!"))
+        ctx.should_call_send(event, Message("这是 test1 测试!"))
         ctx.should_call_send(event, Message("这是嵌套: 测试!"))
         ctx.should_finished()
 
@@ -65,6 +67,7 @@ async def test_send(app: App):
         ctx.should_call_send(event, Message("test!"))
         ctx.should_call_send(event, MessageSegment.mention_user("5678") + " hello!")
         ctx.should_call_send(event, Message("This is test test!"))
+        ctx.should_call_send(event, Message("This is test1 test!"))
         ctx.should_call_send(event, Message("This is nested: test!"))
         ctx.should_finished()
 
