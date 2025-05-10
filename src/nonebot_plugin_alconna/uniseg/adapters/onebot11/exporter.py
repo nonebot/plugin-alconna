@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Any, Union
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.onebot.v11.event import MessageEvent
 from nonebot.adapters.onebot.v11.bot import Bot as OnebotBot
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 
@@ -53,8 +52,9 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        assert isinstance(event, MessageEvent)
-        return str(event.message_id)
+        if message_id := getattr(event, "message_id", None):
+            return str(message_id)
+        raise NotImplementedError
 
     @export
     async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
@@ -197,8 +197,8 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
             await bot.delete_msg(message_id=mid["message_id"])
         elif isinstance(mid, (str, int)):
             await bot.delete_msg(message_id=int(mid))
-        elif not mid and isinstance(context, MessageEvent):
-            await bot.delete_msg(message_id=context.message_id)
+        elif not mid and hasattr(context, "message_id"):
+            await bot.delete_msg(message_id=context.message_id)  # type: ignore
 
     async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
         assert isinstance(bot, OnebotBot)
@@ -217,9 +217,9 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                     return
                 group_id = int(context.id)
             else:
-                if not hasattr(context, "group_id"):
+                if not (group_id := getattr(context, "group_id", None)):
                     return
-                group_id = int(context.group_id)  # type: ignore
+                group_id = int(group_id)
             await bot.call_api(
                 "set_group_reaction",
                 group_id=group_id,

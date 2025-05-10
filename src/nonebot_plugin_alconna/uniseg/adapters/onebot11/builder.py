@@ -6,7 +6,7 @@ from nonebot.adapters.onebot.v11.message import MessageSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Emoji, Hyper, Image, Reply, Video, Voice, Reference
+from nonebot_plugin_alconna.uniseg.segment import At, File, AtAll, Emoji, Hyper, Image, Reply, Video, Voice, Reference
 
 
 class Onebot11MessageBuilder(MessageBuilder):
@@ -53,6 +53,12 @@ class Onebot11MessageBuilder(MessageBuilder):
     @build("xml")
     def xml(self, seg: MessageSegment):
         return Hyper("xml", seg.data["data"])
+
+    @build("file")
+    def file(self, seg: MessageSegment):
+        url = seg.data.get("url") or seg.data.get("file")
+        name = seg.data.get("file_name") or seg.data.get("file")
+        return File(id=seg.data["file_id"], name=name or "file.bin", url=url)
 
     async def extract_reply(self, event: Event, bot: Bot):
         if TYPE_CHECKING:
