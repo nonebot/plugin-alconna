@@ -19,6 +19,37 @@ def get_msg_id() -> int:
     return next(_msg_ids)
 
 
+def fake_self_message_event_v11(**field) -> "GroupMessageEventV11":
+    from pydantic import create_model
+    from nonebot.adapters.onebot.v11.event import Sender
+    from nonebot.adapters.onebot.v11 import Message, GroupMessageEvent
+
+    _fake = create_model("_fake", __base__=GroupMessageEvent)
+
+    class FakeEvent(_fake):
+        time: int = 1000000
+        self_id: int = 1
+        post_type: Literal["message_sent"] = "message_sent"
+        sub_type: str = "normal"
+        user_id: int = 1
+        message_type: Literal["group"] = "group"
+        group_id: int = 10000
+        message: Message = Message("test")
+        raw_message: str = "test"
+        font: int = 0
+        sender: Sender = Sender(
+            card="",
+            nickname="test",
+            role="member",
+        )
+        to_me: bool = True
+
+        class Config:
+            extra = "allow"
+
+    return FakeEvent(message_id=get_msg_id(), **field)
+
+
 def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
     from pydantic import create_model
     from nonebot.adapters.onebot.v11.event import Sender

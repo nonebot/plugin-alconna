@@ -63,7 +63,7 @@ from .segment import apply_media_to_url as apply_media_to_url
 from .constraint import SupportAdapterModule as SupportAdapterModule
 from .adapters import alter_get_builder, alter_get_fetcher, alter_get_exporter
 
-__version__ = "0.57.4"
+__version__ = "0.57.5"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",

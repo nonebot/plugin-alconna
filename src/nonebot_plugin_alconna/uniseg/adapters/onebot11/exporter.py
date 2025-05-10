@@ -34,14 +34,14 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
         return SupportAdapter.onebot11
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
-        if group_id := getattr(event, "group_id", None):
+        if (group_id := getattr(event, "group_id", None)) is not None:
             return Target(
                 str(group_id),
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
                 scope=SupportScope.qq_client,
             )
-        if user_id := getattr(event, "user_id", None):
+        if (user_id := getattr(event, "user_id", None)) is not None:
             return Target(
                 str(user_id),
                 private=True,
@@ -52,7 +52,7 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        if message_id := getattr(event, "message_id", None):
+        if (message_id := getattr(event, "message_id", None)) is not None:
             return str(message_id)
         raise NotImplementedError
 
@@ -217,7 +217,7 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                     return
                 group_id = int(context.id)
             else:
-                if not (group_id := getattr(context, "group_id", None)):
+                if (group_id := getattr(context, "group_id", None)) is None:
                     return
                 group_id = int(group_id)
             await bot.call_api(
