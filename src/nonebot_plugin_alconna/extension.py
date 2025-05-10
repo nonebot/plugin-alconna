@@ -146,7 +146,7 @@ class SelectedExtensions:
                 exc = e
         if exc is not None:
             raise exc
-        if event.get_type().startswith("message"):
+        if event.get_type() == "message":
             msg_id = get_message_id(event, bot)
             if use_origin and (uni_msg := unimsg_origin_cache.get(msg_id)) is not None:
                 return uni_msg

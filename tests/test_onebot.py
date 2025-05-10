@@ -34,7 +34,10 @@ async def test_command(app: App):
 
 @pytest.mark.asyncio()
 async def test_sent(app: App):
-    from nonebot_plugin_alconna import Alconna, AlconnaMatcher, on_alconna
+    from nonebot_plugin_alconna.builtins.extensions.onebot11 import MessageSentExtension
+    from nonebot_plugin_alconna import Alconna, AlconnaMatcher, on_alconna, add_global_extension
+
+    add_global_extension(MessageSentExtension())
 
     mat1 = on_alconna("sent1", response_self=True)
     mat2 = on_alconna("sent2", response_self=False)
