@@ -145,8 +145,8 @@ class Segment:
                 data["raw"] = base64.b64encode(self.raw_bytes).decode()
             elif media_save_dir is not False:
                 path = self.save(media_save_dir=media_save_dir)
-                del data["raw"]
-                del data["mimetype"]
+                data.pop("raw", None)
+                data.pop("mimetype", None)
                 data["path"] = str(path.resolve().as_posix())
         if self._children:
             data["children"] = [child.dump(media_save_dir=media_save_dir) for child in self._children]
