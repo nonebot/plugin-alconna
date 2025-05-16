@@ -11,10 +11,12 @@ from typing import TYPE_CHECKING, Any, Union, Generic, Literal, TypeVar, ClassVa
 
 from tarina import LRU, lang
 from nonebot.typing import T_State
+from nonebot import get_plugin_config
 from arclet.alconna import Alconna, Arparma
 from nonebot.compat import PydanticUndefined
 from nonebot.adapters import Bot, Event, Message
 
+from .config import Config
 from .uniseg import UniMessage, get_message_id
 
 OutputType = Literal["help", "shortcut", "completion", "error"]
@@ -32,6 +34,12 @@ class Interface(Generic[TE]):
     name: str
     annotation: Any
     default: Any
+
+
+try:
+    cache_msg = get_plugin_config(Config).alconna_cache_message
+except ValueError:
+    cache_msg = True
 
 
 class Extension(metaclass=ABCMeta):
@@ -148,9 +156,9 @@ class SelectedExtensions:
             raise exc
         if event.get_type() == "message":
             msg_id = get_message_id(event, bot)
-            if use_origin and (uni_msg := unimsg_origin_cache.get(msg_id)) is not None:
+            if use_origin and cache_msg and (uni_msg := unimsg_origin_cache.get(msg_id)) is not None:
                 return uni_msg
-            if (uni_msg := unimsg_cache.get(msg_id)) is not None:
+            if cache_msg and (uni_msg := unimsg_cache.get(msg_id)) is not None:
                 return uni_msg
             msg = event.get_message()
             uni_msg = UniMessage.generate_without_reply(message=msg, bot=bot)

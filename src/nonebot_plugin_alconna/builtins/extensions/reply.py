@@ -4,6 +4,7 @@ from tarina import LRU
 from arclet.alconna import Alconna
 from nonebot.internal.adapter import Bot, Event
 
+from nonebot_plugin_alconna.extension import cache_msg
 from nonebot_plugin_alconna import Reply, Extension, UniMessage
 from nonebot_plugin_alconna.uniseg import reply_fetch, get_message_id
 
@@ -94,7 +95,7 @@ class ReplyMergeExtension(Extension):
         except (NotImplementedError, ValueError):
             return None
         msg_id = get_message_id(event, bot)
-        if msg_id in self.cache:
+        if cache_msg and msg_id in self.cache:
             return self.cache[msg_id]
         uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
         self.cache[msg_id] = uni_msg

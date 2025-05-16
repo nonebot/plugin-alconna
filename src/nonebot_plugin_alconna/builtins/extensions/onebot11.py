@@ -6,6 +6,7 @@ from nonebot.adapters.onebot.v11 import Message
 from nonebot.internal.adapter import Bot, Event
 from nonebot.adapters.onebot.v11 import Event as OneBot11Event
 
+from nonebot_plugin_alconna.extension import cache_msg
 from nonebot_plugin_alconna import Extension, UniMessage, get_message_id
 
 
@@ -42,9 +43,9 @@ class MessageSentExtension(Extension):
     ) -> UniMessage | None:
         if event.get_type() == "message_sent" and hasattr(event, "message"):
             msg_id = get_message_id(event, bot)
-            if use_origin and (uni_msg := self.cache.get(msg_id)) is not None:
+            if use_origin and cache_msg and (uni_msg := self.cache.get(msg_id)) is not None:
                 return uni_msg
-            if (uni_msg := self.cache.get(msg_id)) is not None:
+            if cache_msg and (uni_msg := self.cache.get(msg_id)) is not None:
                 return uni_msg
             msg = Message._validate(event.message)  # type: ignore
             uni_msg = UniMessage.generate_without_reply(message=msg, bot=bot)

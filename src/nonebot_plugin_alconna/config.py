@@ -46,3 +46,6 @@ class Config(BaseModel):
 
     alconna_response_self: bool = False
     """是否响应自身发送的消息"""
+
+    alconna_cache_message: bool = True
+    """是否缓存已解析的消息"""

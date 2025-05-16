@@ -35,6 +35,7 @@ from nonebot.adapters.discord.api import (
     ApplicationCommandInteractionDataOption,
 )
 
+from nonebot_plugin_alconna.extension import cache_msg
 from nonebot_plugin_alconna.matcher import _M, AlconnaMatcher
 from nonebot_plugin_alconna import At, Image, Extension, UniMessage, log
 
@@ -342,7 +343,7 @@ class DiscordSlashExtension(Extension):
     async def message_provider(self, event: Event, state: T_State, bot, use_origin: bool = False):
         if not isinstance(event, ApplicationCommandInteractionEvent):
             return None
-        if event.id in self.cache:
+        if cache_msg and event.id in self.cache:
             return self.cache[event.id]
         data = event.data
         cmd = f"/{data.name}"
