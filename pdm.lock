@@ -5,7 +5,7 @@
 groups = ["default", "dev", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:e0550b3ae12d717df39c0cd3019e04a28f0745a8d35180f00f75f18d9a2ee998"
+content_hash = "sha256:433f006dd9d9449b623dd692cfa4d1f93d117f28e6ba88fdd0aef53dce7fa0d9"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -1300,6 +1300,19 @@ dependencies = [
 files = [
     {file = "nonebot_adapter_mail-1.0.0a7-py3-none-any.whl", hash = "sha256:b9676c2569dd311c56b45266c765376916f66757d9b4d6674ad373e6dcfa4e86"},
     {file = "nonebot_adapter_mail-1.0.0a7.tar.gz", hash = "sha256:3aca314467d6f7331059e1d01a939172a2f72e7bce4d4d7f3a637fe5a23f84fd"},
+]
+
+[[package]]
+name = "nonebot-adapter-milky"
+version = "0.1.1"
+requires_python = ">=3.9"
+summary = "Nonebot Adapter of Milky Protocol"
+dependencies = [
+    "nonebot2>=2.4.2",
+]
+files = [
+    {file = "nonebot_adapter_milky-0.1.1-py3-none-any.whl", hash = "sha256:36a82633cecbd4e2994a1a870d1975386a0b228e6c5985973bb28207cf5f6794"},
+    {file = "nonebot_adapter_milky-0.1.1.tar.gz", hash = "sha256:423f5f854b08d6039a1889eb098d2aa9949bcca91ad266635d420eae71b47cfe"},
 ]
 
 [[package]]

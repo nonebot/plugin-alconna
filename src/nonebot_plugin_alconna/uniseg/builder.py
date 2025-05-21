@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from abc import ABCMeta, abstractmethod
 from typing import Any, Union, Generic, TypeVar, Callable, Optional
 
@@ -67,9 +68,9 @@ class MessageBuilder(Generic[TS], metaclass=ABCMeta):
             return res
         return custom.solve(self, seg) or self.wildcard_build(seg) or Other(seg)
 
-    def generate(self, source: Message[TS]) -> list[Segment]:
+    def generate(self, source: Sequence[TS]) -> list[Segment]:
         result = []
-        for ms in self.preprocess(source):
+        for ms in self.preprocess(source):  # type: ignore
             seg = self.convert(ms)
             result.extend(seg if isinstance(seg, list) else [seg])
         return result

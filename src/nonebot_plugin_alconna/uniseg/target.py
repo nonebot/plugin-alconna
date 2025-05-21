@@ -328,10 +328,20 @@ async def select_qq_client(target: "Target", bot: Bot):
         SupportAdapter.satori,
         SupportAdapter.red,
         SupportAdapter.kritor,
+        SupportAdapter.milky,
     }:
         return False
     if hasattr(bot, "platform"):
-        if adapter_name == SupportAdapter.satori and bot.platform not in {"chronocat", "onebot"}:
+        if adapter_name == SupportAdapter.satori and bot.platform not in {
+            "chronocat",
+            "onebot",
+            "red",
+            "nekobox",
+            "lagrange",
+            "lagrange.python",
+            "milky",
+            "lagrange.milky",
+        }:
             return False
         if adapter_name == SupportAdapter.onebot12 and bot.platform != "qq":
             return False

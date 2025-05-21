@@ -38,6 +38,10 @@ def mfbuild(builder: MessageBuilder, seg: BaseMessageSegment):
             id=str(seg.data["id"]),
             summary=seg.data["name"],
         )
+    if builder.get_adapter() is SupportAdapter.milky:
+        url = seg.data["url"]
+        id_ = url.split("/")[-2]
+        return MarketFace(id=id_)
     return None
 
 

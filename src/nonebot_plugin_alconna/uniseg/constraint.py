@@ -22,6 +22,7 @@ class SupportAdapter(str, Enum):
     kritor = "Kritor"
     kook = "Kaiheila"
     mail = "Mail"
+    milky = "Milky"
     minecraft = "Minecraft"
     mirai = "Mirai"
     ntchat = "ntchat"
@@ -90,6 +91,8 @@ class SupportScope(str, Enum):
             "nekobox": SupportScope.qq_client,
             "lagrange": SupportScope.qq_client,
             "lagrange.python": SupportScope.qq_client,
+            "milky": SupportScope.qq_client,
+            "lagrange.milky": SupportScope.qq_client,
             "qq": SupportScope.qq_api,
             "qqguild": SupportScope.qq_api,
             "telegram": SupportScope.telegram,
@@ -119,6 +122,7 @@ class SupportAdapterModule(str, Enum):
     kritor = "nonebot.adapters.kritor"
     kook = "nonebot.adapters.kaiheila"
     mail = "nonebot.adapters.mail"
+    milky = "nonebot.adapters.milky"
     minecraft = "nonebot.adapters.minecraft"
     mirai = "nonebot.adapters.mirai"
     ntchat = "nonebot.adapters.ntchat"
