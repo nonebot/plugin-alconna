@@ -180,13 +180,19 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         messages = []
         for node in seg.children:
             if isinstance(node, RefNode):
-                continue
-            content = self.get_message_type()()
-            if isinstance(node.content, str):
-                content.extend(self.get_message_type()(node.content))
+                if not node.context:
+                    continue
+                source = await bot.get_message(
+                    message_scene="group", peer_id=int(node.context), message_seq=int(node.id)
+                )
+                messages.append(MessageSegment.node(source.sender_id, source.sender.nickname, source.message))
             else:
-                content.extend(await self.export(node.content, bot, True))
-            messages.append(MessageSegment.node(user_id=int(node.uid), name=node.name, segments=content))
+                content = self.get_message_type()()
+                if isinstance(node.content, str):
+                    content.extend(self.get_message_type()(node.content))
+                else:
+                    content.extend(await self.export(node.content, bot, True))
+                messages.append(MessageSegment.node(user_id=int(node.uid), name=node.name, segments=content))
         if not messages:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
         return MessageSegment.forward(messages)

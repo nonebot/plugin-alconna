@@ -1,3 +1,4 @@
+from base64 import b64decode
 from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
@@ -50,14 +51,41 @@ class MilkyMessageBuilder(MessageBuilder):
 
     @build("image")
     def image(self, seg: ImageSegment):
+        uri = seg.data.get("uri")
+        if isinstance(uri, str):
+            if uri.startswith("http"):
+                return Image(id=seg.data["resource_id"], url=uri)
+            if uri.startswith("file://"):
+                return Image(path=uri[7:])
+            if uri.startswith("base64://"):
+                b64 = uri[9:]
+                return Image(id=seg.data["resource_id"], raw=b64decode(b64))
         return Image(id=seg.data["resource_id"])
 
     @build("video")
     def video(self, seg: VideoSegment):
+        uri = seg.data.get("uri")
+        if isinstance(uri, str):
+            if uri.startswith("http"):
+                return Video(id=seg.data["resource_id"], url=uri)
+            if uri.startswith("file://"):
+                return Video(path=uri[7:])
+            if uri.startswith("base64://"):
+                b64 = uri[9:]
+                return Video(id=seg.data["resource_id"], raw=b64decode(b64))
         return Video(id=seg.data["resource_id"])
 
     @build("record")
     def record(self, seg: RecordSegment):
+        uri = seg.data.get("uri")
+        if isinstance(uri, str):
+            if uri.startswith("http"):
+                return Voice(id=seg.data["resource_id"], url=uri)
+            if uri.startswith("file://"):
+                return Voice(path=uri[7:])
+            if uri.startswith("base64://"):
+                b64 = uri[9:]
+                return Voice(id=seg.data["resource_id"], raw=b64decode(b64))
         return Voice(id=seg.data["resource_id"])
 
     @build("reply")
