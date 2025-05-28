@@ -51,42 +51,45 @@ class MilkyMessageBuilder(MessageBuilder):
 
     @build("image")
     def image(self, seg: ImageSegment):
-        uri = seg.data.get("uri")
-        if isinstance(uri, str):
-            if uri.startswith("http"):
-                return Image(id=seg.data["resource_id"], url=uri)
-            if uri.startswith("file://"):
-                return Image(path=uri[7:])
-            if uri.startswith("base64://"):
-                b64 = uri[9:]
-                return Image(id=seg.data["resource_id"], raw=b64decode(b64))
-        return Image(id=seg.data["resource_id"])
+        if "resource_id" in seg.data:
+            return Image(id=seg.data["resource_id"], url=seg.data.get("temp_url"))
+        uri = seg.data["uri"]
+        if uri.startswith("http"):
+            return Image(url=uri)
+        if uri.startswith("file://"):
+            return Image(path=uri[7:])
+        if uri.startswith("base64://"):
+            b64 = uri[9:]
+            return Image(raw=b64decode(b64))
 
     @build("video")
     def video(self, seg: VideoSegment):
-        uri = seg.data.get("uri")
-        if isinstance(uri, str):
-            if uri.startswith("http"):
-                return Video(id=seg.data["resource_id"], url=uri)
-            if uri.startswith("file://"):
-                return Video(path=uri[7:])
-            if uri.startswith("base64://"):
-                b64 = uri[9:]
-                return Video(id=seg.data["resource_id"], raw=b64decode(b64))
-        return Video(id=seg.data["resource_id"])
+        if "resource_id" in seg.data:
+            return Video(id=seg.data["resource_id"], url=seg.data.get("temp_url"))
+        uri = seg.data["uri"]
+        thumbnail = None
+        if thumb_url := seg.data.get("thumb_url"):
+            thumbnail = Image(url=thumb_url)
+        if uri.startswith("http"):
+            return Video(url=uri, thumbnail=thumbnail)
+        if uri.startswith("file://"):
+            return Video(path=uri[7:], thumbnail=thumbnail)
+        if uri.startswith("base64://"):
+            b64 = uri[9:]
+            return Video(raw=b64decode(b64), thumbnail=thumbnail)
 
     @build("record")
     def record(self, seg: RecordSegment):
-        uri = seg.data.get("uri")
-        if isinstance(uri, str):
-            if uri.startswith("http"):
-                return Voice(id=seg.data["resource_id"], url=uri)
-            if uri.startswith("file://"):
-                return Voice(path=uri[7:])
-            if uri.startswith("base64://"):
-                b64 = uri[9:]
-                return Voice(id=seg.data["resource_id"], raw=b64decode(b64))
-        return Voice(id=seg.data["resource_id"])
+        if "resource_id" in seg.data:
+            return Voice(id=seg.data["resource_id"], url=seg.data.get("temp_url"), duration=seg.data["duration"])
+        uri = seg.data["uri"]
+        if uri.startswith("http"):
+            return Voice(url=uri)
+        if uri.startswith("file://"):
+            return Voice(path=uri[7:])
+        if uri.startswith("base64://"):
+            b64 = uri[9:]
+            return Voice(raw=b64decode(b64))
 
     @build("reply")
     def reply(self, seg: ReplySegment):

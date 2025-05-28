@@ -855,7 +855,18 @@ class Hyper(Segment):
 
 @dataclass
 class Button(Segment):
-    """Button对象，表示一类按钮消息"""
+    """Button对象，表示一类按钮消息
+
+    Args:
+        flag: 按钮类型，可能的值有 "action", "link", "input", "enter"
+        label: 按钮上的文字
+        clicked_label: 点击后按钮上的文字
+        id: 按钮的唯一标识符。当按钮类型为 "action" 时，表示按钮回调事件的 id
+        url: 当按钮类型为 "link" 时，表示链接地址
+        text: 当按钮类型为 "input" 或 "enter" 时，表示填充的文本
+        style: 按钮的样式
+        permission: 按钮的权限类型，可能的值有 "admin", "all" 或指定用户/身份组列表
+    """
 
     flag: Literal["action", "link", "input", "enter"]
     """

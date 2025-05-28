@@ -100,15 +100,15 @@ class MilkyMessageExporter(MessageExporter["Message"]):
             "voice": MessageSegment.record,
             "audio": MessageSegment.record,
         }[name]
-        if seg.id:
-            url = await bot.get_resource_temp_url(seg.id)
-            return method(url)
         if seg.raw:
             return method(raw=seg.raw)
         if seg.path:
             return method(path=Path(seg.path))
         if seg.url:
             return method(seg.url)
+        if seg.id:
+            url = await bot.get_resource_temp_url(seg.id)
+            return method(url)
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
@@ -116,10 +116,10 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         assert isinstance(bot, MilkyBot)
         thumb_url = None
         if seg.thumbnail:
-            if seg.thumbnail.id:
-                thumb_url = await bot.get_resource_temp_url(seg.thumbnail.id)
-            elif seg.thumbnail.url:
+            if seg.thumbnail.url:
                 thumb_url = seg.thumbnail.url
+            elif seg.thumbnail.id:
+                thumb_url = await bot.get_resource_temp_url(seg.thumbnail.id)
             elif seg.__class__.to_url and seg.thumbnail.raw:
                 thumb_url = await seg.__class__.to_url(
                     seg.thumbnail.raw,
@@ -132,15 +132,15 @@ class MilkyMessageExporter(MessageExporter["Message"]):
                     bot,
                     None if seg.thumbnail.name == seg.thumbnail.__default_name__ else seg.thumbnail.name,
                 )
-        if seg.id:
-            url = await bot.get_resource_temp_url(seg.id)
-            return MessageSegment.video(url, thumb_url=thumb_url)
         if seg.raw:
             return MessageSegment.video(raw=seg.raw, thumb_url=thumb_url)
         if seg.path:
             return MessageSegment.video(path=Path(seg.path), thumb_url=thumb_url)
         if seg.url:
             return MessageSegment.video(seg.url, thumb_url=thumb_url)
+        if seg.id:
+            url = await bot.get_resource_temp_url(seg.id)
+            return MessageSegment.video(url, thumb_url=thumb_url)
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="video", seg=seg))
 
     @export
@@ -271,6 +271,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
 
         if isinstance(mid, MessagePrivateResponse):
             return
+        group_id = int(context.id if isinstance(context, Target) else getattr(context.data, "group_id", -1))  # type: ignore
         if isinstance(mid, MessageGroupResponse):
             message_seq = mid.message_seq
         elif isinstance(mid, int):
@@ -282,7 +283,9 @@ class MilkyMessageExporter(MessageExporter["Message"]):
             message_seq = int(message_seq)
         else:
             return
-        await bot.send_group_message_reaction(message_seq=message_seq, reaction=emoji.id, is_add=not delete)
+        await bot.send_group_message_reaction(
+            group_id=group_id, message_seq=message_seq, reaction=emoji.id, is_add=not delete
+        )
 
     def get_reply(self, mid: Any):
         if isinstance(mid, MessagePrivateResponse):
