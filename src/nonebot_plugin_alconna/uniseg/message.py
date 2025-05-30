@@ -1220,7 +1220,7 @@ class UniMessage(list[TS]):
         bot: Bot | None = None,
         adapter: str | None = None,
     ) -> UniMessage:
-        if not message:
+        if message is None:
             if not event:
                 try:
                     event = current_event.get()
@@ -1255,7 +1255,7 @@ class UniMessage(list[TS]):
         bot: Bot | None = None,
         adapter: str | None = None,
     ) -> UniMessage:
-        if not message:
+        if message is None:
             if not event:
                 try:
                     event = current_event.get()
