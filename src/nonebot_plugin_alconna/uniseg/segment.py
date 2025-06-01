@@ -337,11 +337,14 @@ class Text(Segment):
         scales = sorted(styles.keys(), key=lambda x: x[0])
         left = scales[0][0]
         result.append(text[:left])
+        right = scales[0][1]
         for scale in scales:
+            if scale[0] > right:
+                result.append(text[right : scale[0]])
+            right = scale[1]
             prefix = "".join(f"<{style}>" for style in styles[scale])
             suffix = "".join(f"</{style}>" for style in reversed(styles[scale]))
             result.append(prefix + text[scale[0] : scale[1]] + suffix)
-        right = scales[-1][1]
         result.append(text[right:])
         text = "".join(result)
         pat = re.compile(r"</(\w+)(?<!/p)><\1>")
@@ -359,11 +362,15 @@ class Text(Segment):
         scales = sorted(styles.keys(), key=lambda x: x[0])
         left = scales[0][0]
         result.append(text[:left])
+        right = scales[0][1]
         for scale in scales:
+            if scale[0] > right:
+                result.append("\033[0m")
+                result.append(text[right : scale[0]])
+            right = scale[1]
             prefix = ";".join(f"{STYLE_TYPE_MAP[style]}" for style in styles[scale])
             result.append(f"\033[{prefix}m{text[scale[0] : scale[1]]}")
         result.append("\033[0m")
-        right = scales[-1][1]
         result.append(text[right:])
         return "".join(result)
 
@@ -390,10 +397,13 @@ class Text(Segment):
         left = scales[0][0]
         if left > 0:
             result.append(Text(text[:left]))
+        right = scales[0][1]
         for scale in scales:
+            if scale[0] > right:
+                result.append(Text(text[right : scale[0]]))
             result.append(Text(text[scale[0] : scale[1]], {(scale[0] - left, scale[1] - left): styles[scale]}))
             left = scale[0]
-        right = scales[-1][1]
+            right = scale[1]
         if right < len(text):
             result.append(Text(text[right:]))
         return result

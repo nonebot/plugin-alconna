@@ -43,6 +43,18 @@ def test_uniseg():
     assert pat1.first.validate(Video(url="foobar")(Text("foobar"))).value() == Text("foobar")
     assert pat1.first.validate(Other(FallbackSegment.text("foobar"))(Text("foobar"))).failed
 
+    text2 = (
+        Text("[")
+        + Text("AAA").color("green")
+        + Text(" - ")
+        + Text("BB").color("blue")
+        + Text("]")
+        + Text("\n")
+        + Text("@Mr.Lee").color("yellow")
+        + Text("test")
+    )
+    assert str(text2) == "[<green>AAA</green> - <blue>BB</blue>]\n<yellow>@Mr.Lee</yellow>test"
+
 
 def test_unimsg():
     from nonebot_plugin_alconna.uniseg import FallbackSegment
