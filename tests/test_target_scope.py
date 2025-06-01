@@ -3,11 +3,11 @@ import asyncio
 import pytest
 from nonebug import App
 from pytest_mock import MockerFixture
-from nonebot import get_driver, get_adapter
 from nonebot.adapters.qq import Bot as QQBot
 from nonebot.adapters.qq import Adapter as QQAdapter
 from nonebot.adapters.satori import Bot as SatoriBot
 from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot import get_driver, on_command, get_adapter
 from nonebot.adapters.onebot.v11 import Bot as Onebot11Bot
 from nonebot.adapters.onebot.v12 import Bot as Onebot12Bot
 from nonebot.adapters.satori import Adapter as SatoriAdapter
@@ -15,7 +15,7 @@ from nonebot.adapters.onebot.v11 import Adapter as Onebot11Adapter
 from nonebot.adapters.onebot.v12 import Adapter as Onebot12Adapter
 from nonebot.adapters.satori.models import User, Guild, Channel, PageResult, ChannelType
 
-from tests.fake import fake_satori_bot_params
+from tests.fake import fake_satori_bot_params, fake_message_event_guild
 
 
 @pytest.mark.asyncio()
@@ -109,3 +109,37 @@ async def test_enable(app: App, mocker: MockerFixture):
     driver = get_driver()
     driver._bot_connection_hook.clear()
     driver._bot_disconnection_hook.clear()
+
+
+@pytest.mark.asyncio()
+async def test_switch(app: App, mocker: MockerFixture):
+    from nonebot.adapters.qq import Message
+
+    from nonebot_plugin_alconna import Target, UniMessage, SupportScope
+
+    matcher = on_command("test_switch", priority=5)
+
+    @matcher.handle()
+    async def h_():
+        await UniMessage.text("hello").send()
+        target = Target("123", private=True, scope=SupportScope.qq_client)
+        await UniMessage.text("world").send(target=target)
+
+    async with app.test_matcher(matcher) as ctx:
+        qq_adapter = get_adapter(QQAdapter)
+        qq_bot = ctx.create_bot(base=QQBot, adapter=qq_adapter, self_id="1", bot_info=None)
+
+        onebot11_adapter = get_adapter(Onebot11Adapter)
+        _ = ctx.create_bot(base=Onebot11Bot, adapter=onebot11_adapter, self_id="2")
+
+        event = fake_message_event_guild(user_id="11111", message=Message("/test_switch"))
+        ctx.receive_event(qq_bot, event)
+        ctx.should_call_send(event, Message("hello"))
+        ctx.should_call_api(
+            "send_msg",
+            {
+                "message_type": "private",
+                "user_id": 123,
+                "message": [MessageSegment(type="text", data={"text": "world"})],
+            },
+        )
