@@ -1304,15 +1304,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-milky"
-version = "0.2.0"
+version = "0.3.0"
 requires_python = ">=3.9"
 summary = "Nonebot Adapter of Milky Protocol"
 dependencies = [
     "nonebot2>=2.4.2",
 ]
 files = [
-    {file = "nonebot_adapter_milky-0.2.0-py3-none-any.whl", hash = "sha256:34955cd2e3df011413f8a11dca41b316abde944cc213a6ebf2a5f491188dfae0"},
-    {file = "nonebot_adapter_milky-0.2.0.tar.gz", hash = "sha256:7daab0b3beb18e7a244b6f20e567bded8f6039ee42ec3962364bf8a2802d31a4"},
+    {file = "nonebot_adapter_milky-0.3.0-py3-none-any.whl", hash = "sha256:fd6c1ff331599774bd03d118ef2525ea7ccf4bbc99345f45f1b3cc9cd7a52ecc"},
+    {file = "nonebot_adapter_milky-0.3.0.tar.gz", hash = "sha256:6b77d53d6e4f45e087eff0d357a4fbb2316c1d4784b5589e99467b3e36363825"},
 ]
 
 [[package]]
