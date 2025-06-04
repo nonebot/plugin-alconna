@@ -79,13 +79,35 @@ class KookMessageExporter(MessageExporter["Message"]):
         return MessageSegment.KMarkdown(f":{seg.id}:")
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
+        if TYPE_CHECKING:
+            assert isinstance(bot, KBot)
+        name = seg.__class__.__name__.lower()
+        if seg.id:
+            return MessageSegment.image(seg.id)
+        if seg.url:
+            return MessageSegment.image(seg.url)
+        if seg.__class__.to_url and seg.raw:
+            return MessageSegment.image(
+                await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
+            )
+        if seg.__class__.to_url and seg.path:
+            return MessageSegment.image(
+                await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
+            )
+        if seg.raw:
+            return MessageSegment.local_image(seg.raw_bytes)
+        if seg.path:
+            return MessageSegment.local_image(seg.path)
+        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+
+    @export
+    async def media(self, seg: Union[Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
         if TYPE_CHECKING:
             assert isinstance(bot, KBot)
         name = seg.__class__.__name__.lower()
         title = None if seg.name == seg.__default_name__ else seg.name
         method = {
-            "image": MessageSegment.image,
             "voice": MessageSegment.audio,
             "audio": MessageSegment.audio,
             "video": MessageSegment.video,
@@ -102,7 +124,6 @@ class KookMessageExporter(MessageExporter["Message"]):
                 await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name), title
             )
         local_method = {
-            "image": MessageSegment.local_image,
             "voice": MessageSegment.local_audio,
             "audio": MessageSegment.local_audio,
             "video": MessageSegment.local_video,
