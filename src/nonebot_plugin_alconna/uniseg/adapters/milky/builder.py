@@ -93,11 +93,7 @@ class MilkyMessageBuilder(MessageBuilder):
 
     @build("reply")
     def reply(self, seg: ReplySegment):
-        if "client_seq" in seg.data:
-            msg_id = f"{seg.data['message_seq']}#{seg.data['client_seq']}"
-        else:
-            msg_id = str(seg.data["message_seq"])
-        return Reply(msg_id, origin=seg)
+        return Reply(str(seg.data["message_seq"]), origin=seg)
 
     @build("forward")
     def forward(self, seg: ForwardSegment):
@@ -122,9 +118,6 @@ class MilkyMessageBuilder(MessageBuilder):
         if TYPE_CHECKING:
             assert isinstance(event, MessageEvent)
         if _reply := event.reply:
-            if _reply.client_seq:
-                msg_id = f"{_reply.message_seq}#{_reply.client_seq}"
-            else:
-                msg_id = str(_reply.message_seq)
+            msg_id = f"{_reply.message_seq}@{event.data.message_scene}:{event.data.peer_id}"
             return Reply(msg_id, _reply.message, _reply)
         return None

@@ -6,9 +6,9 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.milky.utils import to_uri
 from nonebot.adapters.milky.bot import Bot as MilkyBot
 from nonebot.adapters.milky.event import Event as MilkyEvent
+from nonebot.adapters.milky.model.api import MessageResponse
 from nonebot.adapters.milky.message import Message, MessageSegment
 from nonebot.adapters.milky.event import MessageEvent, MessageRecallEvent
-from nonebot.adapters.milky.model.api import MessageGroupResponse, MessagePrivateResponse
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
@@ -64,12 +64,10 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        if (message_id := getattr(event, "message_id", None)) is not None:
-            return str(message_id)
         assert isinstance(event, MilkyEvent)
         if (message_seq := getattr(event.data, "message_seq", None)) is not None:
-            if (client_seq := getattr(event.data, "client_seq", None)) is not None:
-                return f"{message_seq}#{client_seq}"
+            if isinstance(event, MessageEvent):
+                return f"{message_seq}@{event.data.message_scene}:{event.data.peer_id}"
             return str(message_seq)
         raise NotImplementedError
 
@@ -164,8 +162,8 @@ class MilkyMessageExporter(MessageExporter["Message"]):
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
-        message_seq, _, client_seq = seg.id.partition("#")
-        return MessageSegment.reply(int(message_seq), int(client_seq) if client_seq else None)
+        message_seq, *_ = seg.id.split("@")
+        return MessageSegment.reply(int(message_seq))
 
     @export
     async def reference(self, seg: Reference, bot: Union[Bot, None]) -> "MessageSegment":
@@ -229,35 +227,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, MilkyBot)
-        if isinstance(mid, MessagePrivateResponse):
-            user_id = int(context.id if isinstance(context, Target) else context.get_user_id())
-            await bot.recall_private_message(user_id=user_id, message_seq=mid.message_seq, client_seq=mid.client_seq)
-        elif isinstance(mid, MessageGroupResponse):
-            group_id = int(context.id if isinstance(context, Target) else getattr(context.data, "group_id", -1))  # type: ignore
-            await bot.recall_group_message(group_id=group_id, message_seq=mid.message_seq)
-        elif isinstance(mid, int):
-            if isinstance(context, Target):
-                assert not context.private
-                group_id = int(context.id)
-            else:
-                group_id = int(getattr(context.data, "group_id", -1))  # type: ignore
-            await bot.recall_group_message(group_id=group_id, message_seq=mid)
-        elif isinstance(mid, str):
-            message_seq, _, client_seq = mid.partition("#")
-            if not client_seq:
-                if isinstance(context, Target):
-                    assert not context.private
-                    group_id = int(context.id)
-                else:
-                    assert not context.is_private  # type: ignore
-                    group_id = int(getattr(context.data, "group_id", -1))  # type: ignore
-                await bot.recall_group_message(group_id=group_id, message_seq=int(message_seq))
-            else:
-                user_id = int(context.id if isinstance(context, Target) else context.get_user_id())
-                await bot.recall_private_message(
-                    user_id=user_id, message_seq=int(message_seq), client_seq=int(client_seq)
-                )
-        elif isinstance(mid, File) and mid.id:
+        if isinstance(mid, File) and mid.id:
             if isinstance(context, Target):
                 if not context.private:
                     group_id = int(context.id)
@@ -265,22 +235,64 @@ class MilkyMessageExporter(MessageExporter["Message"]):
             elif not context.is_private:  # type: ignore
                 group_id = int(getattr(context.data, "group_id", -1))  # type: ignore
                 await bot.delete_group_file(group_id=group_id, file_id=mid.id)
-
-    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
-        assert isinstance(bot, MilkyBot)
-
-        if isinstance(mid, MessagePrivateResponse):
             return
-        group_id = int(context.id if isinstance(context, Target) else getattr(context.data, "group_id", -1))  # type: ignore
-        if isinstance(mid, MessageGroupResponse):
+        if isinstance(mid, MessageResponse):
             message_seq = mid.message_seq
         elif isinstance(mid, int):
             message_seq = mid
         elif isinstance(mid, str):
-            message_seq, _, client_seq = mid.partition("#")
-            if client_seq:
-                return
+            message_seq, _, target = mid.partition("@")
             message_seq = int(message_seq)
+            if target:
+                scene, _, peer_id = target.partition(":")
+                if scene == "group":
+                    await bot.recall_group_message(group_id=int(peer_id), message_seq=message_seq)
+                else:
+                    await bot.recall_private_message(user_id=int(peer_id), message_seq=message_seq)
+                return
+        else:
+            return
+        if isinstance(context, Target):
+            if context.private:
+                user_id = int(context.id)
+                await bot.recall_private_message(user_id=user_id, message_seq=message_seq)
+            else:
+                group_id = int(context.id)
+                await bot.recall_group_message(group_id=group_id, message_seq=message_seq)
+        elif isinstance(context, MilkyEvent):
+            if context.is_private:
+                user_id = int(context.get_user_id())
+                await bot.recall_private_message(user_id=user_id, message_seq=message_seq)
+            else:
+                group_id = int(getattr(context.data, "group_id", -1))
+                await bot.recall_group_message(group_id=group_id, message_seq=message_seq)
+
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+        assert isinstance(bot, MilkyBot)
+
+        if isinstance(context, Target):
+            if context.private:
+                return
+            group_id = int(context.id)
+        elif isinstance(context, MilkyEvent):
+            if context.is_private:
+                return
+            group_id = int(getattr(context.data, "group_id", -1))  # type: ignore
+        else:
+            return
+        if isinstance(mid, MessageResponse):
+            message_seq = mid.message_seq
+        elif isinstance(mid, int):
+            message_seq = mid
+        elif isinstance(mid, str):
+            message_seq, _, target = mid.partition("@")
+            message_seq = int(message_seq)
+            if target:
+                scene, _, peer_id = target.partition(":")
+                if scene == "group":
+                    group_id = int(peer_id)
+                else:
+                    return
         else:
             return
         await bot.send_group_message_reaction(
@@ -288,15 +300,10 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         )
 
     def get_reply(self, mid: Any):
-        if isinstance(mid, MessagePrivateResponse):
-            return Reply(f"{mid.message_seq}#{mid.client_seq}", origin=mid)
-        if isinstance(mid, MessageGroupResponse):
+        if isinstance(mid, MessageResponse):
             return Reply(str(mid.message_seq), origin=mid)
         if isinstance(mid, int):
             return Reply(str(mid))
         if isinstance(mid, str):
-            message_seq, _, client_seq = mid.partition("#")
-            if client_seq:
-                return Reply(f"{message_seq}#{client_seq}")
-            return Reply(str(message_seq))
+            return Reply(mid)
         raise ValueError(f"Invalid message id: {mid}")

@@ -5,7 +5,7 @@
 groups = ["default", "dev", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:13a114b4fcb57c7acdef3e4c616bcf241fba2cf359c84a35d7b437e9bf892434"
+content_hash = "sha256:7f58a1ab586b638391946668896784819c530648ab7272e07615c949094880e6"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -1304,15 +1304,15 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-milky"
-version = "0.3.0"
+version = "0.4.0"
 requires_python = ">=3.9"
 summary = "Nonebot Adapter of Milky Protocol"
 dependencies = [
     "nonebot2>=2.4.2",
 ]
 files = [
-    {file = "nonebot_adapter_milky-0.3.0-py3-none-any.whl", hash = "sha256:fd6c1ff331599774bd03d118ef2525ea7ccf4bbc99345f45f1b3cc9cd7a52ecc"},
-    {file = "nonebot_adapter_milky-0.3.0.tar.gz", hash = "sha256:6b77d53d6e4f45e087eff0d357a4fbb2316c1d4784b5589e99467b3e36363825"},
+    {file = "nonebot_adapter_milky-0.4.0-py3-none-any.whl", hash = "sha256:806404c99ad8947e65ea3e94ebe1a3f2cccc1efb50fa4dd6c18136fa8cd65cbc"},
+    {file = "nonebot_adapter_milky-0.4.0.tar.gz", hash = "sha256:1798fa38c9834bafa81ba9e0e58e8964d884a9d6da2c11384146ec04b734862a"},
 ]
 
 [[package]]
