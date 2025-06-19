@@ -41,7 +41,7 @@ dev = [
     "pre-commit>=3.7.0",
     "nonebug>=0.3.7",
     "pytest-xdist>=3.6.1",
-    "pytest-asyncio>=0.23.6",
+    "pytest-asyncio==0.26.0",
     "fastapi>=0.110.2",
     "uvicorn[standard]>=0.28.1",
     "pydantic>=2.7.0",
@@ -188,6 +188,7 @@ ignore = [
     "N818",  # 要求所有自定义错误以 Error 作后缀，但我们不这么做
     "RET502", # return = return None
     "RET503",  # 就要 implicit return none
+    "PLC0415",  # 你别管我为什么不在顶层 import
     "PLC0105",  # 我们已经用 R 表示协变，Q 表示逆变了
     "PLR0913",  # 参数就那么多的，你用 builder 什么的不是更逆天？
     "SIM108",  # 迫真 simplicy

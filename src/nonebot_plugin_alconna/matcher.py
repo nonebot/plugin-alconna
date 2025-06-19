@@ -71,7 +71,7 @@ def extract_arg(path: str, target: ArgsMounter | None) -> Arg | None:
         return None
     for opt in options:
         if opt.dest == _parts[0]:
-            return extract_arg(".".join(_parts[1:] + [end]), opt)
+            return extract_arg(".".join([*_parts[1:], end]), opt)
     return None
 
 
@@ -990,12 +990,10 @@ def on_alconna(
     )
     executor = _rule.executor
     params = (
-        (ExtensionParam.new(executor),)
-        + Matcher.HANDLER_PARAM_TYPES[:-1]
-        + (
-            AlconnaParam,
-            DefaultParam,
-        )
+        ExtensionParam.new(executor),
+        *Matcher.HANDLER_PARAM_TYPES[:-1],
+        AlconnaParam,
+        DefaultParam,
     )
     source = get_matcher_source(_depth + 1)
     NewMatcher = type(
