@@ -1,6 +1,7 @@
+from warnings import warn
+
 from nonebot_plugin_alconna.uniseg.loader import BaseLoader
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
-from warnings import warn
 
 
 class Loader(BaseLoader):
