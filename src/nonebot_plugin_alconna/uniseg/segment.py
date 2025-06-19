@@ -100,7 +100,10 @@ class Segment:
 
     @property
     def data(self) -> dict[str, Any]:
-        res = asdict(self)
+        try:
+            res = asdict(self)  # type: ignore
+        except (TypeError, ValueError):
+            res = vars(self)
         res.pop("origin", None)
         res.pop("_children", None)
         return res
@@ -739,8 +742,11 @@ class Reply(Segment):
         self.id = id
         self.msg = msg
         self.origin = origin
-        if not hasattr(self, "_children"):
-            self._children = []
+        self._children1 = []
+
+    @property
+    def _children(self):
+        return self._children1
 
     def dump(self, *, media_save_dir: Optional[Union[str, Path, bool]] = None) -> dict:
         data = super().dump(media_save_dir=media_save_dir)
