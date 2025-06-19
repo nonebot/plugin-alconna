@@ -1,5 +1,6 @@
 from nonebot_plugin_alconna.uniseg.loader import BaseLoader
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from warnings import warn
 
 
 class Loader(BaseLoader):
@@ -14,6 +15,7 @@ class Loader(BaseLoader):
     def get_exporter(self):
         from .exporter import GeWeChatMessageExporter
 
+        warn("Adapter `Gewechat` is deprecated and will be removed in the future.", DeprecationWarning, stacklevel=2)
         return GeWeChatMessageExporter()
 
     def get_fetcher(self):
