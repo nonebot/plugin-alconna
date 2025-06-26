@@ -143,10 +143,15 @@ class MilkyMessageExporter(MessageExporter["Message"]):
 
     @export
     async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
+        filename = seg.name if seg.name != seg.__default_name__ else None
         if seg.path:
-            return MessageSegment("$milky:file", {"uri": Path(seg.path).resolve().as_uri()})
+            return MessageSegment(
+                "$milky:file", {"uri": Path(seg.path).resolve().as_uri(), "name": filename or Path(seg.path).name}
+            )
+        if filename is None:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
         if seg.url:
-            return MessageSegment("$milky:file", {"uri": seg.url})
+            return MessageSegment("$milky:file", {"uri": seg.url, "name": filename})
         if seg.raw:
             if seg.__class__.to_url:
                 return MessageSegment(
@@ -154,10 +159,11 @@ class MilkyMessageExporter(MessageExporter["Message"]):
                     {
                         "uri": await seg.__class__.to_url(
                             seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name
-                        )
+                        ),
+                        "name": filename,
                     },
                 )
-            return MessageSegment("$milky:file", {"uri": to_uri(raw=seg.raw_bytes)})
+            return MessageSegment("$milky:file", {"uri": to_uri(raw=seg.raw_bytes), "name": filename})
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
@@ -171,7 +177,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         if seg.id:
             messages = await bot.get_forwarded_messages(forward_id=seg.id)
             return MessageSegment.forward(
-                [MessageSegment.node(msg.sender_id, msg.sender.nickname, msg.message) for msg in messages]
+                [MessageSegment.node(int(bot.self_id) if bot else 10001, msg.name, msg.message) for msg in messages]
             )
         if not seg.children:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
@@ -210,12 +216,14 @@ class MilkyMessageExporter(MessageExporter["Message"]):
                 file_id = await bot.upload_private_file(
                     user_id=int(_target.id),
                     url=msg[0].data["uri"],
+                    file_name=msg[0].data["name"],
                     **kwargs,
                 )
             else:
                 file_id = await bot.upload_group_file(
                     group_id=int(_target.id),
                     url=msg[0].data["uri"],
+                    file_name=msg[0].data["name"],
                     **kwargs,
                 )
             return File(file_id)
