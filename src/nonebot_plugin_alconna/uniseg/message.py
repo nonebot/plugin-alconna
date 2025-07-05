@@ -1212,8 +1212,8 @@ class UniMessage(list[TS]):
                 break
         return self.__class__(copy)
 
-    @deprecated("`UniMessage.generate` is deprecated, use `UniMessage.of()` and `await msg.attach_reply()` instead")
     @staticmethod
+    @deprecated("`UniMessage.generate` is deprecated, use `UniMessage.of()` and `await msg.attach_reply()` instead")
     async def generate(
         *,
         message: Message | None = None,
@@ -1233,8 +1233,8 @@ class UniMessage(list[TS]):
                 return UniMessage()
         return await UniMessage.of(message, bot=bot, adapter=adapter).attach_reply(event, bot)
 
-    @deprecated("`UniMessage.generate_sync` is deprecated, use `UniMessage.of` instead")
     @staticmethod
+    @deprecated("`UniMessage.generate_sync` is deprecated, use `UniMessage.of` instead")
     def generate_sync(
         *,
         message: Message | None = None,
