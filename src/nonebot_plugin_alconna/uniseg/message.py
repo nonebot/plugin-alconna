@@ -6,7 +6,7 @@ from copy import deepcopy
 from json import dumps, loads
 from types import FunctionType
 from collections.abc import Iterable, Sequence, Awaitable
-from typing_extensions import Self, TypeAlias, SupportsIndex, deprecated
+from typing_extensions import Self, TypeAlias, SupportsIndex
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Protocol, overload
 
 from tarina import lang
@@ -1278,16 +1278,6 @@ class UniMessage(list[TS]):
         return UniMessage(fn.generate(message))
 
     generate_without_reply = generate_sync
-
-    @staticmethod
-    @deprecated("`UniMessage.get_message_id` is deprecated and will be removed in 0.59.0\nUse `get_message_id` instead")
-    def get_message_id(event: Event | None = None, bot: Bot | None = None, adapter: str | None = None) -> str:
-        return get_message_id(event, bot, adapter)
-
-    @staticmethod
-    @deprecated("`UniMessage.get_target` is deprecated and will be removed in 0.59.0\nUse `get_target` instead")
-    def get_target(event: Event | None = None, bot: Bot | None = None, adapter: str | None = None) -> Target:
-        return get_target(event, bot, adapter)
 
     def _handle_i18n(self, extra: dict, *args, **kwargs):
         segments = [*self]

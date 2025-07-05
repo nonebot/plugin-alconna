@@ -1,5 +1,4 @@
 import contextlib
-from typing_extensions import deprecated
 
 import nonebot
 
@@ -203,8 +202,3 @@ with contextlib.suppress(ValueError, LookupError):
         apply_fetch_targets()
     if _config.alconna_builtin_plugins:
         load_builtin_plugins(*_config.alconna_builtin_plugins)
-
-
-@deprecated("`alconna(...)` are no longer supported and will be removed in the future. Use `AlconnaRule(...)` instead.")
-def alconna(*args, **kwargs):
-    return AlconnaRule(*args, **kwargs).rule

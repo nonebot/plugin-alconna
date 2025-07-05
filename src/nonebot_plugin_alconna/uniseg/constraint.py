@@ -16,7 +16,7 @@ class SupportAdapter(str, Enum):
     discord = "Discord"
     dodo = "DoDo"
     feishu = "Feishu"
-    gewechat = "gewechat"
+    # gewechat = "gewechat"
     github = "GitHub"
     heybox = "Heybox"
     kritor = "Kritor"

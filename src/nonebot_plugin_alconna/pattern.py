@@ -1,4 +1,3 @@
-from typing_extensions import deprecated
 from typing import Any, Union, Generic, Literal, TypeVar, Callable, Optional
 
 from tarina import lang
@@ -120,20 +119,6 @@ def select(
         target=_type,
         converter=converter,
     )
-
-
-@deprecated("`select_first` is deprecated and will be removed in version 0.59.0.\nUse `select().first` instead.")
-def select_first(
-    seg: Union[type[segment.TS], BasePattern[segment.TS, Segment, Any]],
-) -> BasePattern[segment.TS, Segment, Literal[MatchMode.TYPE_CONVERT]]:
-    return select(seg).first
-
-
-@deprecated("`select_last` is deprecated and will be removed in version 0.59.0.\nUse `select().last` instead.")
-def select_last(
-    seg: Union[type[segment.TS], BasePattern[segment.TS, Segment, Any]],
-) -> BasePattern[segment.TS, Segment, Literal[MatchMode.TYPE_CONVERT]]:
-    return select(seg).last
 
 
 patterns = {

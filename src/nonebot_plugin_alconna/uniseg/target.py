@@ -450,7 +450,6 @@ async def select_wechat(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {
         SupportAdapter.onebot12,
         SupportAdapter.satori,
-        SupportAdapter.gewechat,
         SupportAdapter.ntchat,
     }:
         return False
