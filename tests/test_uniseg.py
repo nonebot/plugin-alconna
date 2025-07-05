@@ -245,7 +245,7 @@ async def test_uniseg_recv(app: App):
                 ),
             ),
         )
-        msg = await UniMessage.generate(event=event2, bot=bot)
+        msg = await UniMessage.of(message=event2.get_message(), bot=bot).attach_reply(event2, bot)
         assert msg[UniReply, 0].msg
 
 

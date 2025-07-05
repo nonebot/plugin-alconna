@@ -47,6 +47,7 @@ from .functions import get_target as get_target
 from .params import MessageTarget as MessageTarget
 from .functions import message_edit as message_edit
 from .constraint import SupportScope as SupportScope
+from .params import OriginalUniMsg as OriginalUniMsg
 from .segment import custom_handler as custom_handler
 from .functions import get_message_id as get_message_id
 from .functions import message_recall as message_recall

@@ -1,4 +1,4 @@
-from nonebot.adapters.heybox.message import MessageSegment
+from nonebot.adapters.heybox.message import MessageSegment  # type: ignore
 
 from nonebot_plugin_alconna.uniseg.segment import Text
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter

@@ -48,7 +48,7 @@ class MessageSentExtension(Extension):
             if cache_msg and (uni_msg := self.cache.get(msg_id)) is not None:
                 return uni_msg
             msg = Message._validate(event.message)  # type: ignore
-            uni_msg = UniMessage.generate_without_reply(message=msg, bot=bot)
+            uni_msg = UniMessage.of(message=msg, bot=bot)
             self.cache[msg_id] = uni_msg
             return uni_msg
         return None

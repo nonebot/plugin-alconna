@@ -11,14 +11,25 @@ from nonebot import get_bot as _get_bot
 from nonebot.exception import ActionFailed
 from nonebot.internal.driver.model import Request
 from nonebot.internal.adapter import Bot, Event, Adapter
+from nonebot.internal.matcher import current_bot, current_event
 
 from .segment import Image
 from .constraint import log
 
 
-async def reply_fetch(event: Event, bot: Bot):
+async def reply_fetch(event: Optional[Event] = None, bot: Optional[Bot] = None):
     from .adapters import alter_get_builder
 
+    if not event:
+        try:
+            event = current_event.get()
+        except LookupError:
+            return None
+    if not bot:
+        try:
+            bot = current_bot.get()
+        except LookupError:
+            return None
     _adapter = bot.adapter
     adapter = _adapter.get_name()
     if not (fn := alter_get_builder(adapter)):

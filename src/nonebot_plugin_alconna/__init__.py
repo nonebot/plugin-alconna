@@ -101,13 +101,11 @@ from .typings import ImageOrUrl as ImageOrUrl
 from .params import match_value as match_value
 from .shortcut import funcommand as funcommand
 from .uniseg import image_fetch as image_fetch
-from .pattern import select_last as select_last
 from .params import AlconnaMatch as AlconnaMatch
 from .params import AlconnaQuery as AlconnaQuery
 from .uniseg import SupportScope as SupportScope
 from .uniseg import message_edit as message_edit
 from .model import CommandResult as CommandResult
-from .pattern import select_first as select_first
 from .params import AlcExecResult as AlcExecResult
 from .params import AlconnaResult as AlconnaResult
 from .uniseg import MessageTarget as MessageTarget
@@ -115,6 +113,7 @@ from .typings import Strikethrough as Strikethrough
 from .consts import ALCONNA_RESULT as ALCONNA_RESULT
 from .params import AlconnaContext as AlconnaContext
 from .params import AlconnaMatches as AlconnaMatches
+from .uniseg import OriginalUniMsg as OriginalUniMsg
 from .uniseg import SupportAdapter as SupportAdapter
 from .uniseg import apply_filehost as apply_filehost
 from .uniseg import custom_handler as custom_handler

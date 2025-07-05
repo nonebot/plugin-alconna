@@ -97,7 +97,7 @@ class ReplyMergeExtension(Extension):
         msg_id = get_message_id(event, bot)
         if cache_msg and msg_id in self.cache:
             return self.cache[msg_id]
-        uni_msg = UniMessage.generate_sync(message=msg, bot=bot)
+        uni_msg = UniMessage.of(msg, bot=bot)
         self.cache[msg_id] = uni_msg
         if not (reply := await reply_fetch(event, bot)):
             return uni_msg
@@ -106,7 +106,7 @@ class ReplyMergeExtension(Extension):
         reply_msg = reply.msg
         if isinstance(reply_msg, str):
             reply_msg = msg.__class__(reply_msg)
-        uni_msg_reply = UniMessage.generate_sync(message=reply_msg, bot=bot)
+        uni_msg_reply = UniMessage.of(reply_msg, bot=bot)
         if self.add_left:
             uni_msg_reply += self.sep
             uni_msg_reply.extend(uni_msg)

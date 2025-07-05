@@ -54,7 +54,7 @@ class MessageArgv(Argv[UniMessage]):
         """
         self.reset()
         if isinstance(data, Message):
-            data = UniMessage.generate_sync(message=data, adapter=self.context.get("$adapter.name"))
+            data = UniMessage.of(data, adapter=self.context.get("$adapter.name"))
         else:
             data = UniMessage(data)
         self.origin = data

@@ -19,7 +19,7 @@ async def _get_message(event: Event, bot: Bot):
         msg: Message = getattr(event, "original_message", msg)  # type: ignore
     except (NotImplementedError, ValueError):
         pass
-    return await UniMessage.generate(message=msg, bot=bot)
+    return UniMessage.of(message=msg, bot=bot)
 
 
 class AtInRule:

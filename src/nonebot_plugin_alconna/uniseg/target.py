@@ -222,7 +222,7 @@ class Target:
         if isinstance(message, Message):
             from .message import UniMessage
 
-            message = UniMessage.generate_sync(message=message, bot=bot)
+            message = UniMessage.of(message, bot=bot)
         return await message.send(self, bot, fallback, at_sender, reply_to, **kwargs)
 
     def dump(self, only_scope: bool = False, save_self_id: bool = True):

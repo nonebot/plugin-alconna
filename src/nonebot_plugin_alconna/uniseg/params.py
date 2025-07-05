@@ -3,7 +3,7 @@ from typing import Annotated
 from nonebot.typing import T_State
 from nonebot.internal.params import Depends
 from nonebot.exception import SkippedException
-from nonebot.internal.adapter import Bot, Event
+from nonebot.internal.adapter import Bot, Event, Message
 
 from .message import TS, UniMessage
 from .exporter import Target, SerializeFailed
@@ -12,13 +12,30 @@ from .constraint import UNISEG_TARGET, UNISEG_MESSAGE, UNISEG_MESSAGE_ID
 
 
 async def _uni_msg(bot: Bot, event: Event, state: T_State) -> UniMessage:
+    if event.get_type() != "message":
+        raise SkippedException from None
     if UNISEG_MESSAGE in state:
         return state[UNISEG_MESSAGE]
     try:
-        event.get_message()
-    except ValueError:
+        msg = event.get_message()
+    except (NotImplementedError, ValueError):
         raise SkippedException from None
-    return await UniMessage.generate(event=event, bot=bot)
+    return UniMessage.of(msg, bot=bot)
+
+
+async def _orig_uni_msg(bot: Bot, event: Event, state: T_State) -> UniMessage:
+    if event.get_type() != "message":
+        raise SkippedException from None
+    try:
+        msg: Message = event.get_message()
+    except (NotImplementedError, ValueError):
+        raise SkippedException from None
+    try:
+        msg: Message = getattr(event, "original_message", msg)  # type: ignore
+    except (NotImplementedError, ValueError):
+        pass
+    ans = UniMessage.of(msg, bot=bot)
+    return await ans.attach_reply(event=event, bot=bot)
 
 
 def _target(bot: Bot, event: Event, state: T_State) -> Target:
@@ -44,8 +61,8 @@ def MessageTarget() -> Target:
     return Depends(_target, use_cache=True)
 
 
-def UniversalMessage() -> UniMessage:
-    return Depends(_uni_msg, use_cache=True)
+def UniversalMessage(origin: bool = False) -> UniMessage:
+    return Depends(_orig_uni_msg, use_cache=True) if origin else Depends(_uni_msg, use_cache=True)
 
 
 def MessageId() -> str:
@@ -61,5 +78,6 @@ def UniversalSegment(t: type[TS], index: int = 0) -> TS:
 
 
 UniMsg = Annotated[UniMessage, UniversalMessage()]
+OriginalUniMsg = Annotated[UniMessage, UniversalMessage(origin=True)]
 MsgId = Annotated[str, MessageId()]
 MsgTarget = Annotated[Target, MessageTarget()]

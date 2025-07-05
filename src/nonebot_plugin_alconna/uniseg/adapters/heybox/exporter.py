@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Union
 
 from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.heybox.bot import Bot as HeyboxBot
-from nonebot.adapters.heybox.event import UserIMMessageEvent
-from nonebot.adapters.heybox.message import Message, MessageSegment
+from nonebot.adapters.heybox.bot import Bot as HeyboxBot  # type: ignore
+from nonebot.adapters.heybox.event import UserIMMessageEvent  # type: ignore
+from nonebot.adapters.heybox.message import Message, MessageSegment  # type: ignore
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.segment import At, Text, Image, Reply
@@ -23,8 +23,8 @@ class HeyboxMessageExporter(MessageExporter[Message]):
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
         if isinstance(event, UserIMMessageEvent):
             return Target(
-                event.channel_id,
-                parent_id=event.room_id,
+                event.channel_id,  # type: ignore
+                parent_id=event.room_id,  # type: ignore
                 channel=True,
                 adapter=self.get_adapter(),
                 self_id=bot.self_id if bot else None,
@@ -34,7 +34,7 @@ class HeyboxMessageExporter(MessageExporter[Message]):
 
     def get_message_id(self, event: Event) -> str:
         if isinstance(event, UserIMMessageEvent):
-            return str(event.im_seq)
+            return str(event.im_seq)  # type: ignore
         raise NotImplementedError
 
     @export
@@ -84,7 +84,7 @@ class HeyboxMessageExporter(MessageExporter[Message]):
                 assert isinstance(target, UserIMMessageEvent)
             return await bot.send(event=target, message=message, **kwargs, is_reply=reply_id is not None)
         return await bot.send_to_channel(
-            target.parent_id,
+            target.parent_id,  # type: ignore
             target.id,
             message,
             reply_id=reply_id,

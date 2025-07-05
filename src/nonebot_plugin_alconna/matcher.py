@@ -545,7 +545,7 @@ class AlconnaMatcher(Matcher):
                 if not msg:
                     await matcher.reject(prompt, fallback=fallback)
                 if not isinstance(msg, UniMessage):
-                    msg = await UniMessage.generate(message=msg, event=event, bot=bot)
+                    msg = UniMessage.of(message=msg, bot=bot)
                 if arg.value.alias == "*":
                     if TYPE_CHECKING:
                         assert isinstance(arg.value, _AllParamPattern)
@@ -846,7 +846,7 @@ class AlconnaMatcher(Matcher):
         res = await wait.wait(timeout=timeout)
         if res is None:
             return None
-        return await UniMessage.generate(message=cast(Message, res))
+        return UniMessage.of(message=cast(Message, res))
 
     @classmethod
     def test(cls, message: str | UniMessage, expected: dict[str, Any] | None = None, prefix: bool = True):

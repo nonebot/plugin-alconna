@@ -161,10 +161,10 @@ class SelectedExtensions:
             if cache_msg and (uni_msg := unimsg_cache.get(msg_id)) is not None:
                 return uni_msg
             msg = event.get_message()
-            uni_msg = UniMessage.generate_without_reply(message=msg, bot=bot)
+            uni_msg = UniMessage.of(message=msg, bot=bot)
             unimsg_cache[msg_id] = uni_msg
             if (ori_msg := getattr(event, "original_message", None)) is not None:
-                ori_uni_msg = UniMessage.generate_without_reply(message=ori_msg, bot=bot)
+                ori_uni_msg = await UniMessage.of(message=ori_msg, bot=bot).attach_reply(event=event, bot=bot)
                 unimsg_origin_cache[msg_id] = ori_uni_msg
                 if use_origin:
                     return ori_uni_msg

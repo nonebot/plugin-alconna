@@ -6,7 +6,7 @@ from copy import deepcopy
 from json import dumps, loads
 from types import FunctionType
 from collections.abc import Iterable, Sequence, Awaitable
-from typing_extensions import Self, TypeAlias, SupportsIndex
+from typing_extensions import Self, TypeAlias, SupportsIndex, deprecated
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Protocol, overload
 
 from tarina import lang
@@ -1212,6 +1212,7 @@ class UniMessage(list[TS]):
                 break
         return self.__class__(copy)
 
+    @deprecated("`UniMessage.generate` is deprecated, use `UniMessage.of()` and `await msg.attach_reply()` instead")
     @staticmethod
     async def generate(
         *,
@@ -1230,23 +1231,9 @@ class UniMessage(list[TS]):
                 message = event.get_message()
             except Exception:
                 return UniMessage()
-        if not adapter:
-            if not bot:
-                try:
-                    bot = current_bot.get()
-                except LookupError as e:
-                    raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
-            _adapter = bot.adapter
-            adapter = _adapter.get_name()
-        if not (fn := alter_get_builder(adapter)):
-            raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
-        result = UniMessage(fn.generate(message))
-        if (event and bot) and (_reply := await fn.extract_reply(event, bot)):
-            if result.has(Reply) and result.index(Reply) == 0:
-                result.pop(0)
-            result.insert(0, _reply)
-        return result
+        return await UniMessage.of(message, bot=bot, adapter=adapter).attach_reply(event, bot)
 
+    @deprecated("`UniMessage.generate_sync` is deprecated, use `UniMessage.of` instead")
     @staticmethod
     def generate_sync(
         *,
@@ -1265,6 +1252,17 @@ class UniMessage(list[TS]):
                 message = event.get_message()
             except Exception:
                 return UniMessage()
+        return UniMessage.of(message, bot=bot, adapter=adapter)
+
+    generate_without_reply = generate_sync
+
+    @classmethod
+    def of(
+        cls,
+        message: Message,
+        bot: Bot | None = None,
+        adapter: str | None = None,
+    ):
         if not adapter:
             if not bot:
                 try:
@@ -1277,7 +1275,24 @@ class UniMessage(list[TS]):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter))
         return UniMessage(fn.generate(message))
 
-    generate_without_reply = generate_sync
+    async def attach_reply(self, event: Event | None = None, bot: Bot | None = None) -> Self:
+        if not event:
+            try:
+                event = current_event.get()
+            except LookupError as e:
+                raise SerializeFailed(lang.require("nbp-uniseg", "event_missing")) from e
+        if not bot:
+            try:
+                bot = current_bot.get()
+            except LookupError as e:
+                raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
+        if not (fn := alter_get_builder(bot.adapter.get_name())):
+            raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=bot.adapter.get_name()))
+        if _reply := await fn.extract_reply(event, bot):
+            if self.has(Reply) and self.index(Reply) == 0:
+                self.pop(0)
+            self.insert(0, _reply)  # type: ignore
+        return self
 
     def _handle_i18n(self, extra: dict, *args, **kwargs):
         segments = [*self]
