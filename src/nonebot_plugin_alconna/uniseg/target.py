@@ -497,3 +497,10 @@ async def select_heybox(target: "Target", bot: Bot):
     if bot.adapter.get_name() not in {SupportAdapter.heybox, SupportAdapter.satori}:
         return False
     return not hasattr(bot, "platform") or bot.platform == "heybox"
+
+
+@_register(SupportScope.efchat)
+async def select_efchat(target: "Target", bot: Bot):
+    if target.channel:
+        return False
+    return bot.adapter.get_name() == SupportAdapter.efchat

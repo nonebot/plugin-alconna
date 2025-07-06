@@ -5,7 +5,7 @@
 groups = ["default", "dev", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:5a554ef4c149e01dbee432e9a93ff2c3f5a7c73f672df9c8527e24d36bbaa9be"
+content_hash = "sha256:01e86c59f710bf26ce34fb45f4b62643ab8749851f0fa9811d5193f698607c75"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -18,6 +18,16 @@ summary = "An async library for utilizing remote console on Minecraft Java Editi
 files = [
     {file = "aio_mc_rcon-3.4.1-py3-none-any.whl", hash = "sha256:b8cb967505b3801d341e949a36afa6ea62ffe6f999cfa9fe72108378347ef440"},
     {file = "aio_mc_rcon-3.4.1.tar.gz", hash = "sha256:c1623ed54a56b302abd76a7be9fbeab1275285bf58f8109a78169f82c01cdd13"},
+]
+
+[[package]]
+name = "aiofiles"
+version = "24.1.0"
+requires_python = ">=3.8"
+summary = "File support for asyncio."
+files = [
+    {file = "aiofiles-24.1.0-py3-none-any.whl", hash = "sha256:b4ec55f4195e3eb5d7abd1bf7e061763e864dd4954231fb8539a0ef8bb8260e5"},
+    {file = "aiofiles-24.1.0.tar.gz", hash = "sha256:22a075c9e5a3810f0c2e48f3008c94d68c65d763b9b03857924c99e57355166c"},
 ]
 
 [[package]]
@@ -1223,6 +1233,22 @@ dependencies = [
 files = [
     {file = "nonebot_adapter_dodo-0.2.1-py3-none-any.whl", hash = "sha256:c388991bf1fc642a8328147d09d1445fc427ec915af873af031315be3ebb9eb7"},
     {file = "nonebot_adapter_dodo-0.2.1.tar.gz", hash = "sha256:ad37ae0cbd807afcb83eacb37f5d50593d437ce077ba720541a53551eaeac675"},
+]
+
+[[package]]
+name = "nonebot-adapter-efchat"
+version = "0.1.4"
+requires_python = "<4.0,>=3.9"
+summary = "A NoneBot adapter for EFChat"
+dependencies = [
+    "aiofiles>=23.0.0",
+    "nonebot2<3.0.0,>=2.2.0",
+    "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=1.10.0",
+    "typing-extensions<5.0.0,>=4.0.0",
+]
+files = [
+    {file = "nonebot_adapter_efchat-0.1.4-py3-none-any.whl", hash = "sha256:91155f97aaf6375532aaec57f1fe8e6030afa356bfed6fc2d9ae4a013ae2850f"},
+    {file = "nonebot_adapter_efchat-0.1.4.tar.gz", hash = "sha256:2527cd8c7a953b95dafbe465357f21d8a3e44397ef9b10fecb617a266b8c0ad1"},
 ]
 
 [[package]]

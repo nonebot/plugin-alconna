@@ -34,6 +34,7 @@ class SupportAdapter(str, Enum):
     telegram = "Telegram"
     tail_chat = "Tailchat"
     wxmp = "WXMP"
+    efchat = "EFChat"
 
     nonebug = "fake"
 
@@ -66,6 +67,8 @@ class SupportScope(str, Enum):
     """企业微信平台"""
     tail_chat = "TailChat"
     """Tailchat平台"""
+    efchat = "EFChat"
+    """EFChat平台"""
 
     onebot12_other = "Onebot12"
     """ob12 的其他平台"""
@@ -115,6 +118,7 @@ class SupportAdapterModule(str, Enum):
     ding = "nonebot.adapters.ding"
     discord = "nonebot.adapters.discord"
     dodo = "nonebot.adapters.dodo"
+    efchat = "nonebot.adapters.efchat"
     feishu = "nonebot.adapters.feishu"
     # gewechat = "nonebot.adapters.gewechat"
     github = "nonebot.adapters.github"
