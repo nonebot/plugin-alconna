@@ -6,6 +6,7 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 from nonebot import get_adapters
+from importlib_metadata import entry_points
 
 from ..constraint import SupportAdapter
 
@@ -25,6 +26,21 @@ for name in _adapters:
         loaders[loader.get_adapter().value] = loader
     except Exception as e:  # noqa: PERF203
         warn(f"Failed to import uniseg adapter {name}: {e}", RuntimeWarning, 15)
+
+# Load adapters from entry points
+points = entry_points().select(group="n-p-alc.uniseg.adapters")
+for entry_point in points.names:
+    try:
+        module = points[entry_point].load()
+        if isinstance(module, type):
+            loader = cast("BaseLoader", module())
+            loaders[loader.get_adapter().value] = loader
+        else:
+            loader = cast("BaseLoader", module.Loader())
+            loaders[loader.get_adapter().value] = loader
+    except Exception as e:  # noqa: PERF203
+        warn(f"Failed to import uniseg adapter {entry_point}: {e}", RuntimeWarning, 15)
+
 
 EXPORTER_MAPPING: dict[str, "MessageExporter"] = {
     SupportAdapter.nonebug.value: loaders[SupportAdapter.nonebug.value].get_exporter()
