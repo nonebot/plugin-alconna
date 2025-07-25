@@ -33,7 +33,7 @@ def test_uniseg():
         Text("man").italic(0, 1),
     ]
     assert text1.replace("o", "e") == Text("helle werld man").color("red", 0, -3).italic(3, -2)
-    assert f"{text1:#}" == f"{ansi(31)}hel{ansi(31, 3)}lo world {ansi(3)}m{ansi(0)}an"
+    assert f"{text1:#}" == f"{ansi(31)}hel{ansi(0)}{ansi(31, 3)}lo world {ansi(0)}{ansi(3)}m{ansi(0)}an"
     pat = select(Text)
     assert pat.first.validate(Text("foobar")).value() == Text("foobar")
     assert pat.first.validate(Video(url="foobar")(Text("foobar"))).value() == Text("foobar")

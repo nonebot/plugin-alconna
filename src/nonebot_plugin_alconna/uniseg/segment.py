@@ -242,6 +242,10 @@ class Text(Segment):
     text: str
     styles: dict[tuple[int, int], list[str]] = field(default_factory=dict)
 
+    @staticmethod
+    def br():
+        return Text("\n", {(0, 1): ["br"]})
+
     def __post_init__(self):
         self.text = str(self.text)
 
@@ -346,6 +350,9 @@ class Text(Segment):
                 result.append(text[right : scale[0]])
             right = scale[1]
             prefix = "".join(f"<{style}>" for style in styles[scale])
+            if prefix == "<br>":
+                result.append("<br/>")
+                continue
             suffix = "".join(f"</{style}>" for style in reversed(styles[scale]))
             result.append(prefix + text[scale[0] : scale[1]] + suffix)
         result.append(text[right:])
@@ -368,12 +375,10 @@ class Text(Segment):
         right = scales[0][1]
         for scale in scales:
             if scale[0] > right:
-                result.append("\033[0m")
                 result.append(text[right : scale[0]])
             right = scale[1]
             prefix = ";".join(f"{STYLE_TYPE_MAP[style]}" for style in styles[scale])
-            result.append(f"\033[{prefix}m{text[scale[0] : scale[1]]}")
-        result.append("\033[0m")
+            result.append(f"\033[{prefix}m{text[scale[0] : scale[1]]}\033[0m")
         result.append(text[right:])
         return "".join(result)
 
@@ -404,8 +409,7 @@ class Text(Segment):
         for scale in scales:
             if scale[0] > right:
                 result.append(Text(text[right : scale[0]]))
-            result.append(Text(text[scale[0] : scale[1]], {(scale[0] - left, scale[1] - left): styles[scale]}))
-            left = scale[0]
+            result.append(Text(text[scale[0] : scale[1]], {(0, scale[1] - scale[0]): styles[scale]}))
             right = scale[1]
         if right < len(text):
             result.append(Text(text[right:]))

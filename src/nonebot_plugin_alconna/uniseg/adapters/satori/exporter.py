@@ -6,9 +6,9 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.satori.bot import Bot as SatoriBot
 from nonebot.adapters.satori.message import Text as _Text
 from nonebot.adapters.satori.message import STYLE_TYPE_MAP
-from nonebot.adapters.satori.event import NoticeEvent, MessageEvent, ReactionEvent, InteractionCommandMessageEvent
 from nonebot.adapters.satori.message import Message, MessageSegment
 from nonebot.adapters.satori.models import ChannelType, MessageObject
+from nonebot.adapters.satori.event import NoticeEvent, MessageEvent, ReactionEvent, InteractionCommandMessageEvent
 
 from nonebot_plugin_alconna.uniseg.target import Target
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
@@ -79,21 +79,27 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return str(event.message.id)
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Union[Bot, None]):
         if not seg.styles:
             return MessageSegment.text(seg.text)
-        if seg.extract_most_style() == "br":
-            return MessageSegment.br()
-        if seg.extract_most_style() == "link":
-            if not getattr(seg, "_children", []):
-                return MessageSegment.link(seg.text)
-            return MessageSegment.link(seg.text, seg._children[0].text)  # type: ignore
         if seg.extract_most_style() == "markdown":
             return _Text("text", {"text": seg.text, "styles": {(0, len(seg.text)): ["chronocat:markdown"]}})
-        styles = seg.styles.copy()
-        for scale, style in seg.styles.items():
-            styles[scale] = [STYLE_TYPE_MAP.get(s, s) for s in style]
-        return _Text("text", {"text": seg.text, "styles": styles})
+        res = Message()
+        for part in seg.style_split():
+            if part.extract_most_style() == "br":
+                res.append(MessageSegment.br())
+            elif part.extract_most_style() == "link":
+                if not getattr(part, "_children", []):
+                    res.append(MessageSegment.link(part.text))
+                else:
+                    res.append(MessageSegment.link(part.text, part._children[0].text))  # type: ignore
+            else:
+                styles = part.styles.copy()
+                for scale, style in part.styles.items():
+                    styles[scale] = [STYLE_TYPE_MAP.get(s, s) for s in style]
+                res.append(_Text("text", {"text": part.text, "styles": styles}))
+        res.__merge_text__()
+        return res
 
     @export
     async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
@@ -247,7 +253,9 @@ class SatoriMessageExporter(MessageExporter[Message]):
         if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel:
             channel = mid.channel or context.channel
             if delete:
-                return await bot.reaction_delete(channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id)
+                return await bot.reaction_delete(
+                    channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id
+                )
             return await bot.reaction_create(channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id)
 
     def get_reply(self, mid: Any):

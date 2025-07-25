@@ -1,10 +1,8 @@
 from pathlib import Path
 from base64 import b64decode
-from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.satori.message import Message
-from nonebot.adapters.satori.event import MessageEvent, ReactionEvent, InteractionCommandMessageEvent
 from nonebot.adapters.satori.message import MessageSegment
 from nonebot.adapters.satori.message import At as AtSegment
 from nonebot.adapters.satori.message import File as FileSegment
@@ -16,6 +14,7 @@ from nonebot.adapters.satori.message import Sharp as SharpSegment
 from nonebot.adapters.satori.message import Video as VideoSegment
 from nonebot.adapters.satori.message import Button as ButtonSegment
 from nonebot.adapters.satori.message import RenderMessage as RenderMessageSegment
+from nonebot.adapters.satori.event import MessageEvent, ReactionEvent, InteractionCommandMessageEvent
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
