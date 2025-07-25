@@ -46,7 +46,7 @@ dev = [
     "uvicorn[standard]>=0.28.1",
     "pydantic>=2.7.0",
     "nonebot2[httpx,websockets]>=2.3.0",
-    "nonebot-adapter-console>=0.5.0",
+    "nonebot-adapter-console<0.10.0,>=0.9.0",
     "nonebot-adapter-ding>=2.0.0a16",
     "nonebot-adapter-discord>=0.1.8",
     "nonebot-adapter-dodo>=0.2.1",
@@ -94,7 +94,7 @@ test = [
     "pyyaml>=6.0.1",
     "nonebot-adapter-telegram>=0.1.0b18",
     "nonebot-adapter-kaiheila>=0.3.4",
-    "nonebot-adapter-console>=0.6.0",
+    "nonebot-adapter-console<0.10.0,>=0.9.0",
 ]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]

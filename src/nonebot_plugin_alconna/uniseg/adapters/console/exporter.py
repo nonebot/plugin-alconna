@@ -1,10 +1,12 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union, Sequence
 
+from nonechat.model import DIRECT
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.console import Bot as ConsoleBot
-from nonebot.adapters.console.event import MessageEvent
 from nonebot.adapters.console.message import Message, MessageSegment
+from nonebot.adapters.console.event import MessageEvent, MessageResponse
 
+from nonebot_plugin_alconna import Segment
 from nonebot_plugin_alconna.uniseg.segment import Text, Emoji
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
@@ -19,9 +21,18 @@ class ConsoleMessageExporter(MessageExporter[Message]):
         return SupportAdapter.console
 
     def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+        assert isinstance(event, MessageEvent)
+        if event.channel.id == DIRECT.id or event.channel.id.startswith("private:"):
+            # If the event is a direct message, we can use the user ID as the target ID
+            return Target(
+                event.user.id,
+                private=True,
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.console,
+            )
         return Target(
-            event.get_user_id(),
-            private=True,
+            event.channel.id,
             adapter=self.get_adapter(),
             self_id=bot.self_id if bot else None,
             scope=SupportScope.console,
@@ -29,7 +40,7 @@ class ConsoleMessageExporter(MessageExporter[Message]):
 
     def get_message_id(self, event: Event) -> str:
         assert isinstance(event, MessageEvent)
-        return str(event.self_id)
+        return event.message_id
 
     @export
     async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
@@ -54,4 +65,37 @@ class ConsoleMessageExporter(MessageExporter[Message]):
             assert isinstance(message, Message)
         if isinstance(target, Event):
             return await bot.send(target, message, **kwargs)  # type: ignore
-        return await bot.send_msg(user_id=target.id, message=message, **kwargs)
+        if target.private:
+            return await bot.send_private_message(user_id=target.id, message=message)
+        return await bot.send_message(channel_id=target.id, message=message)
+
+    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+        assert isinstance(bot, ConsoleBot)
+        if isinstance(mid, str):
+            if isinstance(context, Event):
+                assert isinstance(context, MessageEvent)
+                await bot.recall_message(message_id=mid, channel_id=context.channel.id)
+            else:
+                if context.private:
+                    channel_id = (await bot.create_dm(context.id)).id
+                else:
+                    channel_id = context.id
+                await bot.recall_message(message_id=mid, channel_id=channel_id)
+        elif isinstance(mid, MessageResponse):
+            await bot.recall_message(mid.message_id, channel_id=mid.channel_id)
+
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
+        assert isinstance(bot, ConsoleBot)
+        new_msg = await self.export(new, bot, True)
+        if isinstance(mid, str):
+            if isinstance(context, Event):
+                assert isinstance(context, MessageEvent)
+                await bot.edit_message(message_id=mid, channel_id=context.channel.id, content=new_msg)
+            else:
+                if context.private:
+                    channel_id = (await bot.create_dm(context.id)).id
+                else:
+                    channel_id = context.id
+                await bot.edit_message(message_id=mid, channel_id=channel_id, content=new_msg)
+        elif isinstance(mid, MessageResponse):
+            await bot.edit_message(mid.message_id, mid.channel_id, new_msg)

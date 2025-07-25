@@ -1,4 +1,6 @@
 import nonebot
+
+# from nonebot.adapters.console import Adapter as ConsoleAdapter
 from nonebot.adapters.onebot.v11 import Adapter as ONEBOT_V11Adapter
 
 # from nonebot.adapters.satori import Adapter as SatoriAdapter
