@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.satori.message import Message
-from nonebot.adapters.satori.event import MessageEvent
+from nonebot.adapters.satori.event import MessageEvent, ReactionEvent, InteractionCommandMessageEvent
 from nonebot.adapters.satori.message import MessageSegment
 from nonebot.adapters.satori.message import At as AtSegment
 from nonebot.adapters.satori.message import File as FileSegment
@@ -175,8 +175,7 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
         )(*self.generate(seg.children))
 
     async def extract_reply(self, event: Event, bot: Bot):
-        if TYPE_CHECKING:
-            assert isinstance(event, MessageEvent)
+        assert isinstance(event, (MessageEvent, ReactionEvent, InteractionCommandMessageEvent))
         if event.reply:
             return Reply(
                 str(event.reply.data.get("id")),

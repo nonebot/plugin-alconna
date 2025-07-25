@@ -6,7 +6,7 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.satori.bot import Bot as SatoriBot
 from nonebot.adapters.satori.message import Text as _Text
 from nonebot.adapters.satori.message import STYLE_TYPE_MAP
-from nonebot.adapters.satori.event import NoticeEvent, MessageEvent
+from nonebot.adapters.satori.event import NoticeEvent, MessageEvent, ReactionEvent, InteractionCommandMessageEvent
 from nonebot.adapters.satori.message import Message, MessageSegment
 from nonebot.adapters.satori.models import ChannelType, MessageObject
 
@@ -75,7 +75,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
-        assert isinstance(event, MessageEvent)
+        assert isinstance(event, (MessageEvent, ReactionEvent, InteractionCommandMessageEvent))
         return str(event.message.id)
 
     @export
@@ -195,7 +195,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, SatoriBot)
-        if isinstance(context, MessageEvent) and isinstance(mid, str):
+        if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel and isinstance(mid, str):
             await bot.message_delete(channel_id=context.channel.id, message_id=mid)
             return
         _mid: MessageObject = cast(MessageObject, mid)
@@ -205,16 +205,14 @@ class SatoriMessageExporter(MessageExporter[Message]):
                 await bot.message_delete(channel_id=channel.id, message_id=_mid.id)
             else:
                 await bot.message_delete(channel_id=context.id, message_id=_mid.id)
-        else:
-            if TYPE_CHECKING:
-                assert isinstance(context, MessageEvent)
+        elif isinstance(context, (MessageEvent, NoticeEvent)) and context.channel:
             channel = _mid.channel or context.channel
             await bot.message_delete(channel_id=channel.id, message_id=_mid.id)
 
     async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
         assert isinstance(bot, SatoriBot)
         new_msg = await self.export(new, bot, True)
-        if isinstance(context, MessageEvent) and isinstance(mid, str):
+        if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel and isinstance(mid, str):
             return await bot.update_message(context.channel.id, mid, new_msg)
         _mid: MessageObject = cast(MessageObject, mid)
         if isinstance(context, Target):
@@ -222,14 +220,13 @@ class SatoriMessageExporter(MessageExporter[Message]):
             if context.private:
                 channel_id = (await bot.user_channel_create(user_id=context.id)).id
             return await bot.update_message(channel_id, _mid.id, new_msg)
-        if TYPE_CHECKING:
-            assert isinstance(context, MessageEvent)
-        channel = mid.channel or context.channel
-        return await bot.update_message(channel.id, _mid.id, new_msg)
+        if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel:
+            channel = mid.channel or context.channel
+            return await bot.update_message(channel.id, _mid.id, new_msg)
 
     async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
         assert isinstance(bot, SatoriBot)
-        if isinstance(context, MessageEvent) and isinstance(mid, str):
+        if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel and isinstance(mid, str):
             if delete:
                 return await bot.reaction_delete(
                     channel_id=context.channel.id, message_id=mid, emoji=emoji.name or emoji.id
@@ -247,12 +244,11 @@ class SatoriMessageExporter(MessageExporter[Message]):
                     channel_id=channel_id, message_id=_mid.id, emoji=emoji.name or emoji.id
                 )
             return await bot.reaction_create(channel_id=channel_id, message_id=_mid.id, emoji=emoji.name or emoji.id)
-        if TYPE_CHECKING:
-            assert isinstance(context, MessageEvent)
-        channel = mid.channel or context.channel
-        if delete:
-            return await bot.reaction_delete(channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id)
-        return await bot.reaction_create(channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id)
+        if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel:
+            channel = mid.channel or context.channel
+            if delete:
+                return await bot.reaction_delete(channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id)
+            return await bot.reaction_create(channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id)
 
     def get_reply(self, mid: Any):
         _mid: MessageObject = cast(MessageObject, mid)
