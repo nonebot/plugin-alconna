@@ -144,7 +144,7 @@ class AlconnaRule:
         self.command = weakref.ref(command, lambda _: _update(_.__hash__()))
         if _aliases:
             for alias in _aliases:
-                command.shortcut(alias, prefix=True)
+                command.shortcut(alias, prefix=True, compact=False)
         self.skip = skip_for_unmatch
         self.executor = ExtensionExecutor(self, extensions, exclude_ext)
         self.executor.post_init(command)

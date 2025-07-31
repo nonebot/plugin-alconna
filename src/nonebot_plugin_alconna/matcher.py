@@ -144,6 +144,7 @@ class AlconnaMatcher(Matcher):
         arguments: list[Any] | None = None,
         fuzzy: bool = True,
         prefix: bool = False,
+        compact: bool | None = True,
         wrapper: ShortcutRegWrapper | None = None,
         humanized: str | None = None,
     ) -> type[Self]:
@@ -155,6 +156,7 @@ class AlconnaMatcher(Matcher):
             arguments (list[Any] | None, optional): 快捷命令参数, 默认为 `None`
             fuzzy (bool, optional): 是否允许命令后随参数, 默认为 `True`
             prefix (bool, optional): 是否调用时保留指令前缀, 默认为 `False`
+            compact (bool, optional): 是否允许快捷指令与后随参数之间不包含分隔符，默认为 `True`. 当 compact 为 `None` 时表示跟随 CommandMeta.compact
             wrapper (ShortcutRegWrapper, optional): 快捷指令的正则匹配结果的额外处理函数, 默认为 `None`
             humanized (str, optional): 快捷指令的人类可读描述, 默认为 `None`
 
@@ -176,6 +178,7 @@ class AlconnaMatcher(Matcher):
             arguments (list[Any] | None, optional): 快捷命令参数, 默认为 `None`
             fuzzy (bool, optional): 是否允许命令后随参数, 默认为 `True`
             prefix (bool, optional): 是否调用时保留指令前缀, 默认为 `False`
+            compact (bool, optional): 是否允许快捷指令与后随参数之间不包含分隔符，默认为 `True`. 当 compact 为 `None` 时表示跟随 CommandMeta.compact
             wrapper (ShortcutRegWrapper, optional): 快捷指令的正则匹配结果的额外处理函数, 默认为 `None`
             humanized (str, optional): 快捷指令的人类可读描述, 默认为 `None`
 
