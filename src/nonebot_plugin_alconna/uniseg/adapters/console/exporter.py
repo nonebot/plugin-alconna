@@ -6,9 +6,8 @@ from nonebot.adapters.console import Bot as ConsoleBot
 from nonebot.adapters.console.message import Message, MessageSegment
 from nonebot.adapters.console.event import MessageEvent, MessageResponse
 
-from nonebot_plugin_alconna import Segment
-from nonebot_plugin_alconna.uniseg.segment import Text, Emoji
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
+from nonebot_plugin_alconna.uniseg.segment import Text, Emoji, Segment
 from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
 
 
