@@ -8,7 +8,7 @@ from tests.fake import fake_group_message_event_v11
 
 @pytest.mark.asyncio()
 async def test_command(app: App):
-    from nonebot_plugin_alconna import Args, Alconna, on_alconna
+    from nonebot_plugin_alconna import Args, Alconna, CommandMeta, on_alconna
 
     alc = Alconna("weather", Args["city#城市名称", str])
     matcher = on_alconna(alc, aliases={"天气"})
@@ -29,3 +29,25 @@ async def test_command(app: App):
         event2 = fake_group_message_event_v11(message=Message("天气abcd"), user_id=123)
         ctx.receive_event(bot, event2)
         ctx.should_not_pass_rule()
+
+    matcher.clean()
+
+    alc = Alconna(
+        "weather",
+        Args["city#城市名称", str],
+        meta=CommandMeta(compact=True),
+    )
+    matcher = on_alconna(alc, aliases={"天气"})
+
+    @matcher.handle()
+    async def _(city: str):
+        await matcher.send(city)
+
+    async with app.test_matcher(matcher) as ctx:
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(base=Bot, adapter=adapter)
+        event2 = fake_group_message_event_v11(message=Message("天气abcd"), user_id=123)
+        ctx.receive_event(bot, event2)
+        ctx.should_call_send(event2, "abcd")
+
+    matcher.clean()

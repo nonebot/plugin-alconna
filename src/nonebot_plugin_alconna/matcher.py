@@ -21,6 +21,7 @@ from arclet.alconna.tools import AlconnaFormat
 from nonebot.consts import ARG_KEY, RECEIVE_KEY
 from nonebot.internal.params import DefaultParam
 from nepattern import ANY, STRING, TPattern, AnyString
+from nonebot.internal.matcher.matcher import MatcherMeta
 from _weakref import _remove_dead_weakref  # type: ignore
 from nonebot import require, get_driver, get_plugin_config
 from nonebot.plugin.on import store_matcher, get_matcher_source
@@ -106,17 +107,46 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class AlconnaMatcher(Matcher):
+class AlconnaMatcherMeta(MatcherMeta):
+    if TYPE_CHECKING:
+        _command_path: str
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(type={self.type!r}"
+            + (f", module={self.module_name}" if self.module_name else "")
+            + (f", lineno={self._source.lineno}" if self._source and self._source.lineno is not None else "")
+            + f", command={self._command_path}"
+            + ")"
+        )
+
+
+class AlconnaMatcher(Matcher, metaclass=AlconnaMatcherMeta):
     # command: ClassVar[weakref.ReferenceType[Alconna]]
     basepath: ClassVar[str]
     executor: ClassVar[ExtensionExecutor]
-    _command_path: ClassVar[str]
+    _command_path: ClassVar[str] = ""
     _tests: ClassVar[list[tuple[UniMessage, dict[str, Any] | None, bool]]]
     _rule: ClassVar[AlconnaRule]
 
     @classmethod
     def command(cls) -> Alconna:
         return cls._rule.command()  # type: ignore
+
+    @classmethod
+    def clean(cls) -> None:
+        matchers[cls.priority].remove(cls)
+        cls._rule.destroy()
+        cls.executor.destroy()
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(type={self.type!r}"
+            + (f", module={self.module_name}" if self.module_name else "")
+            + (f", lineno={self._source.lineno}" if self._source and self._source.lineno is not None else "")
+            + f", command={self._command_path}"
+            + ")"
+        )
 
     @classmethod
     @overload
@@ -969,8 +999,7 @@ def on_alconna(
                 command_manager.delete(command)
                 return _matcher
             if conflict_resolver == "replace":
-                _matcher.destroy()
-                command_manager.delete(exist)
+                _matcher.clean()
                 command_manager.register(command)
             else:
                 exist.formatter.remove(command)
@@ -1033,7 +1062,6 @@ def on_alconna(
     )
     matcher: type[AlconnaMatcher] = cast("type[AlconnaMatcher]", NewMatcher)
     matcher.HANDLER_PARAM_TYPES = params
-    log("TRACE", f"Define new matcher {NewMatcher}")
 
     matchers[priority].append(NewMatcher)
     store_matcher(matcher)
@@ -1043,6 +1071,8 @@ def on_alconna(
     matcher.executor = executor
     command.meta.extra["matcher.source"] = matcher._source
     command.meta.extra["matcher.position"] = (priority, len(matchers[priority]) - 1)
+
+    log("TRACE", f"Define new matcher {NewMatcher}")
 
     def remove(wr, selfref=weakref.ref(command.meta), _atomic_removal=_remove_dead_weakref):
         self = selfref()

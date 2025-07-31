@@ -144,7 +144,7 @@ class AlconnaRule:
         self.command = weakref.ref(command, lambda _: _update(_.__hash__()))
         if _aliases:
             for alias in _aliases:
-                command.shortcut(alias, prefix=True, compact=False)
+                command.shortcut(alias, prefix=True, compact=None)
         self.skip = skip_for_unmatch
         self.executor = ExtensionExecutor(self, extensions, exclude_ext)
         self.executor.post_init(command)
@@ -197,6 +197,13 @@ class AlconnaRule:
                 return content
 
             self._waiter = _waiter_handle
+
+    def destroy(self) -> None:
+        """销毁 Alconna 规则，释放资源。"""
+        self._tasks.clear()
+        if cmd := self.command():
+            command_manager.delete(cmd)
+        self._waiter = None
 
     @property
     def rule(self) -> Rule:

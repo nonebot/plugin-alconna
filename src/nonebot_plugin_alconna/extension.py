@@ -261,7 +261,14 @@ class ExtensionExecutor(SelectedExtensions):
 
         _callbacks.add(self._callback)
 
-        finalize(self, _callbacks.remove, self._callback)
+        finalize(self, _callbacks.discard, self._callback)
+
+    def destroy(self) -> None:
+        """销毁当前的扩展执行器，清理相关资源。"""
+        _callbacks.discard(self._callback)
+        self.extensions.clear()
+        self.context.clear()
+        del self._rule
 
     def _callback(self, *append_global_ext: type[Extension] | Extension):
         for _ext in append_global_ext:

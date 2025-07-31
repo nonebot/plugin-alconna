@@ -231,7 +231,7 @@ reportShadowedImports = false
 disableBytesTypePromotions = true
 
 [tool.pdm.scripts]
-test = "pytest -v -n 2 -W ignore ./tests/"
+test = "pytest -v -W ignore ./tests/"
 format = { composite = ["isort ./src/ ./example/ ./tests/","black ./src/ ./example/ ./tests/","ruff check ./src/ ./example/ ./tests/"] }
 
 [tool.pytest.ini_options]
