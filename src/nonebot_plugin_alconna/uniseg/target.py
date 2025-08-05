@@ -249,7 +249,11 @@ class Target:
     @classmethod
     def load(cls, data: dict[str, Any]):
         scope = data.pop("scope", None)
+        if isinstance(scope, str):
+            scope = SupportScope(scope)
         adapter = data.pop("adapter", None)
+        if isinstance(adapter, str):
+            adapter = SupportAdapter(adapter)
         platform = data.pop("platforms", None)
         if platform:
             platform = set(platform)  # type: ignore
