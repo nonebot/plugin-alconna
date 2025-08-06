@@ -113,8 +113,7 @@ class AlconnaMatcherMeta(MatcherMeta):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}(type={self.type!r}"
-            + f", command={escape_tag(self._command_path)}"
+            f"{self.__class__.__name__}(type={self.type!r}, command={escape_tag(self._command_path)}"
             + (f", module={self.module_name}" if self.module_name else "")
             + (f", lineno={self._source.lineno}" if self._source and self._source.lineno is not None else "")
             + ")"
@@ -141,8 +140,7 @@ class AlconnaMatcher(Matcher, metaclass=AlconnaMatcherMeta):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}(type={self.type!r}"
-            + f", command={escape_tag(self._command_path)}"
+            f"{self.__class__.__name__}(type={self.type!r}, command={escape_tag(self._command_path)}"
             + (f", module={self.module_name}" if self.module_name else "")
             + (f", lineno={self._source.lineno}" if self._source and self._source.lineno is not None else "")
             + ")"

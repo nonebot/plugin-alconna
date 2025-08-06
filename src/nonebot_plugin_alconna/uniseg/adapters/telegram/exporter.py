@@ -48,8 +48,22 @@ STYLE_TYPE_MAP = {
     "strikethrough": "strikethrough",
     "spl": "spoiler",
     "spoiler": "spoiler",
-    "blockquote": "spoiler",
     "code": "code",
+    "pre": "pre",
+    "mention": "mention",
+    "hashtag": "hashtag",
+    "cashtag": "cashtag",
+    "bot_command": "bot_command",
+    "url": "url",
+    "link": "url",
+    "email": "email",
+    "phone_number": "phone_number",
+    "expandable_blockquote": "expandable_blockquote",
+    "blockquote": "blockquote",
+    "text_link": "text_link",
+    "text_mention": "text_mention",
+    "emoji": "emoji",
+    "custom_emoji": "custom_emoji",
 }
 
 
@@ -88,7 +102,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         res = []
         for part in seg.style_split():
             style = part.extract_most_style()
-            res.append(Entity(STYLE_TYPE_MAP.get(style, style), {"text": part.text}))
+            res.append(Entity(STYLE_TYPE_MAP.get(style, "text"), {"text": part.text}))
         return res
 
     @export
