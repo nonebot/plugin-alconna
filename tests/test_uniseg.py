@@ -6,7 +6,7 @@ from nonebot.adapters.onebot.v11.event import Reply
 from nonebot.compat import model_dump, type_validate_python
 from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment
 
-from tests.fake import fake_group_message_event_v11
+from tests.fake import fake_group_message_event_v11, fake_private_message_event_v11
 
 
 def ansi(*code) -> str:
@@ -277,6 +277,17 @@ async def test_unimsg_send(app: App):
             MessageSegment.reply(event.message_id + 1) + MessageSegment.at(123) + MessageSegment.text("world!"),
         )
         ctx.should_call_api("delete_msg", {"message_id": event.message_id + 1})
+        event1 = fake_private_message_event_v11(message=Message("test_unimsg_send"), user_id=123)
+        ctx.receive_event(bot, event1)
+        ctx.should_call_send(
+            event1,
+            MessageSegment.reply(event1.message_id) + MessageSegment.text("hello!"),
+        )
+        ctx.should_call_send(
+            event1,
+            MessageSegment.reply(event1.message_id + 1) + MessageSegment.text("world!"),
+        )
+        ctx.should_call_api("delete_msg", {"message_id": event1.message_id + 1})
 
     async with app.test_api() as ctx1:
         adapter = get_adapter(Adapter)

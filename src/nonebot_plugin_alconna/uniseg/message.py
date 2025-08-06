@@ -1380,12 +1380,14 @@ class UniMessage(list[TS]):
                 except LookupError as e:
                     raise SerializeFailed(lang.require("nbp-uniseg", "bot_missing")) from e
         if at_sender:
-            if isinstance(at_sender, str):
-                self.insert(0, At("user", at_sender))  # type: ignore
-            elif isinstance(target, Event):
-                self.insert(0, At("user", target.get_user_id()))  # type: ignore
-            else:
-                raise TypeError("at_sender must be str when target is not Event")
+            _target = target if isinstance(target, Target) else get_target(target, bot)
+            if not _target.private:
+                if isinstance(at_sender, str):
+                    self.insert(0, At("user", at_sender))  # type: ignore
+                elif isinstance(target, Event):
+                    self.insert(0, At("user", target.get_user_id()))  # type: ignore
+                else:
+                    raise TypeError("at_sender must be str when target is not Event")
         if reply_to:
             if isinstance(reply_to, Reply):
                 self.insert(0, reply_to)  # type: ignore
