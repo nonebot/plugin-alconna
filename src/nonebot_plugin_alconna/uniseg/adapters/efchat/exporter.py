@@ -56,14 +56,10 @@ class EFChatMessageExporter(MessageExporter["Message"]):
     async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.url:
             return MessageSegment.image(url=seg.url)
-        if seg.__class__.to_url and seg.raw:
-            return MessageSegment.image(
-                await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name)
-            )
-        if seg.__class__.to_url and seg.path:
-            return MessageSegment.image(
-                await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name)
-            )
+        if seg.path:
+            return MessageSegment.image(path=seg.path)
+        if seg.raw:
+            return MessageSegment.image(raw=seg.raw_bytes)
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
     @export

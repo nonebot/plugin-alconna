@@ -1236,18 +1236,19 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-efchat"
-version = "0.1.4"
+version = "0.1.8"
 requires_python = "<4.0,>=3.9"
 summary = "A NoneBot adapter for EFChat"
 dependencies = [
     "aiofiles>=23.0.0",
-    "nonebot2<3.0.0,>=2.2.0",
+    "filetype>=1.0.0",
+    "nonebot2>=2.2.0",
     "pydantic!=2.5.0,!=2.5.1,<3.0.0,>=1.10.0",
-    "typing-extensions<5.0.0,>=4.0.0",
+    "typing-extensions>=4.0.0",
 ]
 files = [
-    {file = "nonebot_adapter_efchat-0.1.4-py3-none-any.whl", hash = "sha256:91155f97aaf6375532aaec57f1fe8e6030afa356bfed6fc2d9ae4a013ae2850f"},
-    {file = "nonebot_adapter_efchat-0.1.4.tar.gz", hash = "sha256:2527cd8c7a953b95dafbe465357f21d8a3e44397ef9b10fecb617a266b8c0ad1"},
+    {file = "nonebot_adapter_efchat-0.1.8-py3-none-any.whl", hash = "sha256:dc05db46d640fdf15fab533d168274c1f16c4a8ac7c510ddb02d4033981134ee"},
+    {file = "nonebot_adapter_efchat-0.1.8.tar.gz", hash = "sha256:79912b8a9fe355102cb31ea4d4b05dd2660c08354d9d4ef0f4b769d0915e4ea9"},
 ]
 
 [[package]]
