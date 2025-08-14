@@ -40,6 +40,11 @@
   },
   "nbp-alc/builtin": {
     "lang": {
+      "help": {
+        "list": "查看支持的语言列表",
+        "switch": "切换语言",
+        "main": "国际化配置相关功能"
+      },
       "list": "支持的语言列表:",
       "switch": "切换语言成功: '{locale}'。",
       "locale_missing": "{:At(user, $event.get_user_id())}缺少语言参数，请输入：",

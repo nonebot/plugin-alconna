@@ -5,7 +5,8 @@ from nonebot.internal.params import Depends
 from nonebot.exception import SkippedException
 from nonebot.internal.adapter import Bot, Event, Message
 
-from .message import TS, UniMessage
+from .segment import TS
+from .message import UniMessage
 from .exporter import Target, SerializeFailed
 from .functions import get_target, get_message_id
 from .constraint import UNISEG_TARGET, UNISEG_MESSAGE, UNISEG_MESSAGE_ID

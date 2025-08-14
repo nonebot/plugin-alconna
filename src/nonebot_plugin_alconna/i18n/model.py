@@ -57,7 +57,14 @@ class NbpAlc:
     test = NbpAlcTest
 
 
+class NbpAlcBuiltinLangHelp:
+    list: LangItem = LangItem("nbp-alc/builtin", "lang.help.list")
+    switch: LangItem = LangItem("nbp-alc/builtin", "lang.help.switch")
+    main: LangItem = LangItem("nbp-alc/builtin", "lang.help.main")
+
+
 class NbpAlcBuiltinLang:
+    help = NbpAlcBuiltinLangHelp
     list: LangItem = LangItem("nbp-alc/builtin", "lang.list")
     switch: LangItem = LangItem("nbp-alc/builtin", "lang.switch")
     locale_missing: LangItem = LangItem("nbp-alc/builtin", "lang.locale_missing")

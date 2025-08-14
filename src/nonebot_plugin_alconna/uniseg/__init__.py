@@ -30,7 +30,7 @@ from .segment import Button as Button
 from .tools import get_bot as get_bot
 from .fallback import FORBID as FORBID
 from .fallback import IGNORE as IGNORE
-from .message import Receipt as Receipt
+from .receipt import Receipt as Receipt
 from .segment import RefNode as RefNode
 from .segment import Segment as Segment
 from .fallback import TO_TEXT as TO_TEXT

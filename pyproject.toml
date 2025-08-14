@@ -5,7 +5,7 @@ authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "tarina<0.7,>=0.6.8",
+    "tarina<0.8.0,>=0.7.1",
     "nepattern<1.0,>=0.7.7",
     "arclet-alconna<2.0,>=1.8.40",
     "arclet-alconna-tools>=0.7.10",
@@ -229,6 +229,7 @@ defineConstant = { PYDANTIC_V2 = true }
 typeCheckingMode = "basic"
 reportShadowedImports = false
 disableBytesTypePromotions = true
+reportSelfClsParameterName = false
 
 [tool.pdm.scripts]
 test = "pytest -v -W ignore ./tests/"

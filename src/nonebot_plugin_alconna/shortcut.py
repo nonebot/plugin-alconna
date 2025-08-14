@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from nonebot.rule import Rule
 from tarina import is_awaitable
 from arclet.alconna import Alconna
+from tarina.tools import annotation
 from nonebot.permission import Permission
 from nonebot.dependencies import Dependent
 from arclet.alconna.tools import AlconnaString
@@ -17,7 +18,6 @@ from nonebot.internal.adapter import Message, MessageSegment, MessageTemplate
 from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
 
 from .typings import MReturn
-from .util import annotation
 from .pattern import patterns
 from .extension import Extension
 from .params import AlcExecResult

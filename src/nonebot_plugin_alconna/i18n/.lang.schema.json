@@ -189,6 +189,29 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "help": {
+              "title": "Help",
+              "description": "Scope 'help' of lang item",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "list": {
+                  "title": "list",
+                  "description": "value of lang item type 'list'",
+                  "type": "string"
+                },
+                "switch": {
+                  "title": "switch",
+                  "description": "value of lang item type 'switch'",
+                  "type": "string"
+                },
+                "main": {
+                  "title": "main",
+                  "description": "value of lang item type 'main'",
+                  "type": "string"
+                }
+              }
+            },
             "list": {
               "title": "list",
               "description": "value of lang item type 'list'",

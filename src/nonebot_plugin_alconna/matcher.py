@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassV
 from nonebot.rule import Rule
 from nonebot.params import Depends
 from tarina import run_always_await
+from tarina.tools import annotation
 from nonebot.utils import escape_tag
 from tarina.lang.model import LangItem
 from nonebot.permission import Permission
@@ -34,7 +35,6 @@ from nonebot.matcher import Matcher, matchers, current_bot, current_event, curre
 
 from .i18n import Lang
 from .config import Config
-from .util import annotation
 from .model import CompConfig
 from .rule import AlconnaRule
 from .uniseg.fallback import FallbackStrategy
@@ -694,7 +694,7 @@ class AlconnaMatcher(Matcher, metaclass=AlconnaMatcherMeta):
             pass
         else:
             extra["$message_id"] = msg_id
-        msg._handle_i18n(extra)
+        msg._handle_i18n(extra)  # type: ignore
         return msg
 
     @classmethod

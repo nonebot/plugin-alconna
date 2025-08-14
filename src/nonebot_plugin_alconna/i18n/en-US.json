@@ -40,6 +40,11 @@
   },
   "nbp-alc/builtin": {
     "lang": {
+      "help": {
+        "list": "View the list of supported languages",
+        "switch": "Switch languages",
+        "main": "Related functions for Internationalization"
+      },
       "list": "Following languages are supported:",
       "switch": "Switch to '{locale}' successfully.",
       "locale_missing": "{:At(user, $event.get_user_id())}Missing locale argument, please input:",

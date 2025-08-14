@@ -5,9 +5,9 @@ from pathlib import Path
 from copy import deepcopy
 from json import dumps, loads
 from types import FunctionType
-from collections.abc import Iterable, Sequence, Awaitable
-from typing_extensions import Self, TypeAlias, SupportsIndex, deprecated
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn, Protocol, overload
+from collections.abc import Iterable, Sequence
+from typing_extensions import Self, SupportsIndex, deprecated
+from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn
 
 from tarina import lang
 from tarina.lang.model import LangItem
@@ -45,9 +45,7 @@ from .segment import (
     get_segment_class,
 )
 
-T = TypeVar("T")
 TS = TypeVar("TS", bound=Segment)
-TS1 = TypeVar("TS1", bound=Segment)
 
 
 class _method:
@@ -60,24 +58,7 @@ class _method:
         return self.__func__.__get__(instance, owner)
 
 
-TM = TypeVar("TM", bound=Union[str, Message, "UniMessage"])
-
-
-class SendWrapper(Protocol):
-    async def __call__(self, bot: Bot, event: Event, send: TM) -> TM: ...
-
-
-current_send_wrapper: ContextModel[SendWrapper] = ContextModel("nonebot_plugin_alconna.uniseg.send_wrapper")
-
-
-Fragment: TypeAlias = Union[Segment, Iterable[Segment]]
-Visit: TypeAlias = Callable[[Segment], T]
-Render: TypeAlias = Callable[[dict[str, Any], list[Segment]], T]
-SyncTransformer: TypeAlias = Union[bool, Fragment, Render[Union[bool, Fragment]]]
-AsyncTransformer: TypeAlias = Union[bool, Fragment, Render[Awaitable[Union[bool, Fragment]]]]
-SyncVisitor: TypeAlias = Union[dict[str, SyncTransformer], Visit[Union[bool, Fragment]]]
-AsyncVisitor: TypeAlias = Union[dict[str, AsyncTransformer], Visit[Awaitable[Union[bool, Fragment]]]]
-
+current_send_wrapper = ContextModel("nonebot_plugin_alconna.uniseg.send_wrapper")
 MessageContainer = Union[str, Segment, Sequence["MessageContainer"], "UniMessage"]
 
 
@@ -88,527 +69,346 @@ class UniMessage(list[TS]):
         message: 消息内容
     """
 
-    if TYPE_CHECKING:
-
-        @classmethod
-        def text(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]], text: str  # type: ignore
-        ) -> UniMessage[TS1 | Text]:
-            """创建纯文本消息
-
-            参数:
-                text: 文本内容
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def style(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]], content: str, *style: str  # type: ignore
-        ) -> UniMessage[TS1 | Text]:
-            """创建带样式的文本消息
-
-            参数:
-                content: 文本内容
-                style: 样式
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def at(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]], user_id: str  # type: ignore
-        ) -> UniMessage[TS1 | At]:
-            """创建 @用户 消息
-
-            参数:
-                user_id: 要 @ 的用户 ID
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def at_role(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]], role_id: str  # type: ignore
-        ) -> UniMessage[TS1 | At]:
-            """创建 @角色组 消息
-
-            参数:
-                role_id: 要 @ 的角色 ID
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def at_channel(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]], channel_id: str  # type: ignore
-        ) -> UniMessage[TS1 | At]:
-            """创建 #频道 消息
-
-            参数:
-                channel_id: 要 @ 的频道 ID
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def at_all(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            online: bool = False,
-        ) -> UniMessage[TS1 | AtAll]:
-            """创建 @全体成员 消息
-
-            参数:
-                online: 是否只 @ 在线成员
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def emoji(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            id: str,
-            name: str | None = None,
-        ) -> UniMessage[TS1 | Emoji]:
-            """创建 emoji 消息
-
-            参数:
-                id: emoji ID
-                name: emoji 名称
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def image(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            width: int | None = None,
-            height: int | None = None,
-            name: str = "image.png",
-        ) -> UniMessage[TS1 | Image]:
-            """创建图片消息
-
-            参数:
-                id: 图片 ID
-                url: 图片链接
-                path: 图片路径
-                raw: 图片原始数据
-                mimetype: 图片 MIME 类型
-                name: 图片名称
-                width: 图片宽度
-                height: 图片高度
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def video(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            thumbnail: Image | None = None,
-            name: str = "video.mp4",
-        ) -> UniMessage[TS1 | Video]:
-            """创建视频消息
-
-            参数:
-                id: 视频 ID
-                url: 视频链接
-                path: 视频路径
-                raw: 视频原始数据
-                mimetype: 视频 MIME 类型
-                thumbnail: 视频缩略图
-                name: 视频名称
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def voice(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            duration: float | None = None,
-            name: str = "voice.wav",
-        ) -> UniMessage[TS1 | Voice]:
-            """创建语音消息
-
-            参数:
-                id: 语音 ID
-                url: 语音链接
-                path: 语音路径
-                raw: 语音原始数据
-                mimetype: 语音 MIME 类型
-                duration: 语音时长
-                name: 语音名称
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def audio(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            duration: float | None = None,
-            name: str = "audio.mp3",
-        ) -> UniMessage[TS1 | Audio]:
-            """创建音频消息
-
-            参数:
-                id: 音频 ID
-                url: 音频链接
-                path: 音频路径
-                raw: 音频原始数据
-                mimetype: 音频 MIME 类型
-                duration: 音频时长
-                name: 音频名称
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def file(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            name: str = "file.bin",
-        ) -> UniMessage[TS1 | File]:
-            """创建文件消息
-
-            参数:
-                id: 文件 ID
-                url: 文件链接
-                path: 文件路径
-                raw: 文件原始数据
-                mimetype: 文件 MIME 类型
-                name: 文件名称
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def reply(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]], id: str  # type: ignore
-        ) -> UniMessage[TS1 | Reply]:
-            """创建回复消息
-
-            参数:
-                id: 回复消息 ID
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def hyper(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            flag: Literal["xml", "json"],
-            content: str,
-        ) -> UniMessage[TS1 | Hyper]:
-            """创建卡片消息
-
-            参数:
-                flag: 卡片类型
-                content: 卡片内容
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def reference(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            *nodes: RefNode | CustomNode,
-            id: str | None = None,
-        ) -> UniMessage[TS1 | Reference]:
-            """创建转发消息
-
-            参数:
-                nodes: 转发消息节点
-                id: 此处不一定是消息ID，可能是其他ID，如消息序号等
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def keyboard(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            *buttons: Button,
-            id: str | None = None,
-            row: int | None = None,
-        ) -> UniMessage[TS1 | Keyboard]:
-            """创建转发消息
-
-            参数:
-                buttons: 按钮
-                id: 此处一般用来表示模板id，特殊情况下可能表示例如 bot_appid 等
-                row: 当消息中只写有一个 Keyboard 时可根据此参数约定按钮组的列数
-
-            返回:
-                构建的消息
-            """
-            ...
-
-        @classmethod
-        def i18n(
-            cls_or_self: UniMessage[TS1] | type[UniMessage[TS1]],  # type: ignore
-            item_or_scope: LangItem | str,
-            type_: str | None = None,
-            /,
-            *args,
-            mapping: dict | None = None,
-            **kwargs,
-        ) -> UniMessage[TS1 | I18n]:
-            """创建 i18n 消息"""
-            ...
-
-    else:
-
-        @_method
-        def text(cls_or_self, text: str) -> UniMessage[TS1 | Text]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Text(text))
-                return cls_or_self
-            return UniMessage(Text(text))
-
-        @_method
-        def style(cls_or_self, content: str, *style: str) -> UniMessage[TS1 | Text]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Text(content).mark(None, None, *style))
-                return cls_or_self
-            return UniMessage(Text(content).mark(None, None, *style))
-
-        @_method
-        def at(cls_or_self, user_id: str) -> UniMessage[TS1 | At]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(At("user", user_id))
-                return cls_or_self
-            return UniMessage(At("user", user_id))
-
-        @_method
-        def at_role(cls_or_self, role_id: str) -> UniMessage[TS1 | At]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(At("role", role_id))
-                return cls_or_self
-            return UniMessage(At("role", role_id))
-
-        @_method
-        def at_channel(cls_or_self, channel_id: str) -> UniMessage[TS1 | At]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(At("channel", channel_id))
-                return cls_or_self
-            return UniMessage(At("channel", channel_id))
-
-        @_method
-        def at_all(cls_or_self, online: bool = False) -> UniMessage[TS1 | AtAll]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(AtAll(online))
-                return cls_or_self
-            return UniMessage(AtAll(online))
-
-        @_method
-        def emoji(cls_or_self, id: str, name: str | None = None) -> UniMessage[TS1 | Emoji]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Emoji(id, name))
-                return cls_or_self
-            return UniMessage(Emoji(id, name))
-
-        @_method
-        def image(
-            cls_or_self,
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            width: int | None = None,
-            height: int | None = None,
-            name: str = "image.png",
-        ) -> UniMessage[TS1 | Image]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Image(id, url, path, raw, mimetype, name, width, height))
-                return cls_or_self
-            return UniMessage(Image(id, url, path, raw, mimetype, name, width, height))
-
-        @_method
-        def video(
-            cls_or_self,
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            thumbnail: Image | None = None,
-            name: str = "video.mp4",
-        ) -> UniMessage[TS1 | Video]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Video(id, url, path, raw, mimetype, name, thumbnail))
-                return cls_or_self
-            return UniMessage(Video(id, url, path, raw, mimetype, name, thumbnail))
-
-        @_method
-        def voice(
-            cls_or_self,
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            duration: float | None = None,
-            name: str = "voice.wav",
-        ) -> UniMessage[TS1 | Voice]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Voice(id, url, path, raw, mimetype, name, duration))
-                return cls_or_self
-            return UniMessage(Voice(id, url, path, raw, mimetype, name, duration))
-
-        @_method
-        def audio(
-            cls_or_self,
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            duration: float | None = None,
-            name: str = "audio.mp3",
-        ) -> UniMessage[TS1 | Audio]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Audio(id, url, path, raw, mimetype, name, duration))
-                return cls_or_self
-            return UniMessage(Audio(id, url, path, raw, mimetype, name, duration))
-
-        @_method
-        def file(
-            cls_or_self,
-            id: str | None = None,
-            url: str | None = None,
-            path: str | Path | None = None,
-            raw: bytes | BytesIO | None = None,
-            mimetype: str | None = None,
-            name: str = "file.bin",
-        ) -> UniMessage[TS1 | File]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(File(id, url, path, raw, mimetype, name))
-                return cls_or_self
-            return UniMessage(File(id, url, path, raw, mimetype, name))
-
-        @_method
-        def reply(cls_or_self, id: str) -> UniMessage[TS1 | Reply]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Reply(id))
-                return cls_or_self
-            return UniMessage(Reply(id))
-
-        @_method
-        def hyper(cls_or_self, flag: Literal["xml", "json"], content: str) -> UniMessage[TS1 | Hyper]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Hyper(flag, content))
-                return cls_or_self
-            return UniMessage(Hyper(flag, content))
-
-        @_method
-        def reference(cls_or_self, *nodes: RefNode | CustomNode, id: str | None = None) -> UniMessage[TS1 | Reference]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Reference(id=id, nodes=list(nodes)))
-                return cls_or_self
-            return UniMessage(Reference(id=id, nodes=list(nodes)))
-
-        @_method
-        def keyboard(
-            cls_or_self,
-            *buttons: Button,
-            id: str | None = None,
-            row: int | None = None,
-        ) -> UniMessage[TS1 | Keyboard]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(Keyboard(id=id, buttons=list(buttons), row=row))
-                return cls_or_self
-            return UniMessage(Keyboard(id=id, buttons=list(buttons), row=row))
-
-        @_method
-        def i18n(
-            cls_or_self,
-            item_or_scope: LangItem | str,
-            type_: str | None = None,
-            /,
-            *args,
-            mapping: dict | None = None,
-            **kwargs,
-        ) -> UniMessage[TS1 | I18n]:
-            if isinstance(cls_or_self, UniMessage):
-                cls_or_self.append(I18n(item_or_scope, type_, *args, mapping=mapping, **kwargs))  # type: ignore
-                return cls_or_self
-            return UniMessage(I18n(item_or_scope, type_, *args, mapping=mapping, **kwargs))  # type: ignore
-
-    @overload
-    def __init__(self): ...
-
-    @overload
-    def __init__(self: UniMessage[Text], message: str): ...
-
-    @overload
-    def __init__(self, message: TS): ...
-
-    @overload
-    def __init__(self: UniMessage[TS1], message: TS1): ...
-
-    @overload
-    def __init__(self, message: Iterable[TS]): ...
-
-    @overload
-    def __init__(self: UniMessage[TS1], message: Iterable[TS1]): ...
-
-    @overload
-    def __init__(self: UniMessage[Text], message: Iterable[str]): ...
-
-    @overload
-    def __init__(self: UniMessage[Text | TS1], message: Iterable[str | TS1]): ...
+    @_method
+    def text(cls_or_self: UniMessage | type[UniMessage], text: str):
+        """创建纯文本消息
+
+        参数:
+            text: 文本内容
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Text(text))
+            return cls_or_self
+        return UniMessage(Text(text))
+
+    @_method
+    def style(cls_or_self: UniMessage | type[UniMessage], content: str, *style: str):
+        """创建带样式的文本消息
+
+        参数:
+            content: 文本内容
+            style: 样式
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Text(content).mark(None, None, *style))
+            return cls_or_self
+        return UniMessage(Text(content).mark(None, None, *style))
+
+    @_method
+    def at(cls_or_self: UniMessage | type[UniMessage], user_id: str):
+        """创建 @用户 消息
+
+        参数:
+            user_id: 要 @ 的用户 ID
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(At("user", user_id))
+            return cls_or_self
+        return UniMessage(At("user", user_id))
+
+    @_method
+    def at_role(cls_or_self: UniMessage | type[UniMessage], role_id: str):
+        """创建 @角色组 消息
+
+        参数:
+            role_id: 要 @ 的角色 ID
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(At("role", role_id))
+            return cls_or_self
+        return UniMessage(At("role", role_id))
+
+    @_method
+    def at_channel(cls_or_self: UniMessage | type[UniMessage], channel_id: str):
+        """创建 #频道 消息
+
+        参数:
+            channel_id: 要 @ 的频道 ID
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(At("channel", channel_id))
+            return cls_or_self
+        return UniMessage(At("channel", channel_id))
+
+    @_method
+    def at_all(cls_or_self: UniMessage | type[UniMessage], online: bool = False):
+        """创建 @全体成员 消息
+
+        参数:
+            online: 是否只 @ 在线成员
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(AtAll(online))
+            return cls_or_self
+        return UniMessage(AtAll(online))
+
+    @_method
+    def emoji(cls_or_self: UniMessage | type[UniMessage], id: str, name: str | None = None):
+        """创建 emoji 消息
+
+        参数:
+            id: emoji ID
+            name: emoji 名称
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Emoji(id, name))
+            return cls_or_self
+        return UniMessage(Emoji(id, name))
+
+    @_method
+    def image(
+        cls_or_self: UniMessage | type[UniMessage],
+        id: str | None = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        raw: bytes | BytesIO | None = None,
+        mimetype: str | None = None,
+        width: int | None = None,
+        height: int | None = None,
+        name: str = "image.png",
+    ):
+        """创建图片消息
+
+        参数:
+            id: 图片 ID
+            url: 图片链接
+            path: 图片路径
+            raw: 图片原始数据
+            mimetype: 图片 MIME 类型
+            name: 图片名称
+            width: 图片宽度
+            height: 图片高度
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Image(id, url, path, raw, mimetype, name, width, height))
+            return cls_or_self
+        return UniMessage(Image(id, url, path, raw, mimetype, name, width, height))
+
+    @_method
+    def video(
+        cls_or_self: UniMessage | type[UniMessage],
+        id: str | None = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        raw: bytes | BytesIO | None = None,
+        mimetype: str | None = None,
+        thumbnail: Image | None = None,
+        name: str = "video.mp4",
+    ):
+        """创建视频消息
+
+        参数:
+            id: 视频 ID
+            url: 视频链接
+            path: 视频路径
+            raw: 视频原始数据
+            mimetype: 视频 MIME 类型
+            thumbnail: 视频缩略图
+            name: 视频名称
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Video(id, url, path, raw, mimetype, name, thumbnail))
+            return cls_or_self
+        return UniMessage(Video(id, url, path, raw, mimetype, name, thumbnail))
+
+    @_method
+    def voice(
+        cls_or_self: UniMessage | type[UniMessage],
+        id: str | None = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        raw: bytes | BytesIO | None = None,
+        mimetype: str | None = None,
+        duration: float | None = None,
+        name: str = "voice.wav",
+    ):
+        """创建语音消息
+
+        参数:
+            id: 语音 ID
+            url: 语音链接
+            path: 语音路径
+            raw: 语音原始数据
+            mimetype: 语音 MIME 类型
+            duration: 语音时长
+            name: 语音名称
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Voice(id, url, path, raw, mimetype, name, duration))
+            return cls_or_self
+        return UniMessage(Voice(id, url, path, raw, mimetype, name, duration))
+
+    @_method
+    def audio(
+        cls_or_self: UniMessage | type[UniMessage],
+        id: str | None = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        raw: bytes | BytesIO | None = None,
+        mimetype: str | None = None,
+        duration: float | None = None,
+        name: str = "audio.mp3",
+    ):
+        """创建音频消息
+
+        参数:
+            id: 音频 ID
+            url: 音频链接
+            path: 音频路径
+            raw: 音频原始数据
+            mimetype: 音频 MIME 类型
+            duration: 音频时长
+            name: 音频名称
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Audio(id, url, path, raw, mimetype, name, duration))
+            return cls_or_self
+        return UniMessage(Audio(id, url, path, raw, mimetype, name, duration))
+
+    @_method
+    def file(
+        cls_or_self: UniMessage | type[UniMessage],
+        id: str | None = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        raw: bytes | BytesIO | None = None,
+        mimetype: str | None = None,
+        name: str = "file.bin",
+    ):
+        """创建文件消息
+
+        参数:
+            id: 文件 ID
+            url: 文件链接
+            path: 文件路径
+            raw: 文件原始数据
+            mimetype: 文件 MIME 类型
+            name: 文件名称
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(File(id, url, path, raw, mimetype, name))
+            return cls_or_self
+        return UniMessage(File(id, url, path, raw, mimetype, name))
+
+    @_method
+    def reply(cls_or_self: UniMessage | type[UniMessage], id: str):
+        """创建回复消息
+
+        参数:
+            id: 回复消息 ID
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Reply(id))
+            return cls_or_self
+        return UniMessage(Reply(id))
+
+    @_method
+    def hyper(cls_or_self: UniMessage | type[UniMessage], flag: Literal["xml", "json"], content: str):
+        """创建卡片消息
+
+        参数:
+            flag: 卡片类型
+            content: 卡片内容
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Hyper(flag, content))
+            return cls_or_self
+        return UniMessage(Hyper(flag, content))
+
+    @_method
+    def reference(cls_or_self: UniMessage | type[UniMessage], *nodes: RefNode | CustomNode, id: str | None = None):
+        """创建转发消息
+
+        参数:
+            nodes: 转发消息节点
+            id: 此处不一定是消息ID，可能是其他ID，如消息序号等
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Reference(id=id, nodes=list(nodes)))
+            return cls_or_self
+        return UniMessage(Reference(id=id, nodes=list(nodes)))
+
+    @_method
+    def keyboard(
+        cls_or_self: UniMessage | type[UniMessage],
+        *buttons: Button,
+        id: str | None = None,
+        row: int | None = None,
+    ):
+        """创建转发消息
+
+        参数:
+            buttons: 按钮
+            id: 此处一般用来表示模板id，特殊情况下可能表示例如 bot_appid 等
+            row: 当消息中只写有一个 Keyboard 时可根据此参数约定按钮组的列数
+
+        返回:
+            构建的消息
+        """
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(Keyboard(id=id, buttons=list(buttons), row=row))
+            return cls_or_self
+        return UniMessage(Keyboard(id=id, buttons=list(buttons), row=row))
+
+    @_method
+    def i18n(
+        cls_or_self: UniMessage | type[UniMessage],
+        item_or_scope: LangItem | str,
+        type_: str | None = None,
+        /,
+        *args,
+        mapping: dict | None = None,
+        **kwargs,
+    ):
+        """创建 i18n 消息"""
+        if isinstance(cls_or_self, UniMessage):
+            cls_or_self.append(I18n(item_or_scope, type_, *args, mapping=mapping, **kwargs))  # type: ignore
+            return cls_or_self
+        return UniMessage(I18n(item_or_scope, type_, *args, mapping=mapping, **kwargs))  # type: ignore
 
     def __init__(
-        self: UniMessage[Segment],
-        message: Iterable[str | TS] | str | TS | None = None,
+        self: UniMessage,
+        message: Iterable[str | Segment] | str | Segment | None = None,
     ):
         super().__init__()
         if isinstance(message, str):
@@ -662,16 +462,7 @@ class UniMessage(list[TS]):
         self.extend(result)
         return self
 
-    @overload
-    def __add__(self, other: str) -> UniMessage[TS | Text]: ...
-
-    @overload
-    def __add__(self, other: TS | Iterable[TS]) -> UniMessage[TS]: ...
-
-    @overload
-    def __add__(self, other: TS1 | Iterable[TS1]) -> UniMessage[TS | TS1]: ...
-
-    def __add__(self, other: str | TS | TS1 | Iterable[TS | TS1]) -> UniMessage:
+    def __add__(self, other: str | TS | Segment | Iterable[TS | Segment]) -> UniMessage:
         result: UniMessage = self.copy()
         if isinstance(other, str):
             if result and isinstance(text := result[-1], Text):
@@ -688,20 +479,11 @@ class UniMessage(list[TS]):
         result.__merge_text__()
         return result
 
-    @overload
-    def __radd__(self, other: str) -> UniMessage[Text | TS]: ...
-
-    @overload
-    def __radd__(self, other: TS | Iterable[TS]) -> UniMessage[TS]: ...
-
-    @overload
-    def __radd__(self, other: TS1 | Iterable[TS1]) -> UniMessage[TS1 | TS]: ...
-
-    def __radd__(self, other: str | TS1 | Iterable[TS1]) -> UniMessage:
+    def __radd__(self, other: str | Segment | Iterable[Segment]) -> UniMessage:
         result = UniMessage(other)
         return result + self
 
-    def __iadd__(self, other: str | TS | Iterable[TS], _merge: bool = True) -> Self:
+    def __iadd__(self, other: str | TS | Iterable[TS], _merge: bool = True):
         if isinstance(other, str):
             if self and isinstance(text := self[-1], Text):
                 text.text += other
@@ -718,65 +500,10 @@ class UniMessage(list[TS]):
             self.__merge_text__()
         return self
 
-    @overload
-    def __getitem__(self, args: type[TS1]) -> UniMessage[TS1]:
-        """获取仅包含指定消息段类型的消息
-
-        参数:
-            args: 消息段类型
-
-        返回:
-            所有类型为 `args` 的消息段
-        """
-
-    @overload
-    def __getitem__(self, args: tuple[type[TS1], int]) -> TS1:
-        """索引指定类型的消息段
-
-        参数:
-            args: 消息段类型和索引
-
-        返回:
-            类型为 `args[0]` 的消息段第 `args[1]` 个
-        """
-
-    @overload
-    def __getitem__(self, args: tuple[type[TS1], slice]) -> UniMessage[TS1]:
-        """切片指定类型的消息段
-
-        参数:
-            args: 消息段类型和切片
-
-        返回:
-            类型为 `args[0]` 的消息段切片 `args[1]`
-        """
-
-    @overload
-    def __getitem__(self, args: int) -> TS:
-        """索引消息段
-
-        参数:
-            args: 索引
-
-        返回:
-            第 `args` 个消息段
-        """
-
-    @overload
-    def __getitem__(self, args: slice) -> UniMessage[TS]:
-        """切片消息段
-
-        参数:
-            args: 切片
-
-        返回:
-            消息切片 `args`
-        """
-
     def __getitem__(
         self,
-        args: type[TS1] | tuple[type[TS1], int] | tuple[type[TS1], slice] | int | slice,
-    ) -> TS | TS1 | UniMessage[TS] | UniMessage[TS1]:
+        args: type[Segment] | tuple[type[Segment], int] | tuple[type[Segment], slice] | int | slice,
+    ):
         arg1, arg2 = args if isinstance(args, tuple) else (args, None)
         if isinstance(arg1, int) and arg2 is None:
             return list.__getitem__(self, arg1)
@@ -832,7 +559,7 @@ class UniMessage(list[TS]):
             value = Text(value)
         return super().index(value, *args)  # type: ignore
 
-    def get(self, type_: type[TS], count: int | None = None) -> UniMessage[TS]:
+    def get(self, type_: type[TS], count: int | None = None) -> UniMessage:
         """获取指定类型的消息段
 
         参数:
@@ -843,7 +570,7 @@ class UniMessage(list[TS]):
             构建的新消息
         """
         if count is None:
-            return self[type_]
+            return self[type_]  # type: ignore
 
         iterator, filtered = (seg for seg in self if isinstance(seg, type_)), UniMessage()
         for _ in range(count):
@@ -885,7 +612,7 @@ class UniMessage(list[TS]):
             value = Text(value)
         return all(seg == value for seg in self)
 
-    def join(self, iterable: Iterable[TS1 | UniMessage[TS1]]) -> UniMessage[TS | TS1]:
+    def join(self, iterable: Iterable[Segment | UniMessage[Segment]]):
         """将多个消息连接并将自身作为分割
 
         参数:
@@ -908,7 +635,7 @@ class UniMessage(list[TS]):
         """深拷贝消息"""
         return deepcopy(self)
 
-    def include(self, *types: type[Segment]) -> UniMessage[TS]:
+    def include(self, *types: type[Segment]):
         """过滤消息
 
         参数:
@@ -917,9 +644,9 @@ class UniMessage(list[TS]):
         返回:
             新构造的消息
         """
-        return UniMessage(seg for seg in self if seg.__class__ in types)
+        return self.__class__(seg for seg in self if seg.__class__ in types)
 
-    def exclude(self, *types: type[Segment]) -> UniMessage[TS]:
+    def exclude(self, *types: type[Segment]):
         """过滤消息
 
         参数:
@@ -935,7 +662,7 @@ class UniMessage(list[TS]):
 
         return "".join(seg.text for seg in self if isinstance(seg, Text))
 
-    def filter(self, predicate: Callable[[TS], bool]) -> UniMessage[TS]:
+    def filter(self, predicate: Callable[[TS], bool]):
         """过滤消息
 
         参数:
@@ -944,13 +671,7 @@ class UniMessage(list[TS]):
         """
         return UniMessage(seg for seg in self if predicate(seg))
 
-    @overload
-    def map(self, func: Callable[[TS], TS1]) -> UniMessage[TS1]: ...
-
-    @overload
-    def map(self, func: Callable[[TS], T]) -> list[T]: ...
-
-    def map(self, func: Callable[[TS], TS1] | Callable[[TS], T]) -> UniMessage[TS1] | list[T]:
+    def map(self, func: Callable[[TS], Segment] | Callable[[TS], Any]):
         result1 = []
         result2 = []
         for seg in self:
@@ -963,7 +684,7 @@ class UniMessage(list[TS]):
             return UniMessage(result1)
         return result2
 
-    def select(self, cls: type[TS1]) -> UniMessage[TS1]:
+    def select(self, cls: type[Segment]):
         """递归地从消息中选择指定类型的消息段"""
 
         def query(segs: list[Segment]):
@@ -980,7 +701,7 @@ class UniMessage(list[TS]):
         return UniMessage(results)
 
     @staticmethod
-    def _visit_sync(seg: Segment, rules: SyncVisitor):
+    def _visit_sync(seg: Segment, rules: dict | Callable[[Segment], Any]):
         _type, data, children = seg.type, seg.data, seg.children
         if not isinstance(rules, dict):
             return rules(seg)
@@ -990,7 +711,7 @@ class UniMessage(list[TS]):
         return result
 
     @staticmethod
-    async def _visit_async(seg: Segment, rules: AsyncVisitor):
+    async def _visit_async(seg: Segment, rules: dict | Callable[[Segment], Any]):
         _type, data, children = seg.type, seg.data, seg.children
         if not isinstance(rules, dict):
             return await rules(seg)
@@ -999,7 +720,7 @@ class UniMessage(list[TS]):
             result = await result(data, children)
         return result
 
-    def transform(self, rules: SyncVisitor) -> UniMessage:
+    def transform(self, rules: dict) -> UniMessage:
         """同步遍历消息段并转换
 
         参数:
@@ -1021,7 +742,7 @@ class UniMessage(list[TS]):
         output.__merge_text__()
         return output
 
-    async def transform_async(self, rules: AsyncVisitor) -> UniMessage:
+    async def transform_async(self, rules: dict) -> UniMessage:
         """异步遍历消息段并转换
 
         参数:
@@ -1043,7 +764,7 @@ class UniMessage(list[TS]):
         output.__merge_text__()
         return output
 
-    def split(self, pattern: str = " ") -> list[Self]:
+    def split(self, pattern: str = " ") -> list[UniMessage]:
         """和 `str.split` 差不多, 提供一个字符串, 然后返回分割结果.
 
         Args:
@@ -1053,29 +774,25 @@ class UniMessage(list[TS]):
             list[Self]: 分割结果, 行为和 `str.split` 差不多.
         """
 
-        result: list[Self] = []
+        result: list[UniMessage] = []
         tmp = []
         for seg in self:
             if isinstance(seg, Text):
                 split_result = seg.split(pattern)
                 for index, split_text in enumerate(split_result):
                     if tmp and index > 0:
-                        result.append(self.__class__(tmp))
+                        result.append(UniMessage(tmp))
                         tmp = []
                     if split_text.text:
                         tmp.append(split_text)
             else:
                 tmp.append(seg)
         if tmp:
-            result.append(self.__class__(tmp))
+            result.append(UniMessage(tmp))
             tmp = []
         return result
 
-    def replace(
-        self,
-        old: str,
-        new: str | Text,
-    ) -> Self:
+    def replace(self, old: str, new: str | Text):
         """替换消息中有关的文本
 
         Args:
@@ -1085,13 +802,13 @@ class UniMessage(list[TS]):
         Returns:
             UniMessage: 修改后的消息链, 若未替换则原样返回.
         """
-        result_list: list[TS] = []
+        result_list = []
         for seg in self:
             if isinstance(seg, Text):
                 result_list.append(seg.replace(old, new))  # type: ignore
             else:
                 result_list.append(seg)
-        return self.__class__(result_list)
+        return UniMessage(result_list)
 
     def startswith(self, string: str) -> bool:
         """判断消息链是否以给出的字符串开头
@@ -1121,7 +838,7 @@ class UniMessage(list[TS]):
             return False
         return list.__getitem__(self, -1).text.endswith(string)
 
-    def removeprefix(self, prefix: str) -> Self:
+    def removeprefix(self, prefix: str):
         """移除消息链前缀.
 
         Args:
@@ -1132,19 +849,19 @@ class UniMessage(list[TS]):
         """
         copy = list.copy(self)
         if not copy:
-            return self.__class__(copy)
+            return UniMessage(copy)
         seg = copy[0]
         if not isinstance(seg, Text):
-            return self.__class__(copy)
+            return UniMessage(copy)
         if seg.text.startswith(prefix):
             seg = seg[len(prefix) :]
             if not seg.text:
                 copy.pop(0)
             else:
                 copy[0] = seg
-        return self.__class__(copy)
+        return UniMessage(copy)
 
-    def removesuffix(self, suffix: str) -> Self:
+    def removesuffix(self, suffix: str):
         """移除消息链后缀.
 
         Args:
@@ -1155,22 +872,22 @@ class UniMessage(list[TS]):
         """
         copy = list.copy(self)
         if not copy:
-            return self.__class__(copy)
+            return UniMessage(copy)
         seg = copy[-1]
         if not isinstance(seg, Text):
-            return self.__class__(copy)
+            return UniMessage(copy)
         if seg.text.endswith(suffix):
             seg = seg[: -len(suffix)]
             if not seg.text:
                 copy.pop(-1)
             else:
                 copy[-1] = seg
-        return self.__class__(copy)
+        return UniMessage(copy)
 
-    def strip(self, *segments: str | Segment | type[Segment]) -> Self:
+    def strip(self, *segments: str | Segment | type[Segment]):
         return self.lstrip(*segments).rstrip(*segments)
 
-    def lstrip(self, *segments: str | Segment | type[Segment]) -> Self:
+    def lstrip(self, *segments: str | Segment | type[Segment]):
         types = [i for i in segments if not isinstance(i, str)] or []
         chars = "".join([i for i in segments if isinstance(i, str)]) or None
         copy = list.copy(self)
@@ -1191,7 +908,7 @@ class UniMessage(list[TS]):
                 break
         return self.__class__(copy)
 
-    def rstrip(self, *segments: str | Segment | type[Segment]) -> Self:
+    def rstrip(self, *segments: str | Segment | type[Segment]):
         types = [i for i in segments if not isinstance(i, str)] or []
         chars = "".join([i for i in segments if isinstance(i, str)]) or None
         copy = list.copy(self)
@@ -1303,8 +1020,8 @@ class UniMessage(list[TS]):
             else:
                 msg = self.template(str(seg)).format(*args, *seg.args, **kwargs, **seg.kwargs, **extra)
                 if msg.has(I18n):
-                    msg._handle_i18n(extra, *seg.args, **seg.kwargs)
-                self.extend(msg)  # type: ignore
+                    msg._handle_i18n(extra, *seg.args, **seg.kwargs)  # type: ignore
+                self.extend(msg)
         self.__merge_text__()
 
     async def export(
@@ -1406,7 +1123,7 @@ class UniMessage(list[TS]):
         if not (fn := alter_get_exporter(adapter_name)):
             raise SerializeFailed(lang.require("nbp-uniseg", "unsupported").format(adapter=adapter_name))
         res = await fn.send_to(target, bot, msg, **kwargs)
-        return Receipt(bot, target, fn, res if isinstance(res, list) else [res], UniMessage)
+        return Receipt(bot, target, fn, res if isinstance(res, list) else [res], UniMessage)  # type: ignore
 
     async def finish(
         self,
@@ -1419,12 +1136,6 @@ class UniMessage(list[TS]):
     ) -> NoReturn:
         await self.send(target, bot, fallback, at_sender, reply_to, **kwargs)
         raise FinishedException
-
-    @overload
-    def dump(self, media_save_dir: str | Path | bool | None = None) -> list[dict]: ...
-
-    @overload
-    def dump(self, media_save_dir: str | Path | bool | None = None, json: Literal[True] = True) -> str: ...
 
     def dump(self, media_save_dir: str | Path | bool | None = None, json: bool = False) -> str | list[dict[str, Any]]:
         """将消息序列化为 JSON 格式

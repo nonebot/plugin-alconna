@@ -6,7 +6,7 @@ from nonebot_plugin_alconna import Match, UniMessage, on_alconna, __supported_ad
 
 __plugin_meta__ = PluginMetadata(
     name="lang",
-    description="i18n 指令",
+    description=Lang.nbp_alc_builtin.lang.help.main.cast(),
     usage="/lang list/switch [lang]",
     type="application",
     homepage="https://github.com/nonebot/plugin-alconna/blob/master/src/nonebot_plugin_alconna/builtins/plugins/lang.py",
@@ -20,9 +20,13 @@ with namespace("builtin/lang") as ns:
     cmd = on_alconna(
         Alconna(
             "lang",
-            Option("list", Args["name?", str], help_text="查看支持的语言列表"),
-            Option("switch", Args["locale?", str, Field(completion=lambda: "比如 zh-CN")], help_text="切换语言"),
-            meta=CommandMeta("i18n配置相关功能", compact=True),
+            Option("list", Args["name?", str], help_text=Lang.nbp_alc_builtin.lang.help.list.cast()),
+            Option(
+                "switch",
+                Args["locale?", str, Field(completion=lambda: list(lang.locales))],
+                help_text=Lang.nbp_alc_builtin.lang.help.switch.cast(),
+            ),
+            meta=CommandMeta(Lang.nbp_alc_builtin.lang.help.main.cast(), compact=True),
         ),
         use_cmd_start=True,
     )

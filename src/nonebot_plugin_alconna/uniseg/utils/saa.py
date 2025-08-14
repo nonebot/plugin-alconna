@@ -5,7 +5,9 @@ from nonebot import require
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump
 from nonebot.internal.matcher import current_bot, current_event
 
-from nonebot_plugin_alconna.uniseg.message import Text, AtAll, Receipt, UniMessage
+from nonebot_plugin_alconna.uniseg.receipt import Receipt
+from nonebot_plugin_alconna.uniseg.message import UniMessage
+from nonebot_plugin_alconna.uniseg.segment import Text, AtAll
 
 try:
     require("nonebot_plugin_saa")

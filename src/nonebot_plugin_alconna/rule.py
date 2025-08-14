@@ -248,7 +248,9 @@ class AlconnaRule:
         def _checker(_event: Event):
             return session_id == _event.get_session_id()
 
-        w = waiter(["message"], Matcher, keep_session=True, block=self.comp_config.get("block", False), rule=Rule(_checker))(self._waiter)  # type: ignore
+        assert self._waiter, "Waiter function is not set, please check the initialization of AlconnaRule."
+        assert waiter, "Waiter plugin is not installed, please install nonebot_plugin_waiter."
+        w = waiter(["message"], Matcher, keep_session=True, block=self.comp_config.get("block", False), rule=Rule(_checker))(self._waiter)
 
         while interface.available:
 

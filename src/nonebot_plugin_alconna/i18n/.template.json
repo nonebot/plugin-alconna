@@ -70,6 +70,14 @@
           {
             "subtype": "lang",
             "types": [
+              {
+                "subtype": "help",
+                "types": [
+                  "list",
+                  "switch",
+                  "main"
+                ]
+              },
               "list",
               "switch",
               "locale_missing",
