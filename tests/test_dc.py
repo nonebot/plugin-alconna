@@ -15,9 +15,8 @@ from tests.fake import fake_discord_interaction_event
 
 @pytest.mark.asyncio()
 async def test_dc_ext(app: App):
-    from nonebot_plugin_alconna import Match, on_alconna, load_from_path
-
-    # from nonebot_plugin_alconna.adapters.discord import DiscordSlashExtension
+    from nonebot_plugin_alconna import Match, on_alconna
+    from nonebot_plugin_alconna.builtins.extensions.discord import DiscordSlashExtension
 
     alc = Alconna(
         ["/"],
@@ -26,8 +25,7 @@ async def test_dc_ext(app: App):
         Option("remove", Args["plugin", str]["time?", int]),
         meta=CommandMeta(description="权限管理"),
     )
-    matcher = on_alconna(alc)  # , extensions=[DiscordSlashExtension()])
-    load_from_path("@discord")
+    matcher = on_alconna(alc, extensions=[DiscordSlashExtension()])
 
     @matcher.assign("add")
     async def add(plugin: Match[str], priority: Match[int]):

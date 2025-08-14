@@ -47,8 +47,8 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
             if all(isinstance(x, str) for x in arg.value.base):
                 result.append(
                     StringOption(
-                        name=arg.name,
-                        description=arg.notice or arg.name,
+                        name=f"{arg.name}",
+                        description=f"{arg.notice or arg.name}",
                         required=not arg.optional,
                         choices=[OptionChoice(name=x, value=x) for x in arg.value.base],  # type: ignore  # noqa: E501
                     )
@@ -56,8 +56,8 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
             elif all(isinstance(x, int) for x in arg.value.base):
                 result.append(
                     IntegerOption(
-                        name=arg.name,
-                        description=arg.notice or arg.name,
+                        name=f"{arg.name}",
+                        description=f"{arg.notice or arg.name}",
                         required=not arg.optional,
                         choices=[
                             OptionChoice(name=str(x), value=x) for x in arg.value.base  # type: ignore  # noqa: E501
@@ -67,8 +67,8 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
             elif all(isinstance(x, float) for x in arg.value.base):
                 result.append(
                     NumberOption(
-                        name=arg.name,
-                        description=arg.notice or arg.name,
+                        name=f"{arg.name}",
+                        description=f"{arg.notice or arg.name}",
                         required=not arg.optional,
                         choices=[
                             OptionChoice(name=str(x), value=x) for x in arg.value.base  # type: ignore  # noqa: E501
@@ -78,8 +78,8 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
             else:
                 result.append(
                     StringOption(
-                        name=arg.name,
-                        description=arg.notice or arg.name,
+                        name=f"{arg.name}",
+                        description=f"{arg.notice or arg.name}",
                         required=not arg.optional,
                         choices=[OptionChoice(name=str(x), value=str(x)) for x in arg.value.base],
                     )
@@ -88,88 +88,88 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
         if arg.value == ANY:
             result.append(
                 StringOption(
-                    name=arg.name,
-                    description=arg.notice or arg.name,
+                    name=f"{arg.name}",
+                    description=f"{arg.notice or arg.name}",
                     required=not arg.optional,
                 )
             )
         elif arg.value == INTEGER:
             result.append(
                 IntegerOption(
-                    name=arg.name,
-                    description=arg.notice or arg.name,
+                    name=f"{arg.name}",
+                    description=f"{arg.notice or arg.name}",
                     required=not arg.optional,
                 )
             )
         elif arg.value in (FLOAT, NUMBER):
             result.append(
                 NumberOption(
-                    name=arg.name,
-                    description=arg.notice or arg.name,
+                    name=f"{arg.name}",
+                    description=f"{arg.notice or arg.name}",
                     required=not arg.optional,
                 )
             )
         elif arg.value.origin is str:
             result.append(
                 StringOption(
-                    name=arg.name,
-                    description=arg.notice or arg.name,
+                    name=f"{arg.name}",
+                    description=f"{arg.notice or arg.name}",
                     required=not arg.optional,
                 )
             )
         elif arg.value.origin is bool:
             result.append(
                 BooleanOption(
-                    name=arg.name,
-                    description=arg.notice or arg.name,
+                    name=f"{arg.name}",
+                    description=f"{arg.notice or arg.name}",
                     required=not arg.optional,
                 )
             )
         elif arg.value is Image:
             result.append(
                 AttachmentOption(
-                    name=arg.name,
-                    description=arg.notice or arg.name,
+                    name=f"{arg.name}",
+                    description=f"{arg.notice or arg.name}",
                     required=not arg.optional,
                 )
             )
         # elif arg.value == MentionUser:
         #     result.append(
         #         UserOption(
-        #             name=arg.name,
-        #             description=arg.notice or arg.name,
+        #             name=f"{arg.name}",
+        #             description=f"{arg.notice or arg.name}",
         #             required=not arg.optional,
         #         )
         #     )
         # elif arg.value == MentionChannel:
         #     result.append(
         #         ChannelOption(
-        #             name=arg.name,
-        #             description=arg.notice or arg.name,
+        #             name=f"{arg.name}",
+        #             description=f"{arg.notice or arg.name}",
         #             required=not arg.optional,
         #         )
         #     )
         # elif arg.value == MentionRole:
         #     result.append(
         #         RoleOption(
-        #             name=arg.name,
-        #             description=arg.notice or arg.name,
+        #             name=f"{arg.name}",
+        #             description=f"{arg.notice or arg.name}",
         #             required=not arg.optional,
         #         )
         #     )
         elif arg.value.origin is At:
             result.append(
                 MentionableOption(
-                    name=arg.name,
-                    description=arg.notice or arg.name,
+                    name=f"{arg.name}",
+                    description=f"{arg.notice or arg.name}",
                     required=not arg.optional,
                 )
             )
         else:
             result.append(
                 StringOption(
-                    name=arg.name,
-                    description=arg.notice or arg.name,
+                    name=f"{arg.name}",
+                    description=f"{arg.notice or arg.name}",
                     required=not arg.optional,
                 )
             )
@@ -179,8 +179,8 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
 def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupOption, SubCommandOption]:
     if isinstance(opt, Option):
         return SubCommandOption(
-            name=opt.name,
-            description=opt.help_text,
+            name=f"{opt.name}",
+            description=f"{opt.help_text}",
             options=_translate_args(opt.args),  # type: ignore
         )
     if not opt.args.empty and opt.options:
@@ -190,11 +190,11 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
         )
     if not opt.args.empty:
         return SubCommandOption(
-            name=opt.name, description=opt.help_text, options=_translate_args(opt.args)  # type: ignore
+            name=f"{opt.name}", description=f"{opt.help_text}", options=_translate_args(opt.args)  # type: ignore
         )
     return SubCommandGroupOption(
-        name=opt.name,
-        description=opt.help_text,
+        name=f"{opt.name}",
+        description=f"{opt.help_text}",
         options=[_translate_options(sub) for sub in opt.options],  # type: ignore
     )
 
@@ -234,8 +234,8 @@ def translate(
     if not (options := _translate_args(alc.args)):
         options = [_translate_options(opt) for opt in allow_opt]
     buffer = {
-        "name": alc.command,
-        "description": alc.meta.description,
+        "name": f"{alc.command}",
+        "description": f"{alc.meta.description}",
         "options": options,
         **locals(),
     }
