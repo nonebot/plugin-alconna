@@ -25,6 +25,7 @@ require("nonebot_plugin_waiter")
 
 from nonebot_plugin_waiter import waiter
 
+from nonebot_plugin_alconna.builtins.extensions.shortcut import SuperUserShortcutExtension
 from nonebot_plugin_alconna import (
     At,
     Check,
@@ -64,7 +65,7 @@ class DemoExtension(Extension):
         return UniMessage(content)
 
 
-add_global_extension(DemoExtension())
+add_global_extension(DemoExtension(), SuperUserShortcutExtension())
 
 
 def get_dist_map() -> dict:
