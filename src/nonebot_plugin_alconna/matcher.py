@@ -1017,6 +1017,7 @@ def on_alconna(
         use_cmd_sep,
         response_self,
         aliases,
+        rule,
     )
     executor = _rule.executor
     params = (
@@ -1032,7 +1033,7 @@ def on_alconna(
         {
             "_source": source,
             "type": "",
-            "rule": rule & _rule.rule,
+            "rule": _rule.rule,
             "permission": Permission() | permission,
             "handlers": (
                 [

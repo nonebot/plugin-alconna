@@ -1,17 +1,19 @@
 import asyncio
 import weakref
+from contextlib import AsyncExitStack
 from typing import Any, Union, Literal, Optional
 
 import nonebot
 from tarina import lang
-from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.utils import escape_tag
 from pydantic import ValidationError
 from nonebot.adapters import Bot, Event
 from nonebot.internal.rule import Rule as Rule
+from nonebot.internal.params import DependencyCache
 from nonebot import require, get_driver, get_plugin_config
 from arclet.alconna.exceptions import SpecialOptionTriggered
+from nonebot.typing import T_State, T_RuleChecker, _DependentCallable
 from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
 
 from .i18n import Lang
@@ -64,6 +66,7 @@ class AlconnaRule:
         "_tasks",
         "_waiter",
         "auto_send",
+        "before_rules",
         "command",
         "comp_config",
         "executor",
@@ -85,6 +88,7 @@ class AlconnaRule:
         use_cmd_sep: Optional[bool] = None,
         response_self: Optional[bool] = None,
         _aliases: Optional[Union[set[str], tuple[str, ...]]] = None,
+        before_rule: Optional[Union[Rule, T_RuleChecker]] = None,
     ):
         if isinstance(comp_config, bool):
             self.comp_config = {} if comp_config else None
@@ -151,6 +155,7 @@ class AlconnaRule:
         self._path = command.path
         self._namespace = command.namespace
         self._tasks: dict[str, asyncio.Task] = {}
+        self.before_rules = Rule() & before_rule
 
         self._comp_help = ""
         if self.comp_config is not None:
@@ -281,7 +286,16 @@ class AlconnaRule:
         interface.exit()
         return res
 
-    async def __call__(self, event: Event, state: T_State, bot: Bot) -> bool:
+    async def __call__(
+        self,
+        bot: Bot,
+        event: Event,
+        state: T_State,
+        stack: Optional[AsyncExitStack] = None,
+        dependency_cache: Optional[dict[_DependentCallable[Any], DependencyCache]] = None,
+    ) -> bool:
+        if not await self.before_rules(bot, event, state, stack, dependency_cache):
+            return False
         if event.get_type() == "meta_event":
             return False
         selected = self.executor.select(bot, event)
