@@ -3,16 +3,16 @@ from typing import TYPE_CHECKING
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.feishu.event import MessageEvent
 from nonebot.adapters.feishu.message import At as AtSegment
-from nonebot.adapters.feishu.message import File as FileSegment
-from nonebot.adapters.feishu.message import Post as PostSegment
 from nonebot.adapters.feishu.message import Audio as AudioSegment
+from nonebot.adapters.feishu.message import File as FileSegment
+from nonebot.adapters.feishu.message import Folder as FolderSegment
 from nonebot.adapters.feishu.message import Image as ImageSegment
 from nonebot.adapters.feishu.message import Media as MediaSegment
-from nonebot.adapters.feishu.message import Folder as FolderSegment
+from nonebot.adapters.feishu.message import Post as PostSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, AtAll, Audio, Hyper, Image, Reply, Video
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Audio, File, Hyper, Image, Reply, Video
 
 
 class FeishuMessageBuilder(MessageBuilder):

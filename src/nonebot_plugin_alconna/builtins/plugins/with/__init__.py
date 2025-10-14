@@ -1,12 +1,12 @@
-import json
 import asyncio
 import datetime
+import json
 
 from arclet.alconna import namespace
 from nonebot import get_plugin_config
 from nonebot.plugin import PluginMetadata
 
-from nonebot_plugin_alconna import Match, Command, MsgTarget, add_global_extension, __supported_adapters__
+from nonebot_plugin_alconna import Command, Match, MsgTarget, __supported_adapters__, add_global_extension
 
 from .config import Config
 from .extension import PrefixAppendExtension

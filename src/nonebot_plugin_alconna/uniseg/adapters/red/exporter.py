@@ -1,30 +1,30 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union, cast
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.internal.driver import Request
-from nonebot.adapters.red.bot import Bot as RedBot
 from nonebot.adapters.red.api.model import ChatType
-from nonebot.adapters.red.event import MessageEvent
 from nonebot.adapters.red.api.model import Message as MessageModel
-from nonebot.adapters.red.message import Message, ForwardNode, MessageSegment
+from nonebot.adapters.red.bot import Bot as RedBot
+from nonebot.adapters.red.event import MessageEvent
+from nonebot.adapters.red.message import ForwardNode, Message, MessageSegment
+from nonebot.internal.driver import Request
+from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
     Audio,
+    CustomNode,
     Emoji,
+    File,
     Image,
+    Reference,
     Reply,
+    Text,
     Video,
     Voice,
-    Reference,
-    CustomNode,
 )
 
 

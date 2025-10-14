@@ -1,27 +1,27 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, Sequence
+from typing import TYPE_CHECKING, Any, Sequence, Union
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.internal.driver import Request
 from nonebot.adapters.feishu.bot import Bot as FeishuBot
+from nonebot.adapters.feishu.event import GroupMessageEvent, MessageEvent, PrivateMessageEvent
 from nonebot.adapters.feishu.message import Message, MessageSegment
-from nonebot.adapters.feishu.event import MessageEvent, GroupMessageEvent, PrivateMessageEvent
+from nonebot.internal.driver import Request
+from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
     Audio,
     Emoji,
+    File,
     Image,
     Reply,
+    Segment,
+    Text,
     Video,
     Voice,
-    Segment,
 )
 
 

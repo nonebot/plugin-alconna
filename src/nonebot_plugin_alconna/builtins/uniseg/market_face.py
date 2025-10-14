@@ -1,15 +1,15 @@
-from typing import Optional
 from dataclasses import dataclass
+from typing import Optional
 
-from tarina import lang
 from nonebot.adapters import Bot
 from nonebot.adapters import MessageSegment as BaseMessageSegment
+from tarina import lang
 
 from nonebot_plugin_alconna import Image
-from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
-from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
 from nonebot_plugin_alconna.uniseg import Segment, custom_handler, custom_register
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter, SerializeFailed
+from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
+from nonebot_plugin_alconna.uniseg.constraint import SerializeFailed, SupportAdapter
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
 
 
 @dataclass

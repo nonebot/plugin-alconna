@@ -1,20 +1,20 @@
-import os
-import importlib
-from pathlib import Path
-from warnings import warn
 from contextlib import suppress
+import importlib
+import os
+from pathlib import Path
 from typing import TYPE_CHECKING, cast
+from warnings import warn
 
-from nonebot import get_adapters
 from importlib_metadata import entry_points
+from nonebot import get_adapters
 
 from ..constraint import SupportAdapter
 
 if TYPE_CHECKING:
-    from ..loader import BaseLoader
-    from ..target import TargetFetcher
     from ..builder import MessageBuilder
     from ..exporter import MessageExporter
+    from ..loader import BaseLoader
+    from ..target import TargetFetcher
 
 root = Path(__file__).parent
 loaders: dict[str, "BaseLoader"] = {}

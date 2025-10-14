@@ -1,14 +1,14 @@
-import pytest
-from nonebug import App
 from nonebot import get_adapter
-from nonebot.adapters.onebot.v11 import Bot, Adapter, Message
+from nonebot.adapters.onebot.v11 import Adapter, Bot, Message
+from nonebug import App
+import pytest
 
 from tests.fake import fake_group_message_event_v11
 
 
 @pytest.mark.asyncio()
 async def test_command(app: App):
-    from nonebot_plugin_alconna import Args, Alconna, CommandMeta, on_alconna
+    from nonebot_plugin_alconna import Alconna, Args, CommandMeta, on_alconna
 
     alc = Alconna("weather", Args["city#城市名称", str])
     matcher = on_alconna(alc, aliases={"天气"})

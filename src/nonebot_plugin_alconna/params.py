@@ -1,23 +1,23 @@
 import inspect
+from typing import Annotated, Any, ClassVar, Literal, Optional, TypeVar, Union, overload
 from typing_extensions import get_args
-from typing import Any, Union, Literal, TypeVar, ClassVar, Optional, Annotated, overload
 
+from arclet.alconna import Alconna, Arparma, Duplication, Empty
+from arclet.alconna.builtin import generate_duplication
+from nepattern.util import CUnionType
+from nonebot.compat import PydanticUndefined
+from nonebot.dependencies import Param
+from nonebot.internal.adapter import Bot, Event
+from nonebot.internal.matcher import Matcher
+from nonebot.internal.params import Depends
 from nonebot.typing import T_State
 from tarina import run_always_await
-from nepattern.util import CUnionType
 from tarina.generic import get_origin
-from nonebot.dependencies import Param
-from nonebot.internal.params import Depends
-from nonebot.compat import PydanticUndefined
-from nonebot.internal.matcher import Matcher
-from nonebot.internal.adapter import Bot, Event
-from arclet.alconna.builtin import generate_duplication
-from arclet.alconna import Empty, Alconna, Arparma, Duplication
 
-from .typings import CHECK, MIDDLEWARE
-from .model import T, Match, Query, CommandResult
+from .consts import ALCONNA_ARG_KEY, ALCONNA_ARG_KEYS, ALCONNA_EXEC_RESULT, ALCONNA_EXTENSION, ALCONNA_RESULT
 from .extension import Extension, ExtensionExecutor, SelectedExtensions
-from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_KEYS, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT
+from .model import CommandResult, Match, Query, T
+from .typings import CHECK, MIDDLEWARE
 
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)
 T_Extension = TypeVar("T_Extension", bound=Extension)

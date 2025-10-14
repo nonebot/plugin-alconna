@@ -1,14 +1,14 @@
-from functools import partial
 from abc import ABCMeta, abstractmethod
+from collections.abc import AsyncIterator, Awaitable
 from datetime import datetime, timezone
-from collections.abc import Awaitable, AsyncIterator
-from typing import TYPE_CHECKING, Any, Union, Callable
+from functools import partial
+from typing import TYPE_CHECKING, Any, Callable, Union
 
-from nonebot.adapters import Bot, Adapter, Message
+from nonebot.adapters import Adapter, Bot, Message
 
+from .constraint import SerializeFailed, SupportAdapter, SupportScope, lang
 from .segment import Reply
 from .tools import get_bot
-from .constraint import SupportScope, SupportAdapter, SerializeFailed, lang
 
 if TYPE_CHECKING:
     from .message import UniMessage

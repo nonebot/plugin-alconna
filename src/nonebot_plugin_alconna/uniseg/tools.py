@@ -1,20 +1,20 @@
-import random
-from pathlib import Path
 from base64 import b64decode
 from collections.abc import Awaitable
-from typing import TYPE_CHECKING, Union, Literal, Callable, Optional, overload
+from pathlib import Path
+import random
+from typing import TYPE_CHECKING, Callable, Literal, Optional, Union, overload
 
-from yarl import URL
-from nonebot import get_bots
-from nonebot.typing import T_State
 from nonebot import get_bot as _get_bot
+from nonebot import get_bots
 from nonebot.exception import ActionFailed
+from nonebot.internal.adapter import Adapter, Bot, Event
 from nonebot.internal.driver.model import Request
-from nonebot.internal.adapter import Bot, Event, Adapter
 from nonebot.internal.matcher import current_bot, current_event
+from nonebot.typing import T_State
+from yarl import URL
 
-from .segment import Image
 from .constraint import log
+from .segment import Image
 
 
 async def reply_fetch(event: Optional[Event] = None, bot: Optional[Bot] = None):

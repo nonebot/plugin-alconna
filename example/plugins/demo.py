@@ -1,53 +1,53 @@
-from typing import Union, Literal
+from typing import Literal, Union
 
-from nonebot import require
-from nonebot.adapters.onebot.v12 import Bot
-from importlib_metadata import distributions
-from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
 from arclet.alconna import (
-    Args,
-    Field,
-    Option,
     Alconna,
+    Args,
     Arparma,
-    MultiVar,
-    Subcommand,
     CommandMeta,
     Duplication,
+    Field,
+    MultiVar,
+    Option,
+    Subcommand,
     SubcommandStub,
+    command_manager,
     namespace,
     store_true,
-    command_manager,
 )
+from importlib_metadata import distributions
+from nonebot import require
+from nonebot.adapters.onebot.v12 import Bot
+from nonebot.adapters.onebot.v12.event import GroupMessageDeleteEvent
 
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_waiter")
 
 from nonebot_plugin_waiter import waiter
 
-from nonebot_plugin_alconna.builtins.extensions.shortcut import SuperUserShortcutExtension
 from nonebot_plugin_alconna import (
+    AlconnaArg,
+    AlconnaMatch,
+    AlconnaMatcher,
     At,
     Check,
+    Command,
+    Extension,
     Image,
     Match,
     Query,
     Reply,
-    UniMsg,
-    Command,
-    Extension,
-    AlconnaArg,
     UniMessage,
-    AlconnaMatch,
-    AlconnaMatcher,
+    UniMsg,
     UniversalSegment,
+    add_global_extension,
     assign,
     funcommand,
-    on_alconna,
     image_fetch,
-    add_global_extension,
     load_builtin_plugins,
+    on_alconna,
 )
+from nonebot_plugin_alconna.builtins.extensions.shortcut import SuperUserShortcutExtension
 
 load_builtin_plugins("echo", "lang", "help", "switch", "with")
 

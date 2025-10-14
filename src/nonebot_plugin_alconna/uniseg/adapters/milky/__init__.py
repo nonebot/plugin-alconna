@@ -1,5 +1,5 @@
-from nonebot_plugin_alconna.uniseg.loader import BaseLoader
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.loader import BaseLoader
 
 
 class Loader(BaseLoader):

@@ -1,26 +1,26 @@
 import asyncio
 
-import pytest
-from nonebug import App
-from pytest_mock import MockerFixture
-from nonebot.adapters.qq import Bot as QQBot
-from nonebot.adapters.qq import Adapter as QQAdapter
-from nonebot.adapters.satori import Bot as SatoriBot
-from nonebot.adapters.onebot.v11 import MessageSegment
-from nonebot import get_driver, on_command, get_adapter
-from nonebot.adapters.onebot.v11 import Bot as Onebot11Bot
-from nonebot.adapters.onebot.v12 import Bot as Onebot12Bot
-from nonebot.adapters.satori import Adapter as SatoriAdapter
+from nonebot import get_adapter, get_driver, on_command
 from nonebot.adapters.onebot.v11 import Adapter as Onebot11Adapter
+from nonebot.adapters.onebot.v11 import Bot as Onebot11Bot
+from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.adapters.onebot.v12 import Adapter as Onebot12Adapter
-from nonebot.adapters.satori.models import User, Guild, Channel, PageResult, ChannelType
+from nonebot.adapters.onebot.v12 import Bot as Onebot12Bot
+from nonebot.adapters.qq import Adapter as QQAdapter
+from nonebot.adapters.qq import Bot as QQBot
+from nonebot.adapters.satori import Adapter as SatoriAdapter
+from nonebot.adapters.satori import Bot as SatoriBot
+from nonebot.adapters.satori.models import Channel, ChannelType, Guild, PageResult, User
+from nonebug import App
+import pytest
+from pytest_mock import MockerFixture
 
-from tests.fake import fake_satori_bot_params, fake_message_event_guild
+from tests.fake import fake_message_event_guild, fake_satori_bot_params
 
 
 @pytest.mark.asyncio()
 async def test_bots(app: App):
-    from nonebot_plugin_alconna import Target, UniMessage, SupportScope
+    from nonebot_plugin_alconna import SupportScope, Target, UniMessage
 
     async with app.test_api() as ctx:
         qq_adapter = get_adapter(QQAdapter)
@@ -115,7 +115,7 @@ async def test_enable(app: App, mocker: MockerFixture):
 async def test_switch(app: App, mocker: MockerFixture):
     from nonebot.adapters.qq import Message
 
-    from nonebot_plugin_alconna import Target, UniMessage, SupportScope
+    from nonebot_plugin_alconna import SupportScope, Target, UniMessage
 
     matcher = on_command("test_switch", priority=5)
 

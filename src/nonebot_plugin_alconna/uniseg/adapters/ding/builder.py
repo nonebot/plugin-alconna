@@ -1,8 +1,8 @@
 from nonebot.adapters.ding.message import MessageSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, Text, AtAll, Image
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Image, Text
 
 
 class DingMessageBuilder(MessageBuilder):

@@ -2,12 +2,12 @@ from typing import Union
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.ding import Bot as DingBot
+from nonebot.adapters.ding.event import ConversationType, MessageEvent
 from nonebot.adapters.ding.message import Message, MessageSegment
-from nonebot.adapters.ding.event import MessageEvent, ConversationType
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, Text, AtAll, Image
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SupportAdapter, Target, export
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Image, Text
 
 
 class DingMessageExporter(MessageExporter[Message]):

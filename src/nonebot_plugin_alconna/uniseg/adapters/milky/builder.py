@@ -2,31 +2,31 @@ from base64 import b64decode
 from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.milky.message import XML
 from nonebot.adapters.milky.event import MessageEvent
 from nonebot.adapters.milky.message import Face as FaceSegment
+from nonebot.adapters.milky.message import Forward as ForwardSegment
 from nonebot.adapters.milky.message import Image as ImageSegment
+from nonebot.adapters.milky.message import LightAPP as LightAppSegment
+from nonebot.adapters.milky.message import Mention as MentionSegment
+from nonebot.adapters.milky.message import MentionAll as MentionAllSegment
+from nonebot.adapters.milky.message import Record as RecordSegment
 from nonebot.adapters.milky.message import Reply as ReplySegment
 from nonebot.adapters.milky.message import Video as VideoSegment
-from nonebot.adapters.milky.message import Record as RecordSegment
-from nonebot.adapters.milky.message import Forward as ForwardSegment
-from nonebot.adapters.milky.message import Mention as MentionSegment
-from nonebot.adapters.milky.message import LightAPP as LightAppSegment
-from nonebot.adapters.milky.message import MentionAll as MentionAllSegment
+from nonebot.adapters.milky.message import XML
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
     AtAll,
+    CustomNode,
     Emoji,
     Hyper,
     Image,
+    Reference,
     Reply,
     Video,
     Voice,
-    Reference,
-    CustomNode,
 )
 
 

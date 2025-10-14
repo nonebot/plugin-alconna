@@ -1,15 +1,15 @@
 from typing import Annotated
 
-from nonebot.typing import T_State
-from nonebot.internal.params import Depends
 from nonebot.exception import SkippedException
 from nonebot.internal.adapter import Bot, Event, Message
+from nonebot.internal.params import Depends
+from nonebot.typing import T_State
 
-from .segment import TS
+from .constraint import UNISEG_MESSAGE, UNISEG_MESSAGE_ID, UNISEG_TARGET
+from .exporter import SerializeFailed, Target
+from .functions import get_message_id, get_target
 from .message import UniMessage
-from .exporter import Target, SerializeFailed
-from .functions import get_target, get_message_id
-from .constraint import UNISEG_TARGET, UNISEG_MESSAGE, UNISEG_MESSAGE_ID
+from .segment import TS
 
 
 async def _uni_msg(bot: Bot, event: Event, state: T_State) -> UniMessage:

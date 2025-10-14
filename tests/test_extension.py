@@ -1,11 +1,11 @@
 from typing import Any
 
-import pytest
-from nonebug import App
+from arclet.alconna import Alconna, Args
 from nonebot import get_adapter
-from arclet.alconna import Args, Alconna
+from nonebot.adapters.onebot.v11 import Adapter, Bot, Message
 from nonebot.internal.adapter import Event
-from nonebot.adapters.onebot.v11 import Bot, Adapter, Message
+from nonebug import App
+import pytest
 
 from tests.fake import fake_group_message_event_v11
 

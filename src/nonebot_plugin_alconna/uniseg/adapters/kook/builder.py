@@ -2,19 +2,26 @@ import re
 from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event, Message
-from nonebot.adapters.kaiheila.message import Card
-from nonebot.adapters.kaiheila.message import Quote
 from nonebot.adapters.kaiheila import Bot as KaiheilaBot
 from nonebot.adapters.kaiheila.event import MessageEvent
-from nonebot.adapters.kaiheila.message import File as FileSegment
+from nonebot.adapters.kaiheila.message import (
+    KMarkdown,
+    Mention,
+    MentionAll,
+    MentionHere,
+    MentionRole,
+    MessageSegment,
+    Quote,
+)
 from nonebot.adapters.kaiheila.message import Audio as AudioSegment
+from nonebot.adapters.kaiheila.message import Card
+from nonebot.adapters.kaiheila.message import File as FileSegment
 from nonebot.adapters.kaiheila.message import Image as ImageSegment
 from nonebot.adapters.kaiheila.message import Video as VideoSegment
-from nonebot.adapters.kaiheila.message import Mention, KMarkdown, MentionAll, MentionHere, MentionRole, MessageSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, AtAll, Audio, Emoji, Hyper, Image, Reply, Video
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Audio, Emoji, File, Hyper, Image, Reply, Text, Video
 
 CHN = re.compile(r"\(chn\)(?P<id>.+?)\(chn\)")
 EMJ = re.compile(r"\(emj\)(?P<name>.+?)\(emj\)\[(?P<id>[^\[]+?)\]")

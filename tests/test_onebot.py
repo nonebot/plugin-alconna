@@ -1,14 +1,14 @@
-import pytest
-from nonebug import App
 from nonebot import get_adapter
-from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment
+from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
+from nonebug import App
+import pytest
 
-from tests.fake import fake_self_message_event_v11, fake_group_message_event_v11
+from tests.fake import fake_group_message_event_v11, fake_self_message_event_v11
 
 
 @pytest.mark.asyncio()
 async def test_command(app: App):
-    from nonebot_plugin_alconna import Args, Alconna, on_alconna
+    from nonebot_plugin_alconna import Alconna, Args, on_alconna
 
     alc = Alconna("天气", Args["city#城市名称", str])
     matcher = on_alconna(alc)
@@ -34,8 +34,8 @@ async def test_command(app: App):
 
 @pytest.mark.asyncio()
 async def test_sent(app: App):
+    from nonebot_plugin_alconna import Alconna, AlconnaMatcher, add_global_extension, on_alconna
     from nonebot_plugin_alconna.builtins.extensions.onebot11 import MessageSentExtension
-    from nonebot_plugin_alconna import Alconna, AlconnaMatcher, on_alconna, add_global_extension
 
     add_global_extension(MessageSentExtension())
 

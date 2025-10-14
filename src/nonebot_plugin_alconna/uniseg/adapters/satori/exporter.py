@@ -1,35 +1,34 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, Sequence, cast
+from typing import TYPE_CHECKING, Any, Sequence, Union, cast
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.satori.bot import Bot as SatoriBot
+from nonebot.adapters.satori.event import InteractionCommandMessageEvent, MessageEvent, NoticeEvent, ReactionEvent
+from nonebot.adapters.satori.message import STYLE_TYPE_MAP, Message, MessageSegment
 from nonebot.adapters.satori.message import Text as _Text
-from nonebot.adapters.satori.message import STYLE_TYPE_MAP
-from nonebot.adapters.satori.message import Message, MessageSegment
 from nonebot.adapters.satori.models import ChannelType, MessageObject
-from nonebot.adapters.satori.event import NoticeEvent, MessageEvent, ReactionEvent, InteractionCommandMessageEvent
+from tarina import lang
 
-from nonebot_plugin_alconna.uniseg.target import Target
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.exporter import SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
     Audio,
-    Emoji,
-    Image,
-    Reply,
-    Video,
-    Voice,
     Button,
-    RefNode,
-    Segment,
+    Emoji,
+    File,
+    Image,
     Keyboard,
     Reference,
+    RefNode,
+    Reply,
+    Segment,
+    Text,
+    Video,
+    Voice,
 )
+from nonebot_plugin_alconna.uniseg.target import Target
 
 
 class SatoriMessageExporter(MessageExporter[Message]):

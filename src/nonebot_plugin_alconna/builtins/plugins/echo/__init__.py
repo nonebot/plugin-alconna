@@ -1,7 +1,7 @@
-from nonebot.rule import to_me
 from arclet.alconna import namespace
 from nonebot import get_plugin_config
 from nonebot.plugin import PluginMetadata
+from nonebot.rule import to_me
 
 from nonebot_plugin_alconna import Command, __supported_adapters__
 from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension

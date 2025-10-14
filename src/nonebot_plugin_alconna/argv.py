@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from contextvars import ContextVar
-from typing_extensions import Self
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any, Union, Literal
+from contextvars import ContextVar
+from typing import TYPE_CHECKING, Any, Literal, Union
+from typing_extensions import Self
 
-from tarina import lang
-from nonebot.adapters import Message
 from arclet.alconna import NullMessage
-from nepattern import MatchMode, BasePattern, MatchFailed
 from arclet.alconna.argv import Argv, argv_config, set_default_argv_type, set_namespace_argv_type
+from nepattern import BasePattern, MatchFailed, MatchMode
+from nonebot.adapters import Message
+from tarina import lang
 
-from .uniseg import Text, Segment, UniMessage
+from .uniseg import Segment, Text, UniMessage
 
 argv_ctx: ContextVar[MessageArgv] = ContextVar("argv_ctx")
 

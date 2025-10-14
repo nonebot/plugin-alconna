@@ -1,49 +1,49 @@
-from pathlib import Path
 from dataclasses import dataclass
-from typing_extensions import override
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union
+from typing_extensions import override
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.qq.bot import Bot as QQBot
-from nonebot.adapters.qq.models.common import Action
-from nonebot.adapters.qq.message import Message, MessageSegment
-from nonebot.adapters.qq.models.common import Button as ButtonModel
-from nonebot.adapters.qq.models.guild import Message as GuildMessage
-from nonebot.adapters.qq.models import PostC2CMessagesReturn, PostGroupMessagesReturn
-from nonebot.adapters.qq.models.common import Permission, RenderData, InlineKeyboard, MessageKeyboard, InlineKeyboardRow
 from nonebot.adapters.qq.event import (
-    ForumEvent,
-    GuildEvent,
+    C2CMessageCreateEvent,
     ChannelEvent,
-    MessageEvent,
-    GroupRobotEvent,
+    DirectMessageCreateEvent,
+    ForumEvent,
     FriendRobotEvent,
+    GroupAtMessageCreateEvent,
+    GroupRobotEvent,
+    GuildEvent,
     GuildMemberEvent,
     GuildMessageEvent,
-    MessageAuditEvent,
-    MessageReactionEvent,
-    C2CMessageCreateEvent,
     InteractionCreateEvent,
-    DirectMessageCreateEvent,
-    GroupAtMessageCreateEvent,
+    MessageAuditEvent,
+    MessageEvent,
+    MessageReactionEvent,
 )
+from nonebot.adapters.qq.message import Message, MessageSegment
+from nonebot.adapters.qq.models import PostC2CMessagesReturn, PostGroupMessagesReturn
+from nonebot.adapters.qq.models.common import Action
+from nonebot.adapters.qq.models.common import Button as ButtonModel
+from nonebot.adapters.qq.models.common import InlineKeyboard, InlineKeyboardRow, MessageKeyboard, Permission, RenderData
+from nonebot.adapters.qq.models.guild import Message as GuildMessage
+from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
     Audio,
+    Button,
     Emoji,
+    File,
     Image,
+    Keyboard,
     Reply,
+    Text,
     Video,
     Voice,
-    Button,
-    Keyboard,
 )
 
 

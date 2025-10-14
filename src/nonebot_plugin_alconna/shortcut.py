@@ -1,31 +1,31 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Union, Callable
 from collections.abc import Hashable
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Callable, Union
 
-from nonebot.rule import Rule
-from tarina import is_awaitable
 from arclet.alconna import Alconna
-from tarina.tools import annotation
-from nonebot.permission import Permission
-from nonebot.dependencies import Dependent
 from arclet.alconna.tools import AlconnaString
 from arclet.alconna.tools.construct import FuncMounter, MountConfig
 from nonebot.compat import type_validate_json, type_validate_python
+from nonebot.dependencies import Dependent
 from nonebot.internal.adapter import Message, MessageSegment, MessageTemplate
-from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
+from nonebot.permission import Permission
+from nonebot.rule import Rule
+from nonebot.typing import T_Handler, T_PermissionChecker, T_RuleChecker, T_State
+from tarina import is_awaitable
+from tarina.tools import annotation
 
-from .typings import MReturn
-from .pattern import patterns
 from .extension import Extension
-from .params import AlcExecResult
-from .model import CompConfig, CommandModel
-from .uniseg.fallback import FallbackStrategy
 from .matcher import AlconnaMatcher, on_alconna
-from .uniseg.template import UniMessageTemplate
+from .model import CommandModel, CompConfig
+from .params import AlcExecResult
+from .pattern import patterns
+from .typings import MReturn
 from .uniseg import Segment, UniMessage, segment
+from .uniseg.fallback import FallbackStrategy
+from .uniseg.template import UniMessageTemplate
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
 

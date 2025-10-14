@@ -2,9 +2,9 @@ from nonebot.adapters.efchat.message import At as AtSegment
 from nonebot.adapters.efchat.message import Image as ImageSegment
 from nonebot.adapters.efchat.message import Voice as VoiceSegment
 
-from nonebot_plugin_alconna.uniseg.segment import At, Image, Voice
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, Image, Voice
 
 
 class EFChatMessageBuilder(MessageBuilder):

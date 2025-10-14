@@ -1,16 +1,16 @@
 from pathlib import Path
 from typing import Union
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.internal.driver import Request
 from nonebot.adapters.mail import Bot as MailBot
 from nonebot.adapters.mail.event import NewMailMessageEvent
 from nonebot.adapters.mail.message import Message, MessageSegment
+from nonebot.internal.driver import Request
+from tarina import lang
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportScope, SerializeFailed
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, Audio, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.constraint import SerializeFailed, SupportScope
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SupportAdapter, Target, export
+from nonebot_plugin_alconna.uniseg.segment import At, Audio, File, Image, Reply, Text, Video, Voice
 
 
 class MailMessageExporter(MessageExporter[Message]):

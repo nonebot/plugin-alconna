@@ -2,13 +2,14 @@ from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.telegram.event import MessageEvent
+from nonebot.adapters.telegram.message import Entity
 from nonebot.adapters.telegram.message import File as FileSegment
-from nonebot.adapters.telegram.message import Entity, UnCombinFile
 from nonebot.adapters.telegram.message import Reply as ReplySegment
+from nonebot.adapters.telegram.message import UnCombinFile
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, Audio, Emoji, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, Audio, Emoji, File, Image, Reply, Text, Video, Voice
 
 
 class TelegramMessageBuilder(MessageBuilder):

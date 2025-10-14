@@ -1,9 +1,9 @@
-import re
 from collections import deque
+import re
 from typing import ClassVar, Optional, final
 
-from nonebot import get_driver
 from arclet.alconna import Alconna
+from nonebot import get_driver
 from nonebot.adapters.telegram import Bot as TelegramBot
 from nonebot.adapters.telegram.model import BotCommand, BotCommandScope, BotCommandScopeDefault
 

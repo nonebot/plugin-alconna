@@ -1,19 +1,19 @@
-import pytest
-from nonebug import App
-from arclet.alconna import Args, Alconna
-from nonebot import on_message, get_adapter
-from nonebot.adapters.qq.models import Action
-from nonebot.adapters.qq.models import Button as QQButton
-from nonebot.adapters.qq import Bot, Adapter, Message, MessageSegment
+from arclet.alconna import Alconna, Args
+from nonebot import get_adapter, on_message
+from nonebot.adapters.qq import Adapter, Bot, Message, MessageSegment
 from nonebot.adapters.qq.models import (
-    Permission,
-    RenderData,
     InlineKeyboard,
+    InlineKeyboardRow,
     MessageKeyboard,
     MessageMarkdown,
-    InlineKeyboardRow,
     MessageMarkdownParams,
+    Permission,
+    RenderData,
 )
+from nonebot.adapters.qq.models import Action
+from nonebot.adapters.qq.models import Button as QQButton
+from nonebug import App
+import pytest
 
 from tests.fake import fake_message_event_guild
 

@@ -2,9 +2,9 @@ from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import File, Text, Hyper, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import File, Hyper, Image, Reply, Text, Video, Voice
 
 if TYPE_CHECKING:
     from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore

@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
 from nonebot.internal.matcher import current_bot, current_event
+from tarina import lang
 
-from .segment import Emoji
-from .exporter import SerializeFailed
 from .adapters import alter_get_exporter
+from .exporter import SerializeFailed
+from .segment import Emoji
 
 if TYPE_CHECKING:
-    from .target import Target
     from .message import UniMessage
+    from .target import Target
 
 
 async def message_recall(

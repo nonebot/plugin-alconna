@@ -4,9 +4,9 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.red.event import MessageEvent
 from nonebot.adapters.red.message import MessageSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, AtAll, Emoji, Hyper, Image, Reply, Video, Voice, Reference
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Emoji, File, Hyper, Image, Reference, Reply, Video, Voice
 
 
 class RedMessageBuilder(MessageBuilder):

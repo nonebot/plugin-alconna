@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable
+from typing import Any, Callable, Generic, Literal, TypeVar, Union
 from typing_extensions import ParamSpec, TypeAlias
-from typing import Any, Union, Generic, Literal, TypeVar, Callable
 
-from tarina import lang
 from arclet.alconna import Arparma
-from nonebot.typing import T_State
+from nepattern import URL, BasePattern, MatchFailed, MatchMode, UnionPattern
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment
-from nepattern import URL, MatchMode, BasePattern, MatchFailed, UnionPattern
+from nonebot.typing import T_State
+from tarina import lang
 
 from .argv import text
+from .uniseg import At, Image, Segment, Text, UniMessage
 from .uniseg.segment import env
-from .uniseg import At, Text, Image, Segment, UniMessage
 
 T = TypeVar("T")
 TS = TypeVar("TS", bound=Segment)

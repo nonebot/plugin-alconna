@@ -1,35 +1,34 @@
-from pathlib import Path
 from base64 import b64decode
+from pathlib import Path
 
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.satori.message import Message
-from nonebot.adapters.satori.message import MessageSegment
+from nonebot.adapters.satori.event import InteractionCommandMessageEvent, MessageEvent, ReactionEvent
 from nonebot.adapters.satori.message import At as AtSegment
-from nonebot.adapters.satori.message import File as FileSegment
-from nonebot.adapters.satori.message import Link as LinkSegment
-from nonebot.adapters.satori.message import Text as TextSegment
 from nonebot.adapters.satori.message import Audio as AudioSegment
-from nonebot.adapters.satori.message import Image as ImageSegment
-from nonebot.adapters.satori.message import Sharp as SharpSegment
-from nonebot.adapters.satori.message import Video as VideoSegment
 from nonebot.adapters.satori.message import Button as ButtonSegment
+from nonebot.adapters.satori.message import File as FileSegment
+from nonebot.adapters.satori.message import Image as ImageSegment
+from nonebot.adapters.satori.message import Link as LinkSegment
+from nonebot.adapters.satori.message import Message, MessageSegment
 from nonebot.adapters.satori.message import RenderMessage as RenderMessageSegment
-from nonebot.adapters.satori.event import MessageEvent, ReactionEvent, InteractionCommandMessageEvent
+from nonebot.adapters.satori.message import Sharp as SharpSegment
+from nonebot.adapters.satori.message import Text as TextSegment
+from nonebot.adapters.satori.message import Video as VideoSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
     Audio,
+    Button,
+    File,
     Image,
     Other,
-    Reply,
-    Video,
-    Button,
     Reference,
+    Reply,
+    Text,
+    Video,
 )
 
 STYLE_TYPE_MAP = {

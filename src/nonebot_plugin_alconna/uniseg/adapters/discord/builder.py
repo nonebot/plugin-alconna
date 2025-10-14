@@ -3,23 +3,23 @@ from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.discord import MessageEvent
-from nonebot.adapters.discord.api.model import TextInput
 from nonebot.adapters.discord.api.model import Button as ButtonModel
+from nonebot.adapters.discord.api.model import TextInput
 from nonebot.adapters.discord.message import (
-    StickerSegment,
-    ComponentSegment,
-    ReferenceSegment,
     AttachmentSegment,
+    ComponentSegment,
     CustomEmojiSegment,
-    MentionRoleSegment,
-    MentionUserSegment,
     MentionChannelSegment,
     MentionEveryoneSegment,
+    MentionRoleSegment,
+    MentionUserSegment,
+    ReferenceSegment,
+    StickerSegment,
 )
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, AtAll, Audio, Image, Other, Reply, Video, Button, Keyboard
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Audio, Button, File, Image, Keyboard, Other, Reply, Video
 
 
 class DiscordMessageBuilder(MessageBuilder):

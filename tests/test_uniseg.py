@@ -1,10 +1,10 @@
-import pytest
-from nonebug import App
+from arclet.alconna import Alconna, Args
 from nonebot import get_adapter
-from arclet.alconna import Args, Alconna
+from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
 from nonebot.adapters.onebot.v11.event import Reply
 from nonebot.compat import model_dump, type_validate_python
-from nonebot.adapters.onebot.v11 import Bot, Adapter, Message, MessageSegment
+from nonebug import App
+import pytest
 
 from tests.fake import fake_group_message_event_v11, fake_private_message_event_v11
 
@@ -15,8 +15,8 @@ def ansi(*code) -> str:
 
 
 def test_uniseg():
+    from nonebot_plugin_alconna import Other, Segment, Text, Video, select
     from nonebot_plugin_alconna.uniseg import FallbackSegment
-    from nonebot_plugin_alconna import Text, Other, Video, Segment, select
 
     assert str(Other(FallbackSegment.text("123"))) == "[text]"
     assert str(Segment()) == "[segment]"
@@ -57,8 +57,8 @@ def test_uniseg():
 
 
 def test_unimsg():
+    from nonebot_plugin_alconna import At, Other, Segment, Text, UniMessage
     from nonebot_plugin_alconna.uniseg import FallbackSegment
-    from nonebot_plugin_alconna import At, Text, Other, Segment, UniMessage
 
     msg = UniMessage([Other(FallbackSegment.text("123")), Segment(), Text("123")])
     assert str(msg) == "[text][segment]123"
@@ -134,7 +134,7 @@ def test_persistence():
 async def test_fallback(app: App):
     from nonebot.adapters.console import Message
 
-    from nonebot_plugin_alconna.uniseg import Button, UniMessage, SerializeFailed, fallback
+    from nonebot_plugin_alconna.uniseg import Button, SerializeFailed, UniMessage, fallback
 
     msg = UniMessage.at("123").at_channel("456").image(url="https://example.com/1.jpg").text("hello")
     with pytest.raises(SerializeFailed):
@@ -152,8 +152,8 @@ async def test_fallback(app: App):
 
 @pytest.mark.asyncio()
 async def test_unimsg_template(app: App):
+    from nonebot_plugin_alconna import At, Match, Other, Text, UniMessage, on_alconna
     from nonebot_plugin_alconna.uniseg import FallbackSegment
-    from nonebot_plugin_alconna import At, Text, Match, Other, UniMessage, on_alconna
 
     assert UniMessage.template("{} {}").format("hello", Other(FallbackSegment.text("123"))) == UniMessage(
         [Text("hello "), Other(FallbackSegment.text("123"))]
@@ -217,8 +217,8 @@ async def test_unimsg_template(app: App):
 
 @pytest.mark.asyncio()
 async def test_uniseg_recv(app: App):
-    from nonebot_plugin_alconna import UniMessage
     from nonebot_plugin_alconna import Reply as UniReply
+    from nonebot_plugin_alconna import UniMessage
 
     async with app.test_api() as ctx:
         adapter = get_adapter(Adapter)

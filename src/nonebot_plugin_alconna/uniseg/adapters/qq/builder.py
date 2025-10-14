@@ -1,34 +1,34 @@
 from typing import TYPE_CHECKING
 
-from nonebot.compat import model_dump
 from nonebot.adapters import Bot, Event
+from nonebot.adapters.qq.event import GuildMessageEvent, QQMessageEvent
 from nonebot.adapters.qq.message import Ark as ArkSegment
+from nonebot.adapters.qq.message import Attachment as AttachmentSegment
 from nonebot.adapters.qq.message import Emoji as EmojiSegment
-from nonebot.adapters.qq.models import Message as GuildMessage
 from nonebot.adapters.qq.message import Keyboard as KeyboardSegment
 from nonebot.adapters.qq.message import Markdown as MarkdownSegment
-from nonebot.adapters.qq.message import Reference as ReferenceSegment
-from nonebot.adapters.qq.event import QQMessageEvent, GuildMessageEvent
-from nonebot.adapters.qq.message import Attachment as AttachmentSegment
-from nonebot.adapters.qq.message import MentionUser as MentionUserSegment
 from nonebot.adapters.qq.message import MentionChannel as MentionChannelSegment
 from nonebot.adapters.qq.message import MentionEveryone as MentionEveryoneSegment
+from nonebot.adapters.qq.message import MentionUser as MentionUserSegment
+from nonebot.adapters.qq.message import Reference as ReferenceSegment
+from nonebot.adapters.qq.models import Message as GuildMessage
+from nonebot.compat import model_dump
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
     Audio,
+    Button,
     Emoji,
+    File,
     Hyper,
     Image,
-    Reply,
-    Video,
-    Button,
     Keyboard,
+    Reply,
+    Text,
+    Video,
 )
 
 

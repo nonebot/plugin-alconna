@@ -1,14 +1,14 @@
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
-from dataclasses import dataclass
 
 from nonebot.adapters import Bot
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
-from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
-from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg import Segment, custom_handler, custom_register
+from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
 
 
 class MusicShareKind(str, Enum):

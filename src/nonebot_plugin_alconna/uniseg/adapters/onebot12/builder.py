@@ -4,9 +4,9 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.onebot.v12.event import MessageEvent
 from nonebot.adapters.onebot.v12.message import MessageSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, AtAll, Audio, Image, Reply, Video, Voice
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Audio, File, Image, Reply, Video, Voice
 
 
 class Onebot12MessageBuilder(MessageBuilder):

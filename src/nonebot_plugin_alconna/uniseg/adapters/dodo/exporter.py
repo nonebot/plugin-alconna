@@ -1,18 +1,18 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, Sequence, cast
+from typing import TYPE_CHECKING, Any, Sequence, Union, cast
 
-from tarina import lang
-from nonebot.drivers import Request
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.dodo.bot import Bot as DoDoBot
-from nonebot.adapters.dodo.event import MessageEvent
 from nonebot.adapters.dodo.event import Event as DoDoEvent
-from nonebot.adapters.dodo.models import Emoji as DodoEmoji
+from nonebot.adapters.dodo.event import MessageEvent
 from nonebot.adapters.dodo.message import Message, MessageSegment
+from nonebot.adapters.dodo.models import Emoji as DodoEmoji
+from nonebot.drivers import Request
+from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, Text, Emoji, Image, Reply, Video, Segment
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
+from nonebot_plugin_alconna.uniseg.segment import At, Emoji, Image, Reply, Segment, Text, Video
 
 
 class DoDoMessageExporter(MessageExporter[Message]):

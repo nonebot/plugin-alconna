@@ -1,18 +1,18 @@
-import pytest
+from arclet.alconna import Alconna, Args
+from nonebot import get_adapter, require
+from nonebot.adapters.satori import Adapter, Bot, MessageSegment
 from nonebug import App
-from arclet.alconna import Args, Alconna
-from nonebot import require, get_adapter
-from nonebot.adapters.satori import Bot, Adapter, MessageSegment
+import pytest
 
-from tests.fake import fake_satori_bot_params, fake_message_event_satori
+from tests.fake import fake_message_event_satori, fake_satori_bot_params
 
 
 @pytest.mark.asyncio()
 async def test_patch(app: App):
     require("nonebot_plugin_saa")
-    from nonebot_plugin_saa import Text, Mention, MessageFactory
+    from nonebot_plugin_saa import Mention, MessageFactory, Text
 
-    from nonebot_plugin_alconna import At, patch_saa, on_alconna
+    from nonebot_plugin_alconna import At, on_alconna, patch_saa
 
     test_cmd = on_alconna(Alconna("test", Args["target", At]))
 

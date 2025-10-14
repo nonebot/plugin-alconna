@@ -3,34 +3,34 @@ from typing import TYPE_CHECKING
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.kritor.event import MessageEvent
 from nonebot.adapters.kritor.message import At as AtSegment
-from nonebot.adapters.kritor.message import Xml as XmlSegment
 from nonebot.adapters.kritor.message import Face as FaceSegment
 from nonebot.adapters.kritor.message import File as FileSegment
-from nonebot.adapters.kritor.message import Json as JsonSegment
+from nonebot.adapters.kritor.message import Forward as ForwardSegment
 from nonebot.adapters.kritor.message import Image as ImageSegment
+from nonebot.adapters.kritor.message import Json as JsonSegment
+from nonebot.adapters.kritor.message import Keyboard as KeyboardSegment
+from nonebot.adapters.kritor.message import Markdown as MarkdownSegment
 from nonebot.adapters.kritor.message import Reply as ReplySegment
 from nonebot.adapters.kritor.message import Video as VideoSegment
 from nonebot.adapters.kritor.message import Voice as VoiceSegment
-from nonebot.adapters.kritor.message import Forward as ForwardSegment
-from nonebot.adapters.kritor.message import Keyboard as KeyboardSegment
-from nonebot.adapters.kritor.message import Markdown as MarkdownSegment
+from nonebot.adapters.kritor.message import Xml as XmlSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
+    Button,
     Emoji,
+    File,
     Hyper,
     Image,
-    Reply,
-    Video,
-    Voice,
-    Button,
     Keyboard,
     Reference,
+    Reply,
+    Text,
+    Video,
+    Voice,
 )
 
 

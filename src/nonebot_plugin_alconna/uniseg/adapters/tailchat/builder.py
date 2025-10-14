@@ -1,10 +1,10 @@
 from nonebot.adapters import Bot, Event
-from nonebot_adapter_tailchat.message import MessageSegment
 from nonebot_adapter_tailchat.event import DefaultMessageEvent
+from nonebot_adapter_tailchat.message import MessageSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, Emoji, Image, Reply
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, Emoji, File, Image, Reply, Text
 
 STYLE_TYPE_MAP = {
     "b": "bold",

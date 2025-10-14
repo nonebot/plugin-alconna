@@ -1,15 +1,15 @@
-from nonebot.adapters.wxmp.message import MessageSegment
-from nonebot.adapters.wxmp.message import Text as TextSegment
 from nonebot.adapters.wxmp.message import Emjoy as EmojiSegment
 from nonebot.adapters.wxmp.message import Image as ImageSegment
+from nonebot.adapters.wxmp.message import Location as LocationSegment
+from nonebot.adapters.wxmp.message import MessageSegment
+from nonebot.adapters.wxmp.message import Miniprogrampage as MiniProgramSegment
+from nonebot.adapters.wxmp.message import Text as TextSegment
 from nonebot.adapters.wxmp.message import Video as VideoSegment
 from nonebot.adapters.wxmp.message import Voice as VoiceSegment
-from nonebot.adapters.wxmp.message import Location as LocationSegment
-from nonebot.adapters.wxmp.message import Miniprogrampage as MiniProgramSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import Text, Audio, Emoji, Hyper, Image, Other, Video
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import Audio, Emoji, Hyper, Image, Other, Text, Video
 
 
 class WXMPMessageBuilder(MessageBuilder[MessageSegment]):

@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING, Any, Union
 
 from nonebot.adapters import Bot, Event
-from nonebot_adapter_tailchat.model import MessageRet
 from nonebot_adapter_tailchat.bot import Bot as TailChatBot
-from nonebot_adapter_tailchat.message import Message, MessageSegment
 from nonebot_adapter_tailchat.event import AtMessageEvent, DefaultMessageEvent
+from nonebot_adapter_tailchat.message import Message, MessageSegment
+from nonebot_adapter_tailchat.model import MessageRet
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import At, File, Text, Emoji, Image, Reply
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
+from nonebot_plugin_alconna.uniseg.segment import At, Emoji, File, Image, Reply, Text
 
 
 class TailChatMessageExporter(MessageExporter["Message"]):

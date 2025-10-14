@@ -1,15 +1,15 @@
-import pytest
-from nonebug import App
-from nonebot import get_adapter
 from arclet.alconna import Alconna
-from nonebot.adapters.satori import Bot, Adapter, Message, MessageSegment
+from nonebot import get_adapter
+from nonebot.adapters.satori import Adapter, Bot, Message, MessageSegment
+from nonebug import App
+import pytest
 
-from tests.fake import fake_satori_bot_params, fake_message_event_satori
+from tests.fake import fake_message_event_satori, fake_satori_bot_params
 
 
 @pytest.mark.asyncio()
 async def test_patch(app: App):
-    from nonebot_plugin_alconna import Image, on_alconna, apply_filehost
+    from nonebot_plugin_alconna import Image, apply_filehost, on_alconna
 
     test_cmd = on_alconna(Alconna("test"))
 

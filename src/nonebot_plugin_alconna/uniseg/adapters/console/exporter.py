@@ -1,14 +1,14 @@
-from typing import TYPE_CHECKING, Any, Union, Sequence
+from typing import TYPE_CHECKING, Any, Sequence, Union
 
-from nonechat.model import DIRECT
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.console import Bot as ConsoleBot
-from nonebot.adapters.console.message import Message, MessageSegment
 from nonebot.adapters.console.event import MessageEvent, MessageResponse
+from nonebot.adapters.console.message import Message, MessageSegment
+from nonechat.model import DIRECT
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import Text, Emoji, Segment
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SupportAdapter, Target, export
+from nonebot_plugin_alconna.uniseg.segment import Emoji, Segment, Text
 
 
 class ConsoleMessageExporter(MessageExporter[Message]):

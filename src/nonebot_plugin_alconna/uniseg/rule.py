@@ -1,11 +1,11 @@
-from nonebot.params import Depends
-from nonebot.internal.rule import Rule
 from nonebot.adapters import Bot, Event, Message
+from nonebot.internal.rule import Rule
+from nonebot.params import Depends
 
-from .message import UniMessage
-from .functions import get_target
 from .constraint import SupportScope
-from .segment import At, Text, Reply
+from .functions import get_target
+from .message import UniMessage
+from .segment import At, Reply, Text
 
 
 async def _get_message(event: Event, bot: Bot):

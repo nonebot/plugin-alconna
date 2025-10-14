@@ -1,4 +1,4 @@
-from arclet.alconna import Args, Alconna
+from arclet.alconna import Alconna, Args
 
 
 def test_v11():

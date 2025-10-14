@@ -3,19 +3,19 @@ from typing import TYPE_CHECKING
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.dodo import MessageEvent
 from nonebot.adapters.dodo.message import (
-    FileSegment,
     AtAllSegment,
-    VideoSegment,
     AtRoleSegment,
     AtUserSegment,
+    ChannelLinkSegment,
+    FileSegment,
     PictureSegment,
     ReferenceSegment,
-    ChannelLinkSegment,
+    VideoSegment,
 )
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import At, File, AtAll, Image, Reply, Video
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, File, Image, Reply, Video
 
 
 class DodoMessageBuilder(MessageBuilder):

@@ -1,9 +1,9 @@
-from nonebot.adapters.minecraft.model import TextColor
 from nonebot.adapters.minecraft.message import MessageSegment
+from nonebot.adapters.minecraft.model import TextColor
 
-from nonebot_plugin_alconna.uniseg.segment import Text
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import Text
 
 
 class MinecraftMessageBuilder(MessageBuilder):

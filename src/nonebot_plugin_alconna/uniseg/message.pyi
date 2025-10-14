@@ -1,37 +1,37 @@
+from collections.abc import Awaitable, Iterable, Sequence
 from io import BytesIO
 from pathlib import Path
-from collections.abc import Iterable, Sequence, Awaitable
-from typing_extensions import Self, TypeAlias, SupportsIndex
-from typing import Any, Literal, TypeVar, Callable, NoReturn, Protocol, overload
+from typing import Any, Callable, Literal, NoReturn, Protocol, TypeVar, overload
+from typing_extensions import Self, SupportsIndex, TypeAlias
 
-from tarina.lang.model import LangItem
-from tarina.context import ContextModel
 from nonebot.internal.adapter import Bot, Event, Message
+from tarina.context import ContextModel
+from tarina.lang.model import LangItem
 
-from .target import Target
-from .receipt import Receipt
 from .fallback import FallbackStrategy
-from .template import UniMessageTemplate
+from .receipt import Receipt
 from .segment import (
     At,
-    File,
-    I18n,
-    Text,
     AtAll,
     Audio,
-    Emoji,
-    Hyper,
-    Image,
-    Reply,
-    Video,
-    Voice,
     Button,
-    RefNode,
-    Segment,
+    CustomNode,
+    Emoji,
+    File,
+    Hyper,
+    I18n,
+    Image,
     Keyboard,
     Reference,
-    CustomNode,
+    RefNode,
+    Reply,
+    Segment,
+    Text,
+    Video,
+    Voice,
 )
+from .target import Target
+from .template import UniMessageTemplate
 
 _T = TypeVar("_T")
 _TS = TypeVar("_TS", bound=Segment)

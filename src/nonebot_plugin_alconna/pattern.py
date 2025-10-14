@@ -1,8 +1,8 @@
-from typing import Any, Union, Generic, Literal, TypeVar, Callable, Optional
+from typing import Any, Callable, Generic, Literal, Optional, TypeVar, Union
 
-from tarina import lang
 from arclet.alconna import StrMulti
-from nepattern import MatchMode, BasePattern, MatchFailed, func
+from nepattern import BasePattern, MatchFailed, MatchMode, func
+from tarina import lang
 
 from .uniseg import segment
 from .uniseg.segment import Segment

@@ -1,11 +1,11 @@
-from collections.abc import Sequence
 from abc import ABCMeta, abstractmethod
-from typing import Any, Union, Generic, TypeVar, Callable, Optional
+from collections.abc import Sequence
+from typing import Any, Callable, Generic, Optional, TypeVar, Union
 
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
 from .constraint import SupportAdapter
-from .segment import Text, Other, Reply, Segment, custom
+from .segment import Other, Reply, Segment, Text, custom
 
 TS = TypeVar("TS", bound=MessageSegment)
 

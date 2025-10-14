@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from arclet.alconna import Alconna
-from nonebot.permission import SuperUser
 from nonebot.internal.adapter import Bot, Event
+from nonebot.permission import SuperUser
 
 from nonebot_plugin_alconna import Extension, UniMessage
 

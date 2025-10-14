@@ -1,28 +1,28 @@
 import asyncio
-import weakref
 from contextlib import AsyncExitStack
-from typing import Any, Union, Literal, Optional
+from typing import Any, Literal, Optional, Union
+import weakref
 
+from arclet.alconna import Alconna, Arparma, CompSession, command_manager, output_manager
+from arclet.alconna.exceptions import SpecialOptionTriggered
 import nonebot
-from tarina import lang
+from nonebot import get_driver, get_plugin_config, require
+from nonebot.adapters import Bot, Event
+from nonebot.internal.params import DependencyCache
+from nonebot.internal.rule import Rule as Rule
 from nonebot.matcher import Matcher
+from nonebot.typing import T_RuleChecker, T_State, _DependentCallable
 from nonebot.utils import escape_tag
 from pydantic import ValidationError
-from nonebot.adapters import Bot, Event
-from nonebot.internal.rule import Rule as Rule
-from nonebot.internal.params import DependencyCache
-from nonebot import require, get_driver, get_plugin_config
-from arclet.alconna.exceptions import SpecialOptionTriggered
-from nonebot.typing import T_State, T_RuleChecker, _DependentCallable
-from arclet.alconna import Alconna, Arparma, CompSession, output_manager, command_manager
+from tarina import lang
 
-from .i18n import Lang
 from .config import Config
-from .uniseg import UniMsg, UniMessage
-from .model import CompConfig, CommandResult
-from .uniseg.constraint import UNISEG_MESSAGE
+from .consts import ALCONNA_EXEC_RESULT, ALCONNA_EXTENSION, ALCONNA_RESULT, log
 from .extension import Extension, ExtensionExecutor, SelectedExtensions
-from .consts import ALCONNA_RESULT, ALCONNA_EXTENSION, ALCONNA_EXEC_RESULT, log
+from .i18n import Lang
+from .model import CommandResult, CompConfig
+from .uniseg import UniMessage, UniMsg
+from .uniseg.constraint import UNISEG_MESSAGE
 
 try:
     if nonebot._driver:

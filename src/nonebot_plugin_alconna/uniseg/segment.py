@@ -1,36 +1,36 @@
 """通用标注, 无法用于创建 MS对象"""
 
-import re
-import json
 import base64
+from collections.abc import Awaitable, Iterable
+import contextlib
+from dataclasses import InitVar, asdict, dataclass, field, fields
+from datetime import datetime
+from functools import lru_cache, reduce
 import hashlib
 import importlib
-import contextlib
 from io import BytesIO
+import json
 from pathlib import Path
-from datetime import datetime
-from urllib.parse import urlparse
+import re
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal, Optional, Protocol, TypeVar, Union, overload
 from typing_extensions import Self
-from functools import reduce, lru_cache
-from collections.abc import Iterable, Awaitable
-from dataclasses import InitVar, field, asdict, fields, dataclass
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, Optional, Protocol, overload
+from urllib.parse import urlparse
 
+from nepattern import BasePattern, MatchMode, create_local_patterns
 from nonebot import require
-from tarina import gen_subclass
-from tarina.lang.model import LangItem
 from nonebot.compat import custom_validation
 from nonebot.internal.adapter import Bot, Message, MessageSegment
-from nepattern import MatchMode, BasePattern, create_local_patterns
+from tarina import gen_subclass
+from tarina.lang.model import LangItem
 
-from .utils import fleep
 from .constraint import lang
 from .fallback import FallbackStrategy
+from .utils import fleep
 
 if TYPE_CHECKING:
-    from .message import UniMessage
     from .builder import MessageBuilder
     from .exporter import MessageExporter
+    from .message import UniMessage
 
 
 TS = TypeVar("TS", bound="Segment")

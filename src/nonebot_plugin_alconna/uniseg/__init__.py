@@ -5,64 +5,64 @@ from typing_extensions import TypeAlias
 from nonebot.adapters import Bot
 from nonebot.plugin import PluginMetadata
 
-from .segment import At as At
-from .rule import at_in as at_in
-from .rule import at_me as at_me
-from .constraint import log, lang
-from .segment import File as File
-from .segment import Text as Text
-from .target import TARGET_RECORD
-from .fallback import AUTO as AUTO
-from .params import MsgId as MsgId
-from .segment import AtAll as AtAll
-from .segment import Audio as Audio
-from .segment import Emoji as Emoji
-from .segment import Hyper as Hyper
-from .segment import Image as Image
-from .segment import Other as Other
-from .segment import Reply as Reply
-from .segment import Video as Video
-from .segment import Voice as Voice
-from .params import UniMsg as UniMsg
-from .target import SCOPES as SCOPES
-from .target import Target as Target
-from .segment import Button as Button
-from .tools import get_bot as get_bot
-from .fallback import FORBID as FORBID
-from .fallback import IGNORE as IGNORE
-from .receipt import Receipt as Receipt
-from .segment import RefNode as RefNode
-from .segment import Segment as Segment
-from .fallback import TO_TEXT as TO_TEXT
-from .segment import Keyboard as Keyboard
-from .fallback import ROLLBACK as ROLLBACK
-from .params import MessageId as MessageId
-from .params import MsgTarget as MsgTarget
-from .segment import Reference as Reference
-from .message import UniMessage as UniMessage
-from .segment import CustomNode as CustomNode
-from .tools import image_fetch as image_fetch
-from .tools import reply_fetch as reply_fetch
-from .functions import get_target as get_target
-from .params import MessageTarget as MessageTarget
-from .functions import message_edit as message_edit
-from .constraint import SupportScope as SupportScope
-from .params import OriginalUniMsg as OriginalUniMsg
-from .segment import custom_handler as custom_handler
-from .functions import get_message_id as get_message_id
-from .functions import message_recall as message_recall
-from .segment import custom_register as custom_register
+from .adapters import alter_get_builder, alter_get_exporter, alter_get_fetcher
+from .constraint import SerializeFailed as SerializeFailed
 from .constraint import SupportAdapter as SupportAdapter
+from .constraint import SupportAdapterModule as SupportAdapterModule
+from .constraint import SupportScope as SupportScope
+from .constraint import lang, log
+from .fallback import AUTO as AUTO
+from .fallback import FORBID as FORBID
 from .fallback import FallbackMessage as FallbackMessage
 from .fallback import FallbackSegment as FallbackSegment
+from .fallback import FallbackStrategy as FallbackStrategy
+from .fallback import IGNORE as IGNORE
+from .fallback import ROLLBACK as ROLLBACK
+from .fallback import TO_TEXT as TO_TEXT
+from .functions import get_message_id as get_message_id
+from .functions import get_target as get_target
+from .functions import message_edit as message_edit
+from .functions import message_reaction as message_reaction
+from .functions import message_recall as message_recall
+from .message import UniMessage as UniMessage
+from .params import MessageId as MessageId
+from .params import MessageTarget as MessageTarget
+from .params import MsgId as MsgId
+from .params import MsgTarget as MsgTarget
+from .params import OriginalUniMsg as OriginalUniMsg
+from .params import UniMsg as UniMsg
 from .params import UniversalMessage as UniversalMessage
 from .params import UniversalSegment as UniversalSegment
-from .constraint import SerializeFailed as SerializeFailed
-from .fallback import FallbackStrategy as FallbackStrategy
-from .functions import message_reaction as message_reaction
+from .receipt import Receipt as Receipt
+from .rule import at_in as at_in
+from .rule import at_me as at_me
+from .segment import At as At
+from .segment import AtAll as AtAll
+from .segment import Audio as Audio
+from .segment import Button as Button
+from .segment import CustomNode as CustomNode
+from .segment import Emoji as Emoji
+from .segment import File as File
+from .segment import Hyper as Hyper
+from .segment import Image as Image
+from .segment import Keyboard as Keyboard
+from .segment import Other as Other
+from .segment import RefNode as RefNode
+from .segment import Reference as Reference
+from .segment import Reply as Reply
+from .segment import Segment as Segment
+from .segment import Text as Text
+from .segment import Video as Video
+from .segment import Voice as Voice
 from .segment import apply_media_to_url as apply_media_to_url
-from .constraint import SupportAdapterModule as SupportAdapterModule
-from .adapters import alter_get_builder, alter_get_fetcher, alter_get_exporter
+from .segment import custom_handler as custom_handler
+from .segment import custom_register as custom_register
+from .target import SCOPES as SCOPES
+from .target import TARGET_RECORD
+from .target import Target as Target
+from .tools import get_bot as get_bot
+from .tools import image_fetch as image_fetch
+from .tools import reply_fetch as reply_fetch
 
 __version__ = "0.59.4"
 

@@ -2,9 +2,9 @@ from typing import Union
 
 from nonebot.adapters import Bot, Event
 
-from nonebot_plugin_alconna.uniseg.segment import Text
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SupportAdapter, Target, export
 from nonebot_plugin_alconna.uniseg.fallback import FallbackMessage, FallbackSegment
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, export
+from nonebot_plugin_alconna.uniseg.segment import Text
 
 
 class NonebugMessageExporter(MessageExporter[FallbackMessage]):

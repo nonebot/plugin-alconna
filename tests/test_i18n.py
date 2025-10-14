@@ -1,16 +1,16 @@
-import pytest
-from nonebug import App
+from arclet.alconna import Alconna, Args
 from nonebot import get_adapter
-from arclet.alconna import Args, Alconna
-from nonebot.adapters.qq import Bot, Adapter, Message, MessageSegment
+from nonebot.adapters.qq import Adapter, Bot, Message, MessageSegment
+from nonebug import App
+import pytest
 
 from tests.fake import fake_message_event_guild
 
 
 @pytest.mark.asyncio()
 async def test_send(app: App):
-    from nonebot_plugin_alconna.uniseg.segment import I18n
     from nonebot_plugin_alconna import UniMessage, lang, on_alconna
+    from nonebot_plugin_alconna.uniseg.segment import I18n
 
     cmd = on_alconna(Alconna("test", Args["name", str]))
 

@@ -1,11 +1,11 @@
-import pytest
-from nonebug import App
+from arclet.alconna import Alconna, Args, CommandMeta
 from nonebot import get_adapter
+from nonebot.adapters.satori import Adapter, Bot, Message
 from nonebot.adapters.satori.models import User
-from arclet.alconna import Args, Alconna, CommandMeta
-from nonebot.adapters.satori import Bot, Adapter, Message
+from nonebug import App
+import pytest
 
-from tests.fake import fake_satori_bot_params, fake_message_event_satori
+from tests.fake import fake_message_event_satori, fake_satori_bot_params
 
 
 @pytest.mark.asyncio()

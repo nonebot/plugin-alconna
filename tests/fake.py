@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Literal
 from nonebot.compat import type_validate_python
 
 if TYPE_CHECKING:
-    from nonebot.adapters.qq import MessageCreateEvent as MessageCreateEvent
-    from nonebot.adapters.satori.event import MessageEvent as SatoriMessageEvent
     from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
+    from nonebot.adapters.discord.event import GuildMessageCreateEvent as DiscordMessageEvent
     from nonebot.adapters.onebot.v11 import GroupMessageEvent as GroupMessageEventV11
     from nonebot.adapters.onebot.v11 import PrivateMessageEvent as PrivateMessageEventV11
-    from nonebot.adapters.discord.event import GuildMessageCreateEvent as DiscordMessageEvent
+    from nonebot.adapters.qq import MessageCreateEvent as MessageCreateEvent
+    from nonebot.adapters.satori.event import MessageEvent as SatoriMessageEvent
 
 
 _msg_ids = iter(range(1000000))
@@ -20,9 +20,9 @@ def get_msg_id() -> int:
 
 
 def fake_self_message_event_v11(**field) -> "GroupMessageEventV11":
-    from pydantic import create_model
+    from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
     from nonebot.adapters.onebot.v11.event import Sender
-    from nonebot.adapters.onebot.v11 import Message, GroupMessageEvent
+    from pydantic import create_model
 
     _fake = create_model("_fake", __base__=GroupMessageEvent)
 
@@ -51,9 +51,9 @@ def fake_self_message_event_v11(**field) -> "GroupMessageEventV11":
 
 
 def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
-    from pydantic import create_model
+    from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
     from nonebot.adapters.onebot.v11.event import Sender
-    from nonebot.adapters.onebot.v11 import Message, GroupMessageEvent
+    from pydantic import create_model
 
     _fake = create_model("_fake", __base__=GroupMessageEvent)
 
@@ -82,9 +82,9 @@ def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
 
 
 def fake_private_message_event_v11(**field) -> "PrivateMessageEventV11":
-    from pydantic import create_model
-    from nonebot.adapters.onebot.v11.event import Sender
     from nonebot.adapters.onebot.v11 import Message, PrivateMessageEvent
+    from nonebot.adapters.onebot.v11.event import Sender
+    from pydantic import create_model
 
     _fake = create_model("_fake", __base__=PrivateMessageEvent)
 
@@ -108,8 +108,8 @@ def fake_private_message_event_v11(**field) -> "PrivateMessageEventV11":
 
 
 def fake_discord_interaction_event(**field) -> "ApplicationCommandInteractionEvent":
-    from pydantic import create_model
     from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
+    from pydantic import create_model
 
     _fake = create_model("_fake", __base__=ApplicationCommandInteractionEvent)
     field["type"] = 2
@@ -162,10 +162,10 @@ def fake_message_event_discord(content: str) -> "DiscordMessageEvent":
 
 
 def fake_message_event_satori(**field) -> "SatoriMessageEvent":
-    from pydantic import create_model
     from nonebot.adapters.satori import Message
     from nonebot.adapters.satori.event import MessageEvent
-    from nonebot.adapters.satori.models import User, Login, Channel, ChannelType, LoginStatus, MessageObject
+    from nonebot.adapters.satori.models import Channel, ChannelType, Login, LoginStatus, MessageObject, User
+    from pydantic import create_model
 
     _fake = create_model("_fake", __base__=MessageEvent)
 
@@ -197,10 +197,10 @@ def fake_message_event_satori(**field) -> "SatoriMessageEvent":
 
 
 def fake_message_event_guild(**field) -> "MessageCreateEvent":
-    from pydantic import create_model
+    from nonebot.adapters.qq.event import MessageCreateEvent
     from nonebot.adapters.qq.message import Message
     from nonebot.adapters.qq.models.guild import User
-    from nonebot.adapters.qq.event import MessageCreateEvent
+    from pydantic import create_model
 
     _fake = create_model("_fake", __base__=MessageCreateEvent)
 
@@ -218,7 +218,7 @@ def fake_message_event_guild(**field) -> "MessageCreateEvent":
 
 
 def fake_satori_bot_params(self_id: str = "test", platform: str = "test") -> dict:
-    from nonebot.adapters.satori.models import User, Login, LoginStatus
+    from nonebot.adapters.satori.models import Login, LoginStatus, User
 
     return {
         "self_id": self_id,

@@ -1,12 +1,12 @@
-import pytest
-from nonebug import App
+from arclet.alconna import Alconna, Args
 from nepattern import Dot
 from nonebot import get_adapter
-from arclet.alconna import Args, Alconna
+from nonebot.adapters.satori import Adapter, Bot, Message, MessageSegment
 from nonebot.adapters.satori.element import parse
-from nonebot.adapters.satori import Bot, Adapter, Message, MessageSegment
+from nonebug import App
+import pytest
 
-from tests.fake import fake_satori_bot_params, fake_message_event_satori
+from tests.fake import fake_message_event_satori, fake_satori_bot_params
 
 
 def test_message_rollback():
@@ -80,7 +80,7 @@ async def test_satori(app: App):
 
 @pytest.mark.asyncio()
 async def test_send(app: App):
-    from nonebot_plugin_alconna import Text, Image, on_alconna
+    from nonebot_plugin_alconna import Image, Text, on_alconna
 
     test_cmd = on_alconna(Alconna("test", Args["img", Image]))
 

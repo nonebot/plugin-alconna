@@ -1,49 +1,49 @@
 from __future__ import annotations
 
-import random
-import inspect
-import weakref
-from types import FunctionType
-from typing_extensions import Self
 from collections.abc import Iterable
 from contextlib import contextmanager
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, ClassVar, NoReturn, Protocol, cast, overload
+import inspect
+import random
+from types import FunctionType
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal, NoReturn, Protocol, TypeVar, Union, cast, overload
+from typing_extensions import Self
+import weakref
 
-from nonebot.rule import Rule
-from nonebot.params import Depends
-from tarina import run_always_await
-from tarina.tools import annotation
-from nonebot.utils import escape_tag
-from tarina.lang.model import LangItem
-from nonebot.permission import Permission
-from nonebot.dependencies import Dependent
-from arclet.alconna.tools import AlconnaFormat
-from nonebot.consts import ARG_KEY, RECEIVE_KEY
-from nonebot.internal.params import DefaultParam
-from nepattern import ANY, STRING, TPattern, AnyString
-from nonebot.internal.matcher.matcher import MatcherMeta
 from _weakref import _remove_dead_weakref  # type: ignore
-from nonebot import require, get_driver, get_plugin_config
-from nonebot.plugin.on import store_matcher, get_matcher_source
+from arclet.alconna import Alconna, Arg, Args, ShortcutArgs, command_manager
+from arclet.alconna.tools import AlconnaFormat
 from arclet.alconna.typing import ShortcutRegWrapper, _AllParamPattern
-from arclet.alconna import Arg, Args, Alconna, ShortcutArgs, command_manager
-from nonebot.typing import T_State, T_Handler, T_RuleChecker, T_PermissionChecker
-from nonebot.exception import PausedException, FinishedException, RejectedException
+from nepattern import ANY, STRING, AnyString, TPattern
+from nonebot import get_driver, get_plugin_config, require
+from nonebot.consts import ARG_KEY, RECEIVE_KEY
+from nonebot.dependencies import Dependent
+from nonebot.exception import FinishedException, PausedException, RejectedException
 from nonebot.internal.adapter import Bot, Event, Message, MessageSegment, MessageTemplate
-from nonebot.matcher import Matcher, matchers, current_bot, current_event, current_matcher
+from nonebot.internal.matcher.matcher import MatcherMeta
+from nonebot.internal.params import DefaultParam
+from nonebot.matcher import Matcher, current_bot, current_event, current_matcher, matchers
+from nonebot.params import Depends
+from nonebot.permission import Permission
+from nonebot.plugin.on import get_matcher_source, store_matcher
+from nonebot.rule import Rule
+from nonebot.typing import T_Handler, T_PermissionChecker, T_RuleChecker, T_State
+from nonebot.utils import escape_tag
+from tarina import run_always_await
+from tarina.lang.model import LangItem
+from tarina.tools import annotation
 
-from .i18n import Lang
 from .config import Config
-from .model import CompConfig
-from .rule import AlconnaRule
-from .uniseg.fallback import FallbackStrategy
-from .uniseg.template import UniMessageTemplate
-from .uniseg.message import current_send_wrapper
+from .consts import ALCONNA_ARG_KEY, ALCONNA_ARG_KEYS, ALCONNA_RESULT, log
 from .extension import Extension, ExtensionExecutor
-from .uniseg import Text, Segment, UniMessage, get_target, get_message_id
-from .consts import ALCONNA_RESULT, ALCONNA_ARG_KEY, ALCONNA_ARG_KEYS, log
-from .params import CHECK, MIDDLEWARE, Check, AlconnaParam, ExtensionParam, assign, _seminal, _Dispatch, merge_path
+from .i18n import Lang
+from .model import CompConfig
+from .params import CHECK, MIDDLEWARE, AlconnaParam, Check, ExtensionParam, _Dispatch, _seminal, assign, merge_path
+from .rule import AlconnaRule
+from .uniseg import Segment, Text, UniMessage, get_message_id, get_target
+from .uniseg.fallback import FallbackStrategy
+from .uniseg.message import current_send_wrapper
+from .uniseg.template import UniMessageTemplate
 
 _M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
 
@@ -942,7 +942,7 @@ class AlconnaMatcher(Matcher, metaclass=AlconnaMatcherMeta):
 
 def on_alconna(
     command: Alconna | str,
-    rule: Rule | T_RuleChecker | None = None,
+    rule: None | Rule | T_RuleChecker = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool | None = None,
     aliases: set[str] | tuple[str, ...] | None = None,
@@ -953,7 +953,7 @@ def on_alconna(
     use_cmd_start: bool | None = None,
     use_cmd_sep: bool | None = None,
     response_self: bool | None = None,
-    permission: Permission | T_PermissionChecker | None = None,
+    permission: None | Permission | T_PermissionChecker = None,
     *,
     handlers: list[T_Handler | Dependent] | None = None,
     temp: bool = False,

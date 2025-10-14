@@ -1,49 +1,49 @@
 from __future__ import annotations
 
-from io import BytesIO
-from pathlib import Path
-from copy import deepcopy
-from json import dumps, loads
-from types import FunctionType
 from collections.abc import Iterable, Sequence
+from copy import deepcopy
+from io import BytesIO
+from json import dumps, loads
+from pathlib import Path
+from types import FunctionType
+from typing import TYPE_CHECKING, Any, Callable, Literal, NoReturn, TypeVar, Union
 from typing_extensions import Self, SupportsIndex, deprecated
-from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Callable, NoReturn
 
-from tarina import lang
-from tarina.lang.model import LangItem
-from tarina.context import ContextModel
 from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
+from tarina import lang
+from tarina.context import ContextModel
+from tarina.lang.model import LangItem
 
-from .target import Target
-from .receipt import Receipt
-from .constraint import SerializeFailed
-from .template import UniMessageTemplate
-from .functions import get_target, get_message_id
-from .fallback import FallbackMessage, FallbackStrategy
 from .adapters import alter_get_builder, alter_get_exporter
+from .constraint import SerializeFailed
+from .fallback import FallbackMessage, FallbackStrategy
+from .functions import get_message_id, get_target
+from .receipt import Receipt
 from .segment import (
     At,
-    File,
-    I18n,
-    Text,
     AtAll,
     Audio,
-    Emoji,
-    Hyper,
-    Image,
-    Reply,
-    Video,
-    Voice,
     Button,
-    RefNode,
-    Segment,
+    CustomNode,
+    Emoji,
+    File,
+    Hyper,
+    I18n,
+    Image,
     Keyboard,
     Reference,
-    CustomNode,
+    RefNode,
+    Reply,
+    Segment,
+    Text,
+    Video,
+    Voice,
     get_segment_class,
 )
+from .target import Target
+from .template import UniMessageTemplate
 
 TS = TypeVar("TS", bound=Segment)
 

@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from typing import Optional, cast
 
-from nonebot.adapters import Bot
 from nepattern import BasePattern, UnionPattern, local_patterns
+from nonebot.adapters import Bot
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
 from nonebot_plugin_alconna.typings import Style
+from nonebot_plugin_alconna.uniseg import Segment, Text, custom_handler, custom_register
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
-from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
-from nonebot_plugin_alconna.uniseg import Text, Segment, custom_handler, custom_register
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
 
 
 @dataclass

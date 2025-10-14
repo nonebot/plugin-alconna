@@ -1,11 +1,11 @@
-from typing_extensions import TypedDict, NotRequired
-from typing import Any, Union, Generic, Literal, TypeVar, Optional
+from typing import Any, Generic, Literal, Optional, TypeVar, Union
+from typing_extensions import NotRequired, TypedDict
 
-from pydantic import Field, BaseModel
+from arclet.alconna import Alconna, Arparma, Empty
 from arclet.alconna.action import Action
-from arclet.alconna import Empty, Alconna, Arparma
 from arclet.alconna.duplication import Duplication
 from nonebot.compat import PYDANTIC_V2, ConfigDict
+from pydantic import BaseModel, Field
 
 T = TypeVar("T")
 T_Duplication = TypeVar("T_Duplication", bound=Duplication)

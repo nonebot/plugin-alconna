@@ -1,11 +1,11 @@
 from typing import Any, Union
 
-from nonebot.matcher import Matcher
 from nonebot.adapters import Message, MessageSegment, MessageTemplate
 from nonebot.internal.matcher import current_bot, current_event, current_matcher
+from nonebot.matcher import Matcher
 
-from nonebot_plugin_alconna.uniseg.message import UniMessage
 from nonebot_plugin_alconna.uniseg.fallback import FallbackStrategy
+from nonebot_plugin_alconna.uniseg.message import UniMessage
 
 
 async def send(

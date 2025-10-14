@@ -1,8 +1,8 @@
+from arclet.alconna import Alconna, Args, CommandMeta, Field, Option, namespace
 from nonebot.plugin import PluginMetadata
-from arclet.alconna import Args, Field, Option, Alconna, CommandMeta, namespace
 
+from nonebot_plugin_alconna import Match, UniMessage, __supported_adapters__, on_alconna
 from nonebot_plugin_alconna.i18n import Lang, lang
-from nonebot_plugin_alconna import Match, UniMessage, on_alconna, __supported_adapters__
 
 __plugin_meta__ = PluginMetadata(
     name="lang",

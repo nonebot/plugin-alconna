@@ -1,30 +1,30 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.milky.utils import to_uri
 from nonebot.adapters.milky.bot import Bot as MilkyBot
 from nonebot.adapters.milky.event import Event as MilkyEvent
-from nonebot.adapters.milky.model.api import MessageResponse
-from nonebot.adapters.milky.message import Message, MessageSegment
 from nonebot.adapters.milky.event import MessageEvent, MessageRecallEvent
+from nonebot.adapters.milky.message import Message, MessageSegment
+from nonebot.adapters.milky.model.api import MessageResponse
+from nonebot.adapters.milky.utils import to_uri
+from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
     Audio,
     Emoji,
+    File,
     Image,
+    Reference,
+    RefNode,
     Reply,
+    Text,
     Video,
     Voice,
-    RefNode,
-    Reference,
 )
 
 

@@ -1,10 +1,10 @@
-import pytest
-from nonebug import App
 from nonebot import get_adapter
+from nonebot.adapters.satori import Adapter, Bot, Message, MessageSegment
+from nonebug import App
+import pytest
 from pytest_mock import MockerFixture
-from nonebot.adapters.satori import Bot, Adapter, Message, MessageSegment
 
-from tests.fake import fake_satori_bot_params, fake_message_event_satori
+from tests.fake import fake_message_event_satori, fake_satori_bot_params
 
 
 @pytest.mark.asyncio()
@@ -94,8 +94,8 @@ async def test_lang_switch(app: App):
 
 @pytest.mark.asyncio()
 async def test_lang_list(app: App, mocker: MockerFixture):
-    from nonebot_plugin_alconna.consts import lang
     from nonebot_plugin_alconna import load_builtin_plugin
+    from nonebot_plugin_alconna.consts import lang
 
     load_builtin_plugin("lang")
 

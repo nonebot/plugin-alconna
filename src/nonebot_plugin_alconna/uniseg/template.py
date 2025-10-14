@@ -1,12 +1,12 @@
-import re
-import functools
-from string import Formatter
-from typing_extensions import TypeAlias
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Union, TypeVar, Callable, Optional, cast
+import functools
+import re
+from string import Formatter
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, Union, cast
+from typing_extensions import TypeAlias
 
-from tarina import lang
 import _string  # type: ignore
+from tarina import lang
 from tarina.tools import gen_subclass
 
 from .segment import Segment

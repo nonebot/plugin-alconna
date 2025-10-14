@@ -1,11 +1,11 @@
 import random
 from typing import Any, Callable, ClassVar, Optional
 
-from tarina import LRU
 from arclet.alconna import Alconna
 from nonebot.internal.adapter import Bot, Event
+from tarina import LRU
 
-from nonebot_plugin_alconna import Target, Extension, UniMessage, get_target, get_message_id
+from nonebot_plugin_alconna import Extension, Target, UniMessage, get_message_id, get_target
 
 
 class PrefixAppendExtension(Extension):

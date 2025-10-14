@@ -1,8 +1,8 @@
 from nonebot.adapters.console.message import MessageSegment
 
-from nonebot_plugin_alconna.uniseg.segment import Text, Emoji
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import Emoji, Text
 
 
 class ConsoleMessageBuilder(MessageBuilder):

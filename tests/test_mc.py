@@ -1,6 +1,6 @@
 def test_mc_style_text():
-    from nonebot.adapters.minecraft.model import TextColor
     from nonebot.adapters.minecraft.message import Message, MessageSegment
+    from nonebot.adapters.minecraft.model import TextColor
 
     from nonebot_plugin_alconna import Text, UniMessage
 

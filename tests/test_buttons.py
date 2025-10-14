@@ -1,6 +1,6 @@
-import pytest
-from nonebug import App
 from nonebot import get_adapter
+from nonebug import App
+import pytest
 
 
 @pytest.mark.asyncio()
@@ -25,9 +25,10 @@ async def test_button(app: App):
         ).send()
 
     async with app.test_matcher(matcher) as ctx:
+        from nonebot.adapters.discord import Adapter, Bot, MessageSegment
+        from nonebot.adapters.discord.api import ActionRow
         from nonebot.adapters.discord.api import Button as DCButton
-        from nonebot.adapters.discord.api import ActionRow, ButtonStyle
-        from nonebot.adapters.discord import Bot, Adapter, MessageSegment
+        from nonebot.adapters.discord.api import ButtonStyle
 
         from tests.fake import fake_message_event_discord
 
@@ -95,16 +96,16 @@ async def test_button(app: App):
         )
 
     async with app.test_matcher(matcher) as ctx:
-        from nonebot.adapters.qq.models import Action
-        from nonebot.adapters.qq.models import Button as QQButton
-        from nonebot.adapters.qq import Bot, Adapter, Message, MessageSegment
+        from nonebot.adapters.qq import Adapter, Bot, Message, MessageSegment
         from nonebot.adapters.qq.models import (
+            InlineKeyboard,
+            InlineKeyboardRow,
+            MessageKeyboard,
             Permission,
             RenderData,
-            InlineKeyboard,
-            MessageKeyboard,
-            InlineKeyboardRow,
         )
+        from nonebot.adapters.qq.models import Action
+        from nonebot.adapters.qq.models import Button as QQButton
 
         from tests.fake import fake_message_event_guild
 

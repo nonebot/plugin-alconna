@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING, Union
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
+from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import File, Text, Hyper, Image, Video
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
+from nonebot_plugin_alconna.uniseg.segment import File, Hyper, Image, Text, Video
 
 if TYPE_CHECKING:
     from nonebot.adapters.ntchat.message import Message, MessageSegment  # type: ignore
@@ -75,8 +75,8 @@ class NTChatMessageExporter(MessageExporter["Message"]):
         return MessageSegment.xml(seg.raw)
 
     async def send_to(self, target: Union[Target, Event], bot: Bot, message: "Message", **kwargs):
-        from nonebot.adapters.ntchat.bot import send  # type: ignore
         from nonebot.adapters.ntchat.bot import Bot as NTChatBot  # type: ignore
+        from nonebot.adapters.ntchat.bot import send  # type: ignore
 
         assert isinstance(bot, NTChatBot)
 

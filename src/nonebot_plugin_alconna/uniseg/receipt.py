@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
-from typing_extensions import Self
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, overload
+from typing_extensions import Self
 
 from nonebot.compat import custom_validation
 from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event
 
-from .target import Target
 from .exporter import MessageExporter
 from .fallback import FallbackStrategy
 from .segment import Emoji, Reply, Segment
+from .target import Target
 
 if TYPE_CHECKING:
     from .message import UniMessage

@@ -1,33 +1,34 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, Sequence, cast
+from typing import TYPE_CHECKING, Any, Sequence, Union, cast
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.internal.driver import Request
 from nonebot.adapters.discord.api import SnowflakeType
-from nonebot.adapters.discord.bot import Bot as DiscordBot
+from nonebot.adapters.discord.api.model import ActionRow
 from nonebot.adapters.discord.api.model import Button as ButtonModel
-from nonebot.adapters.discord.message import Message, MessageSegment, parse_message
+from nonebot.adapters.discord.api.model import Channel, MessageGet, TextInput
 from nonebot.adapters.discord.api.types import ButtonStyle, ChannelType, TextInputStyle
-from nonebot.adapters.discord.api.model import Channel, ActionRow, TextInput, MessageGet
-from nonebot.adapters.discord.event import MessageEvent, GuildMessageCreateEvent, DirectMessageCreateEvent
+from nonebot.adapters.discord.bot import Bot as DiscordBot
+from nonebot.adapters.discord.event import DirectMessageCreateEvent, GuildMessageCreateEvent, MessageEvent
+from nonebot.adapters.discord.message import Message, MessageSegment, parse_message
+from nonebot.internal.driver import Request
+from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
     Audio,
+    Button,
     Emoji,
+    File,
     Image,
+    Keyboard,
     Reply,
+    Segment,
+    Text,
     Video,
     Voice,
-    Button,
-    Segment,
-    Keyboard,
 )
 
 

@@ -1,42 +1,42 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
-from nonebot.internal.driver import Request
-from nonebot.adapters.mirai.bot import UploadMethod
 from nonebot.adapters.mirai.bot import Bot as MiraiBot
-from nonebot.adapters.mirai.model.common import FileInfo
-from nonebot.adapters.mirai.message import Video as VideoSegment
-from nonebot.adapters.mirai.message import Message, MessageSegment
+from nonebot.adapters.mirai.bot import UploadMethod
 from nonebot.adapters.mirai.event import (
-    GroupEvent,
-    NudgeEvent,
-    FriendEvent,
-    MemberEvent,
-    BotMuteEvent,
-    GroupMessage,
-    MessageEvent,
     ActiveMessage,
+    BotMuteEvent,
     BotUnmuteEvent,
+    FriendEvent,
+    GroupEvent,
+    GroupMessage,
+    MemberEvent,
+    MessageEvent,
+    NudgeEvent,
 )
+from nonebot.adapters.mirai.message import Message, MessageSegment
+from nonebot.adapters.mirai.message import Video as VideoSegment
+from nonebot.adapters.mirai.model.common import FileInfo
+from nonebot.internal.driver import Request
+from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
     Audio,
     Emoji,
+    File,
     Hyper,
     Image,
+    Reference,
+    RefNode,
     Reply,
+    Text,
     Video,
     Voice,
-    RefNode,
-    Reference,
 )
 
 

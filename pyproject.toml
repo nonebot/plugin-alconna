@@ -5,16 +5,16 @@ authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "tarina<0.8.0,>=0.7.1",
+    "tarina<0.8.0,>=0.7.3",
     "nepattern<1.0,>=0.7.7",
-    "arclet-alconna<2.0,>=1.8.40",
-    "arclet-alconna-tools>=0.7.10",
-    "importlib-metadata>=4.13.0",
-    "nonebot2>=2.3.0",
-    "nonebot-plugin-waiter>=0.6.0",
+    "arclet-alconna<2.0,>=1.8.43",
+    "arclet-alconna-tools>=0.7.12",
+    "importlib-metadata>=8.7.0",
+    "nonebot2>=2.4.3",
+    "nonebot-plugin-waiter>=0.8.1",
 ]
 dynamic = ["version"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
 keywords = [
@@ -31,71 +31,6 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm]
-[tool.pdm.dev-dependencies]
-dev = [
-    "isort==5.13.2",
-    "black>=25.1.0",
-    "loguru>=0.7.2",
-    "ruff>=0.8.4",
-    "nonemoji>=0.1.4",
-    "pre-commit>=3.7.0",
-    "nonebug>=0.3.7",
-    "pytest-xdist>=3.6.1",
-    "pytest-asyncio==0.26.0",
-    "fastapi>=0.110.2",
-    "uvicorn[standard]>=0.28.1",
-    "pydantic>=2.7.0",
-    "nonebot2[httpx,websockets]>=2.3.0",
-    "nonebot-adapter-console<0.10.0,>=0.9.0",
-    "nonebot-adapter-ding>=2.0.0a16",
-    "nonebot-adapter-discord>=0.1.8",
-    "nonebot-adapter-dodo>=0.2.1",
-    "nonebot-adapter-feishu>=2.6.0",
-    "nonebot-adapter-kaiheila>=0.3.4",
-    "nonebot-adapter-mail>=1.0.0a7",
-    "nonebot-adapter-mirai>=2.3.3",
-    "nonebot-adapter-minecraft>=1.3.2",
-    "nonebot-adapter-onebot>=2.4.5",
-    "nonebot-adapter-qq>=1.6.2",
-    "nonebot-adapter-red>=0.9.0",
-    "nonebot-adapter-satori>=0.13.4",
-    "nonebot-adapter-telegram>=0.1.0b18",
-    "nonebot-adapter-kritor>=0.3.2",
-    "nonebot-adapter-tailchat>=0.1.0b12",
-    "nonebot-adapter-wxmp>=0.1.8",
-    "nonebot-plugin-filehost>=1.1.1",
-    "nonebot-plugin-send-anything-anywhere>=0.7.1",
-    "pytest-sugar>=1.0.0",
-    "pytest-mock>=3.14.0",
-    "nonebot-plugin-localstore>=0.7.1",
-    "pyyaml>=6.0.1",
-    "fix-future-annotations>=0.5.0",
-    # "nonebot-adapter-heybox>=0.1.1; python_version >= \"3.11\"",
-    "nonebot-adapter-milky>=0.4.0",
-    "nonebot-adapter-efchat>=0.1.8",
-]
-test = [
-    "nonebug>=0.4.3",
-    "pytest-xdist>=3.6.1",
-    "pytest-asyncio>=0.25.3",
-    "fastapi>=0.110.2",
-    "uvicorn[standard]>=0.28.1",
-    "nonebot2[httpx,websockets]>=2.3.0",
-    "nonebot-adapter-qq>=1.6.2",
-    "nonebot-adapter-satori>=0.13.4",
-    "nonebot-adapter-discord>=0.1.8",
-    "nonebot-adapter-minecraft>=1.3.2",
-    "nonebot-adapter-onebot>=2.4.5",
-    "nonebot-plugin-filehost>=1.1.1",
-    "nonebot-plugin-send-anything-anywhere>=0.7.1",
-    "pytest-sugar>=1.0.0",
-    "pytest-mock>=3.14.0",
-    "nonebot-plugin-localstore>=0.7.1",
-    "pyyaml>=6.0.1",
-    "nonebot-adapter-telegram>=0.1.0b18",
-    "nonebot-adapter-kaiheila>=0.3.4",
-    "nonebot-adapter-console<0.10.0,>=0.9.0",
-]
 [tool.pdm.build]
 includes = ["src/nonebot_plugin_alconna"]
 
@@ -113,7 +48,6 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 120
-length_sort = true
 skip_gitignore = true
 force_sort_within_sections = true
 extra_standard_library = ["typing_extensions"]
@@ -223,7 +157,7 @@ mypy-init-return = true
 builtins-ignorelist = ["id"]
 
 [tool.pyright]
-pythonVersion = "3.9"
+pythonVersion = "3.10"
 pythonPlatform = "All"
 defineConstant = { PYDANTIC_V2 = true }
 typeCheckingMode = "basic"
@@ -238,3 +172,68 @@ format = { composite = ["isort ./src/ ./example/ ./tests/","black ./src/ ./examp
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
+
+[dependency-groups]
+dev = [
+    "isort==5.13.2",
+    "black>=25.9.0",
+    "loguru>=0.7.3",
+    "ruff>=0.14.0",
+    "nonemoji>=0.1.4",
+    "pre-commit>=4.3.0",
+    "nonebug>=0.4.3",
+    "pytest-xdist>=3.8.0",
+    "fastapi>=0.119.0",
+    "uvicorn[standard]>=0.37.0",
+    "pydantic>=2.12.1",
+    "nonebot2[httpx,websockets]>=2.4.3",
+    "nonebot-adapter-console<0.10.0,>=0.9.0",
+    "nonebot-adapter-ding>=2.0.0a16",
+    "nonebot-adapter-discord>=0.1.8",
+    "nonebot-adapter-dodo>=0.2.1",
+    "nonebot-adapter-feishu>=2.6.2",
+    "nonebot-adapter-kaiheila>=0.3.4",
+    "nonebot-adapter-mail>=1.0.0a7",
+    "nonebot-adapter-mirai>=2.3.3",
+    "nonebot-adapter-minecraft>=1.5.2",
+    "nonebot-adapter-onebot>=2.4.6",
+    "nonebot-adapter-qq>=1.6.5",
+    "nonebot-adapter-red>=0.9.0",
+    "nonebot-adapter-satori>=0.13.7",
+    "nonebot-adapter-telegram>=0.1.0b20",
+    "nonebot-adapter-kritor>=0.3.2",
+    "nonebot-adapter-tailchat>=0.1.0b13",
+    "nonebot-adapter-wxmp>=0.1.8",
+    "nonebot-plugin-filehost>=1.1.1",
+    "nonebot-plugin-send-anything-anywhere>=0.7.1",
+    "pytest-sugar>=1.1.1",
+    "pytest-mock>=3.15.1",
+    "nonebot-plugin-localstore>=0.7.4",
+    "pyyaml>=6.0.3",
+    "fix-future-annotations>=0.5.0",
+    "nonebot-adapter-milky>=1.0.0",
+    "nonebot-adapter-efchat>=0.1.9.post2",
+    "pytest-asyncio==0.26.0",
+]
+test = [
+    "nonebug>=0.4.3",
+    "pytest-xdist>=3.8.0",
+    "pytest-asyncio==0.26.0",
+    "fastapi>=0.119.0",
+    "uvicorn[standard]>=0.37.0",
+    "nonebot2[httpx,websockets]>=2.4.3",
+    "nonebot-adapter-qq>=1.6.5",
+    "nonebot-adapter-satori>=0.13.7",
+    "nonebot-adapter-discord>=0.1.8",
+    "nonebot-adapter-minecraft>=1.5.2",
+    "nonebot-adapter-onebot>=2.4.6",
+    "nonebot-plugin-filehost>=1.1.1",
+    "nonebot-plugin-send-anything-anywhere>=0.7.1",
+    "pytest-sugar>=1.1.1",
+    "pytest-mock>=3.15.1",
+    "nonebot-plugin-localstore>=0.7.4",
+    "pyyaml>=6.0.3",
+    "nonebot-adapter-telegram>=0.1.0b20",
+    "nonebot-adapter-kaiheila>=0.3.4",
+    "nonebot-adapter-console<0.10.0,>=0.9.0",
+]

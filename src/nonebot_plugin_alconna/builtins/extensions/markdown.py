@@ -1,13 +1,13 @@
-import re
 from collections.abc import Awaitable
+import re
 from typing import Callable, Optional
 
 from arclet.alconna import Alconna
-from nonebot.internal.adapter import Bot, Event
 from arclet.alconna.tools.formatter import MarkdownTextFormatter
+from nonebot.internal.adapter import Bot, Event
 
+from nonebot_plugin_alconna import Extension, Image, Text, UniMessage
 from nonebot_plugin_alconna.extension import TM, OutputType
-from nonebot_plugin_alconna import Text, Image, Extension, UniMessage
 
 
 class MarkdownOutputExtension(Extension):

@@ -2,11 +2,11 @@ from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.mail.event import NewMailMessageEvent
-from nonebot.adapters.mail.message import Html, Attachment, MessageSegment
+from nonebot.adapters.mail.message import Attachment, Html, MessageSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
-from nonebot_plugin_alconna.uniseg.segment import File, Text, Audio, Image, Reply, Video
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.segment import Audio, File, Image, Reply, Text, Video
 
 
 class MailMessageBuilder(MessageBuilder[MessageSegment]):

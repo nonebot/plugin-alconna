@@ -2,38 +2,38 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.mirai.message import IdNode
 from nonebot.adapters.mirai.event import MessageEvent
-from nonebot.adapters.mirai.message import At as AtSegment
 from nonebot.adapters.mirai.message import App as AppSegment
-from nonebot.adapters.mirai.message import Xml as XmlSegment
+from nonebot.adapters.mirai.message import At as AtSegment
+from nonebot.adapters.mirai.message import AtAll as AtAllSegment
 from nonebot.adapters.mirai.message import Face as FaceSegment
 from nonebot.adapters.mirai.message import File as FileSegment
-from nonebot.adapters.mirai.message import Json as JsonSegment
-from nonebot.adapters.mirai.message import Text as TextSegment
-from nonebot.adapters.mirai.message import AtAll as AtAllSegment
+from nonebot.adapters.mirai.message import Forward as ForwardSegment
+from nonebot.adapters.mirai.message import IdNode
 from nonebot.adapters.mirai.message import Image as ImageSegment
+from nonebot.adapters.mirai.message import Json as JsonSegment
+from nonebot.adapters.mirai.message import RefNode as RefNodeSegment
+from nonebot.adapters.mirai.message import Text as TextSegment
 from nonebot.adapters.mirai.message import Video as VideoSegment
 from nonebot.adapters.mirai.message import Voice as VoiceSegment
-from nonebot.adapters.mirai.message import Forward as ForwardSegment
-from nonebot.adapters.mirai.message import RefNode as RefNodeSegment
+from nonebot.adapters.mirai.message import Xml as XmlSegment
 
-from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
+from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
 from nonebot_plugin_alconna.uniseg.segment import (
     At,
-    File,
-    Text,
     AtAll,
+    CustomNode,
     Emoji,
+    File,
     Hyper,
     Image,
+    Reference,
+    RefNode,
     Reply,
+    Text,
     Video,
     Voice,
-    RefNode,
-    Reference,
-    CustomNode,
 )
 
 

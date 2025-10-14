@@ -1,10 +1,10 @@
 from importlib_metadata import PackageNotFoundError, distribution
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
-from nonebot_plugin_alconna.uniseg.loader import BaseLoader
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder
-from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
+from nonebot_plugin_alconna.uniseg.loader import BaseLoader
 from nonebot_plugin_alconna.uniseg.segment import Emoji, custom_handler, custom_register
 
 

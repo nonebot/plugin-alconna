@@ -5,17 +5,17 @@ from nonebot import require
 from nonebot.compat import PYDANTIC_V2, ConfigDict, model_dump
 from nonebot.internal.matcher import current_bot, current_event
 
-from nonebot_plugin_alconna.uniseg.receipt import Receipt
 from nonebot_plugin_alconna.uniseg.message import UniMessage
-from nonebot_plugin_alconna.uniseg.segment import Text, AtAll
+from nonebot_plugin_alconna.uniseg.receipt import Receipt
+from nonebot_plugin_alconna.uniseg.segment import AtAll, Text
 
 try:
     require("nonebot_plugin_saa")
-    from nonebot_plugin_saa.registries import MessageId
     from nonebot_plugin_saa import MessageFactory, extract_target
+    from nonebot_plugin_saa.registries import MessageId
     from nonebot_plugin_saa.registries import Receipt as SaaReceipt
+    from nonebot_plugin_saa.types.common_message_segment import Image, Mention, MentionAll, Reply, Text
     from nonebot_plugin_saa.utils.exceptions import AdapterNotSupported
-    from nonebot_plugin_saa.types.common_message_segment import Text, Image, Reply, Mention, MentionAll
 except ImportError:
     raise ImportError("You need to install nonebot_plugin_saa to use this module.") from None
 

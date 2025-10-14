@@ -1,12 +1,12 @@
 from typing import Optional
 
-from tarina import LRU
 from arclet.alconna import Alconna
 from nonebot.internal.adapter import Bot, Event
+from tarina import LRU
 
+from nonebot_plugin_alconna import Extension, Reply, UniMessage
 from nonebot_plugin_alconna.extension import cache_msg
-from nonebot_plugin_alconna import Reply, Extension, UniMessage
-from nonebot_plugin_alconna.uniseg import reply_fetch, get_message_id
+from nonebot_plugin_alconna.uniseg import get_message_id, reply_fetch
 
 
 class ReplyRecordExtension(Extension):

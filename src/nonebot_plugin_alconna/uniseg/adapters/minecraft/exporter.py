@@ -1,15 +1,15 @@
 from typing import Union
 
-from tarina import lang
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.minecraft.bot import Bot as MinecraftBot
 from nonebot.adapters.minecraft.event.base import MessageEvent
 from nonebot.adapters.minecraft.message import Message, MessageSegment
-from nonebot.adapters.minecraft.model import TextColor, ClickEvent, HoverEvent, ClickAction, HoverAction, BaseComponent
+from nonebot.adapters.minecraft.model import BaseComponent, ClickAction, ClickEvent, HoverAction, HoverEvent, TextColor
+from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
-from nonebot_plugin_alconna.uniseg.segment import Text, Button, Keyboard
-from nonebot_plugin_alconna.uniseg.exporter import Target, SupportAdapter, MessageExporter, SerializeFailed, export
+from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
+from nonebot_plugin_alconna.uniseg.segment import Button, Keyboard, Text
 
 STYLE_TYPE_MAP = {
     "b": "bold",

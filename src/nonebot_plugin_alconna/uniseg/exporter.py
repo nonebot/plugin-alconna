@@ -1,30 +1,30 @@
-import inspect
 from abc import ABCMeta, abstractmethod
-from collections.abc import Sequence, Awaitable
-from typing import Any, Union, Generic, TypeVar, Callable, get_args, overload, get_origin
+from collections.abc import Awaitable, Sequence
+import inspect
+from typing import Any, Callable, Generic, TypeVar, Union, get_args, get_origin, overload
 
-from tarina import lang
 from nonebot.adapters import Bot, Event, Message, MessageSegment
+from tarina import lang
 
-from .target import Target as Target
+from .constraint import SerializeFailed, SupportAdapter
 from .fallback import FallbackStrategy
-from .constraint import SupportAdapter, SerializeFailed
 from .segment import (
     At,
-    Text,
     AtAll,
+    Button,
+    CustomNode,
     Emoji,
     Hyper,
+    Keyboard,
     Media,
     Other,
-    Reply,
-    Button,
-    Segment,
-    Keyboard,
     Reference,
-    CustomNode,
+    Reply,
+    Segment,
+    Text,
     custom,
 )
+from .target import Target as Target
 
 TS = TypeVar("TS", bound=Segment)
 TM = TypeVar("TM", bound=Message)
