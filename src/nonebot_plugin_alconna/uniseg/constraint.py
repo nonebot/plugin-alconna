@@ -11,6 +11,7 @@ log = logger_wrapper("Plugin-Uniseg")
 class SupportAdapter(str, Enum):
     """支持的适配器"""
 
+    bililive = "bilibili Live"
     console = "Console"
     ding = "Ding"
     discord = "Discord"
@@ -69,6 +70,8 @@ class SupportScope(str, Enum):
     """Tailchat平台"""
     efchat = "EFChat"
     """EFChat平台"""
+    bililive = "BiliLive"
+    """Bilibili直播平台"""
 
     onebot12_other = "Onebot12"
     """ob12 的其他平台"""
@@ -114,6 +117,7 @@ class SupportScope(str, Enum):
 class SupportAdapterModule(str, Enum):
     """支持的适配器的模块路径"""
 
+    bililive = "nonebot.adapters.bilibili_live"
     console = "nonebot.adapters.console"
     ding = "nonebot.adapters.ding"
     discord = "nonebot.adapters.discord"

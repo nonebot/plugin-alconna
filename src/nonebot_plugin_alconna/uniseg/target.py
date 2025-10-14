@@ -508,3 +508,10 @@ async def select_efchat(target: "Target", bot: Bot):
     if target.channel:
         return False
     return bot.adapter.get_name() == SupportAdapter.efchat
+
+
+@_register(SupportScope.bililive)
+async def select_bililive(target: "Target", bot: Bot):
+    if target.channel or target.private:
+        return False
+    return bot.adapter.get_name() == SupportAdapter.bililive

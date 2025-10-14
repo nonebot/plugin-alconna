@@ -74,31 +74,32 @@ async def _():
 
 ### 支持的适配器
 
-| 协议名称                                                                | 路径                                   |
-|---------------------------------------------------------------------|--------------------------------------|
-| [OneBot 协议](https://onebot.dev/)                                    | adapters.onebot11, adapters.onebot12 |
-| [Telegram](https://core.telegram.org/bots/api)                      | adapters.telegram                    |
-| [飞书](https://open.feishu.cn/document/home/index)                    | adapters.feishu                      |
-| [GitHub](https://docs.github.com/en/developers/apps)                | adapters.github                      |
-| [QQ bot](https://github.com/nonebot/adapter-qq)                     | adapters.qq                          |
-| [钉钉](https://open.dingtalk.com/document/)                           | adapters.ding                        |
-| [Console](https://github.com/nonebot/adapter-console)               | adapters.console                     |
-| [开黑啦](https://developer.kookapp.cn/)                                | adapters.kook                        |
-| [Mirai](https://docs.mirai.mamoe.net/mirai-api-http/)               | adapters.mirai                       |
-| [Ntchat](https://github.com/JustUndertaker/adapter-ntchat)          | adapters.ntchat                      |
-| [MineCraft](https://github.com/17TheWord/nonebot-adapter-minecraft) | adapters.minecraft                   |
-| [Walle-Q](https://github.com/onebot-walle/nonebot_adapter_walleq)   | adapters.onebot12                    |
-| [Discord](https://github.com/nonebot/adapter-discord)               | adapters.discord                     |
-| [Red 协议](https://github.com/nonebot/adapter-red)                    | adapters.red                         |
-| [Satori](https://github.com/nonebot/adapter-satori)                 | adapters.satori                      |
-| [Dodo IM](https://github.com/nonebot/adapter-dodo)                  | adapters.dodo                        |
-| [Kritor](https://github.com/nonebot/adapter-kritor)                 | adapters.kritor                      |
-| [Tailchat](https://github.com/eya46/nonebot-adapter-tailchat)       | adapters.tailchat                    |
-| [Mail](https://github.com/mobyw/nonebot-adapter-mail)               | adapters.mail                        |
-| [微信公众号](https://github.com/YangRucheng/nonebot-adapter-wxmp)        | adapters.wxmp                        |
-| [黑盒语音](https://github.com/lclbm/adapter-heybox)                     | adapters.heybox                      |
-| [Milky](https://github.com/nonebot/adapter-milky)                   | adapters.milky                       |
-| [EFChat](https://github.com/molanp/nonebot_adapter_efchat)          | adapters.efchat                      |
+| 协议名称                                                                   | 路径                                   |
+|------------------------------------------------------------------------|--------------------------------------|
+| [OneBot 协议](https://onebot.dev/)                                       | adapters.onebot11, adapters.onebot12 |
+| [Telegram](https://core.telegram.org/bots/api)                         | adapters.telegram                    |
+| [飞书](https://open.feishu.cn/document/home/index)                       | adapters.feishu                      |
+| [GitHub](https://docs.github.com/en/developers/apps)                   | adapters.github                      |
+| [QQ bot](https://github.com/nonebot/adapter-qq)                        | adapters.qq                          |
+| [钉钉](https://open.dingtalk.com/document/)                              | adapters.ding                        |
+| [Console](https://github.com/nonebot/adapter-console)                  | adapters.console                     |
+| [开黑啦](https://developer.kookapp.cn/)                                   | adapters.kook                        |
+| [Mirai](https://docs.mirai.mamoe.net/mirai-api-http/)                  | adapters.mirai                       |
+| [Ntchat](https://github.com/JustUndertaker/adapter-ntchat)             | adapters.ntchat                      |
+| [MineCraft](https://github.com/17TheWord/nonebot-adapter-minecraft)    | adapters.minecraft                   |
+| [Walle-Q](https://github.com/onebot-walle/nonebot_adapter_walleq)      | adapters.onebot12                    |
+| [Discord](https://github.com/nonebot/adapter-discord)                  | adapters.discord                     |
+| [Red 协议](https://github.com/nonebot/adapter-red)                       | adapters.red                         |
+| [Satori](https://github.com/nonebot/adapter-satori)                    | adapters.satori                      |
+| [Dodo IM](https://github.com/nonebot/adapter-dodo)                     | adapters.dodo                        |
+| [Kritor](https://github.com/nonebot/adapter-kritor)                    | adapters.kritor                      |
+| [Tailchat](https://github.com/eya46/nonebot-adapter-tailchat)          | adapters.tailchat                    |
+| [Mail](https://github.com/mobyw/nonebot-adapter-mail)                  | adapters.mail                        |
+| [微信公众号](https://github.com/YangRucheng/nonebot-adapter-wxmp)           | adapters.wxmp                        |
+| [黑盒语音](https://github.com/lclbm/adapter-heybox)                        | adapters.heybox                      |
+| [Milky](https://github.com/nonebot/adapter-milky)                      | adapters.milky                       |
+| [EFChat](https://github.com/molanp/nonebot_adapter_efchat)             | adapters.efchat                      |
+| [B站直播间](https://github.com/MingxuanGame/nonebot-adapter-bilibili-live) | adapters.bililive                    |                                      |
 
 
 ### 支持的消息元素
@@ -114,25 +115,25 @@ async def _():
 > [!WARNING]
 > 斜体的协议名称意味着其协议或其适配器长时间未维护或已失效
 
-| 元素\适配器           | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | _钉钉_ | Console | 开黑啦 | Mirai | _Ntchat_ | MineCraft | Discord | _Red_ | Satori | Dodo IM | _Kritor_ | Tailchat | Mail | 微信公众号 | 黑盒语音 | Milky | EFChat |
-|------------------|------------|------------|----------|----|--------|--------|------|---------|-----|-------|----------|-----------|---------|-------|--------|---------|----------|----------|------|-------|------|-------|--------|
-| 文本 Text          | ✅          | ✅          | ✅        | ✅  | ✅      | ✅      | ✅    | ✅       | ✅   | ✅     | ✅        | ✅         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | ✅     | ✅    | ✅     | ✅      |
-| 样式文本 Styled Text | 🚫         | 🚫         | ✅        | ❌  | ✅      | ✅      | ❌    | ✅       | ✅   | 🚫    | 🚫       | ✅         | 🚫      | 🚫    | ✅      | 🚫      | 🚫       | ✅        | ✅    | 🚫    | 🚫   | 🚫    | ❌      | 
-| 提及用户 At(user)    | ✅          | ✅          | ✅        | ✅  | ⬆️     | ✅      | ✅    | 🚫      | ✅   | ✅     | ❌        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ⬆️   | 🚫    | ⬆️   | ✅     | ✅      |
-| 提及角色 At(role)    | 🚫         | 🚫         | 🚫       | 🚫 | 🚫     | 🚫     | 🚫   | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | 🚫       | 🚫       | 🚫   | 🚫    | 🚫   | 🚫    | 🚫     |
-| 提及频道 At(channel) | 🚫         | 🚫         | 🚫       | 🚫 | 🚫     | ✅      | 🚫   | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | 🚫       | ✅        | ⬆️   | 🚫    | 🚫   | 🚫    | 🚫     |
-| 提交全体 AtAll       | ✅          | ✅          | 🚫       | ✅  | 🚫     | ✅      | ✅    | 🚫      | ✅   | ✅     | 🚫       | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅        | 🚫       | 🚫   | 🚫    | 🚫   | ✅     | 🚫     |
-| 表情 Emoji         | ✅          | 🚫         | ✅        | 🚫 | 🚫     | ✅      | 🚫   | ✅       | ✅   | ✅     | 🚫       | 🚫        | ✅       | ✅     | 🚫     | 🚫      | ✅        | ✅        | 🚫   | ✅     | 🚫   | ✅     | 🚫     |
-| 图片 Image         | ✅          | ✅          | ✅        | ✅  | ⬆️     | ✅      | ✅    | 🚫      | ✅   | ✅     | ✅        | ❌         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | ✅     | ⬆️   | ✅     | ✅      |
-| 音频 Audio         | ⬆️         | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ⬆️    | ⬇️       | 🚫        | ⬆️      | ⬆️    | ✅      | 🚫      | ⬆️       | 🚫       | ✅    | ✅     | 🚫   | ⬆️    | ⬆️     |
-| 语音 Voice         | ✅          | ✅          | ✅        | ⬆️ | 🚫     | ⬆️     | 🚫   | 🚫      | ⬆️  | ✅     | ⬇️       | 🚫        | ⬆️      | ✅     | ⬆️     | 🚫      | ✅        | 🚫       | ✅    | ✅     | 🚫   | ✅     | ✅      |
-| 视频 Video         | ✅          | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | ⬆️      | ✅     | ✅      | ✅       | ✅        | 🚫       | ✅    | ✅     | 🚫   | ✅     | 🚫     |
-| 文件 File          | ⬇️,⬆️(🚧)  | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | ⬆️      | ✅     | ✅      | ⬇️      | ⬇️       | ✅        | ✅    | 🚫    | 🚫   | ⬆️    | 🚫     |
-| 回复 Reply         | ✅          | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | 🚫    | ⬆️   | ✅     | ⬆️     |
-| 引用转发 Reference   | ✅          | 🚫         | 🚫       | ❌  | 🚫     | 🚫     | 🚫   | 🚫      | 🚫  | ✅     | 🚫       | 🚫        | 🚫      | ✅     | ✅      | 🚫      | ✅        | 🚫       | 🚫   | 🚫    | 🚫   | ✅     | 🚫     |
-| 超级消息 Hyper       | ✅          | 🚫         | 🚫       | ⬇️ | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | 🚫      | ✅     | 🚫     | 🚫      | ✅        | 🚫       | 🚫   | ✅     | 🚫   | ⬇️    | 🚫     |
-| 按钮 Button        | 🚫         | 🚫         | ⬆️       | 🚫 | 🚫     | ✅      | 🚫   | 🚫      | 🚫  | 🚫    | 🚫       | ⬆️        | ✅       | 🚫    | ✅      | 🚫      | ✅        | 🚫       | 🚫   | 🚫    | 🚫   | 🚫    | 🚫     |
-| 其余 Other         | ✅          | ✅          | ✅        | ✅  | ➖      | ✅      | ✅    | ➖       | ✅   | ✅     | ✅        | ➖         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ➖    | ✅     | ➖    | ✅     | ➖      |
+| 元素\适配器           | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | _钉钉_ | Console | 开黑啦 | Mirai | _Ntchat_ | MineCraft | Discord | _Red_ | Satori | Dodo IM | _Kritor_ | Tailchat | Mail | 微信公众号 | 黑盒语音 | Milky | EFChat | B站直播间 |
+|------------------|------------|------------|----------|----|--------|--------|------|---------|-----|-------|----------|-----------|---------|-------|--------|---------|----------|----------|------|-------|------|-------|--------|-------|
+| 文本 Text          | ✅          | ✅          | ✅        | ✅  | ✅      | ✅      | ✅    | ✅       | ✅   | ✅     | ✅        | ✅         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | ✅     | ✅    | ✅     | ✅      | ✅     |
+| 样式文本 Styled Text | 🚫         | 🚫         | ✅        | ❌  | ✅      | ✅      | ❌    | ✅       | ✅   | 🚫    | 🚫       | ✅         | 🚫      | 🚫    | ✅      | 🚫      | 🚫       | ✅        | ✅    | 🚫    | 🚫   | 🚫    | ❌      | 🚫    | 
+| 提及用户 At(user)    | ✅          | ✅          | ✅        | ✅  | ⬆️     | ✅      | ✅    | 🚫      | ✅   | ✅     | ❌        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ⬆️   | 🚫    | ⬆️   | ✅     | ✅      | ✅     |
+| 提及角色 At(role)    | 🚫         | 🚫         | 🚫       | 🚫 | 🚫     | 🚫     | 🚫   | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | 🚫       | 🚫       | 🚫   | 🚫    | 🚫   | 🚫    | 🚫     | 🚫    |
+| 提及频道 At(channel) | 🚫         | 🚫         | 🚫       | 🚫 | 🚫     | ✅      | 🚫   | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | 🚫       | ✅        | ⬆️   | 🚫    | 🚫   | 🚫    | 🚫     | 🚫    |
+| 提交全体 AtAll       | ✅          | ✅          | 🚫       | ✅  | 🚫     | ✅      | ✅    | 🚫      | ✅   | ✅     | 🚫       | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅        | 🚫       | 🚫   | 🚫    | 🚫   | ✅     | 🚫     | 🚫    |
+| 表情 Emoji         | ✅          | 🚫         | ✅        | 🚫 | 🚫     | ✅      | 🚫   | ✅       | ✅   | ✅     | 🚫       | 🚫        | ✅       | ✅     | 🚫     | 🚫      | ✅        | ✅        | 🚫   | ✅     | 🚫   | ✅     | 🚫     | ✅     |
+| 图片 Image         | ✅          | ✅          | ✅        | ✅  | ⬆️     | ✅      | ✅    | 🚫      | ✅   | ✅     | ✅        | ❌         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | ✅     | ⬆️   | ✅     | ✅      | 🚫    |
+| 音频 Audio         | ⬆️         | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ⬆️    | ⬇️       | 🚫        | ⬆️      | ⬆️    | ✅      | 🚫      | ⬆️       | 🚫       | ✅    | ✅     | 🚫   | ⬆️    | ⬆️     | 🚫    |
+| 语音 Voice         | ✅          | ✅          | ✅        | ⬆️ | 🚫     | ⬆️     | 🚫   | 🚫      | ⬆️  | ✅     | ⬇️       | 🚫        | ⬆️      | ✅     | ⬆️     | 🚫      | ✅        | 🚫       | ✅    | ✅     | 🚫   | ✅     | ✅      | 🚫    |
+| 视频 Video         | ✅          | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | ⬆️      | ✅     | ✅      | ✅       | ✅        | 🚫       | ✅    | ✅     | 🚫   | ✅     | 🚫     | 🚫    |
+| 文件 File          | ⬇️,⬆️(🚧)  | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | ⬆️      | ✅     | ✅      | ⬇️      | ⬇️       | ✅        | ✅    | 🚫    | 🚫   | ⬆️    | 🚫     | 🚫    |
+| 回复 Reply         | ✅          | ✅          | ✅        | ✅  | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | 🚫    | ⬆️   | ✅     | ⬆️     | ⬆️    |
+| 引用转发 Reference   | ✅          | 🚫         | 🚫       | ❌  | 🚫     | 🚫     | 🚫   | 🚫      | 🚫  | ✅     | 🚫       | 🚫        | 🚫      | ✅     | ✅      | 🚫      | ✅        | 🚫       | 🚫   | 🚫    | 🚫   | ✅     | 🚫     | 🚫    |
+| 超级消息 Hyper       | ✅          | 🚫         | 🚫       | ⬇️ | 🚫     | ✅      | 🚫   | 🚫      | ✅   | ✅     | ✅        | 🚫        | 🚫      | ✅     | 🚫     | 🚫      | ✅        | 🚫       | 🚫   | ✅     | 🚫   | ⬇️    | 🚫     | 🚫    |
+| 按钮 Button        | 🚫         | 🚫         | ⬆️       | 🚫 | 🚫     | ✅      | 🚫   | 🚫      | 🚫  | 🚫    | 🚫       | ⬆️        | ✅       | 🚫    | ✅      | 🚫      | ✅        | 🚫       | 🚫   | 🚫    | 🚫   | 🚫    | 🚫     | 🚫    |
+| 其余 Other         | ✅          | ✅          | ✅        | ✅  | ➖      | ✅      | ✅    | ➖       | ✅   | ✅     | ✅        | ➖         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ➖    | ✅     | ➖    | ✅     | ➖      | ➖     |
 
 
 ### 支持的消息操作
@@ -145,12 +146,12 @@ async def _():
 > [!WARNING]
 > 斜体的协议名称意味着其协议或其适配器长时间未维护或已失效
 
-| 操作\适配器        | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | _钉钉_ | Console | 开黑啦 | Mirai | _Ntchat_ | MineCraft | Discord | _Red_ | Satori | Dodo IM | _Kritor_ | Tailchat | Mail | 微信公众号 | 黑盒语音 | Milky | EFChat |
-|---------------|------------|------------|----------|----|--------|--------|------|---------|-----|-------|----------|-----------|---------|-------|--------|---------|----------|----------|------|-------|------|-------|--------|
-| 发送 Send       | ✅          | ✅          | ✅        | ✅  | ✅      | ✅      | ✅    | ✅       | ✅   | ✅     | ✅        | ✅         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | ✅     | ✅    | ✅     | ✅      |
-| 撤回 Recall     | ✅          | ✅          | ✅        | ✅  | ❌      | ✅      | ❌    | 🚫      | ✅   | ✅     | ❌        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | 🚫   | 🚫    | 🚫   | ✅     | 🚫     |
-| 编辑 Edit       | 🚫         | 🚫         | ✅        | ✅  | ❌      | 🚫     | ❌    | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | 🚫       | 🚫       | ❌    | 🚫    | 🚫   | 🚫    | 🚫     |
-| 表情响应 Reaction | ✅(🚧)      | 🚫         | ✅        | ✅  | ❌      | ✅      | 🚫   | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | ✅        | ❌        | 🚫   | 🚫    | 🚫   | ✅     | 🚫     |
+| 操作\适配器        | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | _钉钉_ | Console | 开黑啦 | Mirai | _Ntchat_ | MineCraft | Discord | _Red_ | Satori | Dodo IM | _Kritor_ | Tailchat | Mail | 微信公众号 | 黑盒语音 | Milky | EFChat | B站直播间 |
+|---------------|------------|------------|----------|----|--------|--------|------|---------|-----|-------|----------|-----------|---------|-------|--------|---------|----------|----------|------|-------|------|-------|--------|-------|
+| 发送 Send       | ✅          | ✅          | ✅        | ✅  | ✅      | ✅      | ✅    | ✅       | ✅   | ✅     | ✅        | ✅         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | ✅     | ✅    | ✅     | ✅      | ✅     |
+| 撤回 Recall     | ✅          | ✅          | ✅        | ✅  | ❌      | ✅      | ❌    | 🚫      | ✅   | ✅     | ❌        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | 🚫   | 🚫    | 🚫   | ✅     | 🚫     | 🚫    |
+| 编辑 Edit       | 🚫         | 🚫         | ✅        | ✅  | ❌      | 🚫     | ❌    | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | 🚫       | 🚫       | ❌    | 🚫    | 🚫   | 🚫    | 🚫     | 🚫    |
+| 表情响应 Reaction | ✅(🚧)      | 🚫         | ✅        | ✅  | ❌      | ✅      | 🚫   | 🚫      | ✅   | 🚫    | 🚫       | 🚫        | ✅       | 🚫    | ✅      | ✅       | ✅        | ❌        | 🚫   | 🚫    | 🚫   | ✅     | 🚫     | 🚫    |
 
 
 ## 配置项

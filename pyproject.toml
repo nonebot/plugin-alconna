@@ -214,6 +214,7 @@ dev = [
     "nonebot-adapter-milky>=1.0.0",
     "nonebot-adapter-efchat>=0.1.9.post2",
     "pytest-asyncio==0.26.0",
+    "nonebot-adapter-bilibili-live>=0.2.4",
 ]
 test = [
     "nonebug>=0.4.3",
