@@ -177,7 +177,10 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         if seg.id:
             messages = await bot.get_forwarded_messages(forward_id=seg.id)
             return MessageSegment.forward(
-                [MessageSegment.node(int(bot.self_id) if bot else 10001, msg.sender_name, msg.message) for msg in messages]
+                [
+                    MessageSegment.node(int(bot.self_id) if bot else 10001, msg.sender_name, msg.message)
+                    for msg in messages
+                ]
             )
         if not seg.children:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))

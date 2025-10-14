@@ -181,7 +181,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
         return await bot.send_to(channel_id=int(target.id), message=message, **kwargs)
 
     async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
-        if isinstance(mid, (str, SnowflakeType)):
+        if isinstance(mid, str | SnowflakeType):
             assert isinstance(context, MessageEvent)
             return await bot.delete_message(channel_id=context.channel_id, message_id=int(mid))
         _mid: MessageGet = cast(MessageGet, mid)
@@ -192,14 +192,14 @@ class DiscordMessageExporter(MessageExporter[Message]):
         _mid: MessageGet = cast(MessageGet, mid)
         assert isinstance(bot, DiscordBot)
         new_msg = await self.export(new, bot, True)
-        if isinstance(mid, (str, SnowflakeType)):
+        if isinstance(mid, str | SnowflakeType):
             assert isinstance(context, MessageEvent)
             return await bot.edit_message(channel_id=context.channel_id, message_id=int(mid), **parse_message(new_msg))
         return await bot.edit_message(channel_id=mid.channel_id, message_id=_mid.id, **parse_message(new_msg))
 
     async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
         assert isinstance(bot, DiscordBot)
-        if isinstance(mid, (str, SnowflakeType)):
+        if isinstance(mid, str | SnowflakeType):
             assert isinstance(context, MessageEvent)
             if delete:
                 await bot.delete_own_reaction(

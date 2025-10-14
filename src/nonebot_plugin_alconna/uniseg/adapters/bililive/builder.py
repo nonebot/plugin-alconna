@@ -1,8 +1,8 @@
-from nonebot.adapters.bilibili_live.message import TextSegment, AtSegment, EmoticonSegment
+from nonebot.adapters.bilibili_live.message import AtSegment, EmoticonSegment, TextSegment
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
-from nonebot_plugin_alconna.uniseg.segment import At, Text, Emoji
+from nonebot_plugin_alconna.uniseg.segment import At, Emoji, Text
 
 
 class BiliLiveMessageBuilder(MessageBuilder):

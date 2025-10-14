@@ -129,7 +129,7 @@ ignore = [
     "RUF001",  # String contains ambiguous `，` (FULLWIDTH COMMA). Did you mean `,` (COMMA)?
     "RUF002",  # Docstring contains ambiguous `，` (FULLWIDTH COMMA). Did you mean `,` (COMMA)?
     "RUF009",  # 我不想要额外的全局变量。
-    "UP038",  # instance(..., X | Y) 还是太超前了
+    # "UP038",  # instance(..., X | Y) 还是太超前了
     "RUF003",  # 中文注释里用全角符号怎么你了
     "SLOT000", # 动态类型需求，主要是 json5 backend
     "PLR0911", "PLR0912", "PLR0915",  # 复杂度高点怎么你了

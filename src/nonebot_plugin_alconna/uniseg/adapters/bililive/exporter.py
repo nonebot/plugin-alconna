@@ -1,13 +1,13 @@
 from typing import Union
 
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.bilibili_live.event import MessageEvent, DanmakuEvent, SuperChatEvent
-from nonebot.adapters.bilibili_live.message import Message, MessageSegment
 from nonebot.adapters.bilibili_live.bot import WebBot
+from nonebot.adapters.bilibili_live.event import DanmakuEvent, MessageEvent, SuperChatEvent
+from nonebot.adapters.bilibili_live.message import Message, MessageSegment
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SupportAdapter, Target, export
-from nonebot_plugin_alconna.uniseg.segment import At, Emoji, Text, Reply
+from nonebot_plugin_alconna.uniseg.segment import At, Emoji, Reply, Text
 
 
 class BiliLiveMessageExporter(MessageExporter[Message]):
