@@ -134,7 +134,7 @@ class _Text(BasePattern[Text, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]]
             mode=MatchMode.TYPE_CONVERT,
             origin=Text,
             alias="Text",
-            accepts=Union[str, Text],
+            accepts=Union[str, Text],  # type: ignore
         )
 
     def spliter(self, x: str):

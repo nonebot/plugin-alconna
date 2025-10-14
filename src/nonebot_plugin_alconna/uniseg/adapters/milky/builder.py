@@ -101,7 +101,7 @@ class MilkyMessageBuilder(MessageBuilder):
             return Reference(seg.data["forward_id"])
         return Reference(
             nodes=[
-                CustomNode(uid=str(msg.user_id), name=msg.name, content=self.generate(msg.segments))
+                CustomNode(uid=str(msg.user_id), name=msg.sender_name, content=self.generate(msg.segments))
                 for msg in seg.data["messages"]
             ]
         )

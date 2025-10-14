@@ -1118,7 +1118,7 @@ env = create_local_patterns("nonebot")
 
 env[Segment] = BasePattern(
     mode=MatchMode.KEEP,
-    accepts=Union[Segment, str],
+    accepts=Segment | str,  # type: ignore
 )
 env[Media] = BasePattern(
     mode=MatchMode.KEEP,
