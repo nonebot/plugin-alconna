@@ -252,7 +252,7 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                 message_id=int(message_id),
                 code=emoji.id,
                 is_add=not delete,
-                type=emj_type
+                type=emj_type,
             )
         else:
             log("WARNING", f"Unsupported Client: {app_name} for message reaction!")
