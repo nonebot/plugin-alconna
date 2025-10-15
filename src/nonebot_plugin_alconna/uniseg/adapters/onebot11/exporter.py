@@ -234,6 +234,22 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                 emoji_id=emoji.id,
                 set=not delete,
             )
+        elif app_name == "ws-plugin":
+            if isinstance(context, Target):
+                if context.private or context.channel:
+                    return
+                group_id = int(context.id)
+            else:
+                if (group_id := getattr(context, "group_id", None)) is None:
+                    return
+                group_id = int(group_id)
+            await bot.call_api(
+                "set_reaction",
+                group_id=group_id,
+                message_id=int(message_id),
+                code=emoji.id,
+                is_add=not delete,
+            )
         else:
             log("WARNING", f"Unsupported Client: {app_name} for message reaction!")
 
