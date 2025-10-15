@@ -243,12 +243,16 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                 if (group_id := getattr(context, "group_id", None)) is None:
                     return
                 group_id = int(group_id)
+            assert emoji.id.isdigit()
+            # https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#EmojiType
+            emj_type = 1 if int(emoji.id) < 5000 else 2
             await bot.call_api(
                 "set_reaction",
                 group_id=group_id,
                 message_id=int(message_id),
                 code=emoji.id,
                 is_add=not delete,
+                type=emj_type
             )
         else:
             log("WARNING", f"Unsupported Client: {app_name} for message reaction!")
