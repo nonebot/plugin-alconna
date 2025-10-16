@@ -6,7 +6,7 @@ from io import BytesIO
 from json import dumps, loads
 from pathlib import Path
 from types import FunctionType
-from typing import TYPE_CHECKING, Any, Callable, Literal, NoReturn, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Literal, NoReturn, TypeVar, Union, Protocol
 from typing_extensions import Self, SupportsIndex, deprecated
 
 from nonebot.exception import FinishedException
@@ -46,6 +46,7 @@ from .target import Target
 from .template import UniMessageTemplate
 
 TS = TypeVar("TS", bound=Segment)
+_TM = TypeVar("_TM", bound="str | Message | UniMessage")
 
 
 class _method:
@@ -58,7 +59,11 @@ class _method:
         return self.__func__.__get__(instance, owner)
 
 
-current_send_wrapper = ContextModel("nonebot_plugin_alconna.uniseg.send_wrapper")
+class SendWrapper(Protocol):
+    async def __call__(self, bot: Bot, event: Event, send: _TM) -> _TM: ...
+
+
+current_send_wrapper: ContextModel[SendWrapper] = ContextModel("nonebot_plugin_alconna.uniseg.send_wrapper")
 MessageContainer = Union[str, Segment, Sequence["MessageContainer"], "UniMessage"]
 
 

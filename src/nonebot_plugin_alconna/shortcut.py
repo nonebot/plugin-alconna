@@ -43,6 +43,7 @@ def funcommand(
     use_cmd_sep: bool | None = None,
     response_self: bool | None = None,
     rule: Rule | T_RuleChecker | None = None,
+    after_rule: Rule | T_RuleChecker | None = None,
     permission: Permission | T_PermissionChecker | None = None,
     *,
     handlers: list[T_Handler | Dependent] | None = None,
@@ -65,6 +66,7 @@ def funcommand(
         matcher = on_alconna(
             FuncMounter(func, _config),
             rule,
+            after_rule,
             skip_for_unmatch,
             auto_send_output,
             extensions=extensions,
@@ -105,6 +107,7 @@ class Command(AlconnaString):
     def build(
         self,
         rule: Rule | T_RuleChecker | None = None,
+        after_rule: Rule | T_RuleChecker | None = None,
         skip_for_unmatch: bool = True,
         auto_send_output: bool | None = None,
         aliases: set[str] | tuple[str, ...] | None = None,

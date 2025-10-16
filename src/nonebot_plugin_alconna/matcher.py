@@ -943,6 +943,7 @@ class AlconnaMatcher(Matcher, metaclass=AlconnaMatcherMeta):
 def on_alconna(
     command: Alconna | str,
     rule: None | Rule | T_RuleChecker = None,
+    after_rule: None | Rule | T_RuleChecker = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool | None = None,
     aliases: set[str] | tuple[str, ...] | None = None,
@@ -968,6 +969,7 @@ def on_alconna(
     参数:
         command: Alconna 命令
         rule: 事件响应规则
+        after_rule: 作用于 Alconna 解析后的事件响应规则
         skip_for_unmatch: 是否在解析失败时跳过
         auto_send_output: 是否自动发送输出信息并跳过
         aliases: 命令别名
@@ -1018,6 +1020,7 @@ def on_alconna(
         response_self,
         aliases,
         rule,
+        after_rule,
     )
     executor = _rule.executor
     params = (

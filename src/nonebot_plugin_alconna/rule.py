@@ -65,6 +65,7 @@ class AlconnaRule:
         "_path",
         "_tasks",
         "_waiter",
+        "after_rules",
         "auto_send",
         "before_rules",
         "command",
@@ -89,6 +90,7 @@ class AlconnaRule:
         response_self: Optional[bool] = None,
         _aliases: Optional[Union[set[str], tuple[str, ...]]] = None,
         before_rule: Optional[Union[Rule, T_RuleChecker]] = None,
+        after_rule: Optional[Union[Rule, T_RuleChecker]] = None,
     ):
         if isinstance(comp_config, bool):
             self.comp_config = {} if comp_config else None
@@ -156,6 +158,7 @@ class AlconnaRule:
         self._namespace = command.namespace
         self._tasks: dict[str, asyncio.Task] = {}
         self.before_rules = Rule() & before_rule
+        self.after_rules = Rule() & after_rule
 
         self._comp_help = ""
         if self.comp_config is not None:
@@ -357,6 +360,8 @@ class AlconnaRule:
         state[ALCONNA_RESULT] = CommandResult(result=arp, output=may_help_text)
         state[ALCONNA_EXEC_RESULT] = cmd.exec_result
         state[ALCONNA_EXTENSION] = selected
+        if not await self.after_rules(bot, event, state, stack, dependency_cache):
+            return False
         return True
 
     async def send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Any:
