@@ -2,24 +2,30 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 import asyncio
+from contextlib import AsyncExitStack
 from dataclasses import dataclass
 import functools
 import importlib as imp
+import inspect
 import re
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, Union, final, overload
 from weakref import finalize
 
 from arclet.alconna import Alconna, Arparma
 from nonebot import get_plugin_config
 from nonebot.adapters import Bot, Event, Message
 from nonebot.compat import PydanticUndefined
-from nonebot.typing import T_State
+from nonebot.dependencies import Dependent, Param
+from nonebot.internal.params import DependencyCache, DependParam, DependsInner
+from nonebot.typing import T_State, _DependentCallable
+from pydantic.fields import FieldInfo
 from tarina import LRU, lang
 
 from .config import Config
 from .uniseg import UniMessage, get_message_id
 
 OutputType = Literal["help", "shortcut", "completion", "error"]
+T = TypeVar("T")
 TM = TypeVar("TM", bound=Union[str, Message, UniMessage])
 TE = TypeVar("TE", bound=Event)
 
@@ -57,6 +63,8 @@ class Extension(metaclass=ABCMeta):
             "catch": cls.catch != Extension.catch and cls.before_catch != Extension.before_catch,
         }
 
+    executor: ExtensionExecutor
+
     @property
     @abstractmethod
     def priority(self) -> int:
@@ -76,6 +84,40 @@ class Extension(metaclass=ABCMeta):
 
     def validate(self, bot: Bot, event: Event) -> bool:
         return event.get_type() == "message"
+
+    @overload
+    async def inject(
+        self, dependent: Dependent[T], *, use_cache: bool = True, validate: bool | FieldInfo = False
+    ) -> T: ...
+
+    @overload
+    async def inject(self, dependent: tuple[str, type[T]]) -> T: ...
+
+    @overload
+    async def inject(self, dependent: Any) -> Any: ...
+
+    @final
+    async def inject(self, dependent: Any, use_cache: bool = True, validate: bool | FieldInfo = False) -> Any:
+        # assert isinstance(dependent, (Dependent, DependsInner)), "仅支持 Dependent 或 DependsInner 类型的依赖注入"
+        if isinstance(dependent, DependsInner):
+            if not dependent.dependency:
+                raise ValueError("DependsInner 未绑定任何依赖")
+            use_cache = dependent.use_cache
+            validate = dependent.validate
+            dependent = Dependent.parse(call=dependent.dependency, allow_types=self.executor.params)
+            param = DependParam(dependent=dependent, use_cache=use_cache, validate=validate)
+        elif isinstance(dependent, Dependent):
+            param = DependParam(dependent=dependent, use_cache=use_cache, validate=validate)
+        else:
+            for allow_type in self.executor.params:
+                if param := allow_type._check_param(
+                    inspect.Parameter(dependent[0], inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=dependent[1]),
+                    self.executor.params,
+                ):
+                    break
+            else:
+                raise ValueError(f"Unknown parameter {dependent[0]} with type {dependent[1]}")
+        return await self.executor._dependent_executor(param)
 
     async def output_converter(self, output_type: OutputType, content: str) -> UniMessage:
         """依据输出信息的类型，将字符串转换为消息对象以便发送。"""
@@ -224,9 +266,31 @@ class SelectedExtensions:
         return res
 
 
+class _DependentExecutor:
+    def __init__(
+        self,
+        bot: Bot,
+        event: Event,
+        state: T_State,
+        stack: AsyncExitStack | None = None,
+        dependency_cache: dict[_DependentCallable[Any], DependencyCache] | None = None,
+    ):
+        self.bot = bot
+        self.event = event
+        self.state = state
+        self.stack = stack
+        self.dependency_cache = dependency_cache or {}
+
+    async def __call__(self, param: Param):
+        return await param._solve(
+            stack=self.stack, dependency_cache=self.dependency_cache, bot=self.bot, event=self.event, state=self.state
+        )
+
+
 class ExtensionExecutor(SelectedExtensions):
     globals: ClassVar[list[type[Extension] | Extension]] = [DefaultExtension()]
     _rule: AlconnaRule
+    _dependent_executor: _DependentExecutor
 
     def __init__(
         self,
@@ -234,6 +298,7 @@ class ExtensionExecutor(SelectedExtensions):
         extensions: list[type[Extension] | Extension] | None = None,
         excludes: list[str | type[Extension]] | None = None,
     ):
+        self.params: tuple[type[Param], ...] = ()
         self.extensions: list[Extension] = []
         for ext in self.globals:
             if isinstance(ext, type):
@@ -284,6 +349,8 @@ class ExtensionExecutor(SelectedExtensions):
     def select(self, bot: Bot, event: Event) -> SelectedExtensions:
         context = [ext for ext in self.extensions if ext.validate(bot, event)]
         context.sort(key=lambda ext: ext.priority)
+        for ext in context:
+            ext.executor = self
         return SelectedExtensions(context)
 
     def before_catch(self, name: str, annotation: Any, default: Any) -> bool:

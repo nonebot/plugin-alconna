@@ -232,7 +232,7 @@ class ExtensionParam(Param):
             return cls(param.default, name=param.name, type=param.annotation, validate=True)
         return None
 
-    async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
+    async def _solve(self, event: Event, state: T_State, **kwargs: Any) -> Any:
         res = await self.executor.catch(event, state, self.extra["name"], self.extra["type"], self.default)
         if res is not PydanticUndefined:
             return res
@@ -275,7 +275,8 @@ class AlconnaParam(Param):
             return cls(..., type=Literal["context"])
         return cls(param.default, validate=True, name=param.name, type=param.annotation)
 
-    async def _solve(self, matcher: Matcher, event: Event, state: T_State, **kwargs: Any) -> Any:
+    async def _solve(self, event: Event, state: T_State, **kwargs: Any) -> Any:
+        matcher = kwargs.get("matcher", object())
         t = self.extra["type"]
         if ALCONNA_RESULT not in state:
             return self.default if self.default not in (..., Empty) else PydanticUndefined

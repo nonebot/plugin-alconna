@@ -1012,8 +1012,6 @@ def on_alconna(
         skip_for_unmatch,
         auto_send_output,
         comp_config,
-        extensions,
-        exclude_ext,
         use_origin,
         use_cmd_start,
         use_cmd_sep,
@@ -1022,13 +1020,14 @@ def on_alconna(
         rule,
         after_rule,
     )
-    executor = _rule.executor
-    params = (
+    _rule.executor = executor = ExtensionExecutor(_rule, extensions, exclude_ext)
+    executor.params = params = (
         ExtensionParam.new(executor),
         *Matcher.HANDLER_PARAM_TYPES[:-1],
         AlconnaParam,
         DefaultParam,
     )
+    executor.post_init(command)
     source = get_matcher_source(_depth + 1)
     NewMatcher = type(
         AlconnaMatcher.__name__,

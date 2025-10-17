@@ -18,7 +18,7 @@ from tarina import lang
 
 from .config import Config
 from .consts import ALCONNA_EXEC_RESULT, ALCONNA_EXTENSION, ALCONNA_RESULT, log
-from .extension import Extension, ExtensionExecutor, SelectedExtensions
+from .extension import ExtensionExecutor, SelectedExtensions, _DependentExecutor
 from .i18n import Lang
 from .model import CommandResult, CompConfig
 from .uniseg import UniMessage, UniMsg
@@ -58,6 +58,8 @@ class AlconnaRule:
         use_cmd_start: 是否使用 nb 全局配置里的命令前缀
     """
 
+    executor: ExtensionExecutor
+
     __slots__ = (
         "_comp_help",
         "_hide_tabs",
@@ -82,8 +84,6 @@ class AlconnaRule:
         skip_for_unmatch: bool = True,
         auto_send_output: Optional[bool] = None,
         comp_config: Optional[Union[CompConfig, bool]] = None,
-        extensions: Optional[list[Union[type[Extension], Extension]]] = None,
-        exclude_ext: Optional[list[Union[type[Extension], str]]] = None,
         use_origin: Optional[bool] = None,
         use_cmd_start: Optional[bool] = None,
         use_cmd_sep: Optional[bool] = None,
@@ -152,8 +152,6 @@ class AlconnaRule:
             for alias in _aliases:
                 command.shortcut(alias, prefix=True, compact=None)
         self.skip = skip_for_unmatch
-        self.executor = ExtensionExecutor(self, extensions, exclude_ext)
-        self.executor.post_init(command)
         self._path = command.path
         self._namespace = command.namespace
         self._tasks: dict[str, asyncio.Task] = {}
@@ -297,11 +295,13 @@ class AlconnaRule:
         stack: Optional[AsyncExitStack] = None,
         dependency_cache: Optional[dict[_DependentCallable[Any], DependencyCache]] = None,
     ) -> bool:
-        if not await self.before_rules(bot, event, state, stack, dependency_cache):
+
+        if self.before_rules.checkers and not await self.before_rules(bot, event, state, stack, dependency_cache):
             return False
         if event.get_type() == "meta_event":
             return False
         selected = self.executor.select(bot, event)
+        self.executor._dependent_executor = _DependentExecutor(bot, event, state, stack, dependency_cache)
         if not (msg := await selected.message_provider(event, state, bot, self.use_origin)):
             return False
         if not self.response_self and check_self_send(bot, event):
@@ -356,13 +356,13 @@ class AlconnaRule:
             return False
         if not await selected.permission_check(bot, event, cmd):
             return False
-        await selected.parse_wrapper(bot, state, event, arp)
         state[ALCONNA_RESULT] = CommandResult(result=arp, output=may_help_text)
         state[ALCONNA_EXEC_RESULT] = cmd.exec_result
         state[ALCONNA_EXTENSION] = selected
-        if not await self.after_rules(bot, event, state, stack, dependency_cache):
-            return False
-        return True
+        await selected.parse_wrapper(bot, state, event, arp)
+        return not (
+            self.after_rules.checkers and not await self.after_rules(bot, event, state, stack, dependency_cache)
+        )
 
     async def send(self, text: str, bot: Bot, event: Event, arp: Arparma) -> Any:
         _t = str(arp.error_info) if isinstance(arp.error_info, SpecialOptionTriggered) else "error"

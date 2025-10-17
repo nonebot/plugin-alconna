@@ -6,7 +6,7 @@ from io import BytesIO
 from json import dumps, loads
 from pathlib import Path
 from types import FunctionType
-from typing import TYPE_CHECKING, Any, Callable, Literal, NoReturn, TypeVar, Union, Protocol
+from typing import TYPE_CHECKING, Any, Callable, Literal, NoReturn, Protocol, TypeVar, Union
 from typing_extensions import Self, SupportsIndex, deprecated
 
 from nonebot.exception import FinishedException
