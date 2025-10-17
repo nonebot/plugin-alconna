@@ -64,7 +64,7 @@ from .tools import get_bot as get_bot
 from .tools import image_fetch as image_fetch
 from .tools import reply_fetch as reply_fetch
 
-__version__ = "0.60.0"
+__version__ = "0.60.1"
 
 __plugin_meta__ = PluginMetadata(
     name="Universal Segment 插件",
