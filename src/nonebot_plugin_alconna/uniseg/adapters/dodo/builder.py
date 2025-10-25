@@ -10,18 +10,23 @@ from nonebot.adapters.dodo.message import (
     FileSegment,
     PictureSegment,
     ReferenceSegment,
+    ShareSegment,
     VideoSegment,
 )
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
-from nonebot_plugin_alconna.uniseg.segment import At, AtAll, File, Image, Reply, Video
+from nonebot_plugin_alconna.uniseg.segment import At, AtAll, File, Image, Reply, Text, Video
 
 
 class DodoMessageBuilder(MessageBuilder):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.dodo
+
+    @build("share")
+    def share(self, seg: ShareSegment):
+        return Text(seg.data["share"].jump_url).link()
 
     @build("at_user")
     def at_user(self, seg: AtUserSegment):

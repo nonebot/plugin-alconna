@@ -28,7 +28,8 @@ class Onebot11MessageBuilder(MessageBuilder):
 
     @build("image")
     def image(self, seg: MessageSegment):
-        return Image(url=seg.data.get("url") or seg.data.get("file"), id=seg.data["file"])
+        is_sticker = seg.data.get("subType") == 1 or seg.data.get("sub_type") == 1
+        return Image(url=seg.data.get("url") or seg.data.get("file"), id=seg.data["file"], sticker=is_sticker)
 
     @build("video")
     def video(self, seg: MessageSegment):

@@ -116,6 +116,7 @@ class UniMessage(list[_TS]):
         mimetype: str | None = None,
         width: int | None = None,
         height: int | None = None,
+        sticker: bool = False,
         name: str = "image.png",
     ) -> UniMessage[Image]: ...
     @classmethod
@@ -129,6 +130,7 @@ class UniMessage(list[_TS]):
         mimetype: str | None = None,
         width: int | None = None,
         height: int | None = None,
+        sticker: bool = False,
         name: str = "image.png",
     ) -> UniMessage[_TS1 | Image]: ...
     @classmethod

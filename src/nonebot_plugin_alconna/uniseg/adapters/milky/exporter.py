@@ -99,15 +99,19 @@ class MilkyMessageExporter(MessageExporter["Message"]):
             "audio": MessageSegment.record,
         }[name]
         if seg.raw:
-            return method(raw=seg.raw)
-        if seg.path:
-            return method(path=Path(seg.path))
-        if seg.url:
-            return method(seg.url)
-        if seg.id:
-            url = await bot.get_resource_temp_url(seg.id)
-            return method(url)
-        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+            ans = method(raw=seg.raw)
+        elif seg.path:
+            ans = method(path=Path(seg.path))
+        elif seg.url:
+            ans = method(seg.url)
+        elif seg.id:
+            url = await bot.get_resource_temp_url(resource_id=seg.id)
+            ans = method(url)
+        else:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        if isinstance(seg, Image) and seg.sticker:
+            ans.data["sub_type"] = "sticker"
+        return ans
 
     @export
     async def video(self, seg: Video, bot: Union[Bot, None]) -> "MessageSegment":
@@ -117,7 +121,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
             if seg.thumbnail.url:
                 thumb_url = seg.thumbnail.url
             elif seg.thumbnail.id:
-                thumb_url = await bot.get_resource_temp_url(seg.thumbnail.id)
+                thumb_url = await bot.get_resource_temp_url(resource_id=seg.thumbnail.id)
             elif seg.__class__.to_url and seg.thumbnail.raw:
                 thumb_url = await seg.__class__.to_url(
                     seg.thumbnail.raw,
@@ -137,7 +141,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         if seg.url:
             return MessageSegment.video(seg.url, thumb_url=thumb_url)
         if seg.id:
-            url = await bot.get_resource_temp_url(seg.id)
+            url = await bot.get_resource_temp_url(resource_id=seg.id)
             return MessageSegment.video(url, thumb_url=thumb_url)
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="video", seg=seg))
 

@@ -70,6 +70,8 @@ class FeishuMessageExporter(MessageExporter[Message]):
     @export
     async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
         if seg.id:
+            if seg.sticker:
+                return MessageSegment.sticker(seg.id)
             return MessageSegment.image(seg.id)
         if not bot:
             raise NotImplementedError

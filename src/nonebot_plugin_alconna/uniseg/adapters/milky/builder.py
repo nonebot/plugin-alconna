@@ -52,15 +52,17 @@ class MilkyMessageBuilder(MessageBuilder):
     @build("image")
     def image(self, seg: ImageSegment):
         if "resource_id" in seg.data:
-            return Image(id=seg.data["resource_id"], url=seg.data.get("temp_url"))
+            return Image(
+                id=seg.data["resource_id"], url=seg.data.get("temp_url"), sticker=seg.data["sub_type"] == "sticker"
+            )
         uri = seg.data["uri"]
         if uri.startswith("http"):
-            return Image(url=uri)
+            return Image(url=uri, sticker=seg.data["sub_type"] == "sticker")
         if uri.startswith("file://"):
-            return Image(path=uri[7:])
+            return Image(path=uri[7:], sticker=seg.data["sub_type"] == "sticker")
         if uri.startswith("base64://"):
             b64 = uri[9:]
-            return Image(raw=b64decode(b64))
+            return Image(raw=b64decode(b64), sticker=seg.data["sub_type"] == "sticker")
 
     @build("video")
     def video(self, seg: VideoSegment):

@@ -99,7 +99,7 @@ def test_persistence():
     assert msg.dump() == [
         {"type": "at", "flag": "user", "target": "123"},
         {"type": "at", "flag": "channel", "target": "456"},
-        {"type": "image", "url": "https://example.com/1.jpg"},
+        {"type": "image", "url": "https://example.com/1.jpg", "sticker": False},
         {"type": "text", "text": "hello"},
     ]
     assert (
@@ -107,7 +107,7 @@ def test_persistence():
         == """\
 [{"type": "at", "flag": "user", "target": "123"}, \
 {"type": "at", "flag": "channel", "target": "456"}, \
-{"type": "image", "url": "https://example.com/1.jpg"}, \
+{"type": "image", "url": "https://example.com/1.jpg", "sticker": false}, \
 {"type": "text", "text": "hello"}]"""
     )
 
@@ -118,15 +118,24 @@ def test_persistence():
     assert UniMessage.load(msg1) == UniMessage.at("456").text("world")
 
     msg2 = UniMessage.image(raw=b"123", mimetype="image/jpeg")
-    assert msg2.dump(media_save_dir=True) == [{"type": "image", "raw": "MTIz", "mimetype": "image/jpeg"}]
-    assert msg2.dump(media_save_dir=False) == [{"type": "image", "raw": b"123", "mimetype": "image/jpeg"}]
+    assert msg2.dump(media_save_dir=True) == [
+        {"type": "image", "raw": "MTIz", "mimetype": "image/jpeg", "sticker": False}
+    ]
+    assert msg2.dump(media_save_dir=False) == [
+        {"type": "image", "raw": b"123", "mimetype": "image/jpeg", "sticker": False}
+    ]
 
     msg3 = [{"type": "image", "raw": "MTIz", "mimetype": "image/jpeg"}]
     assert UniMessage.load(msg3) == msg2
 
     msg4 = UniMessage(Image(url="https://example.com/1.jpg")(Image(raw=b"123")))
     assert msg4.dump(media_save_dir=True) == [
-        {"type": "image", "url": "https://example.com/1.jpg", "children": [{"type": "image", "raw": "MTIz"}]},
+        {
+            "type": "image",
+            "url": "https://example.com/1.jpg",
+            "sticker": False,
+            "children": [{"type": "image", "raw": "MTIz", "sticker": False}],
+        },
     ]
 
 

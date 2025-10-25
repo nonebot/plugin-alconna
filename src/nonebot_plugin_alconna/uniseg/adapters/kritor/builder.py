@@ -51,7 +51,7 @@ class KritorMessageBuilder(MessageBuilder):
 
     @build("image")
     def image(self, seg: ImageSegment):
-        return Image(url=seg.data.get("file_url"), id=seg.data.get("file_md5"))
+        return Image(url=seg.data.get("file_url"), id=seg.data.get("file_md5"), sticker=seg.data.get("sub_type") == 1)
 
     @build("video")
     def video(self, seg: VideoSegment):

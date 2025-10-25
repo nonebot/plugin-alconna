@@ -84,12 +84,23 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
             "audio": MessageSegment.record,
         }[name]
         if seg.raw:
-            return method(seg.raw_bytes)
-        if seg.path:
-            return method(Path(seg.path))
-        if seg.url:
-            return method(seg.url)
-        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+            ans = method(seg.raw_bytes)
+        elif seg.path:
+            ans = method(Path(seg.path))
+        elif seg.url:
+            ans = method(seg.url)
+        else:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        if isinstance(seg, Image) and seg.sticker:
+            # 傻逼玩意，谁爱用用去
+            # assert isinstance(bot, OnebotBot)
+            # info = await bot.get_version_info()
+            # app_name = info["app_name"]
+            # if app_name == "NapCat.Onebot":
+            #     ans.data["sub_type"] = 1
+            # else:
+            ans.data["subType"] = 1
+        return ans
 
     @export
     async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":

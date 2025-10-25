@@ -39,7 +39,7 @@ class TelegramMessageBuilder(MessageBuilder):
 
     @build("sticker")
     def sticker(self, seg: UnCombinFile):
-        return Image(id=seg.data["file"])
+        return Image(id=seg.data["file"], sticker=True)
 
     @build("video_note")
     def video_note(self, seg: UnCombinFile):

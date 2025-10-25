@@ -191,6 +191,7 @@ class UniMessage(list[TS]):
         mimetype: str | None = None,
         width: int | None = None,
         height: int | None = None,
+        sticker: bool = False,
         name: str = "image.png",
     ):
         """创建图片消息
@@ -204,13 +205,14 @@ class UniMessage(list[TS]):
             name: 图片名称
             width: 图片宽度
             height: 图片高度
+            sticker: 是否为表情贴纸
         返回:
             构建的消息
         """
         if isinstance(cls_or_self, UniMessage):
-            cls_or_self.append(Image(id, url, path, raw, mimetype, name, width, height))
+            cls_or_self.append(Image(id, url, path, raw, mimetype, name, width, height, sticker))
             return cls_or_self
-        return UniMessage(Image(id, url, path, raw, mimetype, name, width, height))
+        return UniMessage(Image(id, url, path, raw, mimetype, name, width, height, sticker))
 
     @_method
     def video(

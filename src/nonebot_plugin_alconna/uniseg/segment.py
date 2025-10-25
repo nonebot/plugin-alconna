@@ -600,6 +600,7 @@ class Emoji(Segment):
 
     id: str
     name: Optional[str] = field(default=None)
+    url: Optional[str] = field(default=None)
 
 
 class MediaToUrl(Protocol):
@@ -683,6 +684,7 @@ class Image(Media):
 
     width: Optional[int] = field(default=None)
     height: Optional[int] = field(default=None)
+    sticker: bool = field(default=False)
     name: str = field(default="image.png")
 
     __default_name__ = "image.png"

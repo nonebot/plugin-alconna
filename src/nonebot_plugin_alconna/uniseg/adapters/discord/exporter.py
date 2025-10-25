@@ -100,12 +100,13 @@ class DiscordMessageExporter(MessageExporter[Message]):
 
     @export
     async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
-        return MessageSegment.custom_emoji(seg.name or "", seg.id)
+        return MessageSegment.custom_emoji(seg.name or "", seg.id, bool(seg.name and seg.name.endswith("gif")))
 
     @export
     async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
-
+        if isinstance(seg, Image) and seg.sticker and seg.id:
+            return MessageSegment.sticker(int(seg.id))
         if seg.raw and (seg.id or seg.name):
             content = seg.raw_bytes
             return MessageSegment.attachment(seg.id or seg.name, content=content)

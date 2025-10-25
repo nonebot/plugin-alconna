@@ -11,6 +11,7 @@ from nonebot.adapters.telegram.message import Message
 from nonebot.adapters.telegram.message import Message as TgMessage
 from nonebot.adapters.telegram.message import MessageSegment
 from nonebot.adapters.telegram.message import Reply as TgReply
+from nonebot.adapters.telegram.message import UnCombinFile
 from nonebot.adapters.telegram.model import InlineKeyboardButton, InlineKeyboardMarkup
 from nonebot.adapters.telegram.model import Message as MessageModel
 from nonebot.adapters.telegram.model import ReactionTypeEmoji
@@ -128,8 +129,10 @@ class TelegramMessageExporter(MessageExporter[Message]):
             "audio": TgFile.audio,
             "file": TgFile.document,
         }[name]
-        if seg.id or seg.url:
-            return method(seg.id or seg.url)
+        if isinstance(seg, Image) and seg.sticker:
+            method = UnCombinFile.sticker
+        if s := (seg.id or seg.url):
+            return method(s)
         if seg.path:
             raw = Path(seg.path).read_bytes()
         elif seg.raw:

@@ -9,6 +9,7 @@ from nonebot.adapters.feishu.message import Folder as FolderSegment
 from nonebot.adapters.feishu.message import Image as ImageSegment
 from nonebot.adapters.feishu.message import Media as MediaSegment
 from nonebot.adapters.feishu.message import Post as PostSegment
+from nonebot.adapters.feishu.message import Sticker as StickerSegment
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
@@ -29,6 +30,10 @@ class FeishuMessageBuilder(MessageBuilder):
     @build("image")
     def image(self, seg: ImageSegment):
         return Image(id=seg.data["image_key"])
+
+    @build("sticker")
+    def sticker(self, seg: StickerSegment):
+        return Image(id=seg.data["file_key"], sticker=True)
 
     @build("media")
     def media(self, seg: MediaSegment):

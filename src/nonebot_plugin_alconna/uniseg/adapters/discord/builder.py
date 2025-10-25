@@ -19,7 +19,19 @@ from nonebot.adapters.discord.message import (
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
-from nonebot_plugin_alconna.uniseg.segment import At, AtAll, Audio, Button, File, Image, Keyboard, Other, Reply, Video
+from nonebot_plugin_alconna.uniseg.segment import (
+    At,
+    AtAll,
+    Audio,
+    Button,
+    Emoji,
+    File,
+    Image,
+    Keyboard,
+    Other,
+    Reply,
+    Video,
+)
 
 
 class DiscordMessageBuilder(MessageBuilder):
@@ -46,12 +58,14 @@ class DiscordMessageBuilder(MessageBuilder):
     @build("custom_emoji")
     def custom_emoji(self, seg: CustomEmojiSegment):
         url = f"https://cdn.discordapp.com/emojis/{seg.data['id']}.{'gif' if seg.data['animated'] else 'png'}"
-        return Image(url=url, id=url, name=f"{seg.data['name']}.{'gif' if seg.data['animated'] else 'png'}")
+        return Emoji(
+            id=str(seg.data["id"]), name=f"{seg.data['name']}.{'gif' if seg.data['animated'] else 'png'}", url=url
+        )
 
     @build("sticker")
     def sticker(self, seg: StickerSegment):
         url = f"https://cdn.discordapp.com/stickers/{seg.data['id']}.gif"
-        return Image(url=url, id=url, name=f"{seg.data['id']}.gif")
+        return Image(url=url, id=str(seg.data["id"]), name=f"{seg.data['id']}.gif", sticker=True)
 
     @build("attachment")
     def attachment(self, seg: AttachmentSegment):

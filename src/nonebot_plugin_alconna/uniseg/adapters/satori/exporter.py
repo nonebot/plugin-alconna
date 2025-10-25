@@ -140,30 +140,33 @@ class SatoriMessageExporter(MessageExporter[Message]):
         }[name]
         filename = None if seg.name == seg.__default_name__ else seg.name
         if seg.id or seg.url:
-            return method(url=seg.id or seg.url, name=filename)(await self.export(seg.children, bot, True))  # type: ignore
-        if seg.__class__.to_url and seg.path:
+            ans = method(url=seg.id or seg.url, name=filename)(await self.export(seg.children, bot, True))  # type: ignore
+        elif seg.__class__.to_url and seg.path:
             filename = filename or Path(seg.path).name
-            return method(
+            ans = method(
                 await seg.__class__.to_url(seg.path, bot, None if seg.name == seg.__default_name__ else seg.name),
                 name=filename,
             )(
                 await self.export(seg.children, bot, True)  # type: ignore
             )  # type: ignore
-        if seg.__class__.to_url and seg.raw:
-            return method(
+        elif seg.__class__.to_url and seg.raw:
+            ans = method(
                 await seg.__class__.to_url(seg.raw, bot, None if seg.name == seg.__default_name__ else seg.name),
                 name=filename,
             )(
                 await self.export(seg.children, bot, True)  # type: ignore
             )  # type: ignore
-        if seg.path:
+        elif seg.path:
             filename = filename or Path(seg.path).name
-            return method(path=seg.path, name=filename)(await self.export(seg.children, bot, True))  # type: ignore
-        if seg.raw:
+            ans = method(path=seg.path, name=filename)(await self.export(seg.children, bot, True))  # type: ignore
+        elif seg.raw and seg.mimetype:
             data = seg.raw_bytes
-            if seg.mimetype:
-                return method(raw=data, mime=seg.mimetype, name=filename)(await self.export(seg.children, bot, True))  # type: ignore
-        raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+            ans = method(raw=data, mime=seg.mimetype, name=filename)(await self.export(seg.children, bot, True))  # type: ignore
+        else:
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
+        # if isinstance(seg, Image) and seg.sticker:
+        #     ans.data["subType"] = 1
+        return ans
 
     @export
     async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
