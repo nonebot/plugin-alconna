@@ -11,7 +11,7 @@ import re
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, Union, final, overload
 from weakref import finalize
 
-from arclet.alconna import Alconna, Arparma
+from arclet.alconna import Alconna, Arparma, CompSession
 from nonebot import get_plugin_config
 from nonebot.adapters import Bot, Event, Message
 from nonebot.compat import PydanticUndefined
@@ -133,7 +133,7 @@ class Extension(metaclass=ABCMeta):
         """接收消息后的钩子函数。"""
         return receive
 
-    async def permission_check(self, bot: Bot, event: Event, command: Alconna) -> bool:
+    async def permission_check(self, bot: Bot, event: Event, medium: Arparma | CompSession) -> bool:
         """命令首次解析并确认头部匹配（即确认选择响应）时对发送者的权限判断"""
         return True
 
@@ -220,10 +220,10 @@ class SelectedExtensions:
                 res = await ext.receive_wrapper(bot, event, command, res)
         return res
 
-    async def permission_check(self, bot: Bot, event: Event, command: Alconna) -> bool:
+    async def permission_check(self, bot: Bot, event: Event, medium: Arparma | CompSession) -> bool:
         for ext in self.context:
             if ext._overrides["permission_check"]:
-                if await ext.permission_check(bot, event, command) is False:
+                if await ext.permission_check(bot, event, medium) is False:
                     return False
                 continue
         return True

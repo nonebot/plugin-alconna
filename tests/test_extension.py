@@ -1,6 +1,6 @@
 from typing import Any
 
-from arclet.alconna import Alconna, Args, Arparma
+from arclet.alconna import Alconna, Args, Arparma, Subcommand
 from nonebot import get_adapter
 from nonebot.internal.adapter import Event
 from nonebot.params import Depends
@@ -35,7 +35,7 @@ async def test_extension(app: App):
         def id(self) -> str:
             return "demo"
 
-        async def permission_check(self, bot, event, command):
+        async def permission_check(self, bot, event, medium):
             return await self.inject(check_dep)
 
         def before_catch(self, name: str, annotation: Any, default: Any) -> bool:
@@ -79,3 +79,77 @@ async def test_extension(app: App):
         event = fake_group_message_event_v11(message=Message("add 1.3 2.4"), user_id=456)
         ctx.receive_event(bot, event)
         ctx.should_call_send(event, "权限不足！")
+
+
+@pytest.mark.asyncio()
+async def test_extension_permission(app: App):
+    from nonebot.adapters.onebot.v11 import Adapter, Bot, Message
+
+    from nonebot_plugin_alconna import on_alconna
+    from nonebot_plugin_alconna.builtins.extensions.permission import SubcommandPermExtension
+
+    cmd = Alconna(
+        "calc",
+        Subcommand(
+            "add",
+            Args["a", float]["b", float],
+        ),
+        Subcommand(
+            "mul",
+            Args["a", float]["b", float],
+        ),
+        Subcommand(
+            "div",
+            Args["a", float]["b", float],
+        ),
+        Subcommand(
+            "sub",
+            Args["a", float]["b", float],
+        ),
+    )
+
+    async def checker(bot, event, permission):
+        user_id = event.get_user_id()
+        if user_id == "123":
+            return {
+                "command.calc": True,
+                "command.calc.add": True,
+                "command.calc.sub": True,
+                "command.calc.mul": False,
+                "command.calc.div": False,
+            }[permission]
+        if user_id == "456":
+            return {
+                "command.calc": True,
+                "command.calc.add": False,
+                "command.calc.sub": True,
+                "command.calc.mul": False,
+                "command.calc.div": True,
+            }[permission]
+        return True
+
+    mat = on_alconna(cmd, extensions=[SubcommandPermExtension(checker)])
+
+    @mat.handle()
+    async def h(a: float, b: float):
+        await mat.send(f"Result: {a} and {b}")
+
+    async with app.test_matcher(mat) as ctx:  # type: ignore
+        adapter = get_adapter(Adapter)
+        bot = ctx.create_bot(base=Bot, adapter=adapter)
+
+        event = fake_group_message_event_v11(message=Message("calc add 1 2"), user_id=123)
+        ctx.receive_event(bot, event)
+        ctx.should_call_send(event, "Result: 1.0 and 2.0")
+
+        event = fake_group_message_event_v11(message=Message("calc div 1 2"), user_id=123)
+        ctx.receive_event(bot, event)
+        ctx.should_not_pass_rule()
+
+        event = fake_group_message_event_v11(message=Message("calc div 5 3"), user_id=456)
+        ctx.receive_event(bot, event)
+        ctx.should_call_send(event, "Result: 5.0 and 3.0")
+
+        event = fake_group_message_event_v11(message=Message("calc add 1 2"), user_id=456)
+        ctx.receive_event(bot, event)
+        ctx.should_not_pass_rule()

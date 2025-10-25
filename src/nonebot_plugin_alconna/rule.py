@@ -241,7 +241,7 @@ class AlconnaRule:
         if res:
             interface.exit()
             return res
-        if not await selected.permission_check(bot, event, cmd):
+        if not await selected.permission_check(bot, event, interface):
             return False
 
         res = Arparma(
@@ -354,7 +354,7 @@ class AlconnaRule:
             return False
         if self.skip and may_help_text:
             return False
-        if not await selected.permission_check(bot, event, cmd):
+        if not await selected.permission_check(bot, event, arp):
             return False
         state[ALCONNA_RESULT] = CommandResult(result=arp, output=may_help_text)
         state[ALCONNA_EXEC_RESULT] = cmd.exec_result
