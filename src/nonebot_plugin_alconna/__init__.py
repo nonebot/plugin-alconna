@@ -141,7 +141,7 @@ from .uniseg import message_recall as message_recall
 from .uniseg import patch_matcher_send as patch_matcher_send
 from .uniseg import patch_saa as patch_saa
 
-__version__ = "0.60.2"
+__version__ = "0.60.3"
 __supported_adapters__ = set(m.value for m in SupportAdapterModule.__members__.values())  # noqa: C401
 __plugin_meta__ = PluginMetadata(
     name="Alconna 插件",

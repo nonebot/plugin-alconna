@@ -1,6 +1,7 @@
+from contextlib import AsyncExitStack
 import inspect
 from typing import Annotated, Any, ClassVar, Literal, Optional, TypeVar, Union, overload
-from typing_extensions import get_args
+from typing_extensions import Self, get_args, override
 
 from arclet.alconna import Alconna, Arparma, Duplication, Empty
 from arclet.alconna.builtin import generate_duplication
@@ -10,7 +11,8 @@ from nonebot.dependencies import Param
 from nonebot.internal.adapter import Bot, Event
 from nonebot.internal.matcher import Matcher
 from nonebot.internal.params import Depends
-from nonebot.typing import T_State
+from nonebot.typing import T_DependencyCache, T_State
+from nonebot.utils import generic_check_issubclass
 from tarina import run_always_await
 from tarina.generic import get_origin
 
@@ -349,3 +351,47 @@ class _Dispatch:
             self.result = None
             return True
         return False
+
+
+class StackParam(Param):
+    """上下文栈注入参数。
+
+    本注入解析 AsyncExitStack 实例，用于在依赖注入中管理异步上下文。
+    """
+
+    def __repr__(self) -> str:
+        return "_StackParam()"
+
+    @classmethod
+    @override
+    def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Optional[Self]:
+        if param.annotation == AsyncExitStack:
+            return cls(..., type=AsyncExitStack)
+        if generic_check_issubclass(param.annotation, AsyncExitStack):
+            return cls(..., type=AsyncExitStack, default=None)
+
+    @override
+    async def _solve(self, stack: Optional[AsyncExitStack] = None, **kwargs: Any) -> Any:
+        return stack
+
+
+class DependencyCacheParam(Param):
+    """依赖缓存注入参数。
+
+    本注入解析 T_DependencyCache 实例，用于在依赖注入中管理依赖缓存。
+    """
+
+    def __repr__(self) -> str:
+        return "_DependencyCacheParam()"
+
+    @classmethod
+    @override
+    def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Optional[Self]:
+        if param.annotation == T_DependencyCache:
+            return cls(..., type=T_DependencyCache)
+        if generic_check_issubclass(param.annotation, T_DependencyCache):
+            return cls(..., type=T_DependencyCache, default=None)
+
+    @override
+    async def _solve(self, dependency_cache: Optional[T_DependencyCache] = None, **kwargs: Any) -> Any:
+        return dependency_cache

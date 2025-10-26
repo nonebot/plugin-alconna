@@ -21,6 +21,7 @@ from .consts import ALCONNA_EXEC_RESULT, ALCONNA_EXTENSION, ALCONNA_RESULT, log
 from .extension import ExtensionExecutor, SelectedExtensions, _DependentExecutor
 from .i18n import Lang
 from .model import CommandResult, CompConfig
+from .params import DependencyCacheParam, StackParam
 from .uniseg import UniMessage, UniMsg
 from .uniseg.constraint import UNISEG_MESSAGE
 
@@ -292,8 +293,8 @@ class AlconnaRule:
         bot: Bot,
         event: Event,
         state: T_State,
-        stack: Optional[AsyncExitStack] = None,
-        dependency_cache: Optional[dict[_DependentCallable[Any], DependencyCache]] = None,
+        stack: Optional[AsyncExitStack] = StackParam(),  # type: ignore
+        dependency_cache: Optional[dict[_DependentCallable[Any], DependencyCache]] = DependencyCacheParam(),  # type: ignore
     ) -> bool:
 
         if self.before_rules.checkers and not await self.before_rules(bot, event, state, stack, dependency_cache):
