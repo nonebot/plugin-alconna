@@ -1034,7 +1034,7 @@ class UniMessage(list[TS]):
     async def export(
         self,
         bot: Bot | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         adapter: str | None = None,
     ) -> Message:
         """将 UniMessage 转换为指定适配器下的 Message"""
@@ -1067,7 +1067,7 @@ class UniMessage(list[TS]):
 
     def export_sync(
         self,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         adapter: str | None = None,
     ) -> Message:
         """（实验性）同步方法地将 UniMessage 转换为指定适配器下的 Message"""
@@ -1081,7 +1081,7 @@ class UniMessage(list[TS]):
         self,
         target: Event | Target | None = None,
         bot: Bot | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         at_sender: str | bool = False,
         reply_to: str | bool | Reply | None = False,
         no_wrapper: bool = False,
@@ -1136,7 +1136,7 @@ class UniMessage(list[TS]):
         self,
         target: Event | Target | None = None,
         bot: Bot | None = None,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         at_sender: str | bool = False,
         reply_to: str | bool | Reply | None = False,
         **kwargs,

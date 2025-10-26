@@ -50,6 +50,11 @@ def merge_text(msg: TM) -> TM:
 
 async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
     if isinstance(seg, Media):
+        if seg.children:
+            msg = []
+            for but in seg.children:
+                msg.extend(await _auto_fallback(but, bot))
+            return msg
         if seg.url:
             return [Text(f"[{seg.type}]{seg.url} ")]
         if seg.__class__.to_url and seg.raw:
@@ -68,9 +73,16 @@ async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
     if isinstance(seg, Emoji):
         return [Text(f"[{seg.name}]")] if seg.name else [Text(f"[表情:{seg.id}]")]
     if isinstance(seg, Hyper):
-        return [Text(f"[{seg.format}]")]
+        return [Text(f"[{seg.format}]"), *seg.children]
     if isinstance(seg, Reply):
-        return []  # Text(f"> 回复{seg.msg or seg.id}的消息\n")]
+        if seg.children:
+            msg = []
+            for but in seg.children:
+                msg.extend(await _auto_fallback(but, bot))
+            return msg
+        if seg.msg:
+            return [Text(f"> 回复{seg.msg}\n")]
+        return [Text(f"> 回复{seg.id}的消息\n")]
     if isinstance(seg, Button):
         if seg.flag == "link":
             return [Text(f"[{seg.label}]({seg.url})")]
@@ -195,16 +207,8 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                     continue
                 if fallback == FallbackStrategy.to_text:
                     message += str(seg)
-                elif fallback == FallbackStrategy.rollback:
-                    if not seg.children:
-                        if isinstance(seg, Media):
-                            if seg.url:
-                                message += f"[{seg.type}]{seg.url}"
-                            else:
-                                message += f"[{seg.type}]{'' if seg.name == seg.__default_name__ else seg.name}"
-                        else:
-                            message += str(seg)
-                    elif isinstance(seg, Reference):
+                elif fallback == FallbackStrategy.rollback and seg.children:
+                    if isinstance(seg, Reference):
                         for node in seg.children:
                             if isinstance(node, CustomNode):
                                 if isinstance(node.content, str):
@@ -215,15 +219,10 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
                                 message += f"> msg:{node.id}\n"
                     else:
                         message.extend(await self.export(seg.children, bot, fallback))
-                elif seg.children:
-                    message.extend(await self.export(seg.children, bot, FallbackStrategy.auto))
                 else:
                     message.extend(await self.export((await _auto_fallback(seg, bot)), bot, FallbackStrategy.auto))
             elif fallback is True:
-                if seg.children:
-                    message.extend(await self.export(seg.children, bot, FallbackStrategy.auto))
-                else:
-                    message.extend(await self.export((await _auto_fallback(seg, bot)), bot, FallbackStrategy.auto))
+                message.extend(await self.export((await _auto_fallback(seg, bot)), bot, FallbackStrategy.auto))
             else:
                 raise SerializeFailed(
                     lang.require("nbp-uniseg", "failed").format(

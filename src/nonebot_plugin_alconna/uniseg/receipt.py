@@ -149,7 +149,7 @@ class Receipt:
     async def send(
         self,
         message: str | Iterable[str] | Iterable[Segment] | Iterable[str | Segment] | Segment,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         at_sender: str | bool = False,
         reply_to: str | bool | Reply | None = False,
         delay: float = 0,
@@ -165,7 +165,7 @@ class Receipt:
     async def reply(
         self,
         message: str | Iterable[str] | Iterable[Segment] | Iterable[str | Segment] | Segment,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         at_sender: str | bool = False,
         index: int = -1,
         delay: float = 0,
@@ -176,7 +176,7 @@ class Receipt:
     async def finish(
         self,
         message: str | Iterable[str] | Iterable[Segment] | Iterable[str | Segment] | Segment,
-        fallback: bool | FallbackStrategy = FallbackStrategy.rollback,
+        fallback: bool | FallbackStrategy = FallbackStrategy.auto,
         at_sender: str | bool = False,
         reply_to: str | bool | Reply | None = False,
         delay: float = 0,
