@@ -38,7 +38,19 @@ from .consts import ALCONNA_ARG_KEY, ALCONNA_ARG_KEYS, ALCONNA_RESULT, log
 from .extension import Extension, ExtensionExecutor
 from .i18n import Lang
 from .model import CompConfig
-from .params import CHECK, MIDDLEWARE, AlconnaParam, Check, ExtensionParam, _Dispatch, _seminal, assign, merge_path
+from .params import (
+    CHECK,
+    MIDDLEWARE,
+    AlconnaParam,
+    Check,
+    DependencyCacheParam,
+    ExtensionParam,
+    StackParam,
+    _Dispatch,
+    _seminal,
+    assign,
+    merge_path,
+)
 from .rule import AlconnaRule
 from .uniseg import Segment, Text, UniMessage, get_message_id, get_target
 from .uniseg.fallback import FallbackStrategy
@@ -1007,6 +1019,13 @@ def on_alconna(
                 command.formatter.add(command)
     except ValueError:
         pass
+    Rule.HANDLER_PARAM_TYPES = [
+        *Matcher.HANDLER_PARAM_TYPES[:-1],
+        StackParam,
+        DependencyCacheParam,
+        AlconnaParam,
+        DefaultParam,
+    ]
     _rule = AlconnaRule(
         command,
         skip_for_unmatch,
@@ -1024,6 +1043,8 @@ def on_alconna(
     executor.params = params = (
         ExtensionParam.new(executor),
         *Matcher.HANDLER_PARAM_TYPES[:-1],
+        StackParam,
+        DependencyCacheParam,
         AlconnaParam,
         DefaultParam,
     )

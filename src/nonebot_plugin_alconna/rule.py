@@ -1,6 +1,6 @@
 import asyncio
 from contextlib import AsyncExitStack
-from typing import Any, Literal, Optional, Union
+from typing import Any, ClassVar, Literal, Optional, Union
 import weakref
 
 from arclet.alconna import Alconna, Arparma, CompSession, command_manager, output_manager
@@ -21,7 +21,6 @@ from .consts import ALCONNA_EXEC_RESULT, ALCONNA_EXTENSION, ALCONNA_RESULT, log
 from .extension import ExtensionExecutor, SelectedExtensions, _DependentExecutor
 from .i18n import Lang
 from .model import CommandResult, CompConfig
-from .params import DependencyCacheParam, StackParam
 from .uniseg import UniMessage, UniMsg
 from .uniseg.constraint import UNISEG_MESSAGE
 
@@ -214,7 +213,10 @@ class AlconnaRule:
 
     @property
     def rule(self) -> Rule:
-        return Rule(self)
+        class _Rule(Rule):
+            HANDLER_PARAM_TYPES: ClassVar = list(self.executor.params)
+
+        return _Rule(self)
 
     def __repr__(self) -> str:
         return f"Alconna(command={self.command()!r})"
@@ -293,10 +295,9 @@ class AlconnaRule:
         bot: Bot,
         event: Event,
         state: T_State,
-        stack: Optional[AsyncExitStack] = StackParam(),  # type: ignore
-        dependency_cache: Optional[dict[_DependentCallable[Any], DependencyCache]] = DependencyCacheParam(),  # type: ignore
+        stack: Optional[AsyncExitStack] = None,
+        dependency_cache: Optional[dict[_DependentCallable[Any], DependencyCache]] = None,
     ) -> bool:
-
         if self.before_rules.checkers and not await self.before_rules(bot, event, state, stack, dependency_cache):
             return False
         if event.get_type() == "meta_event":

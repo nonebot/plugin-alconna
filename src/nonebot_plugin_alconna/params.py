@@ -10,11 +10,11 @@ from nonebot.compat import PydanticUndefined
 from nonebot.dependencies import Param
 from nonebot.internal.adapter import Bot, Event
 from nonebot.internal.matcher import Matcher
-from nonebot.internal.params import Depends
-from nonebot.typing import T_DependencyCache, T_State
+from nonebot.internal.params import DependencyCache, Depends
+from nonebot.typing import T_State, _DependentCallable
 from nonebot.utils import generic_check_issubclass
 from tarina import run_always_await
-from tarina.generic import get_origin
+from tarina.generic import get_origin, is_optional
 
 from .consts import ALCONNA_ARG_KEY, ALCONNA_ARG_KEYS, ALCONNA_EXEC_RESULT, ALCONNA_EXTENSION, ALCONNA_RESULT
 from .extension import Extension, ExtensionExecutor, SelectedExtensions
@@ -367,8 +367,10 @@ class StackParam(Param):
     def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Optional[Self]:
         if param.annotation == AsyncExitStack:
             return cls(..., type=AsyncExitStack)
+        if param.annotation == Optional[AsyncExitStack]:
+            return cls(None, type=AsyncExitStack)
         if generic_check_issubclass(param.annotation, AsyncExitStack):
-            return cls(..., type=AsyncExitStack, default=None)
+            return cls(None, type=AsyncExitStack)
 
     @override
     async def _solve(self, stack: Optional[AsyncExitStack] = None, **kwargs: Any) -> Any:
@@ -387,11 +389,15 @@ class DependencyCacheParam(Param):
     @classmethod
     @override
     def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Optional[Self]:
-        if param.annotation == T_DependencyCache:
-            return cls(..., type=T_DependencyCache)
-        if generic_check_issubclass(param.annotation, T_DependencyCache):
-            return cls(..., type=T_DependencyCache, default=None)
+        if param.annotation == dict[_DependentCallable[Any], DependencyCache]:
+            return cls(..., type=dict[_DependentCallable[Any], DependencyCache])
+        if param.annotation == Optional[dict[_DependentCallable[Any], DependencyCache]]:
+            return cls(None, type=dict[_DependentCallable[Any], DependencyCache])
+        if is_optional(param.annotation, dict[_DependentCallable[Any], DependencyCache]):
+            return cls(None, type=dict[_DependentCallable[Any], DependencyCache])
 
     @override
-    async def _solve(self, dependency_cache: Optional[T_DependencyCache] = None, **kwargs: Any) -> Any:
+    async def _solve(
+        self, dependency_cache: Optional[dict[_DependentCallable[Any], DependencyCache]] = None, **kwargs: Any
+    ) -> Any:
         return dependency_cache
