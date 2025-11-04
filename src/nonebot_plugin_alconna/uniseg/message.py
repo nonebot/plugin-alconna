@@ -9,8 +9,10 @@ from types import FunctionType
 from typing import TYPE_CHECKING, Any, Callable, Literal, NoReturn, Protocol, TypeVar, Union
 from typing_extensions import Self, SupportsIndex, deprecated
 
+from nonebot import get_driver
 from nonebot.exception import FinishedException
 from nonebot.internal.adapter import Bot, Event, Message
+from nonebot.internal.driver import HTTPClientMixin, Request
 from nonebot.internal.matcher import current_bot, current_event
 from tarina import lang
 from tarina.context import ContextModel
@@ -33,6 +35,7 @@ from .segment import (
     I18n,
     Image,
     Keyboard,
+    Media,
     Reference,
     RefNode,
     Reply,
@@ -1178,3 +1181,29 @@ class UniMessage(list[TS]):
         else:
             _data = data
         return cls(get_segment_class(seg_data["type"]).load(seg_data) for seg_data in _data)
+
+    async def download(self, stream: bool = False, **kwargs):
+        """将消息中的媒体链接下载为文件数据
+
+        Args:
+            stream (bool, optional): 是否以流式下载. Defaults to False.
+            **kwargs: 传递给下载器的参数
+        """
+        driver = get_driver()
+        for media in self.select(Media):
+            if not media.url:
+                continue
+            if not isinstance(driver, HTTPClientMixin):
+                raise TypeError("Current driver does not support http client")
+            request = Request("GET", media.url)
+            sess = driver.get_session(**kwargs)
+            raw = b""
+            if stream:
+                async for chunk in sess.stream_request(request):
+                    raw += chunk.content  # type: ignore
+            else:
+                response = await sess.request(request)
+                raw = response.content  # type: ignore
+            media.url = None
+            media.raw = raw
+        return self
