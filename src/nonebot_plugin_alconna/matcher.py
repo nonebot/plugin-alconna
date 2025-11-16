@@ -1072,7 +1072,8 @@ def on_alconna(
             ),
             "temp": temp,
             "expire_time": (
-                expire_time and (expire_time if isinstance(expire_time, datetime) else datetime.now() + expire_time)  # noqa: DTZ005
+                expire_time
+                and (expire_time if isinstance(expire_time, datetime) else datetime.now() + expire_time)  # noqa: DTZ005
             ),
             "priority": priority,
             "block": block,
