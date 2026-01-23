@@ -36,6 +36,7 @@ class SupportAdapter(str, Enum):
     tail_chat = "Tailchat"
     wxmp = "WXMP"
     efchat = "EFChat"
+    yunhu = "YunHu"
 
     nonebug = "fake"
 
@@ -72,6 +73,8 @@ class SupportScope(str, Enum):
     """EFChat平台"""
     bililive = "BiliLive"
     """Bilibili直播平台"""
+    yunhu = "YunHu"
+    """云湖平台"""
 
     onebot12_other = "Onebot12"
     """ob12 的其他平台"""
@@ -111,6 +114,7 @@ class SupportScope(str, Enum):
             "dingtalk": SupportScope.ding,
             "mail": SupportScope.mail,
             "heybox": SupportScope.heybox,
+            "yunhu": SupportScope.yunhu,
         }.get(platform, SupportScope.satori_other)
 
 
@@ -142,6 +146,7 @@ class SupportAdapterModule(str, Enum):
     telegram = "nonebot.adapters.telegram"
     tail_chat = "nonebot_adapter_tailchat"
     wxmp = "nonebot.adapters.wxmp"
+    yunhu = "nonebot.adapters.yunhu"
 
 
 UNISEG_MESSAGE: Literal["_alc_uniseg_message"] = "_alc_uniseg_message"
