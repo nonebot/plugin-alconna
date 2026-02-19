@@ -113,9 +113,9 @@ async def _():
 - (🚧): 计划中或部分支持或为实验性支持
 
 > [!WARNING]
-> 斜体的协议名称意味着其协议或其适配器长时间未维护或已失效
+> 协议名称前面的⚠️意味着其协议或其适配器长时间未维护或已失效
 
-| 元素\适配器           | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | _钉钉_ | Console | 开黑啦 | Mirai | _Ntchat_ | MineCraft | Discord | _Red_ | Satori | Dodo IM | _Kritor_ | Tailchat | Mail | 微信公众号 | 黑盒语音 | Milky | EFChat | B站直播间 |
+| 元素\适配器           | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | ⚠️钉钉 | Console | 开黑啦 | ⚠️Mirai | ⚠️Ntchat | Minecraft | Discord | ⚠️Red | Satori | Dodo IM | ⚠️Kritor | Tailchat | Mail | 微信公众号 | 黑盒语音 | Milky | EFChat | B站直播间 |
 |------------------|------------|------------|----------|----|--------|--------|------|---------|-----|-------|----------|-----------|---------|-------|--------|---------|----------|----------|------|-------|------|-------|--------|-------|
 | 文本 Text          | ✅          | ✅          | ✅        | ✅  | ✅      | ✅      | ✅    | ✅       | ✅   | ✅     | ✅        | ✅         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | ✅     | ✅    | ✅     | ✅      | ✅     |
 | 样式文本 Styled Text | 🚫         | 🚫         | ✅        | ❌  | ✅      | ✅      | ❌    | ✅       | ✅   | 🚫    | 🚫       | ✅         | 🚫      | 🚫    | ✅      | 🚫      | 🚫       | ✅        | ✅    | 🚫    | 🚫   | 🚫    | ❌      | 🚫    | 
@@ -146,7 +146,7 @@ async def _():
 > [!WARNING]
 > 斜体的协议名称意味着其协议或其适配器长时间未维护或已失效
 
-| 操作\适配器        | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | _钉钉_ | Console | 开黑啦 | Mirai | _Ntchat_ | MineCraft | Discord | _Red_ | Satori | Dodo IM | _Kritor_ | Tailchat | Mail | 微信公众号 | 黑盒语音 | Milky | EFChat | B站直播间 |
+| 操作\适配器        | OneBot V11 | OneBot V12 | Telegram | 飞书 | Github | QQ-API | ⚠️钉钉 | Console | 开黑啦 | ⚠️Mirai | ⚠️Ntchat | Minecraft | Discord | ⚠️Red | Satori | Dodo IM | ⚠️Kritor | Tailchat | Mail | 微信公众号 | 黑盒语音 | Milky | EFChat | B站直播间 |
 |---------------|------------|------------|----------|----|--------|--------|------|---------|-----|-------|----------|-----------|---------|-------|--------|---------|----------|----------|------|-------|------|-------|--------|-------|
 | 发送 Send       | ✅          | ✅          | ✅        | ✅  | ✅      | ✅      | ✅    | ✅       | ✅   | ✅     | ✅        | ✅         | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | ✅    | ✅     | ✅    | ✅     | ✅      | ✅     |
 | 撤回 Recall     | ✅          | ✅          | ✅        | ✅  | ❌      | ✅      | ❌    | 🚫      | ✅   | ✅     | ❌        | 🚫        | ✅       | ✅     | ✅      | ✅       | ✅        | ✅        | 🚫   | 🚫    | 🚫   | ✅     | 🚫     | 🚫    |
