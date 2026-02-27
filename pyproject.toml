@@ -124,25 +124,27 @@ ignore = [
     "RUF002",  # Docstring contains ambiguous `，` (FULLWIDTH COMMA). Did you mean `,` (COMMA)?
     "RUF009",  # 我不想要额外的全局变量。
     # "UP038",  # instance(..., X | Y) 还是太超前了
-    "RUF003",  # 中文注释里用全角符号怎么你了
-    "SLOT000", # 动态类型需求，主要是 json5 backend
+    "RUF003",   # 中文注释里用全角符号怎么你了
+    "SLOT000",  # 动态类型需求，主要是 json5 backend
     "PLR0911",
     "PLR0912",
-    "PLR0915", # 复杂度高点怎么你了
-    "PYI019",  # 用 `Self` 替代 `self: T` 的 T
-    "PYI041",  # int 和 float 在运行时的类型没有交集（互不成立 issubclass）
-    "PLW2901", # shallow 怎么你了
-    "S101",    # assert 怎么你了，非要 RuntimeError 吗
-    "PLR2004", # magic number 怎么你了
-    "TRY004",  # 我要抛啥错误我清楚
-    "COM812",  # 强制尾随逗号
-    "TID252",  # 相对导入
-    "ISC001",  # format warning
-    "N801",    # Class name should use CapWords convention
-    "N802",    # Function name should be lowercase
-    "N804",    # First argument of a class method should be named `cls`
-    "N805",    # First argument of a method should be named `self`
-    "N806",    # Variable in function should be lowercase
+    "PLR0915",  # 复杂度高点怎么你了
+    "PYI019",   # 用 `Self` 替代 `self: T` 的 T
+    "PYI041",   # int 和 float 在运行时的类型没有交集（互不成立 issubclass）
+    "PLW2901",  # shallow 怎么你了
+    "S101",     # assert 怎么你了，非要 RuntimeError 吗
+    "PLR2004",  # magic number 怎么你了
+    "TRY004",   # 我要抛啥错误我清楚
+    "COM812",   # 强制尾随逗号
+    "TID252",   # 相对导入
+    "ISC001",   # format warning
+    "N801",     # Class name should use CapWords convention
+    "N802",     # Function name should be lowercase
+    "N804",     # First argument of a class method should be named `cls`
+    "N805",     # First argument of a method should be named `self`
+    "N806",     # Variable in function should be lowercase
+    "PLW0108",
+    "ASYNC240",
 ]
 flake8-quotes = { inline-quotes = "double", multiline-quotes = "double" }
 
