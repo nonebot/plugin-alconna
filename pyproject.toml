@@ -1,9 +1,7 @@
 [project]
 name = "nonebot-plugin-alconna"
 description = "Alconna Adapter for Nonebot"
-authors = [
-    {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
-]
+authors = [{ name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com" }]
 dependencies = [
     "tarina<0.8.0,>=0.7.3",
     "nepattern<1.0,>=0.7.7",
@@ -16,12 +14,8 @@ dependencies = [
 dynamic = ["version"]
 requires-python = ">=3.10"
 readme = "README.md"
-license = {text = "MIT"}
-keywords = [
-    "command",
-    "alconna",
-    "nonebot",
-]
+license = { text = "MIT" }
+keywords = ["command", "alconna", "nonebot"]
 [project.urls]
 homepage = "https://github.com/nonebot/plugin-alconna"
 repository = "https://github.com/nonebot/plugin-alconna"
@@ -58,73 +52,73 @@ target-version = "py39"
 
 [tool.ruff.lint]
 select = [
-    "F",     # pyflakes
-    "E",     # pycodestyle errors
-    "W",     # pycodestyle warnings
+    "F", # pyflakes
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
     # "I",     # isort
     "N",     # PEP8-naming
     "UP",    # pyupgrade
     "YTT",   # flake8-2020
     "ASYNC", # flake8-async
     # "S",     # flake8-bandit
-    "BLE",   # flake8-blind-except
+    "BLE", # flake8-blind-except
     # "FBT",   # flake8-boolean-trap
-    "B",     # flake8-bugbear
-    "A",     # flake8-builtins
-    "COM",   # flake8-commas
-    "C4",    # flake8-comprehensions
-    "DTZ",   # flake8-datetimez
-    "T10",   # flake8-debugger
+    "B",   # flake8-bugbear
+    "A",   # flake8-builtins
+    "COM", # flake8-commas
+    "C4",  # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "T10", # flake8-debugger
     # "FA",    # flake8-future-annotations
-    "ISC",   # flake8-implicit-str-concat
-    "ICN",   # flake8-import-conventions
-    "PIE",   # flake8-pie
-    "T20",   # flake8-print
-    "PYI",   # flake8-pyi
-    "Q",     # flake8-quotes
-    "RSE",   # flake8-raise
-    "RET",   # flake8-return
-    "SLOT",  # flake8-slots
-    "SIM",   # flake8-simplify
-    "TID",   # flake8-tidy-imports
+    "ISC",  # flake8-implicit-str-concat
+    "ICN",  # flake8-import-conventions
+    "PIE",  # flake8-pie
+    "T20",  # flake8-print
+    "PYI",  # flake8-pyi
+    "Q",    # flake8-quotes
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+    "SLOT", # flake8-slots
+    "SIM",  # flake8-simplify
+    "TID",  # flake8-tidy-imports
     # "TC",   # flake8-type-checking
     # "ARG",   # flake8-unused-arguments
-    "PTH",   # flake8-use-pathlib
+    "PTH", # flake8-use-pathlib
     # "ERA",   # eradicate
-    "PD",    # pandas-vet
-    "PGH",   # pygrep-hooks
-    "PL",    # pylint
-    "TRY",   # tryceratops
-    "FLY",   # flynt
-    "FAST",  # FastAPI
-    "PERF",  # Perflint
-    "FURB",  # refurb
-    "RUF",   # Ruff-specific rules
+    "PD",   # pandas-vet
+    "PGH",  # pygrep-hooks
+    "PL",   # pylint
+    "TRY",  # tryceratops
+    "FLY",  # flynt
+    "FAST", # FastAPI
+    "PERF", # Perflint
+    "FURB", # refurb
+    "RUF",  # Ruff-specific rules
 ]
 ignore = [
     "C901",
     "T201",
     "E731",
     "PT023",
-    "B010",  #  Do not call `setattr` with a constant attribute value.
+    "B010",    #  Do not call `setattr` with a constant attribute value.
     "SIM105",  # Use `contextlib.suppress`
-    "B008",  # Do not perform function call in argument defaults
-    "RUF100", # Unused `noqa` directive
-    "TC003",  # Move xxx into a type-checking block
-    "E402",  # module level import not at top of file
-    "E501",   # 过长的行由 ruff format 处理, 剩余的都是字符串
-    "UP035",  # pyupgrade, 但 typing.Callable 的导入会报错
+    "B008",    # Do not perform function call in argument defaults
+    "RUF100",  # Unused `noqa` directive
+    "TC003",   # Move xxx into a type-checking block
+    "E402",    # module level import not at top of file
+    "E501",    # 过长的行由 ruff format 处理, 剩余的都是字符串
+    "UP035",   # pyupgrade, 但 typing.Callable 的导入会报错
     "TRY003",
     "TRY301",  # 为啥非要把 raise 丢进另外一个 inner fn 里
     "BLE001",  # except Exception as e
     "PGH003",  # 要求 `# type: ignore` 提供理由，但 pyright 和 mypy 等都不是统一标准。
-    "PLC0414",  # 用 import-as 表示 re-export
-    "N818",  # 要求所有自定义错误以 Error 作后缀，但我们不这么做
-    "RET502", # return = return None
+    "PLC0414", # 用 import-as 表示 re-export
+    "N818",    # 要求所有自定义错误以 Error 作后缀，但我们不这么做
+    "RET502",  # return = return None
     "RET503",  # 就要 implicit return none
-    "PLC0415",  # 你别管我为什么不在顶层 import
-    "PLC0105",  # 我们已经用 R 表示协变，Q 表示逆变了
-    "PLR0913",  # 参数就那么多的，你用 builder 什么的不是更逆天？
+    "PLC0415", # 你别管我为什么不在顶层 import
+    "PLC0105", # 我们已经用 R 表示协变，Q 表示逆变了
+    "PLR0913", # 参数就那么多的，你用 builder 什么的不是更逆天？
     "SIM108",  # 迫真 simplicy
     "RUF001",  # String contains ambiguous `，` (FULLWIDTH COMMA). Did you mean `,` (COMMA)?
     "RUF002",  # Docstring contains ambiguous `，` (FULLWIDTH COMMA). Did you mean `,` (COMMA)?
@@ -132,21 +126,23 @@ ignore = [
     # "UP038",  # instance(..., X | Y) 还是太超前了
     "RUF003",  # 中文注释里用全角符号怎么你了
     "SLOT000", # 动态类型需求，主要是 json5 backend
-    "PLR0911", "PLR0912", "PLR0915",  # 复杂度高点怎么你了
-    "PYI019", # 用 `Self` 替代 `self: T` 的 T
-    "PYI041", # int 和 float 在运行时的类型没有交集（互不成立 issubclass）
-    "PLW2901",  # shallow 怎么你了
-    "S101", # assert 怎么你了，非要 RuntimeError 吗
-    "PLR2004",  # magic number 怎么你了
+    "PLR0911",
+    "PLR0912",
+    "PLR0915", # 复杂度高点怎么你了
+    "PYI019",  # 用 `Self` 替代 `self: T` 的 T
+    "PYI041",  # int 和 float 在运行时的类型没有交集（互不成立 issubclass）
+    "PLW2901", # shallow 怎么你了
+    "S101",    # assert 怎么你了，非要 RuntimeError 吗
+    "PLR2004", # magic number 怎么你了
     "TRY004",  # 我要抛啥错误我清楚
-    "COM812", # 强制尾随逗号
-    "TID252", # 相对导入
-    "ISC001", # format warning
-    "N801", # Class name should use CapWords convention
-    "N802", # Function name should be lowercase
-    "N804", # First argument of a class method should be named `cls`
-    "N805", # First argument of a method should be named `self`
-    "N806", # Variable in function should be lowercase
+    "COM812",  # 强制尾随逗号
+    "TID252",  # 相对导入
+    "ISC001",  # format warning
+    "N801",    # Class name should use CapWords convention
+    "N802",    # Function name should be lowercase
+    "N804",    # First argument of a class method should be named `cls`
+    "N805",    # First argument of a method should be named `self`
+    "N806",    # Variable in function should be lowercase
 ]
 flake8-quotes = { inline-quotes = "double", multiline-quotes = "double" }
 
@@ -167,7 +163,11 @@ reportSelfClsParameterName = false
 
 [tool.pdm.scripts]
 test = "pytest -v -W ignore ./tests/"
-format = { composite = ["isort ./src/ ./example/ ./tests/","black ./src/ ./example/ ./tests/","ruff check ./src/ ./example/ ./tests/"] }
+format = { composite = [
+    "isort ./src/ ./example/ ./tests/",
+    "black ./src/ ./example/ ./tests/",
+    "ruff check ./src/ ./example/ ./tests/",
+] }
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -189,7 +189,7 @@ dev = [
     "nonebot2[httpx,websockets]>=2.4.3",
     "nonebot-adapter-console<0.10.0,>=0.9.0",
     "nonebot-adapter-ding>=2.0.0a16",
-    "nonebot-adapter-discord>=0.1.8",
+    "nonebot-adapter-discord>=1.1.3",
     "nonebot-adapter-dodo>=0.2.1",
     "nonebot-adapter-feishu>=2.6.2",
     "nonebot-adapter-kaiheila>=0.3.4",
@@ -215,6 +215,7 @@ dev = [
     "nonebot-adapter-efchat>=0.1.9.post2",
     "pytest-asyncio==0.26.0",
     "nonebot-adapter-bilibili-live>=0.2.4",
+    "nonebot-adapter-yunhu>=0.1.6",
 ]
 test = [
     "nonebug>=0.4.3",
