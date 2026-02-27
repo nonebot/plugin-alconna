@@ -102,14 +102,11 @@ def test_persistence():
         {"type": "image", "url": "https://example.com/1.jpg", "sticker": False},
         {"type": "text", "text": "hello"},
     ]
-    assert (
-        msg.dump(json=True)
-        == """\
+    assert msg.dump(json=True) == """\
 [{"type": "at", "flag": "user", "target": "123"}, \
 {"type": "at", "flag": "channel", "target": "456"}, \
 {"type": "image", "url": "https://example.com/1.jpg", "sticker": false}, \
 {"type": "text", "text": "hello"}]"""
-    )
 
     msg1 = [
         {"type": "at", "flag": "user", "target": "456"},
