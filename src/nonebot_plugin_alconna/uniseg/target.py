@@ -77,7 +77,7 @@ class Target:
         self.private = private
         self.source = source
         self.self_id = self_id
-        self.extra = extra if extra else {}
+        self.extra = extra or {}
         self.selector = None
         if scope:
             self.selector = partial(SCOPES[scope], self)

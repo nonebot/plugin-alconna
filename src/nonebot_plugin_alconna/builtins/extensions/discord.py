@@ -23,7 +23,7 @@ from nonebot.adapters.discord.api import (
     SubCommandGroupOption,
     SubCommandOption,
 )
-from nonebot.adapters.discord.api.types import InteractionCallbackType, MessageFlag
+from nonebot.adapters.discord.api.types import UNSET, InteractionCallbackType, MessageFlag
 from nonebot.adapters.discord.commands.matcher import ApplicationCommandConfig, SlashCommandMatcher, on_slash_command
 from nonebot.adapters.discord.commands.storage import _application_command_storage
 from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
@@ -35,7 +35,8 @@ from nonebot.rule import Rule
 from nonebot.typing import T_Handler, T_PermissionChecker, T_RuleChecker, T_State
 from tarina import LRU, lang
 
-from nonebot_plugin_alconna import At, Extension, Image, UniMessage, log
+from nonebot_plugin_alconna import At, Extension, Image, UniMessage
+from nonebot_plugin_alconna.consts import log
 from nonebot_plugin_alconna.extension import cache_msg
 from nonebot_plugin_alconna.matcher import _M, AlconnaMatcher
 
@@ -59,9 +60,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
                         name=f"{arg.name}",
                         description=f"{arg.notice or arg.name}",
                         required=not arg.optional,
-                        choices=[
-                            OptionChoice(name=str(x), value=x) for x in arg.value.base  # type: ignore  # noqa: E501
-                        ],
+                        choices=[OptionChoice(name=str(x), value=x) for x in arg.value.base if isinstance(x, int)],
                     )
                 )
             elif all(isinstance(x, float) for x in arg.value.base):
@@ -70,9 +69,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
                         name=f"{arg.name}",
                         description=f"{arg.notice or arg.name}",
                         required=not arg.optional,
-                        choices=[
-                            OptionChoice(name=str(x), value=x) for x in arg.value.base  # type: ignore  # noqa: E501
-                        ],
+                        choices=[OptionChoice(name=str(x), value=x) for x in arg.value.base if isinstance(x, float)],
                     )
                 )
             else:
@@ -176,7 +173,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
     return result
 
 
-def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupOption, SubCommandOption]:
+def _translate_options(opt: Union[Option, Subcommand]) -> AnyCommandOption:
     if isinstance(opt, Option):
         return SubCommandOption(
             name=f"{opt.name}",
@@ -190,7 +187,9 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
         )
     if not opt.args.empty:
         return SubCommandOption(
-            name=f"{opt.name}", description=f"{opt.help_text}", options=_translate_args(opt.args)  # type: ignore
+            name=f"{opt.name}",
+            description=f"{opt.help_text}",
+            options=_translate_args(opt.args),  # type: ignore
         )
     return SubCommandGroupOption(
         name=f"{opt.name}",
@@ -239,6 +238,10 @@ def translate(
         "options": options,
         **locals(),
     }
+    if default_permission is None:
+        buffer.pop("default_permission")
+    if nsfw is None:
+        buffer.pop("nsfw")
     buffer["_depth"] += 1
     buffer.pop("alc")
     return on_slash_command(**buffer)
@@ -316,11 +319,11 @@ class DiscordSlashExtension(Extension):
             name_localizations=self.name_localizations,
             description=self.description or alc.meta.description,
             description_localizations=self.description_localizations,
-            options=options,  # type: ignore
+            options=options,
             default_member_permissions=self.default_member_permissions,
             dm_permission=self.dm_permission,
-            default_permission=self.default_permission,
-            nsfw=self.nsfw,
+            default_permission=self.default_permission if self.default_permission is not None else UNSET,
+            nsfw=self.nsfw if self.nsfw is not None else UNSET,
         )
         _application_command_storage[self.internal_id or config.name] = config
         self.application_command = config
@@ -355,12 +358,12 @@ class DiscordSlashExtension(Extension):
                     ApplicationCommandOptionType.SUB_COMMAND_GROUP,
                 ):
                     yield f"{opt.name}"
-                    if opt.options:
+                    if isinstance(opt.options, list):
                         yield from _handle_options(opt.options)
                 else:
                     yield f"{opt.value}"
 
-        if data.options:
+        if isinstance(data.options, list):
             cmd += " "
             cmd += " ".join(_handle_options(data.options))
 

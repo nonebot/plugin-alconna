@@ -117,6 +117,8 @@ def fake_discord_interaction_event(**field) -> "ApplicationCommandInteractionEve
     field["application_id"] = 123456789
     field["token"] = "sometoken"  # noqa: S105
     field["version"] = 1
+    field.setdefault("attachment_size_limit", 0)
+    field.setdefault("authorizing_integration_owners", {})
 
     class FakeEvent(_fake):
         pass
