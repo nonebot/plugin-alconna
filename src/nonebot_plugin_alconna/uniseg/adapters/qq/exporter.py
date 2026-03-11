@@ -5,6 +5,7 @@ from typing_extensions import override
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.qq.bot import Bot as QQBot
+from nonebot.adapters.qq.event import Event as QQEvent
 from nonebot.adapters.qq.event import (
     C2CMessageCreateEvent,
     ChannelEvent,
@@ -18,7 +19,6 @@ from nonebot.adapters.qq.event import (
     GuildMessageEvent,
     InteractionCreateEvent,
     MessageAuditEvent,
-    MessageEvent,
     MessageReactionEvent,
 )
 from nonebot.adapters.qq.message import Message, MessageSegment
@@ -351,7 +351,7 @@ class QQMessageExporter(MessageExporter[Message]):
             message.append(MessageSegment.keyboard(kb))
 
         if isinstance(target, Event):
-            assert isinstance(target, MessageEvent)
+            assert isinstance(target, QQEvent)
             if isinstance(target, (C2CMessageCreateEvent, GroupAtMessageCreateEvent)):
                 message = message.exclude("mention_channel", "mention_user", "mention_everyone", "reference")
             return await bot.send(event=target, message=message, **kwargs)
