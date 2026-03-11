@@ -6,6 +6,7 @@ from nonebot.adapters.satori.event import InteractionCommandMessageEvent, Messag
 from nonebot.adapters.satori.message import At as AtSegment
 from nonebot.adapters.satori.message import Audio as AudioSegment
 from nonebot.adapters.satori.message import Button as ButtonSegment
+from nonebot.adapters.satori.message import Emoji as EmojiSegment
 from nonebot.adapters.satori.message import File as FileSegment
 from nonebot.adapters.satori.message import Image as ImageSegment
 from nonebot.adapters.satori.message import Link as LinkSegment
@@ -22,6 +23,7 @@ from nonebot_plugin_alconna.uniseg.segment import (
     AtAll,
     Audio,
     Button,
+    Emoji,
     File,
     Image,
     Other,
@@ -97,6 +99,10 @@ class SatoriMessageBuilder(MessageBuilder[MessageSegment]):
         if display:
             text.cover(display)
         return text(*self.generate(seg.children))
+
+    @build("emoji")
+    def emoji(self, seg: EmojiSegment):
+        return Emoji(seg.data["id"], seg.data.get("name"))(*self.generate(seg.children))
 
     @build("img", "image")
     def image(self, seg: ImageSegment):

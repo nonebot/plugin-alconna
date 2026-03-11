@@ -19,7 +19,7 @@ class SatoriTargetFetcher(TargetFetcher):
             friends = await bot.friend_list()
             for friend in friends.data:
                 yield Target(
-                    str(friend.id),
+                    str(friend.user.id),
                     private=True,
                     adapter=self.get_adapter(),
                     platform=bot.platform,
@@ -29,7 +29,7 @@ class SatoriTargetFetcher(TargetFetcher):
                 friends = await bot.friend_list(next_token=friends.next)
                 for friend in friends.data:
                     yield Target(
-                        str(friend.id),
+                        str(friend.user.id),
                         private=True,
                         adapter=self.get_adapter(),
                         platform=bot.platform,
