@@ -11,7 +11,7 @@ from nonebot.adapters.qq import Adapter as QQAdapter
 from nonebot.adapters.qq import Bot as QQBot
 from nonebot.adapters.satori import Adapter as SatoriAdapter
 from nonebot.adapters.satori import Bot as SatoriBot
-from nonebot.adapters.satori.models import Channel, ChannelType, Guild, PageResult, User, Friend
+from nonebot.adapters.satori.models import Channel, ChannelType, Friend, Guild, PageResult, User
 from nonebug import App
 from pytest_mock import MockerFixture
 
