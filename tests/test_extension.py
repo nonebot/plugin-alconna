@@ -1,12 +1,12 @@
 from typing import Any
 
+import pytest
 from arclet.alconna import Alconna, Args, Arparma, Subcommand
 from nonebot import get_adapter
 from nonebot.internal.adapter import Event
 from nonebot.params import Depends
 from nonebot.typing import T_State
 from nonebug import App
-import pytest
 
 from tests.fake import fake_group_message_event_v11
 

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.milky.bot import Bot as MilkyBot
@@ -36,7 +36,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.milky
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         assert isinstance(event, MilkyEvent)
         if isinstance(event, (MessageEvent, MessageRecallEvent)):
             return Target(
@@ -72,25 +72,25 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         raise NotImplementedError
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag != "user":
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
         return MessageSegment.mention(int(seg.target))
 
     @export
-    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.mention_all()
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.face(seg.id)
 
     @export
-    async def media(self, seg: Union[Image, Voice, Audio], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Image | Voice | Audio, bot: Bot | None) -> "MessageSegment":
         assert isinstance(bot, MilkyBot)
         name = seg.__class__.__name__.lower()
         method = {
@@ -114,7 +114,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         return ans
 
     @export
-    async def video(self, seg: Video, bot: Union[Bot, None]) -> "MessageSegment":
+    async def video(self, seg: Video, bot: Bot | None) -> "MessageSegment":
         assert isinstance(bot, MilkyBot)
         thumb_url = None
         if seg.thumbnail:
@@ -146,7 +146,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="video", seg=seg))
 
     @export
-    async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
+    async def file(self, seg: File, bot: Bot | None) -> "MessageSegment":
         filename = seg.name if seg.name != seg.__default_name__ else None
         if seg.path:
             return MessageSegment(
@@ -171,12 +171,12 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         message_seq, *_ = seg.id.split("@")
         return MessageSegment.reply(int(message_seq))
 
     @export
-    async def reference(self, seg: Reference, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reference(self, seg: Reference, bot: Bot | None) -> "MessageSegment":
         assert isinstance(bot, MilkyBot)
         if seg.id:
             messages = await bot.get_forwarded_messages(forward_id=seg.id)
@@ -208,7 +208,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="forward", seg=seg))
         return MessageSegment.forward(messages)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, MilkyBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -240,7 +240,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
             return await bot.send_private_message(user_id=int(_target.id), message=message, **kwargs)
         return await bot.send_group_message(group_id=int(_target.id), message=message, **kwargs)
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, MilkyBot)
         if isinstance(mid, File) and mid.id:
             if isinstance(context, Target):
@@ -282,7 +282,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
                 group_id = int(getattr(context.data, "group_id", -1))
                 await bot.recall_group_message(group_id=group_id, message_seq=message_seq)
 
-    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Target | Event, delete: bool = False):
         assert isinstance(bot, MilkyBot)
 
         if isinstance(context, Target):

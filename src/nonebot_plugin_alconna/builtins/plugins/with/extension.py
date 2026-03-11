@@ -1,5 +1,5 @@
 import random
-from typing import Any, Callable, ClassVar, Optional
+from typing import Any, Callable, ClassVar
 
 from arclet.alconna import Alconna
 from nonebot.internal.adapter import Bot, Event
@@ -19,7 +19,7 @@ class PrefixAppendExtension(Extension):
     def id(self) -> str:
         return "builtins.plugins.with.extension:PrefixAppendExtension"
 
-    supplier: ClassVar[Callable[[Any, Target], Optional[str]]]
+    supplier: ClassVar[Callable[[Any, Target], str | None]]
     prefixes: list[str]
     command: str
     sep: str

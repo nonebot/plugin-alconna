@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional, Union
 
 from arclet.alconna import Alconna, Args, Option, Subcommand
 from nepattern import ANY, FLOAT, INTEGER, NUMBER, UnionPattern
@@ -173,7 +172,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
     return result
 
 
-def _translate_options(opt: Union[Option, Subcommand]) -> AnyCommandOption:
+def _translate_options(opt: Option | Subcommand) -> AnyCommandOption:
     if isinstance(opt, Option):
         return SubCommandOption(
             name=f"{opt.name}",
@@ -200,22 +199,22 @@ def _translate_options(opt: Union[Option, Subcommand]) -> AnyCommandOption:
 
 def translate(
     alc: Alconna,
-    internal_id: Optional[str] = None,
-    rule: Union[Rule, T_RuleChecker, None] = None,
-    permission: Union[Permission, T_PermissionChecker, None] = None,
+    internal_id: str | None = None,
+    rule: Rule | T_RuleChecker | None = None,
+    permission: Permission | T_PermissionChecker | None = None,
     *,
-    name_localizations: Optional[dict[str, str]] = None,
-    description_localizations: Optional[dict[str, str]] = None,
-    default_member_permissions: Optional[str] = None,
-    dm_permission: Optional[bool] = None,
-    default_permission: Optional[bool] = None,
-    nsfw: Optional[bool] = None,
-    handlers: Optional[list[Union[T_Handler, Dependent]]] = None,
+    name_localizations: dict[str, str] | None = None,
+    description_localizations: dict[str, str] | None = None,
+    default_member_permissions: str | None = None,
+    dm_permission: bool | None = None,
+    default_permission: bool | None = None,
+    nsfw: bool | None = None,
+    handlers: list[T_Handler | Dependent] | None = None,
     temp: bool = False,
-    expire_time: Union[datetime, timedelta, None] = None,
+    expire_time: datetime | timedelta | None = None,
     priority: int = 1,
     block: bool = True,
-    state: Optional[T_State] = None,
+    state: T_State | None = None,
     _depth: int = 0,
 ) -> type[SlashCommandMatcher]:
     if alc.prefixes != ["/"] or (not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")):
@@ -274,14 +273,14 @@ class DiscordSlashExtension(Extension):
 
     def __init__(
         self,
-        internal_id: Optional[str] = None,
-        name_localizations: Optional[dict[str, str]] = None,
-        description: Optional[str] = None,
-        description_localizations: Optional[dict[str, str]] = None,
-        default_member_permissions: Optional[str] = None,
-        dm_permission: Optional[bool] = None,
-        default_permission: Optional[bool] = None,
-        nsfw: Optional[bool] = None,
+        internal_id: str | None = None,
+        name_localizations: dict[str, str] | None = None,
+        description: str | None = None,
+        description_localizations: dict[str, str] | None = None,
+        default_member_permissions: str | None = None,
+        dm_permission: bool | None = None,
+        default_permission: bool | None = None,
+        nsfw: bool | None = None,
     ):
         self.internal_id = internal_id
         self.name_localizations = name_localizations
@@ -435,7 +434,7 @@ class DiscordSlashExtension(Extension):
         self,
         message: _M,
         fallback: bool = False,
-        flags: Optional[MessageFlag] = None,
+        flags: MessageFlag | None = None,
     ) -> MessageGet:
         matcher: AlconnaMatcher = current_matcher.get()  # type: ignore
         event = current_event.get()

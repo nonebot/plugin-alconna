@@ -1,8 +1,8 @@
-from collections.abc import Mapping, Sequence
 import functools
 import re
+from collections.abc import Mapping, Sequence
 from string import Formatter
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, TypeVar, Union, cast
 from typing_extensions import TypeAlias
 
 import _string  # type: ignore
@@ -81,7 +81,7 @@ class UniMessageTemplate(Formatter):
     def __repr__(self) -> str:
         return f"UniMessageTemplate({self.template!r})"
 
-    def add_format_spec(self, spec: FormatSpecFunc_T, name: Optional[str] = None) -> FormatSpecFunc_T:
+    def add_format_spec(self, spec: FormatSpecFunc_T, name: str | None = None) -> FormatSpecFunc_T:
         name = name or spec.__name__
         if name in self.format_specs:
             raise ValueError(f"Format spec {name} already exists!")
@@ -140,7 +140,7 @@ class UniMessageTemplate(Formatter):
         format_string: str,
         args: Sequence[Any],
         kwargs: Mapping[str, Any],
-        used_args: set[Union[int, str]],
+        used_args: set[int | str],
         auto_arg_index: int = 0,
     ) -> tuple["UniMessage", int]:
         results: list = [self.factory()]
@@ -199,16 +199,12 @@ class UniMessageTemplate(Formatter):
                     continue
                 if field_name == "":
                     if auto_arg_index is False:
-                        raise ValueError(
-                            "cannot switch from manual field specification to " "automatic field numbering"
-                        )
+                        raise ValueError("cannot switch from manual field specification to automatic field numbering")
                     field_name = str(auto_arg_index)
                     auto_arg_index += 1
                 elif field_name.isdigit():
                     if auto_arg_index:
-                        raise ValueError(
-                            "cannot switch from manual field specification to " "automatic field numbering"
-                        )
+                        raise ValueError("cannot switch from manual field specification to automatic field numbering")
                     # disable auto arg incrementing, if it gets
                     # used later on, then an exception will be raised
                     auto_arg_index = False
@@ -228,7 +224,7 @@ class UniMessageTemplate(Formatter):
         return functools.reduce(self._add, results), auto_arg_index
 
     def format_field(self, value: Any, format_spec: str) -> Any:
-        formatter: Optional[FormatSpecFunc] = self.format_specs.get(format_spec)
+        formatter: FormatSpecFunc | None = self.format_specs.get(format_spec)
         if formatter is None and format_spec in _MAPPING:
             formatter = _MAPPING[format_spec]  # type: ignore
         return super().format_field(value, format_spec) if formatter is None else formatter(value)

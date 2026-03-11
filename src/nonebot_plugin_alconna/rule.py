@@ -1,11 +1,11 @@
 import asyncio
-from contextlib import AsyncExitStack
-from typing import Any, ClassVar, Literal, Optional, Union
 import weakref
+from contextlib import AsyncExitStack
+from typing import Any, ClassVar, Literal
 
+import nonebot
 from arclet.alconna import Alconna, Arparma, CompSession, command_manager, output_manager
 from arclet.alconna.exceptions import SpecialOptionTriggered
-import nonebot
 from nonebot import get_driver, get_plugin_config, require
 from nonebot.adapters import Bot, Event
 from nonebot.internal.params import DependencyCache
@@ -82,15 +82,15 @@ class AlconnaRule:
         self,
         command: Alconna,
         skip_for_unmatch: bool = True,
-        auto_send_output: Optional[bool] = None,
-        comp_config: Optional[Union[CompConfig, bool]] = None,
-        use_origin: Optional[bool] = None,
-        use_cmd_start: Optional[bool] = None,
-        use_cmd_sep: Optional[bool] = None,
-        response_self: Optional[bool] = None,
-        _aliases: Optional[Union[set[str], tuple[str, ...]]] = None,
-        before_rule: Optional[Union[Rule, T_RuleChecker]] = None,
-        after_rule: Optional[Union[Rule, T_RuleChecker]] = None,
+        auto_send_output: bool | None = None,
+        comp_config: CompConfig | bool | None = None,
+        use_origin: bool | None = None,
+        use_cmd_start: bool | None = None,
+        use_cmd_sep: bool | None = None,
+        response_self: bool | None = None,
+        _aliases: set[str] | tuple[str, ...] | None = None,
+        before_rule: Rule | T_RuleChecker | None = None,
+        after_rule: Rule | T_RuleChecker | None = None,
     ):
         if isinstance(comp_config, bool):
             self.comp_config = {} if comp_config else None
@@ -229,7 +229,7 @@ class AlconnaRule:
 
     async def handle(
         self, selected: SelectedExtensions, cmd: Alconna, bot: Bot, event: Event, state: T_State, msg: UniMessage
-    ) -> Union[Arparma, Literal[False]]:
+    ) -> Arparma | Literal[False]:
         ctx = await selected.context_provider(event, bot, state)
         try:
             session_id = event.get_session_id()
@@ -264,7 +264,6 @@ class AlconnaRule:
         )(self._waiter)
 
         while interface.available:
-
             await self.send(f"{interface!s}{self._comp_help}", bot, event, res)
             async for resp in w(timeout=self.comp_config.get("timeout", 60)):
                 if resp is None:
@@ -295,8 +294,8 @@ class AlconnaRule:
         bot: Bot,
         event: Event,
         state: T_State,
-        stack: Optional[AsyncExitStack] = None,
-        dependency_cache: Optional[dict[_DependentCallable[Any], DependencyCache]] = None,
+        stack: AsyncExitStack | None = None,
+        dependency_cache: dict[_DependentCallable[Any], DependencyCache] | None = None,
     ) -> bool:
         if self.before_rules.checkers and not await self.before_rules(bot, event, state, stack, dependency_cache):
             return False
@@ -335,7 +334,7 @@ class AlconnaRule:
                     return False
             except Exception as e:
                 arp = Arparma(cmd._hash, msg, False, error_info=e)
-            may_help_text: Optional[str] = cap.get("output", None)
+            may_help_text: str | None = cap.get("output", None)
         if not arp.head_matched:
             return False
         if not arp.matched and not may_help_text and self.skip:

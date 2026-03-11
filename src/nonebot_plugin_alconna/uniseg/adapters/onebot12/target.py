@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v12.bot import Bot as Onebot12Bot
@@ -12,7 +12,7 @@ class Onebot12TargetFetcher(TargetFetcher):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.onebot12
 
-    async def fetch(self, bot: Bot, target: Union[Target, None] = None):
+    async def fetch(self, bot: Bot, target: Target | None = None):
         if TYPE_CHECKING:
             assert isinstance(bot, Onebot12Bot)
         if not target or (not target.private and not target.channel):

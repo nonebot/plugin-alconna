@@ -1,6 +1,5 @@
 from io import BytesIO
 from pathlib import Path
-from typing import Union
 
 from nonebot import require
 
@@ -13,7 +12,7 @@ except ImportError:
     raise ImportError("You need to install nonebot_plugin_filehost to use this module.") from None
 
 
-async def to_url(data: Union[str, Path, bytes, BytesIO], bot: ..., name: Union[str, None] = None) -> str:
+async def to_url(data: str | Path | bytes | BytesIO, bot: ..., name: str | None = None) -> str:
     if isinstance(data, str):
         data = Path(data)
     return await FileHost(data, filename=name).to_url()

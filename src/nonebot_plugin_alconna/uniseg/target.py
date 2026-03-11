@@ -35,9 +35,9 @@ class Target:
     """是否为私聊"""
     source: str
     """可能的事件id"""
-    self_id: Union[str, None]
+    self_id: str | None
     """机器人id，若为 None 则 Bot 对象会随机选择"""
-    selector: Union[Callable[[Bot], Awaitable[bool]], None]
+    selector: Callable[[Bot], Awaitable[bool]] | None
     """选择器，用于在多个 Bot 对象中选择特定 Bot"""
     extra: dict[str, Any]
     """额外信息，用于适配器扩展"""
@@ -49,12 +49,12 @@ class Target:
         channel: bool = False,
         private: bool = False,
         source: str = "",
-        self_id: Union[str, None] = None,
-        selector: Union[Callable[["Target", Bot], Awaitable[bool]], None] = _cache_selector,
-        scope: Union[str, None] = None,
-        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, set[str], None] = None,
-        extra: Union[dict[str, Any], None] = None,
+        self_id: str | None = None,
+        selector: Callable[["Target", Bot], Awaitable[bool]] | None = _cache_selector,
+        scope: str | None = None,
+        adapter: str | type[Adapter] | SupportAdapter | None = None,
+        platform: str | set[str] | None = None,
+        extra: dict[str, Any] | None = None,
     ):
         """初始化 Target 对象
 
@@ -153,24 +153,24 @@ class Target:
         return isinstance(other, Target) and self.verify(other)
 
     @property
-    def scope(self) -> Union[str, None]:
+    def scope(self) -> str | None:
         return self.extra.get("scope")
 
     @property
-    def adapter(self) -> Union[str, None]:
+    def adapter(self) -> str | None:
         return self.extra.get("adapter")
 
     @property
-    def platform(self) -> Union[list[str], None]:
+    def platform(self) -> list[str] | None:
         return self.extra.get("platforms")
 
     @classmethod
     def group(
         cls,
         group_id: str,
-        scope: Union[str, None] = None,
-        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, set[str], None] = None,
+        scope: str | None = None,
+        adapter: str | type[Adapter] | SupportAdapter | None = None,
+        platform: str | set[str] | None = None,
     ):
         return cls(group_id, scope=scope, adapter=adapter, platform=platform)
 
@@ -179,9 +179,9 @@ class Target:
         cls,
         channel_id: str,
         guild_id: str = "",
-        scope: Union[str, None] = None,
-        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, set[str], None] = None,
+        scope: str | None = None,
+        adapter: str | type[Adapter] | SupportAdapter | None = None,
+        platform: str | set[str] | None = None,
     ):
         return cls(channel_id, guild_id, channel=True, scope=scope, adapter=adapter, platform=platform)
 
@@ -189,9 +189,9 @@ class Target:
     def user(
         cls,
         user_id: str,
-        scope: Union[str, None] = None,
-        adapter: Union[str, type[Adapter], SupportAdapter, None] = None,
-        platform: Union[str, set[str], None] = None,
+        scope: str | None = None,
+        adapter: str | type[Adapter] | SupportAdapter | None = None,
+        platform: str | set[str] | None = None,
     ):
         return cls(user_id, private=True, scope=scope, adapter=adapter, platform=platform)
 
@@ -208,10 +208,10 @@ class Target:
     async def send(
         self,
         message: Union[str, Message, "UniMessage"],
-        bot: Union[Bot, None] = None,
+        bot: Bot | None = None,
         fallback: bool = True,
-        at_sender: Union[str, bool] = False,
-        reply_to: Union[str, bool, Reply, None] = False,
+        at_sender: str | bool = False,
+        reply_to: str | bool | Reply | None = False,
         **kwargs,
     ):
         """发送消息"""
@@ -273,9 +273,9 @@ class TargetFetcher(metaclass=ABCMeta):
     def get_adapter(cls) -> SupportAdapter: ...
 
     @abstractmethod
-    def fetch(self, bot: Bot, target: Union[Target, None] = None) -> AsyncIterator[Target]: ...
+    def fetch(self, bot: Bot, target: Target | None = None) -> AsyncIterator[Target]: ...
 
-    async def refresh(self, bot: Bot, target: Union[Target, None] = None):
+    async def refresh(self, bot: Bot, target: Target | None = None):
         if bot.self_id in self.cache:
             del self.cache[bot.self_id]
         self.last_refresh[bot.self_id] = datetime.now(tz=timezone.utc)

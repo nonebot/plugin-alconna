@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any
 
 from nonebot.adapters import Message, MessageSegment, MessageTemplate
 from nonebot.internal.matcher import current_bot, current_event, current_matcher
@@ -10,7 +10,7 @@ from nonebot_plugin_alconna.uniseg.message import UniMessage
 
 async def send(
     cls,
-    message: Union[str, Message, MessageSegment, MessageTemplate],
+    message: str | Message | MessageSegment | MessageTemplate,
     **kwargs: Any,
 ):
     """发送一条消息给当前交互用户

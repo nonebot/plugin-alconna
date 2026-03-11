@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Sequence, Union
+from typing import TYPE_CHECKING, Any, Sequence
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.console import Bot as ConsoleBot
@@ -19,7 +19,7 @@ class ConsoleMessageExporter(MessageExporter[Message]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.console
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         assert isinstance(event, MessageEvent)
         if event.channel.id == DIRECT.id or event.channel.id.startswith("private:"):
             # If the event is a direct message, we can use the user ID as the target ID
@@ -42,7 +42,7 @@ class ConsoleMessageExporter(MessageExporter[Message]):
         return event.message_id
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         styles = seg.extract_most_styles()
         if not styles or styles[0] not in ["markup", "markdown"]:
             return MessageSegment.text(seg.text)
@@ -55,10 +55,10 @@ class ConsoleMessageExporter(MessageExporter[Message]):
         return MessageSegment.text(seg.text)
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.emoji(seg.name or seg.id)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, ConsoleBot)
         if TYPE_CHECKING:
             assert isinstance(message, Message)
@@ -68,7 +68,7 @@ class ConsoleMessageExporter(MessageExporter[Message]):
             return await bot.send_private_message(user_id=target.id, message=message)
         return await bot.send_message(channel_id=target.id, message=message)
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, ConsoleBot)
         if isinstance(mid, str):
             if isinstance(context, Event):
@@ -83,7 +83,7 @@ class ConsoleMessageExporter(MessageExporter[Message]):
         elif isinstance(mid, MessageResponse):
             await bot.recall_message(mid.message_id, channel_id=mid.channel_id)
 
-    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, ConsoleBot)
         new_msg = await self.export(new, bot, True)
         if isinstance(mid, str):

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot
 from nonebot.adapters.kaiheila.bot import Bot as KookBot
@@ -12,7 +12,7 @@ class KookTargetFetcher(TargetFetcher):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.kook
 
-    async def fetch(self, bot: Bot, target: Union[Target, None] = None):
+    async def fetch(self, bot: Bot, target: Target | None = None):
         if TYPE_CHECKING:
             assert isinstance(bot, KookBot)
         if target and not target.channel:

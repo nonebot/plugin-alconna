@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable
-from typing import Any, Callable, Generic, Literal, TypeVar, Union
+from typing import Any, Callable, Generic, Literal, TypeVar
 from typing_extensions import ParamSpec, TypeAlias
 
 from arclet.alconna import Arparma
@@ -25,7 +25,7 @@ P = ParamSpec("P")
 env[Text] = text
 
 ImageOrUrl = (
-    UnionPattern[Union[str, Image]](
+    UnionPattern[str | Image](
         [
             BasePattern(
                 mode=MatchMode.TYPE_CONVERT,
@@ -52,7 +52,7 @@ _AtText = BasePattern(
     converter=lambda _, x: x[1],
 )
 
-AtID = UnionPattern[Union[str, At]]([_AtID, _AtText]) @ "notice_id"  # type: ignore
+AtID = UnionPattern[str | At]([_AtID, _AtText]) @ "notice_id"  # type: ignore
 """
 内置类型，允许传入@元素(At)或者'@xxxx'式样的字符串, 返回字符串形式的 id
 """
@@ -77,8 +77,8 @@ class SegmentPattern(BasePattern[TMS, TS, Literal[MatchMode.TYPE_CONVERT]], Gene
         self.target = accept
         self.pattern = name
         self.call = call
-        self.validator: Callable[[TS], bool] = (
-            lambda s: isinstance(s.origin, origin) and s.origin.type == name and (additional or (lambda _: True))(s)
+        self.validator: Callable[[TS], bool] = lambda s: (
+            isinstance(s.origin, origin) and s.origin.type == name and (additional or (lambda _: True))(s)
         )
         self.handle = handle or (lambda s: s.origin)
 
@@ -93,7 +93,7 @@ class SegmentPattern(BasePattern[TMS, TS, Literal[MatchMode.TYPE_CONVERT]], Gene
         return self.call(*args, **kwargs)  # type: ignore
 
 
-class TextSegmentPattern(BasePattern[TMS, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]], Generic[TMS, P]):
+class TextSegmentPattern(BasePattern[TMS, str | Text, Literal[MatchMode.TYPE_CONVERT]], Generic[TMS, P]):
     def __init__(
         self,
         name: str,
@@ -119,7 +119,7 @@ class TextSegmentPattern(BasePattern[TMS, Union[str, Text], Literal[MatchMode.TY
         return self.pattern
 
 
-class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]]):
+class Style(BasePattern[Text, str | Text, Literal[MatchMode.VALUE_OPERATE]]):
     def __init__(
         self,
         expect: str,
@@ -129,7 +129,9 @@ class Style(BasePattern[Text, Union[str, Text], Literal[MatchMode.VALUE_OPERATE]
             mode=MatchMode.VALUE_OPERATE,
             origin=Text,
             previous=text,
-            converter=lambda _, x: x if x.styles and all(set(style).issuperset(_.expected) for style in x.styles.values()) else None,  # type: ignore  # noqa: E501
+            converter=lambda _, x: (
+                x if x.styles and all(set(style).issuperset(_.expected) for style in x.styles.values()) else None
+            ),  # type: ignore  # noqa: E501
             alias=expect.capitalize(),
         )
         self.pattern = expect
@@ -161,9 +163,13 @@ Strikethrough = Style("strikethrough")
 Spoiler = Style("spoiler")
 Code = Style("code")
 
-MReturn: TypeAlias = Union[
-    Union[str, Segment, UniMessage, Message, MessageSegment],
-    Awaitable[Union[str, Segment, UniMessage, Message, MessageSegment]],
-]
+MReturn: TypeAlias = (
+    str
+    | Segment
+    | UniMessage
+    | Message
+    | MessageSegment
+    | Awaitable[str | Segment | UniMessage | Message | MessageSegment]
+)
 MIDDLEWARE: TypeAlias = Callable[[Event, Bot, T_State, Any], Any]
 CHECK: TypeAlias = Callable[[Event, Bot, T_State, Arparma], Awaitable[bool]]

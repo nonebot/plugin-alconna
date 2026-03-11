@@ -13,12 +13,12 @@ from .constraint import SupportScope as SupportScope
 from .constraint import lang, log
 from .fallback import AUTO as AUTO
 from .fallback import FORBID as FORBID
-from .fallback import FallbackMessage as FallbackMessage
-from .fallback import FallbackSegment as FallbackSegment
-from .fallback import FallbackStrategy as FallbackStrategy
 from .fallback import IGNORE as IGNORE
 from .fallback import ROLLBACK as ROLLBACK
 from .fallback import TO_TEXT as TO_TEXT
+from .fallback import FallbackMessage as FallbackMessage
+from .fallback import FallbackSegment as FallbackSegment
+from .fallback import FallbackStrategy as FallbackStrategy
 from .functions import get_message_id as get_message_id
 from .functions import get_target as get_target
 from .functions import message_edit as message_edit
@@ -47,8 +47,8 @@ from .segment import Hyper as Hyper
 from .segment import Image as Image
 from .segment import Keyboard as Keyboard
 from .segment import Other as Other
-from .segment import RefNode as RefNode
 from .segment import Reference as Reference
+from .segment import RefNode as RefNode
 from .segment import Reply as Reply
 from .segment import Segment as Segment
 from .segment import Text as Text

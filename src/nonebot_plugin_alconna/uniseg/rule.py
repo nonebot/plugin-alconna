@@ -23,7 +23,6 @@ async def _get_message(event: Event, bot: Bot):
 
 
 class AtInRule:
-
     def __init__(self, *target: str):
         self.targets = set(target)
 
@@ -41,7 +40,6 @@ class AtInRule:
 
 
 class AtMeRule:
-
     def __init__(self, only_at: bool = False):
         self.only = only_at
 

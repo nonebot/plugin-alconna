@@ -1,5 +1,3 @@
-from typing import Union
-
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.github.event import CommitCommentCreated  # type: ignore
 from nonebot.adapters.github.event import IssueCommentCreated  # type: ignore
@@ -19,7 +17,7 @@ class GithubMessageExporter(MessageExporter["Message"]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.github
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         return Target(
             event.get_user_id(),
             adapter=self.get_adapter(),
@@ -32,15 +30,15 @@ class GithubMessageExporter(MessageExporter["Message"]):
         return str(event.id)  # type: ignore
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.markdown(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.markdown(f"@{seg.target}")
 
     @export
-    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Bot | None) -> "MessageSegment":
         if seg.url:
             return MessageSegment.markdown(f"![]({seg.url})")
         if seg.__class__.to_url and seg.path:
@@ -51,7 +49,7 @@ class GithubMessageExporter(MessageExporter["Message"]):
             return MessageSegment.markdown(f"![]({url})")
         raise ValueError("github image segment must have url")
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         if isinstance(target, Target):
             raise NotImplementedError
         return await bot.send(

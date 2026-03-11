@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 from nonebot.adapters import Bot, Event
 from nonebot_adapter_tailchat.bot import Bot as TailChatBot
@@ -19,7 +19,7 @@ class TailChatMessageExporter(MessageExporter["Message"]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.tail_chat
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if isinstance(event, (AtMessageEvent, DefaultMessageEvent)):
             if gid := event.get_group_id():
                 return Target(
@@ -45,7 +45,7 @@ class TailChatMessageExporter(MessageExporter["Message"]):
         return str(event.get_message_id())
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         if not seg.styles:
             return MessageSegment.text(seg.text)
         if seg.extract_most_style() == "link":
@@ -63,17 +63,17 @@ class TailChatMessageExporter(MessageExporter["Message"]):
         return MessageSegment.text(seg.text, **styles)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.type == "channel" and seg.display:
             return MessageSegment.url(url=f"/main/group/{seg.target}", text=seg.display)
         return MessageSegment.at(uid=seg.target, nickname=seg.display)
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.emoji(text=seg.id)
 
     @export
-    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Bot | None) -> "MessageSegment":
         if seg.url:
             return MessageSegment.img(seg.url, width=seg.width, height=seg.height)
         if seg.__class__.to_url and seg.path:
@@ -85,7 +85,7 @@ class TailChatMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed("tailchat image segment must have url")
 
     @export
-    async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
+    async def file(self, seg: File, bot: Bot | None) -> "MessageSegment":
         if seg.url:
             return MessageSegment.file(name=seg.name, url=seg.url)
         if seg.__class__.to_url and seg.path:
@@ -97,10 +97,10 @@ class TailChatMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed("tailchat file segment must have url")
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment("$tailchat:reply", {"extra": {"message_id": seg.id}})  # type: ignore
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, TailChatBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -119,7 +119,7 @@ class TailChatMessageExporter(MessageExporter["Message"]):
             **kwargs,
         )
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, TailChatBot)
         if isinstance(mid, str):
             message_id = mid

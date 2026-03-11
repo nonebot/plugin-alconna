@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Sequence, Union, cast
+from typing import Any, Sequence, cast
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.telegram.bot import Bot as TgBot
@@ -77,7 +77,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.telegram
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         assert isinstance(event, EventWithChat)
         return Target(
             str(event.chat.id),
@@ -93,7 +93,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         return f"{event.message_id}"
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]):
+    async def text(self, seg: Text, bot: Bot | None):
         if not seg.styles:
             return Entity.text(seg.text)
         style = seg.extract_most_style()
@@ -108,7 +108,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         return res
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         return (
             Entity.mention(f"{seg.target} ")
             if seg.target.startswith("@")
@@ -116,11 +116,11 @@ class TelegramMessageExporter(MessageExporter[Message]):
         )
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         return Entity.custom_emoji(seg.name, seg.id)  # type: ignore
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Image | Voice | Video | Audio | File, bot: Bot | None) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": TgFile.photo,
@@ -142,10 +142,10 @@ class TelegramMessageExporter(MessageExporter[Message]):
         return method((seg.name, raw) if seg.name else raw)
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return TgReply.reply(int(seg.id))
 
-    def _button(self, seg: Button, bot: Union[Bot, None]):
+    def _button(self, seg: Button, bot: Bot | None):
         label = str(seg.label)
         if seg.flag == "link":
             return InlineKeyboardButton(text=label, url=seg.url)
@@ -154,11 +154,11 @@ class TelegramMessageExporter(MessageExporter[Message]):
         return InlineKeyboardButton(text=label, switch_inline_query_current_chat=seg.text)
 
     @export
-    async def button(self, seg: Button, bot: Union[Bot, None]):
+    async def button(self, seg: Button, bot: Bot | None):
         return MessageSegment("$telegram:button", {"button": self._button(seg, bot)})
 
     @export
-    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+    async def keyboard(self, seg: Keyboard, bot: Bot | None):
         if not seg.children:
             return Entity.text("")
         buttons = [self._button(but, bot) for but in seg.children]
@@ -167,7 +167,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         rows = [buttons[i : i + (seg.row or 9)] for i in range(0, len(buttons), seg.row or 9)]
         return MessageSegment("$telegram:keyboard", {"buttons": rows})
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, TgBot)
         assert isinstance(message, TgMessage)
         reply_markup = None
@@ -195,7 +195,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
         kwargs.setdefault("message_thread_id", target.extra.get("message_thread_id", None))
         return await bot.send_to(target.id, message=message, reply_markup=reply_markup, **kwargs)
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, TgBot)
         if isinstance(mid, (str, int)) and isinstance(context, MessageEvent):
             await bot.delete_message(chat_id=context.chat.id, message_id=int(mid))
@@ -203,7 +203,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
             _mid: MessageModel = cast(MessageModel, mid)
             await bot.delete_message(chat_id=_mid.chat.id, message_id=_mid.message_id)
 
-    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, TgBot)
         new_msg = await self.export(new, bot, True)
         text = new_msg.extract_plain_text()
@@ -216,7 +216,7 @@ class TelegramMessageExporter(MessageExporter[Message]):
             return res
         return None
 
-    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Target | Event, delete: bool = False):
         assert isinstance(bot, TgBot)
         if delete:
             return  # FIXME:  how to delete reaction in telegram?

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.onebot.v12.bot import Bot as OnebotBot
@@ -20,9 +20,9 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.onebot12
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if TYPE_CHECKING:
-            bot = cast(Union[OnebotBot, None], bot)
+            bot = cast(OnebotBot | None, bot)
         if channel_id := getattr(event, "channel_id", None):
             guild_id = getattr(event, "guild_id", None)
             return Target(
@@ -67,21 +67,21 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
         return str(event.message_id)
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag != "user":
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
         return MessageSegment.mention(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.mention_all()
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Image | Voice | Video | Audio | File, bot: Bot | None) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -124,10 +124,10 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.reply(seg.id)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, OnebotBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -142,7 +142,7 @@ class Onebot12MessageExporter(MessageExporter["Message"]):
             )
         return await bot.send_message(detail_type="group", group_id=target.id, message=message, **kwargs)
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, OnebotBot)
 
         await bot.delete_message(message_id=mid["message_id"] if isinstance(mid, dict) else mid)

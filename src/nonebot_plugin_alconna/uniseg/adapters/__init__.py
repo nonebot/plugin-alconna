@@ -1,6 +1,6 @@
-from contextlib import suppress
 import importlib
 import os
+from contextlib import suppress
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 from warnings import warn

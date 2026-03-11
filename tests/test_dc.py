@@ -1,3 +1,4 @@
+import pytest
 from arclet.alconna import Alconna, Args, CommandMeta, Option, Subcommand
 from nonebot import get_adapter
 from nonebot.adapters.discord import Adapter, Bot
@@ -8,7 +9,6 @@ from nonebot.adapters.discord.api.model import (
 )
 from nonebot.adapters.discord.api.types import ApplicationCommandOptionType, ApplicationCommandType
 from nonebug import App
-import pytest
 
 from tests.fake import fake_discord_interaction_event
 

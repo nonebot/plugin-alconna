@@ -1,18 +1,18 @@
 """通用标注, 无法用于创建 MS对象"""
 
 import base64
-from collections.abc import Awaitable, Iterable
 import contextlib
+import hashlib
+import importlib
+import json
+import re
+from collections.abc import Awaitable, Iterable
 from dataclasses import InitVar, asdict, dataclass, field, fields
 from datetime import datetime
 from functools import lru_cache, reduce
-import hashlib
-import importlib
 from io import BytesIO
-import json
 from pathlib import Path
-import re
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal, Optional, Protocol, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal, Protocol, TypeVar, Union, overload
 from typing_extensions import Self
 from urllib.parse import urlparse
 
@@ -47,7 +47,7 @@ def get_segment_class(name: str) -> type["Segment"]:
 class Segment:
     """基类标注"""
 
-    origin: Optional[MessageSegment] = field(init=False, hash=False, repr=False, compare=False, default=None)
+    origin: MessageSegment | None = field(init=False, hash=False, repr=False, compare=False, default=None)
     _children: list["Segment"] = field(init=False, default_factory=list, repr=False, hash=False)
 
     def __str__(self):
@@ -64,29 +64,29 @@ class Segment:
         return format(self.__str__(), format_spec)
 
     @overload
-    def __add__(self: TS, item: str) -> "UniMessage[Union[TS, Text]]": ...
+    def __add__(self: TS, item: str) -> "UniMessage[TS | Text]": ...
 
     @overload
-    def __add__(self: TS, item: Union[TS, Iterable[TS]]) -> "UniMessage[TS]": ...
+    def __add__(self: TS, item: TS | Iterable[TS]) -> "UniMessage[TS]": ...
 
     @overload
-    def __add__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS, TS1]]": ...
+    def __add__(self: TS, item: TS1 | Iterable[TS1]) -> "UniMessage[TS | TS1]": ...
 
-    def __add__(self: TS, item: Union[str, Union[TS, TS1], Iterable[Union[TS, TS1]]]) -> "UniMessage":
+    def __add__(self: TS, item: str | TS | TS1 | Iterable[TS | TS1]) -> "UniMessage":
         from .message import UniMessage
 
         return UniMessage(self) + item
 
     @overload
-    def __radd__(self: TS, item: str) -> "UniMessage[Union[Text, TS]]": ...
+    def __radd__(self: TS, item: str) -> "UniMessage[Text | TS]": ...
 
     @overload
-    def __radd__(self: TS, item: Union[TS, Iterable[TS]]) -> "UniMessage[TS]": ...
+    def __radd__(self: TS, item: TS | Iterable[TS]) -> "UniMessage[TS]": ...
 
     @overload
-    def __radd__(self: TS, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS1, TS]]": ...
+    def __radd__(self: TS, item: TS1 | Iterable[TS1]) -> "UniMessage[TS1 | TS]": ...
 
-    def __radd__(self: TS, item: Union[str, Union[TS, TS1], Iterable[Union[TS, TS1]]]) -> "UniMessage":
+    def __radd__(self: TS, item: str | TS | TS1 | Iterable[TS | TS1]) -> "UniMessage":
         from .message import UniMessage
 
         return UniMessage(item) + self
@@ -128,7 +128,7 @@ class Segment:
             return value
         raise ValueError(f"Type {type(value)} can not be converted to {cls}")
 
-    def dump(self, *, media_save_dir: Optional[Union[str, Path, bool]] = None) -> dict:
+    def dump(self, *, media_save_dir: str | Path | bool | None = None) -> dict:
         """将对象转为 dict 数据
         注意：
             若 media_save_dir 为 False，则不会保存媒体文件。
@@ -287,7 +287,7 @@ class Text(Segment):
         self._children = [Text(text)]
         return self
 
-    def mark(self, start: Optional[int] = None, end: Optional[int] = None, *styles: str):
+    def mark(self, start: int | None = None, end: int | None = None, *styles: str):
         if start is None:
             start = 0
         elif start < 0:
@@ -305,31 +305,31 @@ class Text(Segment):
         self.__merge__()
         return self
 
-    def bold(self, start: Optional[int] = None, end: Optional[int] = None):
+    def bold(self, start: int | None = None, end: int | None = None):
         return self.mark(start, end, "bold")
 
-    def italic(self, start: Optional[int] = None, end: Optional[int] = None):
+    def italic(self, start: int | None = None, end: int | None = None):
         return self.mark(start, end, "italic")
 
-    def underline(self, start: Optional[int] = None, end: Optional[int] = None):
+    def underline(self, start: int | None = None, end: int | None = None):
         return self.mark(start, end, "underline")
 
-    def strikethrough(self, start: Optional[int] = None, end: Optional[int] = None):
+    def strikethrough(self, start: int | None = None, end: int | None = None):
         return self.mark(start, end, "strikethrough")
 
-    def spoiler(self, start: Optional[int] = None, end: Optional[int] = None):
+    def spoiler(self, start: int | None = None, end: int | None = None):
         return self.mark(start, end, "spoiler")
 
-    def link(self, start: Optional[int] = None, end: Optional[int] = None):
+    def link(self, start: int | None = None, end: int | None = None):
         return self.mark(start, end, "link")
 
-    def code(self, start: Optional[int] = None, end: Optional[int] = None):
+    def code(self, start: int | None = None, end: int | None = None):
         return self.mark(start, end, "code")
 
-    def markdown(self, start: Optional[int] = None, end: Optional[int] = None):
+    def markdown(self, start: int | None = None, end: int | None = None):
         return self.mark(start, end, "markdown")
 
-    def color(self, color: str, start: Optional[int] = None, end: Optional[int] = None):
+    def color(self, color: str, start: int | None = None, end: int | None = None):
         if color not in STYLE_TYPE_MAP:
             raise ValueError(f"Color {color} is not supported")
         return self.mark(start, end, color)
@@ -428,9 +428,9 @@ class Text(Segment):
     @overload
     def __add__(self, item: Union[str, "Text"]) -> "Text": ...
     @overload
-    def __add__(self, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[Text, TS1]]": ...
+    def __add__(self, item: TS1 | Iterable[TS1]) -> "UniMessage[Text | TS1]": ...
 
-    def __add__(self, item: Union[str, Union["Text", TS1], Iterable[TS1]]):
+    def __add__(self, item: str | Union["Text", TS1] | Iterable[TS1]):
         from .message import UniMessage
 
         if isinstance(item, str):
@@ -446,9 +446,9 @@ class Text(Segment):
     def __radd__(self, item: Union[str, "Text"]) -> "Text": ...
 
     @overload
-    def __radd__(self, item: Union[TS1, Iterable[TS1]]) -> "UniMessage[Union[TS1, Text]]": ...
+    def __radd__(self, item: TS1 | Iterable[TS1]) -> "UniMessage[TS1 | Text]": ...
 
-    def __radd__(self, item: Union[str, Union["Text", TS1], Iterable[TS1]]):
+    def __radd__(self, item: str | Union["Text", TS1] | Iterable[TS1]):
         from .message import UniMessage
 
         if isinstance(item, str):
@@ -466,7 +466,7 @@ class Text(Segment):
     @overload
     def __getitem__(self, item: slice) -> "Text": ...
 
-    def __getitem__(self, item: Union[int, slice]):
+    def __getitem__(self, item: int | slice):
         if isinstance(item, int):
             return self.text[item]
         start = item.start or 0
@@ -486,7 +486,7 @@ class Text(Segment):
         res.__merge__()
         return res
 
-    def split(self, pattern: Optional[str] = None):
+    def split(self, pattern: str | None = None):
         parts = self.text.split(pattern)
         if len(parts) == 1:
             return [Text(self.text, self.styles)]
@@ -546,14 +546,14 @@ class Text(Segment):
             texts.append(self[index:])
         return reduce(lambda x, y: x + y, texts)
 
-    def lstrip(self, chars: Optional[str] = None) -> "Text":
+    def lstrip(self, chars: str | None = None) -> "Text":
         text = self.text
         changed = self.text.lstrip(chars)
         if changed == text:
             return self
         return self[len(text) - len(changed) :]
 
-    def rstrip(self, chars: Optional[str] = None) -> "Text":
+    def rstrip(self, chars: str | None = None) -> "Text":
         text = self.text
         changed = self.text.rstrip(chars)
         if changed == text:
@@ -584,7 +584,7 @@ class At(Segment):
 
     flag: Literal["user", "role", "channel"]
     target: str
-    display: Optional[str] = field(default=None)
+    display: str | None = field(default=None)
 
 
 @dataclass
@@ -599,27 +599,27 @@ class Emoji(Segment):
     """Emoji对象, 表示一类表情元素"""
 
     id: str
-    name: Optional[str] = field(default=None)
-    url: Optional[str] = field(default=None)
+    name: str | None = field(default=None)
+    url: str | None = field(default=None)
 
 
 class MediaToUrl(Protocol):
     def __call__(
-        self, data: Union[str, Path, bytes, BytesIO], bot: Optional[Bot], name: Optional[str] = None
+        self, data: str | Path | bytes | BytesIO, bot: Bot | None, name: str | None = None
     ) -> Awaitable[str]: ...
 
 
 @dataclass
 class Media(Segment):
-    id: Optional[str] = field(default=None)
-    url: Optional[str] = field(default=None)
-    path: Optional[Union[str, Path]] = field(default=None)
-    raw: Optional[Union[bytes, BytesIO]] = field(default=None)
-    mimetype: Optional[str] = field(default=None)
+    id: str | None = field(default=None)
+    url: str | None = field(default=None)
+    path: str | Path | None = field(default=None)
+    raw: bytes | BytesIO | None = field(default=None)
+    mimetype: str | None = field(default=None)
     name: str = field(default="media")
 
     __default_name__ = "media"
-    to_url: ClassVar[Optional[MediaToUrl]] = None
+    to_url: ClassVar[MediaToUrl | None] = None
 
     def __is_default_name(self) -> bool:
         return self.name == self.__default_name__
@@ -652,7 +652,7 @@ class Media(Segment):
             data["raw"] = base64.b64decode(data["raw"])
         return cls(**{k: v for k, v in data.items() if k not in ("type", "children")})(*children)  # type: ignore
 
-    def save(self, media_save_dir: Optional[Union[str, Path]] = None) -> Path:
+    def save(self, media_save_dir: str | Path | None = None) -> Path:
         if not self.raw:
             raise ValueError
         if isinstance(media_save_dir, (str, Path)):
@@ -682,8 +682,8 @@ class Media(Segment):
 class Image(Media):
     """Image对象, 表示一类图片元素"""
 
-    width: Optional[int] = field(default=None)
-    height: Optional[int] = field(default=None)
+    width: int | None = field(default=None)
+    height: int | None = field(default=None)
     sticker: bool = field(default=False)
     name: str = field(default="image.png")
 
@@ -694,7 +694,7 @@ class Image(Media):
 class Audio(Media):
     """Audio对象, 表示一类音频元素"""
 
-    duration: Optional[float] = field(default=None)
+    duration: float | None = field(default=None)
     name: str = field(default="audio.mp3")
 
     __default_name__ = "audio.mp3"
@@ -704,7 +704,7 @@ class Audio(Media):
 class Voice(Media):
     """Voice对象, 表示一类语音元素"""
 
-    duration: Optional[float] = field(default=None)
+    duration: float | None = field(default=None)
     name: str = field(default="voice.wav")
 
     __default_name__ = "voice.wav"
@@ -714,8 +714,8 @@ class Voice(Media):
 class Video(Media):
     """Video对象, 表示一类视频元素"""
 
-    thumbnail: Optional[Image] = field(default=None)
-    duration: Optional[float] = field(default=None)
+    thumbnail: Image | None = field(default=None)
+    duration: float | None = field(default=None)
     name: str = field(default="video.mp4")
 
     __default_name__ = "video.mp4"
@@ -736,14 +736,14 @@ class Reply(Segment):
 
     id: str
     """此处不一定是消息ID，可能是其他ID，如消息序号等"""
-    msg: Optional[Union[Message, str]]
-    origin: Optional[Any]
+    msg: Message | str | None
+    origin: Any | None
 
     def __init__(
         self,
         id: str,
-        msg: Optional[Union[Message, str]] = None,
-        origin: Optional[Any] = None,
+        msg: Message | str | None = None,
+        origin: Any | None = None,
     ):
         self.id = id
         self.msg = msg
@@ -754,7 +754,7 @@ class Reply(Segment):
     def _children(self):
         return self._children1
 
-    def dump(self, *, media_save_dir: Optional[Union[str, Path, bool]] = None) -> dict:
+    def dump(self, *, media_save_dir: str | Path | bool | None = None) -> dict:
         data = super().dump(media_save_dir=media_save_dir)
         data["id"] = self.id
         data.pop("msg", None)
@@ -767,7 +767,7 @@ class RefNode:
 
     id: str
     """消息id"""
-    context: Optional[str] = None
+    context: str | None = None
     """可能的群聊id"""
 
     def dump(self, **kwargs):
@@ -790,10 +790,10 @@ class CustomNode:
     """消息内容"""
     time: datetime = field(default_factory=datetime.now)
     """消息发送时间"""
-    context: Optional[str] = None
+    context: str | None = None
     """可能的群聊id"""
 
-    def dump(self, *, media_save_dir: Optional[Union[str, Path, bool]] = None):
+    def dump(self, *, media_save_dir: str | Path | bool | None = None):
         return {
             "type": "custom",
             "uid": self.uid,
@@ -814,7 +814,11 @@ class CustomNode:
         else:
             content = [get_segment_class(seg["type"]).load(seg) for seg in data["content"]]
         return cls(
-            data["uid"], data["name"], content, datetime.fromtimestamp(data["time"]), data["context"]  # noqa: DTZ006
+            data["uid"],
+            data["name"],
+            content,
+            datetime.fromtimestamp(data["time"]),  # noqa: DTZ006
+            data["context"],
         )
 
 
@@ -822,12 +826,12 @@ class CustomNode:
 class Reference(Segment):
     """Reference对象，表示一类引用消息。转发消息 (Forward) 也属于此类"""
 
-    id: Optional[str] = field(default=None)
+    id: str | None = field(default=None)
     """此处不一定是消息ID，可能是其他ID，如消息序号等"""
-    nodes: InitVar[Union[list[RefNode], list[CustomNode], list[Union[RefNode, CustomNode]], None]] = field(default=None)
-    _children: list[Union[RefNode, CustomNode]] = field(init=False, default_factory=list)
+    nodes: InitVar[list[RefNode] | list[CustomNode] | list[RefNode | CustomNode] | None] = field(default=None)
+    _children: list[RefNode | CustomNode] = field(init=False, default_factory=list)
 
-    def __post_init__(self, nodes: Union[list[RefNode], list[CustomNode], list[Union[RefNode, CustomNode]], None]):
+    def __post_init__(self, nodes: list[RefNode] | list[CustomNode] | list[RefNode | CustomNode] | None):
         if nodes:
             self._children.extend(nodes)
 
@@ -835,13 +839,13 @@ class Reference(Segment):
     def children(self):
         return self._children
 
-    def __call__(self, *segments: Union[Segment, RefNode, CustomNode]) -> Self:
+    def __call__(self, *segments: Segment | RefNode | CustomNode) -> Self:
         if not segments:
             return self
         self._children.extend(segments)  # type: ignore
         return self
 
-    def dump(self, *, media_save_dir: Optional[Union[str, Path, bool]] = None) -> dict:
+    def dump(self, *, media_save_dir: str | Path | bool | None = None) -> dict:
         return {
             "type": self.type,
             "id": self.id,
@@ -859,8 +863,8 @@ class Hyper(Segment):
     """Hyper对象，表示一类超级消息。如卡片消息、ark消息、小程序等"""
 
     format: Literal["xml", "json"]
-    raw: Optional[str] = field(default=None)
-    content: Optional[Union[dict, list]] = field(default=None)
+    raw: str | None = field(default=None)
+    content: dict | list | None = field(default=None)
 
     def __post_init__(self):
         if self.raw and not self.content and self.format == "json":
@@ -897,14 +901,14 @@ class Button(Segment):
     - 点击 input 类型的按钮时会在用户的输入框中填充 `text`
     - 点击 enter 类型的按钮时会直接发送 `text`
     """
-    label: Union[str, Text]
+    label: str | Text
     """按钮上的文字"""
-    clicked_label: Optional[str] = None
+    clicked_label: str | None = None
     """点击后按钮上的文字"""
-    id: Optional[str] = None
-    url: Optional[str] = None
-    text: Optional[str] = None
-    style: Optional[str] = None
+    id: str | None = None
+    url: str | None = None
+    text: str | None = None
+    style: str | None = None
     """
     仅建议使用下列值：
     - primary
@@ -919,7 +923,7 @@ class Button(Segment):
 
     此处规定 `grey` 与 `secondary` 等同, `blue` 与 `primary` 等同
     """
-    permission: Union[Literal["admin", "all"], list[At]] = "all"
+    permission: Literal["admin", "all"] | list[At] = "all"
     """按钮权限类型
     - admin: 仅管理者可操作
     - all: 所有人可操作
@@ -943,14 +947,14 @@ class Button(Segment):
 class Keyboard(Segment):
     """Keyboard对象，表示一行按钮元素"""
 
-    buttons: InitVar[Union[list[Button], None]] = field(default=None)
-    id: Optional[str] = field(default=None)
+    buttons: InitVar[list[Button] | None] = field(default=None)
+    id: str | None = field(default=None)
     """此处一般用来表示模板id，特殊情况下可能表示例如 bot_appid 等"""
-    row: Union[int, None] = None
+    row: int | None = None
     """当消息中只写有一个 Keyboard 时可根据此参数约定按钮组的列数"""
     _children: list[Button] = field(init=False, default_factory=list)
 
-    def __post_init__(self, buttons: Union[list[Button], None]):
+    def __post_init__(self, buttons: list[Button] | None):
         if buttons:
             self._children.extend(buttons)
 
@@ -958,7 +962,7 @@ class Keyboard(Segment):
     def children(self):
         return self._children
 
-    def __call__(self, *segments: Union[Segment, Button]) -> Self:
+    def __call__(self, *segments: Segment | Button) -> Self:
         if not segments:
             return self
         self._children.extend(segments)  # type: ignore
@@ -994,17 +998,17 @@ class I18n(Segment):
     """特殊的 Segment，用于 i18n 消息"""
 
     @overload
-    def __init__(self, item: LangItem, /, *args, mapping: Optional[dict] = None, **kwargs): ...
+    def __init__(self, item: LangItem, /, *args, mapping: dict | None = None, **kwargs): ...
     @overload
-    def __init__(self, scope: str, type_: str, /, *args, mapping: Optional[dict] = None, **kwargs): ...
+    def __init__(self, scope: str, type_: str, /, *args, mapping: dict | None = None, **kwargs): ...
 
     def __init__(
         self,
-        item_or_scope: Union[LangItem, str],
-        type_: Optional[str] = None,
+        item_or_scope: LangItem | str,
+        type_: str | None = None,
         /,
         *args,
-        mapping: Optional[dict] = None,
+        mapping: dict | None = None,
         **kwargs,
     ):
         self._children = []
@@ -1042,29 +1046,25 @@ TMS = TypeVar("TMS", bound=MessageSegment)
 class _CustomMounter:
     BUILDERS: ClassVar[
         dict[
-            Union[str, Callable[[MessageSegment], bool]],
-            Callable[["MessageBuilder", MessageSegment], Union[Segment, None]],
+            str | Callable[[MessageSegment], bool],
+            Callable[["MessageBuilder", MessageSegment], Segment | None],
         ]
     ] = {}
     EXPORTERS: ClassVar[
         dict[
             type[Segment],
-            Union[
-                Callable[
-                    ["MessageExporter", Segment, Union[Bot, None], Union[bool, FallbackStrategy]],
-                    Awaitable[Optional[MessageSegment]],
-                ],
-                Callable[
-                    ["MessageExporter", Segment, Union[Bot, None], Union[bool, FallbackStrategy]],
-                    Awaitable[list[MessageSegment]],
-                ],
+            Callable[
+                ["MessageExporter", Segment, Bot | None, bool | FallbackStrategy], Awaitable[MessageSegment | None]
+            ]
+            | Callable[
+                ["MessageExporter", Segment, Bot | None, bool | FallbackStrategy], Awaitable[list[MessageSegment]]
             ],
         ]
     ] = {}
 
     @classmethod
-    def custom_register(cls, custom_type: type[TS], condition: Union[str, Callable[[MessageSegment], bool]]):
-        def _register(func: Callable[["MessageBuilder", MessageSegment], Union[TS, None]]):
+    def custom_register(cls, custom_type: type[TS], condition: str | Callable[[MessageSegment], bool]):
+        def _register(func: Callable[["MessageBuilder", MessageSegment], TS | None]):
             cls.BUILDERS[condition] = func
             return func
 
@@ -1082,16 +1082,12 @@ class _CustomMounter:
     @classmethod
     def custom_handler(cls, custom_type: type[TS]):
         def _handler(
-            func: Union[
-                Callable[
-                    ["MessageExporter", TS, Union[Bot, None], Union[bool, FallbackStrategy]],
-                    Awaitable[Optional[MessageSegment]],
-                ],
-                Callable[
-                    ["MessageExporter", TS, Union[Bot, None], Union[bool, FallbackStrategy]],
-                    Awaitable[list[MessageSegment]],
-                ],
-            ],
+            func: (
+                Callable[["MessageExporter", TS, Bot | None, bool | FallbackStrategy], Awaitable[MessageSegment | None]]
+                | Callable[
+                    ["MessageExporter", TS, Bot | None, bool | FallbackStrategy], Awaitable[list[MessageSegment]]
+                ]
+            ),
         ):
             cls.EXPORTERS[custom_type] = func  # type: ignore
             return func
@@ -1102,8 +1098,8 @@ class _CustomMounter:
         self,
         exporter: "MessageExporter[TM]",
         seg: Segment,
-        bot: Union[Bot, None],
-        fallback: Union[bool, FallbackStrategy],
+        bot: Bot | None,
+        fallback: bool | FallbackStrategy,
     ):
         if seg.__class__ in self.EXPORTERS:
             return await self.EXPORTERS[seg.__class__](exporter, seg, bot, fallback)

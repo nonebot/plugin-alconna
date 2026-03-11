@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
 import asyncio
-from contextlib import AsyncExitStack
-from dataclasses import dataclass
 import functools
 import importlib as imp
 import inspect
 import re
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, Union, final, overload
+from abc import ABCMeta, abstractmethod
+from contextlib import AsyncExitStack
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, final, overload
 from weakref import finalize
 
 from arclet.alconna import Alconna, Arparma, CompSession
@@ -26,7 +26,7 @@ from .uniseg import UniMessage, get_message_id
 
 OutputType = Literal["help", "shortcut", "completion", "error"]
 T = TypeVar("T")
-TM = TypeVar("TM", bound=Union[str, Message, UniMessage])
+TM = TypeVar("TM", bound=str | Message | UniMessage)
 TE = TypeVar("TE", bound=Event)
 
 if TYPE_CHECKING:

@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import Literal
 
 from arclet.alconna import (
     Alconna,
@@ -89,7 +89,7 @@ with namespace("nbtest") as ns:
     ns.headers = ["/"]
     ns.builtin_option_name["help"] = {"-h", "帮助", "--help"}
 
-    test_cmd = on_alconna(Alconna("test", Args["target?", Union[str, At]]))
+    test_cmd = on_alconna(Alconna("test", Args["target?", [str, At]]))
 
     pip = Alconna(
         "pip",
@@ -179,17 +179,17 @@ async def func(
     **kwargs: str,
 ):
     """测试"""
-    return f"a: {a}\n" f"b: {b}\n" f"c: {c}\n" f"d: {d}\n" f"e: {e}\n" f"args: {args}\n" f"kwargs: {kwargs}\n"
+    return f"a: {a}\nb: {b}\nc: {c}\nd: {d}\ne: {e}\nargs: {args}\nkwargs: {kwargs}\n"
 
 
 @test_cmd.handle()
-async def tt_h(matcher: AlconnaMatcher, target: Match[Union[str, At]]):
+async def tt_h(matcher: AlconnaMatcher, target: Match[str | At]):
     if target.available:
         matcher.set_path_arg("target", target.result)
 
 
 @test_cmd.got_path("target", prompt="请输入目标")
-async def tt(target: Union[str, At]):
+async def tt(target: str | At):
     await test_cmd.send(UniMessage(["ok\n", target]))
 
 
@@ -394,11 +394,11 @@ async def group_list():
     await group.finish("list")
 
 
-test1_cmd = on_alconna(Alconna("test1", Args["target", Union[int, At]]), comp_config={})
+test1_cmd = on_alconna(Alconna("test1", Args["target", [int, At]]), comp_config={})
 
 
 @test1_cmd.handle()
-async def tt1_h(target: Match[Union[int, At]]):
+async def tt1_h(target: Match[int | At]):
     res = target.result
     if isinstance(res, At):
         await test1_cmd.send(UniMessage(["ok\n", res]))
@@ -428,7 +428,7 @@ cmd = on_alconna(alc, comp_config={"lite": True}, skip_for_unmatch=False)
 
 
 @cmd.handle()
-async def handle(name: str, phone: int, at: Union[str, At]):
+async def handle(name: str, phone: int, at: str | At):
     r = await UniMessage(f"姓名：{name}").send(reply_to=True)
     await r.reply(f"手机号：{phone}")
     await r.reply(f"教师号：{at!r}")
@@ -479,7 +479,7 @@ setu = on_alconna(
 )
 
 
-def wrapper(slot: Union[int, str], content: Union[str, None], context):
+def wrapper(slot: int | str, content: str | None, context):
     if slot == 0:
         if not content:
             return "1"

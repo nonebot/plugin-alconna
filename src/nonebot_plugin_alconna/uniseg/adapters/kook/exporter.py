@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Sequence, cast
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
@@ -37,7 +37,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         assert isinstance(event, MessageEvent)
         return str(event.msg_id)
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if group_id := getattr(event, "group_id", None):
             return Target(
                 str(group_id), adapter=self.get_adapter(), self_id=bot.self_id if bot else None, scope=SupportScope.kook
@@ -53,7 +53,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         raise NotImplementedError
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         if seg.extract_most_style() == "markdown":
             return MessageSegment.KMarkdown(seg.text)
         if seg.styles:
@@ -61,7 +61,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag == "role":
             return MessageSegment.mention_role(seg.target)
         if seg.flag == "channel":
@@ -69,17 +69,17 @@ class KookMessageExporter(MessageExporter["Message"]):
         return MessageSegment.mention(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.mention_here() if seg.here else MessageSegment.mention_all()
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         if seg.name:
             return MessageSegment.KMarkdown(f"(emj){seg.name}(emj)[{seg.id}]")
         return MessageSegment.KMarkdown(f":{seg.id}:")
 
     @export
-    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Bot | None) -> "MessageSegment":
         if TYPE_CHECKING:
             assert isinstance(bot, KBot)
         name = seg.__class__.__name__.lower()
@@ -102,7 +102,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def media(self, seg: Union[Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Voice | Video | Audio | File, bot: Bot | None) -> "MessageSegment":
         if TYPE_CHECKING:
             assert isinstance(bot, KBot)
         name = seg.__class__.__name__.lower()
@@ -136,7 +136,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
+    async def hyper(self, seg: Hyper, bot: Bot | None) -> "MessageSegment":
         if seg.format == "xml":
             raise SerializeFailed(
                 lang.require("nbp-uniseg", "failed_segment").format(adapter="kook", seg=seg, target="Card")
@@ -144,10 +144,10 @@ class KookMessageExporter(MessageExporter["Message"]):
         return MessageSegment.Card(seg.content or seg.raw)
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.quote(seg.id)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, KBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -159,7 +159,7 @@ class KookMessageExporter(MessageExporter["Message"]):
             return await bot.send_msg(message_type="private", user_id=target.id, message=message, **kwargs)
         return await bot.send_msg(message_type="channel", channel_id=target.id, message=message, **kwargs)
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         if isinstance(mid, str):
             if isinstance(context, PrivateMessageEvent):
                 await bot.directMessage_delete(msg_id=mid)
@@ -180,7 +180,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         else:
             await bot.message_delete(msg_id=_mid.msg_id)
 
-    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Target | Event):
         if TYPE_CHECKING:
             assert isinstance(bot, KBot)
 
@@ -211,7 +211,7 @@ class KookMessageExporter(MessageExporter["Message"]):
         emoji: Emoji,
         mid: Any,
         bot: Bot,
-        context: Union[Target, Event],
+        context: Target | Event,
         delete: bool = False,
     ):
         assert isinstance(bot, KBot)

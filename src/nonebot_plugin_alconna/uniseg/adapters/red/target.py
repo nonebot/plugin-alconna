@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot
 from nonebot.adapters.red.bot import Bot as RedBot
@@ -12,7 +12,7 @@ class RedTargetFetcher(TargetFetcher):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.red
 
-    async def fetch(self, bot: Bot, target: Union[Target, None] = None):
+    async def fetch(self, bot: Bot, target: Target | None = None):
         if TYPE_CHECKING:
             assert isinstance(bot, RedBot)
         if target and target.channel:

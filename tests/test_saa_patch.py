@@ -1,8 +1,8 @@
+import pytest
 from arclet.alconna import Alconna, Args
 from nonebot import get_adapter, require
 from nonebot.adapters.satori import Adapter, Bot, MessageSegment
 from nonebug import App
-import pytest
 
 from tests.fake import fake_message_event_satori, fake_satori_bot_params
 

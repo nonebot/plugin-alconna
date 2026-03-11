@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.kritor.bot import Bot as KritorBot
@@ -17,6 +17,7 @@ from nonebot.adapters.kritor.event import (
 )
 from nonebot.adapters.kritor.message import Message, MessageSegment
 from nonebot.adapters.kritor.model import Contact, SceneType
+from nonebot.adapters.kritor.protos.kritor.common import Button as ButtonModel
 from nonebot.adapters.kritor.protos.kritor.common import (  # Sender,
     ButtonAction,
     ButtonActionPermission,
@@ -26,7 +27,6 @@ from nonebot.adapters.kritor.protos.kritor.common import (  # Sender,
     PrivateSender,
     PushMessageBody,
 )
-from nonebot.adapters.kritor.protos.kritor.common import Button as ButtonModel
 from nonebot.adapters.kritor.protos.kritor.group import UploadGroupFileResponse
 from nonebot.adapters.kritor.protos.kritor.message import SendMessageByResIdResponse, SendMessageResponse
 from tarina import lang
@@ -60,7 +60,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.kritor
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if isinstance(event, GroupMessage):
             return Target(
                 str(event.sender.group_id),
@@ -133,25 +133,25 @@ class KritorMessageExporter(MessageExporter["Message"]):
         return str(event.message_id)
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         if seg.extract_most_style() == "markdown":
             return MessageSegment.markdown(seg.text)
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.at(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.at("all")
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.face(int(seg.id))
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Image | Voice | Video | Audio, bot: Bot | None) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -168,7 +168,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def file(self, seg: File, bot: Union[Bot, None]) -> "MessageSegment":
+    async def file(self, seg: File, bot: Bot | None) -> "MessageSegment":
         if seg.path:
             return MessageSegment(
                 "$kritor:file",
@@ -177,16 +177,16 @@ class KritorMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="file", seg=seg))
 
     @export
-    async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
+    async def hyper(self, seg: Hyper, bot: Bot | None) -> "MessageSegment":
         assert seg.raw, lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg)
         return MessageSegment.xml(seg.raw) if seg.format == "xml" else MessageSegment.json(seg.raw)
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.reply(seg.id)
 
     @export
-    async def reference(self, seg: Reference, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reference(self, seg: Reference, bot: Bot | None) -> "MessageSegment":
         if seg.id:
             return MessageSegment("$kritor:forward", {"res_id": seg.id})
 
@@ -214,7 +214,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
                 )
         return MessageSegment("$kritor:forward", {"nodes": nodes})
 
-    def _button(self, seg: Button, bot: Union[Bot, None]):
+    def _button(self, seg: Button, bot: Bot | None):
         if seg.permission == "all":
             perm = ButtonActionPermission(type=2)
         elif seg.permission == "admin":
@@ -241,11 +241,11 @@ class KritorMessageExporter(MessageExporter["Message"]):
         )
 
     @export
-    async def button(self, seg: Button, bot: Union[Bot, None]):
+    async def button(self, seg: Button, bot: Bot | None):
         return MessageSegment("$kritor:button", {"button": self._button(seg, bot)})
 
     @export
-    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+    async def keyboard(self, seg: Keyboard, bot: Bot | None):
         if not seg.children or not seg.id:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
         if len(seg.children) > 25:
@@ -257,7 +257,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
             int(seg.id), [buttons[i : i + (seg.row or 5)] for i in range(0, len(buttons), seg.row or 5)]
         )
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, KritorBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -330,7 +330,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
             contact=Contact(type=SceneType.GROUP, id=_target.id), elements=message.to_elements()
         )
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, KritorBot)
         if isinstance(context, Event):
             _target = self.get_target(context, bot)
@@ -344,7 +344,7 @@ class KritorMessageExporter(MessageExporter["Message"]):
             assert isinstance(mid, (SendMessageByResIdResponse, SendMessageResponse))
             await bot.recall_message(message_id=mid.message_id)
 
-    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Target | Event, delete: bool = False):
         assert isinstance(bot, KritorBot)
         if isinstance(context, Event):
             assert isinstance(context, MessageEvent)

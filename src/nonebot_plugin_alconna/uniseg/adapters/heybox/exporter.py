@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.heybox.bot import Bot as HeyboxBot  # type: ignore
@@ -20,7 +20,7 @@ class HeyboxMessageExporter(MessageExporter[Message]):
     def get_message_type(self):
         return Message
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if isinstance(event, UserIMMessageEvent):
             return Target(
                 event.channel_id,  # type: ignore
@@ -38,11 +38,11 @@ class HeyboxMessageExporter(MessageExporter[Message]):
         raise NotImplementedError
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag == "user":
             return MessageSegment.mention(seg.target)
         raise SerializeFailed(
@@ -50,7 +50,7 @@ class HeyboxMessageExporter(MessageExporter[Message]):
         )
 
     @export
-    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Bot | None) -> "MessageSegment":
         if seg.url:
             return MessageSegment.image(url=seg.url, width=seg.width or 0, height=seg.height or 0)
         if seg.path:
@@ -68,10 +68,10 @@ class HeyboxMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment("$heybox:reply", {"message_id": seg.id})  # type: ignore
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, HeyboxBot)
 
         reply_id = None

@@ -59,7 +59,7 @@ class RedMessageBuilder(MessageBuilder):
 
     @build("reply")
     def reply(self, seg: MessageSegment):
-        return Reply(f'{seg.data["msg_id"]}#{seg.data["msg_seq"]}', origin=seg.data["_origin"])
+        return Reply(f"{seg.data['msg_id']}#{seg.data['msg_seq']}", origin=seg.data["_origin"])
 
     @build("forward")
     def forward(self, seg: MessageSegment):

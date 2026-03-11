@@ -1,6 +1,6 @@
-from collections import deque
 import re
-from typing import ClassVar, Optional, final
+from collections import deque
+from typing import ClassVar, final
 
 from arclet.alconna import Alconna
 from nonebot import get_driver
@@ -28,14 +28,14 @@ class TelegramSlashExtension(Extension):
     """
 
     SCOPE: ClassVar[BotCommandScope] = BotCommandScopeDefault()
-    LANGUAGE_CODE: ClassVar[Optional[str]] = None
+    LANGUAGE_CODE: ClassVar[str | None] = None
 
     @classmethod
     def set_scope(cls, scope: BotCommandScope) -> None:
         cls.SCOPE = scope
 
     @classmethod
-    def set_language_code(cls, language_code: Optional[str]) -> None:
+    def set_language_code(cls, language_code: str | None) -> None:
         cls.LANGUAGE_CODE = language_code
 
     @property

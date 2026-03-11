@@ -1,6 +1,7 @@
+import inspect
 from abc import ABCMeta, abstractmethod
 from collections.abc import Awaitable, Sequence
-import inspect
+from types import UnionType
 from typing import Any, Callable, Generic, TypeVar, Union, get_args, get_origin, overload
 
 from nonebot.adapters import Bot, Event, Message, MessageSegment
@@ -48,7 +49,7 @@ def merge_text(msg: TM) -> TM:
     return msg
 
 
-async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
+async def _auto_fallback(seg: Segment, bot: Bot | None):
     if isinstance(seg, Media):
         if seg.children:
             msg = []
@@ -114,28 +115,28 @@ async def _auto_fallback(seg: Segment, bot: Union[Bot, None]):
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]],
-) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[TMS]]: ...
+    func: Callable[[Any, TS, Bot | None], Awaitable[TMS]],
+) -> Callable[[Any, TS, Bot | None], Awaitable[TMS]]: ...
 
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]],
-) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[list[TMS]]]: ...
+    func: Callable[[Any, TS, Bot | None], Awaitable[list[TMS]]],
+) -> Callable[[Any, TS, Bot | None], Awaitable[list[TMS]]]: ...
 
 
 @overload
 def export(
-    func: Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]],
-) -> Callable[[Any, TS, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]]: ...
+    func: Callable[[Any, TS, Bot | None], Awaitable[TMS | list[TMS]]],
+) -> Callable[[Any, TS, Bot | None], Awaitable[TMS | list[TMS]]]: ...
 
 
 def export(  # type: ignore
-    func: Union[
-        Callable[[Any, Segment, Union[Bot, None]], Awaitable[TMS]],
-        Callable[[Any, Segment, Union[Bot, None]], Awaitable[list[TMS]]],
-        Callable[[Any, Segment, Union[Bot, None]], Awaitable[Union[TMS, list[TMS]]]],
-    ],
+    func: (
+        Callable[[Any, Segment, Bot | None], Awaitable[TMS]]
+        | Callable[[Any, Segment, Bot | None], Awaitable[list[TMS]]]
+        | Callable[[Any, Segment, Bot | None], Awaitable[TMS | list[TMS]]]
+    ),
 ):
     sig = inspect.signature(func)
     func.__export_target__ = sig.parameters["seg"].annotation
@@ -145,11 +146,9 @@ def export(  # type: ignore
 class MessageExporter(Generic[TM], metaclass=ABCMeta):
     _mapping: dict[
         type[Segment],
-        Union[
-            Callable[[Segment, Union[Bot, None]], Awaitable[MessageSegment]],
-            Callable[[Segment, Union[Bot, None]], Awaitable[list[MessageSegment]]],
-            Callable[[Segment, Union[Bot, None]], Awaitable[Union[MessageSegment, list[MessageSegment]]]],
-        ],
+        Callable[[Segment, Bot | None], Awaitable[MessageSegment]]
+        | Callable[[Segment, Bot | None], Awaitable[list[MessageSegment]]]
+        | Callable[[Segment, Bot | None], Awaitable[MessageSegment | list[MessageSegment]]],
     ]
 
     @classmethod
@@ -162,7 +161,7 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
     @abstractmethod
     def get_message_id(self, event: Event) -> str: ...
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         return Target(event.get_user_id(), adapter=self.get_adapter(), self_id=bot.self_id if bot else None)
 
     def __init__(self):
@@ -171,13 +170,13 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
             if callable(attr) and hasattr(attr, "__export_target__"):
                 method = getattr(self, attr.__name__)
                 target = attr.__export_target__
-                if get_origin(target) is Union:
+                if get_origin(target) in (Union, UnionType):
                     for t in get_args(target):
                         self._mapping[t] = method
                 else:
                     self._mapping[target] = method
 
-    async def export(self, source: Sequence[Segment], bot: Union[Bot, None], fallback: Union[bool, FallbackStrategy]):
+    async def export(self, source: Sequence[Segment], bot: Bot | None, fallback: bool | FallbackStrategy):
         msg_type = self.get_message_type()
         message = msg_type([])
         for seg in source:
@@ -233,16 +232,16 @@ class MessageExporter(Generic[TM], metaclass=ABCMeta):
         return merge_text(message)
 
     @abstractmethod
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         raise NotImplementedError
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         raise NotImplementedError
 
-    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Target | Event):
         raise NotImplementedError
 
-    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Target | Event, delete: bool = False):
         raise NotImplementedError
 
     def get_reply(self, mid: Any) -> Reply:

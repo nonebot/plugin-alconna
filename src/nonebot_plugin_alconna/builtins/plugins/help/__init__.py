@@ -1,6 +1,6 @@
-from pathlib import Path
 import random
 import sys
+from pathlib import Path
 
 from arclet.alconna import (
     Alconna,

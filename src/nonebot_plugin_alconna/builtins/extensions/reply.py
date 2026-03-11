@@ -1,5 +1,3 @@
-from typing import Optional
-
 from arclet.alconna import Alconna
 from nonebot.internal.adapter import Bot, Event
 from tarina import LRU
@@ -40,7 +38,7 @@ class ReplyRecordExtension(Extension):
     def __init__(self):
         self.cache: LRU[str, Reply] = LRU(20)
 
-    def get_reply(self, message_id: str) -> Optional[Reply]:
+    def get_reply(self, message_id: str) -> Reply | None:
         return self.cache.get(message_id, None)
 
     async def receive_wrapper(self, bot: Bot, event: Event, command: Alconna, receive: UniMessage) -> UniMessage:

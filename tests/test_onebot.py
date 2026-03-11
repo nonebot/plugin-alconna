@@ -1,7 +1,7 @@
+import pytest
 from nonebot import get_adapter
 from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
 from nonebug import App
-import pytest
 
 from tests.fake import fake_group_message_event_v11, fake_self_message_event_v11
 

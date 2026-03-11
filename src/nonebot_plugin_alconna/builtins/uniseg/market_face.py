@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from nonebot.adapters import Bot
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -17,9 +16,9 @@ class MarketFace(Segment):
     """MarketFace对象, 专门表示 QQ 中的商城表情"""
 
     id: str  # alias: emoji_id
-    tab_id: Optional[str] = None  # alias: package_id
-    key: Optional[str] = None
-    summary: Optional[str] = None  # alias: face_name
+    tab_id: str | None = None  # alias: package_id
+    key: str | None = None
+    summary: str | None = None  # alias: face_name
 
 
 @custom_register(MarketFace, "market_face")
@@ -77,7 +76,7 @@ def mfbuild_chronocat(builder: MessageBuilder, seg: BaseMessageSegment):
 
 
 @custom_handler(MarketFace)
-async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Optional[Bot], fallback):
+async def mfexport(exporter: MessageExporter, seg: MarketFace, bot: Bot | None, fallback):
     if exporter.get_adapter() is SupportAdapter.satori:
         from nonebot.adapters.satori import MessageSegment
 
