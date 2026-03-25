@@ -5,11 +5,9 @@ from typing_extensions import override
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.qq.bot import Bot as QQBot
+from nonebot.adapters.qq.event import C2CMessageCreateEvent, ChannelEvent, DirectMessageCreateEvent
 from nonebot.adapters.qq.event import Event as QQEvent
 from nonebot.adapters.qq.event import (
-    C2CMessageCreateEvent,
-    ChannelEvent,
-    DirectMessageCreateEvent,
     ForumEvent,
     FriendRobotEvent,
     GroupAtMessageCreateEvent,
