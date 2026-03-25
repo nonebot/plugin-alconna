@@ -218,7 +218,7 @@ class MilkyMessageExporter(MessageExporter["Message"]):
         else:
             _target = target
 
-        if msg := message.include("milky:file"):
+        if msg := message.include("$milky:file"):
             if _target.private:
                 file_id = await bot.upload_private_file(
                     user_id=int(_target.id),
