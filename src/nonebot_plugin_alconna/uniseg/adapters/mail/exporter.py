@@ -77,15 +77,15 @@ class MailMessageExporter(MessageExporter[Message]):
 
     @export
     async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
-        return MessageSegment("mail:reply", {"message_id": seg.id})  # type: ignore
+        return MessageSegment("$mail:reply", {"message_id": seg.id})  # type: ignore
 
     async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, MailBot)
 
         in_reply_to = None
         if message.has("$mail:reply"):
-            reply = message["mail:reply", 0]
-            message = message.exclude("mail:reply")
+            reply = message["$mail:reply", 0]
+            message = message.exclude("$mail:reply")
             in_reply_to = reply.data["message_id"]
 
         if isinstance(target, Event):

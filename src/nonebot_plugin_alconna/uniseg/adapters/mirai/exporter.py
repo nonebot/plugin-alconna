@@ -181,7 +181,7 @@ class MiraiMessageExporter(MessageExporter[Message]):
     async def file(self, seg: File, bot: Bot | None) -> "MessageSegment":
         if seg.path:
             return MessageSegment(
-                "mirai:file",
+                "$mirai:file",
                 {
                     "data": Path(seg.path).read_bytes(),
                     "name": Path(seg.path).name if seg.name == seg.__default_name__ else seg.name,
@@ -235,7 +235,7 @@ class MiraiMessageExporter(MessageExporter[Message]):
         else:
             _target = target
 
-        if msg := message.include("mirai:file"):
+        if msg := message.include("$mirai:file"):
             if _target.private:
                 method = UploadMethod.Friend
             else:
