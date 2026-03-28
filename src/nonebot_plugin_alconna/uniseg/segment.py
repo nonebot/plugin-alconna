@@ -151,6 +151,9 @@ class Segment:
                 data.pop("raw", None)
                 data.pop("mimetype", None)
                 data["path"] = str(path.resolve().as_posix())
+            elif media_save_dir is False:
+                data.pop("raw", None)
+                data.pop("mimetype", None)
         if self._children:
             data["children"] = [child.dump(media_save_dir=media_save_dir) for child in self._children]
         return data
