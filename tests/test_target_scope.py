@@ -1,5 +1,6 @@
 import asyncio
 
+import pytest
 from nonebot import get_adapter, get_driver, on_command
 from nonebot.adapters.onebot.v11 import Adapter as Onebot11Adapter
 from nonebot.adapters.onebot.v11 import Bot as Onebot11Bot
@@ -10,9 +11,8 @@ from nonebot.adapters.qq import Adapter as QQAdapter
 from nonebot.adapters.qq import Bot as QQBot
 from nonebot.adapters.satori import Adapter as SatoriAdapter
 from nonebot.adapters.satori import Bot as SatoriBot
-from nonebot.adapters.satori.models import Channel, ChannelType, Guild, PageResult, User
+from nonebot.adapters.satori.models import Channel, ChannelType, Friend, Guild, PageResult, User
 from nonebug import App
-import pytest
 from pytest_mock import MockerFixture
 
 from tests.fake import fake_message_event_guild, fake_satori_bot_params
@@ -53,6 +53,7 @@ async def test_bots(app: App):
             {
                 "channel_id": "456",
                 "content": "test",
+                "referrer": None,
             },
         )
         await target2.send(UniMessage("test"))
@@ -73,7 +74,7 @@ async def test_enable(app: App, mocker: MockerFixture):
         satori_adapter = get_adapter(SatoriAdapter)
         satori_bot1 = ctx.create_bot(base=SatoriBot, adapter=satori_adapter, **fake_satori_bot_params("1", "chronocat"))
 
-        ctx.should_call_api("friend_list", {}, PageResult(data=[User(id="11", name="test1")]))
+        ctx.should_call_api("friend_list", {}, PageResult(data=[Friend(user=User(id="11", name="test1"))]))
 
         ctx.should_call_api("guild_list", {}, PageResult(data=[Guild(id="12", name="test2")]))
         ctx.should_call_api(
@@ -81,7 +82,7 @@ async def test_enable(app: App, mocker: MockerFixture):
         )
         await asyncio.sleep(0.1)
         satori_bot2 = ctx.create_bot(base=SatoriBot, adapter=satori_adapter, **fake_satori_bot_params("2", "chronocat"))
-        ctx.should_call_api("friend_list", {}, PageResult(data=[User(id="21", name="test1")]))
+        ctx.should_call_api("friend_list", {}, PageResult(data=[Friend(user=User(id="21", name="test1"))]))
 
         ctx.should_call_api(
             "guild_list", {}, PageResult(data=[Guild(id="12", name="test2"), Guild(id="22", name="test2")])

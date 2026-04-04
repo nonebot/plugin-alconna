@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -8,13 +8,13 @@ from .model import CompConfig
 class Config(BaseModel):
     """Plugin Config Here"""
 
-    alconna_auto_send_output: Optional[bool] = None
+    alconna_auto_send_output: bool | None = None
     """是否全局启用输出信息自动发送"""
 
     alconna_use_command_start: bool = False
     """是否将 COMMAND_START 作为全局命令前缀"""
 
-    alconna_global_completion: Optional[CompConfig] = Field(None, strict=True)
+    alconna_global_completion: CompConfig | None = Field(None, strict=True)
     """全局的补全会话配置 (不代表全局启用补全会话)"""
 
     alconna_use_origin: bool = False
@@ -26,7 +26,7 @@ class Config(BaseModel):
     alconna_global_extensions: list[str] = Field(default_factory=list)
     """全局加载的扩展, 路径以 . 分隔, 如 foo.bar.baz:DemoExtension"""
 
-    alconna_context_style: Optional[Literal["bracket", "parentheses"]] = Field(default=None)
+    alconna_context_style: Literal["bracket", "parentheses"] | None = Field(default=None)
     """全局命令上下文插值的风格，None 为关闭，bracket 为 {...}，parentheses 为 $(...)"""
 
     alconna_enable_saa_patch: bool = False

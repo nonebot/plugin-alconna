@@ -1,6 +1,6 @@
-from collections.abc import Awaitable
 import re
-from typing import Callable, Optional
+from collections.abc import Awaitable
+from typing import Callable
 
 from arclet.alconna import Alconna
 from arclet.alconna.tools.formatter import MarkdownTextFormatter
@@ -29,7 +29,7 @@ class MarkdownOutputExtension(Extension):
     def id(self) -> str:
         return "builtins.extensions.markdown:MarkdownOutputExtension"
 
-    def __init__(self, escape_dot: bool = False, text_to_image: Optional[Callable[[str], Awaitable[Image]]] = None):
+    def __init__(self, escape_dot: bool = False, text_to_image: Callable[[str], Awaitable[Image]] | None = None):
         """
         Args:
             escape_dot: 是否转义句中的点号（用来避免被识别为 url）

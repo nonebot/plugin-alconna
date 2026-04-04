@@ -2,6 +2,7 @@ import os
 from typing import Any
 
 import nonebot
+import pytest
 from nonebot.adapters.discord import Adapter as DiscordAdapter
 from nonebot.adapters.onebot.v11 import Adapter as Onebot11Adapter
 from nonebot.adapters.onebot.v12 import Adapter as Onebot12Adapter
@@ -10,7 +11,6 @@ from nonebot.adapters.onebot.v12 import Adapter as Onebot12Adapter
 from nonebot.adapters.qq import Adapter as QQAdapter
 from nonebot.adapters.satori import Adapter as SatoriAdapter
 from nonebug import NONEBOT_INIT_KWARGS
-import pytest
 from pytest_asyncio import is_async_test
 
 

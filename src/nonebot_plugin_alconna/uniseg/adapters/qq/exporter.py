@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 from typing_extensions import override
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.qq.bot import Bot as QQBot
+from nonebot.adapters.qq.event import C2CMessageCreateEvent, ChannelEvent, DirectMessageCreateEvent
+from nonebot.adapters.qq.event import Event as QQEvent
 from nonebot.adapters.qq.event import (
-    C2CMessageCreateEvent,
-    ChannelEvent,
-    DirectMessageCreateEvent,
     ForumEvent,
     FriendRobotEvent,
     GroupAtMessageCreateEvent,
@@ -18,7 +17,6 @@ from nonebot.adapters.qq.event import (
     GuildMessageEvent,
     InteractionCreateEvent,
     MessageAuditEvent,
-    MessageEvent,
     MessageReactionEvent,
 )
 from nonebot.adapters.qq.message import Message, MessageSegment
@@ -69,7 +67,7 @@ class QQMessageExporter(MessageExporter[Message]):
     def get_message_type(self):
         return Message
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if isinstance(event, GuildMessageEvent):
             if event.__type__.value.startswith("DIRECT"):
                 return Target(
@@ -216,7 +214,7 @@ class QQMessageExporter(MessageExporter[Message]):
         return str(event.id)
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         if seg.extract_most_style() == "markdown":
             return MessageSegment.markdown(seg.text)
         if seg.styles:
@@ -224,7 +222,7 @@ class QQMessageExporter(MessageExporter[Message]):
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag == "channel":
             return MessageSegment.mention_channel(seg.target)
         if seg.flag == "user":
@@ -234,15 +232,15 @@ class QQMessageExporter(MessageExporter[Message]):
         )
 
     @export
-    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.mention_everyone()
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.emoji(seg.id)
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Image | Voice | Video | Audio | File, bot: Bot | None) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -277,10 +275,10 @@ class QQMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.reference(seg.id)
 
-    def _button(self, seg: Button, bot: Union[Bot, None]):
+    def _button(self, seg: Button, bot: Bot | None):
         if seg.permission == "all":
             perm = Permission(type=2)
         elif seg.permission == "admin":
@@ -307,11 +305,11 @@ class QQMessageExporter(MessageExporter[Message]):
         )
 
     @export
-    async def button(self, seg: Button, bot: Union[Bot, None]):
+    async def button(self, seg: Button, bot: Bot | None):
         return ButtonSegment("$qq:button", {"button": self._button(seg, bot)})
 
     @export
-    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+    async def keyboard(self, seg: Keyboard, bot: Bot | None):
         if not seg.children:
             if not seg.id:
                 raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
@@ -326,7 +324,7 @@ class QQMessageExporter(MessageExporter[Message]):
         ]
         return MessageSegment.keyboard(MessageKeyboard(content=InlineKeyboard(rows=rows)))
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, QQBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -351,7 +349,7 @@ class QQMessageExporter(MessageExporter[Message]):
             message.append(MessageSegment.keyboard(kb))
 
         if isinstance(target, Event):
-            assert isinstance(target, MessageEvent)
+            assert isinstance(target, QQEvent)
             if isinstance(target, (C2CMessageCreateEvent, GroupAtMessageCreateEvent)):
                 message = message.exclude("mention_channel", "mention_user", "mention_everyone", "reference")
             return await bot.send(event=target, message=message, **kwargs)
@@ -394,7 +392,7 @@ class QQMessageExporter(MessageExporter[Message]):
             )
         return res
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, QQBot)
         if isinstance(mid, GuildMessage):
             if isinstance(context, Target):
@@ -459,7 +457,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     message_id=mid,
                 )
 
-    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Target | Event, delete: bool = False):
         assert isinstance(bot, QQBot)
         assert emoji.id.isdigit()
         # https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#EmojiType

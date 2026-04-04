@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import cast
 
 from nepattern import BasePattern, UnionPattern, local_patterns
 from nonebot.adapters import Bot
@@ -14,9 +14,9 @@ from nonebot_plugin_alconna.uniseg.exporter import MessageExporter
 
 @dataclass
 class Markdown(Segment):
-    content: Optional[str] = None
-    template_id: Optional[str] = None
-    params: Optional[dict[str, list[str]]] = None
+    content: str | None = None
+    template_id: str | None = None
+    params: dict[str, list[str]] | None = None
 
 
 @custom_register(Markdown, "markdown")
@@ -37,7 +37,7 @@ def mdbuild(builder: MessageBuilder, seg: BaseMessageSegment):
 
 
 @custom_handler(Markdown)
-async def music_export(exporter: MessageExporter, seg: Markdown, bot: Optional[Bot], fallback):
+async def music_export(exporter: MessageExporter, seg: Markdown, bot: Bot | None, fallback):
     if exporter.get_adapter() is SupportAdapter.qq and seg.template_id:
         from nonebot.adapters.qq.message import MessageSegment
         from nonebot.adapters.qq.models import MessageMarkdown, MessageMarkdownParams

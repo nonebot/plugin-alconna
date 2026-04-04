@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.yunhu.event import MessageEvent
 from nonebot.adapters.yunhu.message import At as AtSegment
+from nonebot.adapters.yunhu.message import Audio as AudioSegment
 from nonebot.adapters.yunhu.message import Buttons as ButtonsSegment
 from nonebot.adapters.yunhu.message import Face as FaceSegment
 from nonebot.adapters.yunhu.message import File as FileSegment
@@ -16,7 +17,7 @@ from nonebot.adapters.yunhu.models import Reply as ReplySegement
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
-from nonebot_plugin_alconna.uniseg.segment import At, Button, Emoji, File, Image, Keyboard, Reply, Text, Video
+from nonebot_plugin_alconna.uniseg.segment import At, Audio, Button, Emoji, File, Image, Keyboard, Reply, Text, Video
 
 
 class YunHuMessageBuilder(MessageBuilder):
@@ -62,6 +63,10 @@ class YunHuMessageBuilder(MessageBuilder):
         if seg.data["raw"]:
             return Video(id=seg.data["videoKey"], raw=seg.data["raw"])
         return Video(id=seg.data["videoKey"])
+
+    @build("audio")
+    def audio(self, seg: AudioSegment):
+        return Audio(url=seg.data["url"], duration=seg.data["duration"])
 
     @build("file")
     def file(self, seg: FileSegment):

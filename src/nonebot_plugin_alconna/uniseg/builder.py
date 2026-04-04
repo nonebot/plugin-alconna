@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from collections.abc import Sequence
-from typing import Any, Callable, Generic, Optional, TypeVar, Union
+from typing import Any, Callable, Generic, TypeVar
 
 from nonebot.adapters import Bot, Event, Message, MessageSegment
 
@@ -11,7 +11,7 @@ TS = TypeVar("TS", bound=MessageSegment)
 
 
 def build(*types: str):
-    def wrapper(func: Union[Callable[[Any, TS], Optional[Segment]], Callable[[Any, TS], list[Segment]]]):
+    def wrapper(func: Callable[[Any, TS], Segment | None] | Callable[[Any, TS], list[Segment]]):
         if types:
             func.__build_target__ = types
         return func
@@ -22,14 +22,14 @@ def build(*types: str):
 class MessageBuilder(Generic[TS], metaclass=ABCMeta):
     _mapping: dict[
         str,
-        Union[Callable[[MessageSegment], Optional[Segment]], Callable[[MessageSegment], list[Segment]]],
+        Callable[[MessageSegment], Segment | None] | Callable[[MessageSegment], list[Segment]],
     ]
 
     @classmethod
     @abstractmethod
     def get_adapter(cls) -> SupportAdapter: ...
 
-    def wildcard_build(self, seg: TS) -> Union[Optional[Segment], list[Segment]]:
+    def wildcard_build(self, seg: TS) -> Segment | None | list[Segment]:
         return None
 
     def __init__(self):
@@ -44,7 +44,7 @@ class MessageBuilder(Generic[TS], metaclass=ABCMeta):
     def preprocess(self, source: Message[TS]) -> Message[TS]:
         return source
 
-    def convert(self, seg: TS) -> Union[Segment, list[Segment]]:
+    def convert(self, seg: TS) -> Segment | list[Segment]:
         seg_type = seg.type
         if seg_type in self._mapping:
             res = self._mapping[seg_type](seg)
@@ -75,5 +75,5 @@ class MessageBuilder(Generic[TS], metaclass=ABCMeta):
             result.extend(seg if isinstance(seg, list) else [seg])
         return result
 
-    async def extract_reply(self, event: Event, bot: Bot) -> Union[Reply, None]:
+    async def extract_reply(self, event: Event, bot: Bot) -> Reply | None:
         return

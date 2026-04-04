@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Sequence, cast
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.yunhu.bot import Bot as YunHuBot
@@ -22,7 +22,7 @@ class YunHuMessageExporter(MessageExporter[Message]):
     def get_message_type(self):
         return Message
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if isinstance(event, MessageEvent):
             return Target(
                 event.event.sender.senderId,
@@ -55,7 +55,7 @@ class YunHuMessageExporter(MessageExporter[Message]):
         return event.event.message.msgId
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         if seg.extract_most_style() == "markdown":
             return MessageSegment.markdown(seg.text)
         if seg.extract_most_style() == "html":
@@ -65,7 +65,7 @@ class YunHuMessageExporter(MessageExporter[Message]):
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag == "user":
             return MessageSegment.at(seg.target, seg.display or "")
         raise SerializeFailed(
@@ -73,11 +73,11 @@ class YunHuMessageExporter(MessageExporter[Message]):
         )
 
     @export
-    async def face(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def face(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.face(seg.id, seg.name or "")
 
     @export
-    async def media(self, seg: Union[Image, Video, File], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Image | Video | File, bot: Bot | None) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -94,10 +94,10 @@ class YunHuMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment("$yunhu:reply", {"message_id": seg.id})
 
-    def _button(self, seg: Button, bot: Union[Bot, None]) -> ButtonBody:
+    def _button(self, seg: Button, bot: Bot | None) -> ButtonBody:
         label = str(seg.label)
         if seg.flag == "link":
             return {"text": label, "actionType": 1, "url": seg.url}  # pyright: ignore[reportReturnType]
@@ -106,11 +106,11 @@ class YunHuMessageExporter(MessageExporter[Message]):
         return {"text": label, "actionType": 2, "value": seg.text}  # pyright: ignore[reportReturnType]
 
     @export
-    async def button(self, seg: Button, bot: Union[Bot, None]):
+    async def button(self, seg: Button, bot: Bot | None):
         return MessageSegment("$yunhu:button", {"button": self._button(seg, bot)})
 
     @export
-    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+    async def keyboard(self, seg: Keyboard, bot: Bot | None):
         if not seg.children:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
         buttons = [self._button(but, bot) for but in seg.children]
@@ -119,7 +119,7 @@ class YunHuMessageExporter(MessageExporter[Message]):
         rows = [buttons[i : i + (seg.row or 9)] for i in range(0, len(buttons), seg.row or 9)]
         return MessageSegment("$yunhu:keyboard", {"buttons": rows})
 
-    async def send_to(self, target: Union[Target, YunHuEvent], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | YunHuEvent, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, YunHuBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -176,7 +176,7 @@ class YunHuMessageExporter(MessageExporter[Message]):
             parent_id=message_id,
         )
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, YunHuBot)
         if isinstance(mid, (str, int)) and isinstance(context, MessageEvent):
             if context.event.message.chatType == "bot":
@@ -195,7 +195,7 @@ class YunHuMessageExporter(MessageExporter[Message]):
                 chat_type=_mid.data.messageInfo.recvType,
             )
 
-    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, YunHuBot)
         new_msg = await self.export(new, bot, True)
         content, _type = new_msg.serialize()

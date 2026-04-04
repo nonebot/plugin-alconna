@@ -1,8 +1,8 @@
+import random
 from base64 import b64decode
 from collections.abc import Awaitable
 from pathlib import Path
-import random
-from typing import TYPE_CHECKING, Callable, Literal, Optional, Union, overload
+from typing import TYPE_CHECKING, Callable, Literal, overload
 
 from nonebot import get_bot as _get_bot
 from nonebot import get_bots
@@ -17,7 +17,7 @@ from .constraint import log
 from .segment import Image
 
 
-async def reply_fetch(event: Optional[Event] = None, bot: Optional[Bot] = None):
+async def reply_fetch(event: Event | None = None, bot: Bot | None = None):
     from .adapters import alter_get_builder
 
     if not event:
@@ -37,7 +37,7 @@ async def reply_fetch(event: Optional[Event] = None, bot: Optional[Bot] = None):
     return await fn.extract_reply(event, bot)
 
 
-async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwargs) -> Optional[bytes]:
+async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwargs) -> bytes | None:
     if img.raw:
         return img.raw_bytes
     if img.path:
@@ -77,7 +77,7 @@ async def image_fetch(event: Event, bot: Bot, state: T_State, img: Image, **kwar
         resp = (await bot.get_file(type="data", file_id=img.id))["data"]
         return b64decode(resp) if isinstance(resp, str) else bytes(resp)
     if adapter_name == "Mirai":
-        url = f"https://gchat.qpic.cn/gchatpic_new/0/0-0-" f"{img.id.replace('-', '').upper()}/0"
+        url = f"https://gchat.qpic.cn/gchatpic_new/0/0-0-{img.id.replace('-', '').upper()}/0"
         req = Request("GET", url, **kwargs)
         resp = await bot.adapter.request(req)
         return resp.content  # type: ignore
@@ -137,29 +137,29 @@ async def get_bot(*, predicate: Callable[[Bot], Awaitable[bool]], bot_id: str) -
 
 
 @overload
-async def get_bot(*, adapter: Union[type[Adapter], str]) -> list[Bot]: ...
+async def get_bot(*, adapter: type[Adapter] | str) -> list[Bot]: ...
 
 
 @overload
-async def get_bot(*, adapter: Union[type[Adapter], str], index: int) -> Bot: ...
+async def get_bot(*, adapter: type[Adapter] | str, index: int) -> Bot: ...
 
 
 @overload
-async def get_bot(*, adapter: Union[type[Adapter], str], rand: Literal[True]) -> Bot: ...
+async def get_bot(*, adapter: type[Adapter] | str, rand: Literal[True]) -> Bot: ...
 
 
 @overload
-async def get_bot(*, adapter: Union[type[Adapter], str], bot_id: str) -> Bot: ...
+async def get_bot(*, adapter: type[Adapter] | str, bot_id: str) -> Bot: ...
 
 
 async def get_bot(
     *,
-    adapter: Union[type[Adapter], str, None] = None,
-    bot_id: Optional[str] = None,
-    index: Optional[int] = None,
+    adapter: type[Adapter] | str | None = None,
+    bot_id: str | None = None,
+    index: int | None = None,
     rand: bool = False,
-    predicate: Union[Callable[[Bot], Awaitable[bool]], None] = None,
-) -> Union[list[Bot], Bot]:
+    predicate: Callable[[Bot], Awaitable[bool]] | None = None,
+) -> list[Bot] | Bot:
     if not predicate and not adapter:
         if rand:
             return random.choice(list(get_bots().values()))

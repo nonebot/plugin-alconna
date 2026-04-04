@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional, Union
 
 from arclet.alconna import Alconna, Args, Option, Subcommand
 from nepattern import ANY, FLOAT, INTEGER, NUMBER, UnionPattern
@@ -23,7 +22,7 @@ from nonebot.adapters.discord.api import (
     SubCommandGroupOption,
     SubCommandOption,
 )
-from nonebot.adapters.discord.api.types import InteractionCallbackType, MessageFlag
+from nonebot.adapters.discord.api.types import UNSET, InteractionCallbackType, MessageFlag
 from nonebot.adapters.discord.commands.matcher import ApplicationCommandConfig, SlashCommandMatcher, on_slash_command
 from nonebot.adapters.discord.commands.storage import _application_command_storage
 from nonebot.adapters.discord.event import ApplicationCommandInteractionEvent
@@ -35,7 +34,8 @@ from nonebot.rule import Rule
 from nonebot.typing import T_Handler, T_PermissionChecker, T_RuleChecker, T_State
 from tarina import LRU, lang
 
-from nonebot_plugin_alconna import At, Extension, Image, UniMessage, log
+from nonebot_plugin_alconna import At, Extension, Image, UniMessage
+from nonebot_plugin_alconna.consts import log
 from nonebot_plugin_alconna.extension import cache_msg
 from nonebot_plugin_alconna.matcher import _M, AlconnaMatcher
 
@@ -59,9 +59,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
                         name=f"{arg.name}",
                         description=f"{arg.notice or arg.name}",
                         required=not arg.optional,
-                        choices=[
-                            OptionChoice(name=str(x), value=x) for x in arg.value.base  # type: ignore  # noqa: E501
-                        ],
+                        choices=[OptionChoice(name=str(x), value=x) for x in arg.value.base if isinstance(x, int)],
                     )
                 )
             elif all(isinstance(x, float) for x in arg.value.base):
@@ -70,9 +68,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
                         name=f"{arg.name}",
                         description=f"{arg.notice or arg.name}",
                         required=not arg.optional,
-                        choices=[
-                            OptionChoice(name=str(x), value=x) for x in arg.value.base  # type: ignore  # noqa: E501
-                        ],
+                        choices=[OptionChoice(name=str(x), value=x) for x in arg.value.base if isinstance(x, float)],
                     )
                 )
             else:
@@ -176,7 +172,7 @@ def _translate_args(args: Args) -> list[AnyCommandOption]:
     return result
 
 
-def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupOption, SubCommandOption]:
+def _translate_options(opt: Option | Subcommand) -> AnyCommandOption:
     if isinstance(opt, Option):
         return SubCommandOption(
             name=f"{opt.name}",
@@ -190,7 +186,9 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
         )
     if not opt.args.empty:
         return SubCommandOption(
-            name=f"{opt.name}", description=f"{opt.help_text}", options=_translate_args(opt.args)  # type: ignore
+            name=f"{opt.name}",
+            description=f"{opt.help_text}",
+            options=_translate_args(opt.args),  # type: ignore
         )
     return SubCommandGroupOption(
         name=f"{opt.name}",
@@ -201,22 +199,22 @@ def _translate_options(opt: Union[Option, Subcommand]) -> Union[SubCommandGroupO
 
 def translate(
     alc: Alconna,
-    internal_id: Optional[str] = None,
-    rule: Union[Rule, T_RuleChecker, None] = None,
-    permission: Union[Permission, T_PermissionChecker, None] = None,
+    internal_id: str | None = None,
+    rule: Rule | T_RuleChecker | None = None,
+    permission: Permission | T_PermissionChecker | None = None,
     *,
-    name_localizations: Optional[dict[str, str]] = None,
-    description_localizations: Optional[dict[str, str]] = None,
-    default_member_permissions: Optional[str] = None,
-    dm_permission: Optional[bool] = None,
-    default_permission: Optional[bool] = None,
-    nsfw: Optional[bool] = None,
-    handlers: Optional[list[Union[T_Handler, Dependent]]] = None,
+    name_localizations: dict[str, str] | None = None,
+    description_localizations: dict[str, str] | None = None,
+    default_member_permissions: str | None = None,
+    dm_permission: bool | None = None,
+    default_permission: bool | None = None,
+    nsfw: bool | None = None,
+    handlers: list[T_Handler | Dependent] | None = None,
     temp: bool = False,
-    expire_time: Union[datetime, timedelta, None] = None,
+    expire_time: datetime | timedelta | None = None,
     priority: int = 1,
     block: bool = True,
-    state: Optional[T_State] = None,
+    state: T_State | None = None,
     _depth: int = 0,
 ) -> type[SlashCommandMatcher]:
     if alc.prefixes != ["/"] or (not alc.prefixes and isinstance(alc.command, str) and not alc.command.startswith("/")):
@@ -239,6 +237,10 @@ def translate(
         "options": options,
         **locals(),
     }
+    if default_permission is None:
+        buffer.pop("default_permission")
+    if nsfw is None:
+        buffer.pop("nsfw")
     buffer["_depth"] += 1
     buffer.pop("alc")
     return on_slash_command(**buffer)
@@ -271,14 +273,14 @@ class DiscordSlashExtension(Extension):
 
     def __init__(
         self,
-        internal_id: Optional[str] = None,
-        name_localizations: Optional[dict[str, str]] = None,
-        description: Optional[str] = None,
-        description_localizations: Optional[dict[str, str]] = None,
-        default_member_permissions: Optional[str] = None,
-        dm_permission: Optional[bool] = None,
-        default_permission: Optional[bool] = None,
-        nsfw: Optional[bool] = None,
+        internal_id: str | None = None,
+        name_localizations: dict[str, str] | None = None,
+        description: str | None = None,
+        description_localizations: dict[str, str] | None = None,
+        default_member_permissions: str | None = None,
+        dm_permission: bool | None = None,
+        default_permission: bool | None = None,
+        nsfw: bool | None = None,
     ):
         self.internal_id = internal_id
         self.name_localizations = name_localizations
@@ -316,11 +318,11 @@ class DiscordSlashExtension(Extension):
             name_localizations=self.name_localizations,
             description=self.description or alc.meta.description,
             description_localizations=self.description_localizations,
-            options=options,  # type: ignore
+            options=options,
             default_member_permissions=self.default_member_permissions,
             dm_permission=self.dm_permission,
-            default_permission=self.default_permission,
-            nsfw=self.nsfw,
+            default_permission=self.default_permission if self.default_permission is not None else UNSET,
+            nsfw=self.nsfw if self.nsfw is not None else UNSET,
         )
         _application_command_storage[self.internal_id or config.name] = config
         self.application_command = config
@@ -355,12 +357,12 @@ class DiscordSlashExtension(Extension):
                     ApplicationCommandOptionType.SUB_COMMAND_GROUP,
                 ):
                     yield f"{opt.name}"
-                    if opt.options:
+                    if isinstance(opt.options, list):
                         yield from _handle_options(opt.options)
                 else:
                     yield f"{opt.value}"
 
-        if data.options:
+        if isinstance(data.options, list):
             cmd += " "
             cmd += " ".join(_handle_options(data.options))
 
@@ -432,7 +434,7 @@ class DiscordSlashExtension(Extension):
         self,
         message: _M,
         fallback: bool = False,
-        flags: Optional[MessageFlag] = None,
+        flags: MessageFlag | None = None,
     ) -> MessageGet:
         matcher: AlconnaMatcher = current_matcher.get()  # type: ignore
         event = current_event.get()

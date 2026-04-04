@@ -1,12 +1,14 @@
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict
+from typing_extensions import override
 
 from nonebot.adapters import Bot, Event, Message
 from nonebot.adapters.kaiheila import Bot as KaiheilaBot
 from nonebot.adapters.kaiheila.event import MessageEvent
-from nonebot.adapters.kaiheila.message import (
-    Card,
-)
+from nonebot.adapters.kaiheila.message import Audio as AudioSegment
+from nonebot.adapters.kaiheila.message import Card
+from nonebot.adapters.kaiheila.message import File as FileSegment
+from nonebot.adapters.kaiheila.message import Image as ImageSegment
 from nonebot.adapters.kaiheila.message import (
     KMarkdown,
     Mention,
@@ -16,10 +18,8 @@ from nonebot.adapters.kaiheila.message import (
     MessageSegment,
     Quote,
 )
-from nonebot.adapters.kaiheila.message import Audio as AudioSegment
-from nonebot.adapters.kaiheila.message import File as FileSegment
-from nonebot.adapters.kaiheila.message import Image as ImageSegment
 from nonebot.adapters.kaiheila.message import Video as VideoSegment
+from nonebot.adapters.kaiheila.message import VirtualMessageSegment
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
@@ -29,6 +29,53 @@ CHN = re.compile(r"\(chn\)(?P<id>.+?)\(chn\)")
 EMJ = re.compile(r"\(emj\)(?P<name>.+?)\(emj\)\[(?P<id>[^\[]+?)\]")
 NO_CHN = re.compile(r"\[\(chn\)(?P<id>.+?)\(chn\)\]\(.+\)")
 NO_EMJ = re.compile(r"\[\(emj\)(?P<name>.+?)\(emj\)\[(?P<id>[^\[]+?)\]\]\(.+\)")
+
+
+class MentionChannel(VirtualMessageSegment):
+    if TYPE_CHECKING:
+
+        class _MentionChannelData(TypedDict):
+            channel_id: str
+
+        data: _MentionChannelData
+
+    @override
+    def __str__(self) -> str:
+        return f"#{self.data['channel_id']}"
+
+    @override
+    async def _actual_seg(self, bot: "Bot") -> MessageSegment | None:
+        return KMarkdown.create(f"(chn){self.data['channel_id']}(chn)", str(self))
+
+    @classmethod
+    def create(cls, channel_id: str) -> "MentionChannel":
+        return cls("mention_channel", {"channel_id": channel_id})
+
+
+class EmojiSegment(VirtualMessageSegment):
+    if TYPE_CHECKING:
+
+        class _EmojiSegmentData(TypedDict):
+            id: str
+            name: str | None
+
+        data: _EmojiSegmentData
+
+    @override
+    def __str__(self) -> str:
+        if self.data["name"]:
+            return f":{self.data['name']}:"
+        return f"[{self.data['id']}]"
+
+    @override
+    async def _actual_seg(self, bot: "Bot") -> MessageSegment | None:
+        if self.data["name"]:
+            return KMarkdown.create(f"(emj){self.data['name']}(emj)[{self.data['id']}]", str(self))
+        return KMarkdown.create(f"(emj){self.data['id']}(emj)", str(self))
+
+    @classmethod
+    def create(cls, emoji_id: str, name: str | None = None) -> "EmojiSegment":
+        return cls("emoji", {"id": emoji_id, "name": name})
 
 
 class KookMessageBuilder(MessageBuilder):
@@ -60,10 +107,10 @@ class KookMessageBuilder(MessageBuilder):
             mats = {}
             spans = {}
             for mat in CHN.finditer(content):
-                mats[mat.start()] = MessageSegment("mention_channel", {"channel_id": mat.group("id")})
+                mats[mat.start()] = MentionChannel("mention_channel", {"channel_id": mat.group("id")})
                 spans[mat.start()] = mat.end()
             for mat in EMJ.finditer(content):
-                mats[mat.start()] = MessageSegment("emoji", {"id": mat.group("id"), "name": mat.group("name")})
+                mats[mat.start()] = EmojiSegment("emoji", {"id": mat.group("id"), "name": mat.group("name")})
                 spans[mat.start()] = mat.end()
             for mat in NO_CHN.finditer(content):
                 if mat.start() + 1 in spans:
@@ -115,7 +162,7 @@ class KookMessageBuilder(MessageBuilder):
         return At("user", str(seg.data["user_id"]))
 
     @build("mention_channel")
-    def mention_channel(self, seg: MessageSegment):
+    def mention_channel(self, seg: MentionChannel):
         return At("channel", str(seg.data["channel_id"]))
 
     @build("mention_role")
@@ -131,7 +178,7 @@ class KookMessageBuilder(MessageBuilder):
         return AtAll(True)
 
     @build("emoji")
-    def emoji(self, seg: MessageSegment):
+    def emoji(self, seg: EmojiSegment):
         if "name" in seg.data:
             return Emoji(seg.data["id"], seg.data["name"])
         return Emoji(seg.data["id"])

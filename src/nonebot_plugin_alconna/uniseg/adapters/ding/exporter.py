@@ -1,5 +1,3 @@
-from typing import Union
-
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.ding import Bot as DingBot
 from nonebot.adapters.ding.event import ConversationType, MessageEvent
@@ -18,7 +16,7 @@ class DingMessageExporter(MessageExporter[Message]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.ding
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if isinstance(event, MessageEvent):
             if event.conversationType == ConversationType.private:
                 return Target(
@@ -41,19 +39,19 @@ class DingMessageExporter(MessageExporter[Message]):
         return str(event.msgId)
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.atDingtalkIds(seg.target)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.atAll()
 
     @export
-    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Bot | None) -> "MessageSegment":
         if seg.url:
             return MessageSegment.image(seg.url)
         if seg.__class__.to_url and seg.path:
@@ -66,7 +64,7 @@ class DingMessageExporter(MessageExporter[Message]):
             )
         raise ValueError("github image segment must have url")
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, DingBot)
         if isinstance(target, Target):
             raise NotImplementedError

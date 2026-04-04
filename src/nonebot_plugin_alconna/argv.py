@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal
 from typing_extensions import Self
 
 from arclet.alconna import NullMessage
@@ -27,7 +27,6 @@ def _default_builder(self: MessageArgv, data: UniMessage[Segment]):
 
 
 class MessageArgv(Argv[UniMessage]):
-
     @staticmethod
     def generate_token(data: list) -> int:
         return hash("".join(i.__class__.__name__ + i.__repr__() for i in data))
@@ -128,13 +127,13 @@ class MessageArgv(Argv[UniMessage]):
         return self
 
 
-class _Text(BasePattern[Text, Union[str, Text], Literal[MatchMode.TYPE_CONVERT]]):
+class _Text(BasePattern[Text, str | Text, Literal[MatchMode.TYPE_CONVERT]]):
     def __init__(self):
         super().__init__(
             mode=MatchMode.TYPE_CONVERT,
             origin=Text,
             alias="Text",
-            accepts=Union[str, Text],  # type: ignore
+            accepts=str | Text,  # type: ignore
         )
 
     def spliter(self, x: str):

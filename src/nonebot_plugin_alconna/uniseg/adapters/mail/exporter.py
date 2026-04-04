@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.mail import Bot as MailBot
@@ -21,7 +20,7 @@ class MailMessageExporter(MessageExporter[Message]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.mail
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         assert isinstance(event, NewMailMessageEvent)
         return Target(
             event.get_user_id(),
@@ -36,7 +35,7 @@ class MailMessageExporter(MessageExporter[Message]):
         return event.id
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         if not seg.styles:
             return MessageSegment.text(seg.text)
         style = seg.extract_most_style()
@@ -47,7 +46,7 @@ class MailMessageExporter(MessageExporter[Message]):
         return MessageSegment.html(str(seg))
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag == "user":
             return MessageSegment.html(f'<a href="mailto:{seg.target}">@{seg.target}</a>')
         if seg.flag == "channel":
@@ -55,7 +54,7 @@ class MailMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Image | Voice | Video | Audio | File, bot: Bot | None) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
 
         if seg.raw and (seg.id or seg.name):
@@ -77,16 +76,16 @@ class MailMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
-        return MessageSegment("mail:reply", {"message_id": seg.id})  # type: ignore
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
+        return MessageSegment("$mail:reply", {"message_id": seg.id})  # type: ignore
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, MailBot)
 
         in_reply_to = None
         if message.has("$mail:reply"):
-            reply = message["mail:reply", 0]
-            message = message.exclude("mail:reply")
+            reply = message["$mail:reply", 0]
+            message = message.exclude("$mail:reply")
             in_reply_to = reply.data["message_id"]
 
         if isinstance(target, Event):

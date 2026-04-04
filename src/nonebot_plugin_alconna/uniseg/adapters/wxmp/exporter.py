@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.wxmp import Bot as WXMPBot
@@ -21,7 +20,7 @@ class WXMPMessageExporter(MessageExporter[Message]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.wxmp
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         assert isinstance(event, WXMPEvent)
         return Target(
             event.get_user_id(),
@@ -36,7 +35,7 @@ class WXMPMessageExporter(MessageExporter[Message]):
         return str(event.message_id)
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         if not seg.styles:
             return MessageSegment.text(seg.text)
         style = seg.extract_most_style()
@@ -48,7 +47,7 @@ class WXMPMessageExporter(MessageExporter[Message]):
         return MessageSegment.text(seg.text)
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Image | Voice | Video | Audio, bot: Bot | None) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         methods = {
             "image": MessageSegment.image,
@@ -69,17 +68,17 @@ class WXMPMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         t = EmjoyType(seg.name)
         return MessageSegment.emjoy(t)
 
     @export
-    async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
+    async def hyper(self, seg: Hyper, bot: Bot | None) -> "MessageSegment":
         if isinstance(seg.content, dict):
             return MessageSegment.miniprogrampage(**seg.content)
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg))
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, WXMPBot)
 
         if isinstance(target, Event):

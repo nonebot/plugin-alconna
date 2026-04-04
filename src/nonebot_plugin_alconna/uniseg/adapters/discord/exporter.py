@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Sequence, cast
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.discord.api import SnowflakeType
@@ -44,7 +44,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
         assert isinstance(event, MessageEvent)
         return str(event.message_id)
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if isinstance(event, MessageEvent):
             if isinstance(event, GuildMessageCreateEvent):
                 return Target(
@@ -83,11 +83,11 @@ class DiscordMessageExporter(MessageExporter[Message]):
         raise NotImplementedError
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag == "role":
             return MessageSegment.mention_role(int(seg.target))
         if seg.flag == "channel":
@@ -95,15 +95,15 @@ class DiscordMessageExporter(MessageExporter[Message]):
         return MessageSegment.mention_user(int(seg.target))
 
     @export
-    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.mention_everyone()
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.custom_emoji(seg.name or "", seg.id, bool(seg.name and seg.name.endswith("gif")))
 
     @export
-    async def media(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
+    async def media(self, seg: Image | Voice | Video | Audio | File, bot: Bot | None) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         if isinstance(seg, Image) and seg.sticker and seg.id:
             return MessageSegment.sticker(int(seg.id))
@@ -123,10 +123,10 @@ class DiscordMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.reference(seg.origin or int(seg.id), fail_if_not_exists=False)
 
-    def _button(self, seg: Button, bot: Union[Bot, None]):
+    def _button(self, seg: Button, bot: Bot | None):
         styles = {
             "primary": ButtonStyle.Primary,
             "secondary": ButtonStyle.Secondary,
@@ -152,11 +152,11 @@ class DiscordMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="button", seg=seg))
 
     @export
-    async def button(self, seg: Button, bot: Union[Bot, None]) -> "MessageSegment":
+    async def button(self, seg: Button, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.component(self._button(seg, bot))
 
     @export  # type: ignore
-    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+    async def keyboard(self, seg: Keyboard, bot: Bot | None):
         if not seg.children:
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="keyboard", seg=seg))
 
@@ -169,7 +169,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
             for i in range(0, len(buttons), seg.row)
         ]
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, DiscordBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -181,7 +181,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
             return await bot.send_to(channel_id=dm.id, message=message, **kwargs)
         return await bot.send_to(channel_id=int(target.id), message=message, **kwargs)
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         if isinstance(mid, str | SnowflakeType):
             assert isinstance(context, MessageEvent)
             return await bot.delete_message(channel_id=context.channel_id, message_id=int(mid))
@@ -189,7 +189,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
         assert isinstance(bot, DiscordBot)
         return await bot.delete_message(channel_id=mid.channel_id, message_id=_mid.id)
 
-    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Target | Event):
         _mid: MessageGet = cast(MessageGet, mid)
         assert isinstance(bot, DiscordBot)
         new_msg = await self.export(new, bot, True)
@@ -198,7 +198,7 @@ class DiscordMessageExporter(MessageExporter[Message]):
             return await bot.edit_message(channel_id=context.channel_id, message_id=int(mid), **parse_message(new_msg))
         return await bot.edit_message(channel_id=mid.channel_id, message_id=_mid.id, **parse_message(new_msg))
 
-    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Target | Event, delete: bool = False):
         assert isinstance(bot, DiscordBot)
         if isinstance(mid, str | SnowflakeType):
             assert isinstance(context, MessageEvent)

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot
 from nonebot.adapters.satori.bot import Bot as SatoriBot
@@ -12,14 +12,14 @@ class SatoriTargetFetcher(TargetFetcher):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.satori
 
-    async def fetch(self, bot: Bot, target: Union[Target, None] = None):
+    async def fetch(self, bot: Bot, target: Target | None = None):
         if TYPE_CHECKING:
             assert isinstance(bot, SatoriBot)
         if not target or target.private:
             friends = await bot.friend_list()
             for friend in friends.data:
                 yield Target(
-                    str(friend.id),
+                    str(friend.user.id),
                     private=True,
                     adapter=self.get_adapter(),
                     platform=bot.platform,
@@ -29,7 +29,7 @@ class SatoriTargetFetcher(TargetFetcher):
                 friends = await bot.friend_list(next_token=friends.next)
                 for friend in friends.data:
                     yield Target(
-                        str(friend.id),
+                        str(friend.user.id),
                         private=True,
                         adapter=self.get_adapter(),
                         platform=bot.platform,

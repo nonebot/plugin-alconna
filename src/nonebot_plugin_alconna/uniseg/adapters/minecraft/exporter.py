@@ -1,5 +1,3 @@
-from typing import Union
-
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.minecraft.bot import Bot as MinecraftBot
 from nonebot.adapters.minecraft.event import MessageEvent
@@ -61,7 +59,7 @@ class MinecraftMessageExporter(MessageExporter[Message]):
         assert isinstance(event, MessageEvent)
         return str(id(event))
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         return Target(
             event.get_user_id(),
             adapter=self.get_adapter(),
@@ -70,7 +68,7 @@ class MinecraftMessageExporter(MessageExporter[Message]):
         )
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "list[MessageSegment]":
+    async def text(self, seg: Text, bot: Bot | None) -> "list[MessageSegment]":
         res: list[MessageSegment] = []
         for part in seg.style_split():
             kwargs = {}
@@ -101,7 +99,7 @@ class MinecraftMessageExporter(MessageExporter[Message]):
         return res
 
     @export
-    async def button(self, seg: Button, bot: Union[Bot, None]):
+    async def button(self, seg: Button, bot: Bot | None):
         label = Text(seg.label) if isinstance(seg.label, str) else seg.label
         kwargs = {}
         if label.styles:
@@ -140,12 +138,12 @@ class MinecraftMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="button", seg=seg))
 
     @export
-    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+    async def keyboard(self, seg: Keyboard, bot: Bot | None):
         if seg.children:
             return [await self.button(child, bot) for child in seg.children]
         return MessageSegment.text("")
 
-    async def send_to(self, target: Union[Target, Event], bot: MinecraftBot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: MinecraftBot, message: Message, **kwargs):
         if titles := message.get("$minecraft:title"):
             message = message.exclude("$minecraft:title")
             for title in titles:

@@ -1,10 +1,10 @@
+import pytest
 from arclet.alconna import Alconna, Args
 from nonebot import get_adapter
 from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
 from nonebot.adapters.onebot.v11.event import Reply
 from nonebot.compat import model_dump, type_validate_python
 from nonebug import App
-import pytest
 
 from tests.fake import fake_group_message_event_v11, fake_private_message_event_v11
 

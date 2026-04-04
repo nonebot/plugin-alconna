@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 from nonebot.adapters import Bot
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -44,25 +43,25 @@ class MusicShare(Segment):
     kind: MusicShareKind
     """音乐分享的来源"""
 
-    id: Optional[str] = None
+    id: str | None = None
     """音乐分享的ID"""
 
-    title: Optional[str] = None
+    title: str | None = None
     """音乐卡片标题"""
 
-    content: Optional[str] = None
+    content: str | None = None
     """音乐卡片内容，例如歌手，专辑信息"""
 
-    url: Optional[str] = None
+    url: str | None = None
     """点击卡片跳转的链接"""
 
-    thumbnail: Optional[str] = None
+    thumbnail: str | None = None
     """音乐图片链接"""
 
-    audio: Optional[str] = None
+    audio: str | None = None
     """音乐链接"""
 
-    summary: Optional[str] = None
+    summary: str | None = None
     """音乐摘要/预览信息"""
 
 
@@ -101,7 +100,7 @@ def music_build(builder: MessageBuilder, seg: BaseMessageSegment):
 
 
 @custom_handler(MusicShare)
-async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Optional[Bot], fallback):
+async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot | None, fallback):
     if exporter.get_adapter() is SupportAdapter.kritor:
         from nonebot.adapters.kritor.message import Music
         from nonebot.adapters.kritor.protos.kritor.common import MusicElementMusicPlatform

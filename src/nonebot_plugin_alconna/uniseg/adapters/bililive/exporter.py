@@ -1,5 +1,3 @@
-from typing import Union
-
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.bilibili_live.bot import WebBot
 from nonebot.adapters.bilibili_live.event import DanmakuEvent, MessageEvent, SuperChatEvent
@@ -18,7 +16,7 @@ class BiliLiveMessageExporter(MessageExporter[Message]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.bililive
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
 
         if isinstance(event, MessageEvent):
             return Target(
@@ -37,22 +35,22 @@ class BiliLiveMessageExporter(MessageExporter[Message]):
         raise NotImplementedError
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.at(seg.target, seg.display)
 
     @export
-    async def emoji(self, seg: Emoji, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.emoticon(seg.id)
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.at(seg.id)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         if isinstance(target, Target):
             assert isinstance(bot, WebBot), "BiliLive currently only supports WebBot for sending messages."
             reply_mid = message["at"][-1].data.get("uid", 0) if message["at"] else 0

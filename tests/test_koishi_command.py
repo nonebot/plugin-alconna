@@ -1,10 +1,10 @@
 from pathlib import Path
 
+import pytest
 from arclet.alconna import Arparma
 from nonebot import get_adapter
 from nonebot.adapters.onebot.v11 import Adapter, Bot, Message
 from nonebug import App
-import pytest
 
 from tests.fake import fake_group_message_event_v11
 

@@ -1,7 +1,7 @@
+import pytest
 from nonebot import get_adapter
 from nonebot.adapters.satori import Adapter, Bot, Message, MessageSegment
 from nonebug import App
-import pytest
 from pytest_mock import MockerFixture
 
 from tests.fake import fake_message_event_satori, fake_satori_bot_params

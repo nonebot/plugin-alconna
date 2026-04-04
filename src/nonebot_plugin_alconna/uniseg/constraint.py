@@ -37,6 +37,7 @@ class SupportAdapter(str, Enum):
     wxmp = "WXMP"
     efchat = "EFChat"
     yunhu = "YunHu"
+    vocechat = "VoceChat"
 
     nonebug = "fake"
 
@@ -75,6 +76,8 @@ class SupportScope(str, Enum):
     """Bilibili直播平台"""
     yunhu = "YunHu"
     """云湖平台"""
+    vocechat = "VoceChat"
+    """VoceChat平台"""
 
     onebot12_other = "Onebot12"
     """ob12 的其他平台"""
@@ -147,6 +150,7 @@ class SupportAdapterModule(str, Enum):
     tail_chat = "nonebot_adapter_tailchat"
     wxmp = "nonebot.adapters.wxmp"
     yunhu = "nonebot.adapters.yunhu"
+    vocechat = "nonebot.adapters.vocechat"
 
 
 UNISEG_MESSAGE: Literal["_alc_uniseg_message"] = "_alc_uniseg_message"

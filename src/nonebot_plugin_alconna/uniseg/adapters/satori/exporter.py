@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Sequence, cast
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.satori.bot import Bot as SatoriBot
@@ -39,7 +39,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.satori
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if TYPE_CHECKING:
             assert isinstance(bot, SatoriBot)
         if isinstance(event, (MessageEvent, NoticeEvent)):
@@ -78,7 +78,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return str(event.message.id)
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]):
+    async def text(self, seg: Text, bot: Bot | None):
         if not seg.styles:
             return MessageSegment.text(seg.text)
         if seg.extract_most_style() == "markdown":
@@ -101,7 +101,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return res
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag == "role":
             return MessageSegment.at_role(seg.target, seg.display)
         if seg.flag == "channel":
@@ -109,11 +109,15 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return MessageSegment.at(seg.target, seg.display)
 
     @export
-    async def at_all(self, seg: AtAll, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at_all(self, seg: AtAll, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.at_all(seg.here)
 
     @export
-    async def button(self, seg: Button, bot: Union[Bot, None]) -> "MessageSegment":
+    async def emoji(self, seg: Emoji, bot: Bot | None) -> "MessageSegment":
+        return MessageSegment.emoji(seg.id, seg.name)
+
+    @export
+    async def button(self, seg: Button, bot: Bot | None) -> "MessageSegment":
         if seg.flag == "action" and seg.id:
             return MessageSegment.action_button(seg.id, seg.style)(await self.export(seg.children, bot, True))  # type: ignore
         if seg.flag == "link" and seg.url:
@@ -123,13 +127,13 @@ class SatoriMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="button", seg=seg))
 
     @export
-    async def keyboard(self, seg: Keyboard, bot: Union[Bot, None]):
+    async def keyboard(self, seg: Keyboard, bot: Bot | None):
         if seg.children:
             return [await self.button(child, bot) for child in seg.children]
         return MessageSegment.text("")
 
     @export
-    async def res(self, seg: Union[Image, Voice, Video, Audio, File], bot: Union[Bot, None]) -> "MessageSegment":
+    async def res(self, seg: Image | Voice | Video | Audio | File, bot: Bot | None) -> "MessageSegment":
         name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
@@ -169,11 +173,11 @@ class SatoriMessageExporter(MessageExporter[Message]):
         return ans
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.quote(seg.id, content=seg.msg)  # type: ignore
 
     @export
-    async def reference(self, seg: Reference, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reference(self, seg: Reference, bot: Bot | None) -> "MessageSegment":
         content = self.get_message_type()()
         for node in seg.children:
             if isinstance(node, RefNode):
@@ -189,7 +193,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
 
         return MessageSegment.message(seg.id, bool(seg.children), content)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, SatoriBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
@@ -201,7 +205,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
             return await bot.send_private_message(target.id, message)
         return await bot.send_message(target.id, message)
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, SatoriBot)
         if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel and isinstance(mid, str):
             await bot.message_delete(channel_id=context.channel.id, message_id=mid)
@@ -217,7 +221,7 @@ class SatoriMessageExporter(MessageExporter[Message]):
             channel = _mid.channel or context.channel
             await bot.message_delete(channel_id=channel.id, message_id=_mid.id)
 
-    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, SatoriBot)
         new_msg = await self.export(new, bot, True)
         if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel and isinstance(mid, str):
@@ -232,33 +236,25 @@ class SatoriMessageExporter(MessageExporter[Message]):
             channel = mid.channel or context.channel
             return await bot.update_message(channel.id, _mid.id, new_msg)
 
-    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Target | Event, delete: bool = False):
         assert isinstance(bot, SatoriBot)
         if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel and isinstance(mid, str):
             if delete:
-                return await bot.reaction_delete(
-                    channel_id=context.channel.id, message_id=mid, emoji=emoji.name or emoji.id
-                )
-            return await bot.reaction_create(
-                channel_id=context.channel.id, message_id=mid, emoji=emoji.name or emoji.id
-            )
+                return await bot.reaction_delete(channel_id=context.channel.id, message_id=mid, emoji_id=emoji.id)
+            return await bot.reaction_create(channel_id=context.channel.id, message_id=mid, emoji_id=emoji.id)
         _mid: MessageObject = cast(MessageObject, mid)
         if isinstance(context, Target):
             channel_id = mid.channel.id if mid.channel else context.id
             if context.private:
                 channel_id = (await bot.user_channel_create(user_id=context.id)).id
             if delete:
-                return await bot.reaction_delete(
-                    channel_id=channel_id, message_id=_mid.id, emoji=emoji.name or emoji.id
-                )
-            return await bot.reaction_create(channel_id=channel_id, message_id=_mid.id, emoji=emoji.name or emoji.id)
+                return await bot.reaction_delete(channel_id=channel_id, message_id=_mid.id, emoji_id=emoji.id)
+            return await bot.reaction_create(channel_id=channel_id, message_id=_mid.id, emoji_id=emoji.id)
         if isinstance(context, (MessageEvent, NoticeEvent)) and context.channel:
             channel = mid.channel or context.channel
             if delete:
-                return await bot.reaction_delete(
-                    channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id
-                )
-            return await bot.reaction_create(channel_id=channel.id, message_id=_mid.id, emoji=emoji.name or emoji.id)
+                return await bot.reaction_delete(channel_id=channel.id, message_id=_mid.id, emoji_id=emoji.id)
+            return await bot.reaction_create(channel_id=channel.id, message_id=_mid.id, emoji_id=emoji.id)
 
     def get_reply(self, mid: Any):
         _mid: MessageObject = cast(MessageObject, mid)

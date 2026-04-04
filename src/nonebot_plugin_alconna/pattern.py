@@ -1,4 +1,4 @@
-from typing import Any, Callable, Generic, Literal, Optional, TypeVar, Union
+from typing import Any, Callable, Generic, Literal, TypeVar
 
 from arclet.alconna import StrMulti
 from nepattern import BasePattern, MatchFailed, MatchMode, func
@@ -31,7 +31,7 @@ class SelectPattern(BasePattern[list[TS], TS2, Literal[MatchMode.TYPE_CONVERT]],
     def __init__(
         self,
         target: type[TS],
-        converter: Callable[[Any, TS2], Optional[list[TS]]],
+        converter: Callable[[Any, TS2], list[TS] | None],
     ):
         super().__init__(
             mode=MatchMode.TYPE_CONVERT,
@@ -63,7 +63,7 @@ class SelectPattern(BasePattern[list[TS], TS2, Literal[MatchMode.TYPE_CONVERT]],
     def last(self):
         return func.Index(self, -1)
 
-    def from_(self, seg: Union[type[TS1], BasePattern[TS1, Segment, Any]]) -> "SelectPattern[TS, TS1]":
+    def from_(self, seg: type[TS1] | BasePattern[TS1, Segment, Any]) -> "SelectPattern[TS, TS1]":
         _self = self.copy()
         if isinstance(seg, BasePattern):
             _self.accept = lambda x: seg.validate(x).flag == "valid"  # type: ignore
@@ -75,7 +75,7 @@ class SelectPattern(BasePattern[list[TS], TS2, Literal[MatchMode.TYPE_CONVERT]],
 
 
 def select(
-    seg: Union[type[TS], BasePattern[TS, Segment, Any]],
+    seg: type[TS] | BasePattern[TS, Segment, Any],
 ) -> SelectPattern[TS, Segment]:
     if isinstance(seg, BasePattern):
         _type = seg.origin

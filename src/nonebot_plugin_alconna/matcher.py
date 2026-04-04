@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+import inspect
+import random
+import weakref
 from collections.abc import Iterable
 from contextlib import contextmanager
 from datetime import datetime, timedelta
-import inspect
-import random
 from types import FunctionType
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal, NoReturn, Protocol, TypeVar, Union, cast, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal, NoReturn, Protocol, TypeVar, cast, overload
 from typing_extensions import Self
-import weakref
 
 from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna import Alconna, Arg, Args, ShortcutArgs, command_manager
@@ -57,7 +57,7 @@ from .uniseg.fallback import FallbackStrategy
 from .uniseg.message import current_send_wrapper
 from .uniseg.template import UniMessageTemplate
 
-_M = Union[str, Message, MessageSegment, MessageTemplate, Segment, UniMessage, UniMessageTemplate]
+_M = str | Message | MessageSegment | MessageTemplate | Segment | UniMessage | UniMessageTemplate
 
 
 class ArgsMounter(Protocol):

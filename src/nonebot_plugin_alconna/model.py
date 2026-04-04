@@ -1,4 +1,4 @@
-from typing import Any, Generic, Literal, Optional, TypeVar, Union
+from typing import Any, Generic, Literal, TypeVar
 from typing_extensions import NotRequired, TypedDict
 
 from arclet.alconna import Alconna, Arparma, Empty
@@ -45,7 +45,7 @@ class Query(Generic[T]):
     available: bool
     path: str
 
-    def __init__(self, path: str, default: Union[T, type[Empty]] = Empty):
+    def __init__(self, path: str, default: T | type[Empty] = Empty):
         self.path = path
         self.result = default  # type: ignore
         self.available = False
@@ -56,7 +56,7 @@ class Query(Generic[T]):
 
 class CommandResult(BaseModel):
     result: Arparma
-    output: Optional[str] = Field(default=None)
+    output: str | None = Field(default=None)
 
     @property
     def source(self) -> Alconna:
@@ -98,18 +98,18 @@ class SubcommandModel(BaseModel):
 
 class OptionModel(BaseModel):
     name: str
-    opt: Optional[str] = None
+    opt: str | None = None
     default: Any = Empty
-    action: Optional[Union[Literal["store_true", "store_false", "count", "append"], Action]] = None
+    action: Literal["store_true", "store_false", "count", "append"] | Action | None = None
 
 
 class ShortcutModel(BaseModel):
     key: str
-    command: Optional[str] = None
-    args: Optional[list[str]] = None
+    command: str | None = None
+    args: list[str] | None = None
     fuzzy: bool = True
     prefix: bool = False
-    humanized: Optional[str] = None
+    humanized: str | None = None
 
 
 class ActionModel(BaseModel):
@@ -128,10 +128,10 @@ class ActionModel(BaseModel):
 
 class CommandModel(BaseModel):
     command: str
-    help: Optional[str] = None
-    usage: Optional[str] = None
-    examples: Optional[list[str]] = None
-    author: Optional[str] = None
+    help: str | None = None
+    usage: str | None = None
+    examples: list[str] | None = None
+    author: str | None = None
     fuzzy_match: bool = False
     fuzzy_threshold: float = 0.6
     raise_exception: bool = False
@@ -140,10 +140,10 @@ class CommandModel(BaseModel):
     keep_crlf: bool = False
     compact: bool = False
     strict: bool = True
-    context_style: Optional[Literal["bracket", "parentheses"]] = None
-    extra: Optional[dict[str, Any]] = None
+    context_style: Literal["bracket", "parentheses"] | None = None
+    extra: dict[str, Any] | None = None
 
-    namespace: Optional[str] = None
+    namespace: str | None = None
     aliases: set[str] = Field(default_factory=set)
 
     options: list[OptionModel] = Field(default_factory=list)

@@ -1,8 +1,8 @@
+import pytest
 from arclet.alconna import Alconna, Args
 from nonebot import get_adapter
 from nonebot.adapters.qq import Adapter, Bot, Message, MessageSegment
 from nonebug import App
-import pytest
 
 from tests.fake import fake_message_event_guild
 

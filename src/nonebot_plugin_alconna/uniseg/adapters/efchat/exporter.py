@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.efchat.bot import Bot as EFBot
@@ -20,7 +20,7 @@ class EFChatMessageExporter(MessageExporter["Message"]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.efchat
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         if isinstance(event, ChannelMessageEvent):
             return Target(
                 id=event.channel,
@@ -43,17 +43,17 @@ class EFChatMessageExporter(MessageExporter["Message"]):
         return f"> {event.trip} {event.nick}:\n> {event.get_message()}\n\n"
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag != "user":
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
         return MessageSegment.at(seg.target)
 
     @export
-    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Bot | None) -> "MessageSegment":
         if seg.url:
             return MessageSegment.image(url=seg.url)
         if seg.path:
@@ -63,7 +63,7 @@ class EFChatMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="image", seg=seg))
 
     @export
-    async def voice(self, seg: Union[Voice, Audio], bot: Union[Bot, None]) -> "MessageSegment":
+    async def voice(self, seg: Voice | Audio, bot: Bot | None) -> "MessageSegment":
         if seg.url:
             return MessageSegment.voice(url=seg.url)
         if seg.path:
@@ -75,10 +75,10 @@ class EFChatMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="voice", seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.text(seg.id)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, EFBot)
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())

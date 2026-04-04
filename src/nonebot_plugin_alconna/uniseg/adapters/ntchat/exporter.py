@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from nonebot.adapters import Bot, Event
 from tarina import lang
@@ -21,7 +21,7 @@ class NTChatMessageExporter(MessageExporter["Message"]):
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.ntchat
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         from_wxid = getattr(event, "from_wxid", None)
         room_wxid = getattr(event, "room_wxid", "")
         if from_wxid:
@@ -41,13 +41,13 @@ class NTChatMessageExporter(MessageExporter["Message"]):
         return str(event.msgid)  # type: ignore
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
 
         return MessageSegment.text(seg.text)
 
     @export
-    async def res(self, seg: Union[Image, File, Video], bot: Union[Bot, None]) -> "MessageSegment":
+    async def res(self, seg: Image | File | Video, bot: Bot | None) -> "MessageSegment":
         from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
 
         name = seg.__class__.__name__.lower()
@@ -65,7 +65,7 @@ class NTChatMessageExporter(MessageExporter["Message"]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
 
     @export
-    async def hyper(self, seg: Hyper, bot: Union[Bot, None]) -> "MessageSegment":
+    async def hyper(self, seg: Hyper, bot: Bot | None) -> "MessageSegment":
         from nonebot.adapters.ntchat.message import MessageSegment  # type: ignore
 
         if seg.format == "json" and seg.content and "card_wxid" in seg.content:
@@ -74,7 +74,7 @@ class NTChatMessageExporter(MessageExporter["Message"]):
             raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg))
         return MessageSegment.xml(seg.raw)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: "Message", **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: "Message", **kwargs):
         from nonebot.adapters.ntchat.bot import Bot as NTChatBot  # type: ignore
         from nonebot.adapters.ntchat.bot import send  # type: ignore
 

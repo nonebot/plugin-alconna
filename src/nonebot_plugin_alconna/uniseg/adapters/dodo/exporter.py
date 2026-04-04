@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Sequence, cast
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.dodo.bot import Bot as DoDoBot
@@ -23,7 +23,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
     def get_message_type(self):
         return Message
 
-    def get_target(self, event: Event, bot: Union[Bot, None] = None) -> Target:
+    def get_target(self, event: Event, bot: Bot | None = None) -> Target:
         event = cast(DoDoEvent, event)
         channel_id = getattr(event, "channel_id", None)
         island_id = getattr(event, "island_source_id", None)
@@ -51,11 +51,11 @@ class DoDoMessageExporter(MessageExporter[Message]):
         return event.message_id
 
     @export
-    async def text(self, seg: Text, bot: Union[Bot, None]) -> "MessageSegment":
+    async def text(self, seg: Text, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.text(seg.text)
 
     @export
-    async def at(self, seg: At, bot: Union[Bot, None]) -> "MessageSegment":
+    async def at(self, seg: At, bot: Bot | None) -> "MessageSegment":
         if seg.flag == "user":
             return MessageSegment.at_user(seg.target)
         if seg.flag == "channel":
@@ -63,7 +63,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="at", seg=seg))
 
     @export
-    async def image(self, seg: Image, bot: Union[Bot, None]) -> "MessageSegment":
+    async def image(self, seg: Image, bot: Bot | None) -> "MessageSegment":
         if TYPE_CHECKING:
             assert isinstance(bot, DoDoBot)
         filename = None
@@ -82,16 +82,16 @@ class DoDoMessageExporter(MessageExporter[Message]):
         return MessageSegment.picture(res.url, res.width, res.height)
 
     @export
-    async def video(self, seg: Video, bot: Union[Bot, None]) -> "MessageSegment":
+    async def video(self, seg: Video, bot: Bot | None) -> "MessageSegment":
         if seg.url:
             return MessageSegment.video(seg.url)
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="video", seg=seg))
 
     @export
-    async def reply(self, seg: Reply, bot: Union[Bot, None]) -> "MessageSegment":
+    async def reply(self, seg: Reply, bot: Bot | None) -> "MessageSegment":
         return MessageSegment.reference(seg.id)
 
-    async def send_to(self, target: Union[Target, Event], bot: Bot, message: Message, **kwargs):
+    async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, DoDoBot)
         if TYPE_CHECKING:
             assert isinstance(message, Message)
@@ -103,7 +103,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
             return await bot.send_to_personal(target.parent_id, target.id, message)
         return await bot.send_to_channel(target.id, message)
 
-    async def recall(self, mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def recall(self, mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, DoDoBot)
         if isinstance(context, Target) and not context.private:
             return await bot.set_channel_message_withdraw(message_id=mid)
@@ -111,7 +111,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
             return await bot.set_channel_message_withdraw(message_id=mid)
         return None
 
-    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Union[Target, Event]):
+    async def edit(self, new: Sequence[Segment], mid: Any, bot: Bot, context: Target | Event):
         assert isinstance(bot, DoDoBot)
         new_msg = await self.export(new, bot, True)
         if isinstance(context, Target) and not context.private:
@@ -120,7 +120,7 @@ class DoDoMessageExporter(MessageExporter[Message]):
             return await bot.set_channel_message_edit(message_id=mid, message_body=new_msg.to_message_body()[0])
         return None
 
-    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Union[Target, Event], delete: bool = False):
+    async def reaction(self, emoji: Emoji, mid: Any, bot: Bot, context: Target | Event, delete: bool = False):
         assert isinstance(bot, DoDoBot)
         emj = DodoEmoji(type=1, id=emoji.id)
         if delete:

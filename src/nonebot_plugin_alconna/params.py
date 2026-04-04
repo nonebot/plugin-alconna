@@ -1,5 +1,5 @@
-from contextlib import AsyncExitStack
 import inspect
+from contextlib import AsyncExitStack
 from typing import Annotated, Any, ClassVar, Literal, Optional, TypeVar, Union, overload
 from typing_extensions import Self, get_args, override
 
@@ -59,7 +59,7 @@ def AlconnaContext() -> dict[str, Any]:
     return Depends(_alconna_ctx, use_cache=False)
 
 
-def AlconnaMatch(name: str, middleware: Optional[MIDDLEWARE] = None) -> Match:
+def AlconnaMatch(name: str, middleware: MIDDLEWARE | None = None) -> Match:
     async def _alconna_match(state: T_State, bot: Bot, event: Event) -> Match:
         arp = _alconna_result(state).result
         mat = Match(arp.all_matched_args.get(name, Empty), name in arp.all_matched_args)
@@ -80,8 +80,8 @@ def merge_path(path: str, parent: str) -> str:
 
 def AlconnaQuery(
     path: str,
-    default: Union[T, Empty] = Empty,
-    middleware: Optional[MIDDLEWARE] = None,
+    default: T | Empty = Empty,
+    middleware: MIDDLEWARE | None = None,
 ) -> Query[T]:
     async def _alconna_query(state: T_State, bot: Bot, event: Event, matcher: Matcher) -> Query:
         arp = _alconna_result(state).result
@@ -108,7 +108,7 @@ def AlconnaDuplication() -> Duplication: ...
 def AlconnaDuplication(_t: type[T_Duplication]) -> T_Duplication: ...
 
 
-def AlconnaDuplication(_t: Optional[type[T_Duplication]] = None) -> Duplication:
+def AlconnaDuplication(_t: type[T_Duplication] | None = None) -> Duplication:
     def _alconna_match(state: T_State) -> Duplication:
         res = _alconna_result(state)
         gt = _t or generate_duplication(res.source)
@@ -132,7 +132,7 @@ AlcContext = Annotated[dict[str, Any], AlconnaContext()]
 
 def match_path(
     path: str,
-    additional: Optional[CHECK] = None,
+    additional: CHECK | None = None,
 ):
     """
     当 Arpamar 解析成功后, 依据 path 是否存在以继续执行事件处理
@@ -152,7 +152,7 @@ def match_value(
     path: str,
     value: Any,
     or_not: bool = False,
-    additional: Optional[CHECK] = None,
+    additional: CHECK | None = None,
 ):
     """
     当 Arpamar 解析成功后, 依据查询 path 得到的结果是否符合传入的值以继续执行事件处理
@@ -179,7 +179,7 @@ def assign(
     path: str,
     value: Any = _seminal,
     or_not: bool = False,
-    additional: Optional[CHECK] = None,
+    additional: CHECK | None = None,
 ) -> CHECK:
     if value != _seminal:
         return match_value(path, value, or_not, additional)
@@ -335,7 +335,7 @@ class _Dispatch:
         path: str,
         value: Any = _seminal,
         or_not: bool = False,
-        additional: Optional[CHECK] = None,
+        additional: CHECK | None = None,
     ):
         self.fn = assign(path, value, or_not, additional)
         self.result = None
@@ -364,16 +364,18 @@ class StackParam(Param):
 
     @classmethod
     @override
-    def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Optional[Self]:
+    def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Self | None:
         if param.annotation == AsyncExitStack:
             return cls(..., type=AsyncExitStack)
-        if param.annotation == Optional[AsyncExitStack]:
+        if param.annotation == AsyncExitStack | None:
+            return cls(None, type=AsyncExitStack)
+        if param.annotation == Optional[AsyncExitStack]:  # noqa: UP045
             return cls(None, type=AsyncExitStack)
         if generic_check_issubclass(param.annotation, AsyncExitStack):
             return cls(None, type=AsyncExitStack)
 
     @override
-    async def _solve(self, stack: Optional[AsyncExitStack] = None, **kwargs: Any) -> Any:
+    async def _solve(self, stack: AsyncExitStack | None = None, **kwargs: Any) -> Any:
         return stack
 
 
@@ -388,16 +390,18 @@ class DependencyCacheParam(Param):
 
     @classmethod
     @override
-    def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Optional[Self]:
+    def _check_param(cls, param: inspect.Parameter, allow_types: tuple[type[Param], ...]) -> Self | None:
         if param.annotation == dict[_DependentCallable[Any], DependencyCache]:
             return cls(..., type=dict[_DependentCallable[Any], DependencyCache])
-        if param.annotation == Optional[dict[_DependentCallable[Any], DependencyCache]]:
+        if param.annotation == dict[_DependentCallable[Any], DependencyCache] | None:
+            return cls(None, type=dict[_DependentCallable[Any], DependencyCache])
+        if param.annotation == Optional[dict[_DependentCallable[Any], DependencyCache]]:  # noqa: UP045
             return cls(None, type=dict[_DependentCallable[Any], DependencyCache])
         if is_optional(param.annotation, dict[_DependentCallable[Any], DependencyCache]):
             return cls(None, type=dict[_DependentCallable[Any], DependencyCache])
 
     @override
     async def _solve(
-        self, dependency_cache: Optional[dict[_DependentCallable[Any], DependencyCache]] = None, **kwargs: Any
+        self, dependency_cache: dict[_DependentCallable[Any], DependencyCache] | None = None, **kwargs: Any
     ) -> Any:
         return dependency_cache
