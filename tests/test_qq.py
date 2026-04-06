@@ -2,7 +2,9 @@ import pytest
 from arclet.alconna import Alconna, Args
 from nonebot import get_adapter, on_message
 from nonebot.adapters.qq import Adapter, Bot, Message, MessageSegment
-from nonebot.adapters.qq.models import Action
+from nonebot.adapters.qq.models import (
+    Action,
+)
 from nonebot.adapters.qq.models import Button as QQButton
 from nonebot.adapters.qq.models import (
     InlineKeyboard,
