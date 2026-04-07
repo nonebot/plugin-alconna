@@ -64,7 +64,9 @@ class VocechatMessageExporter(MessageExporter[Message]):
             properties["duration"] = seg.duration
         return properties or None
 
-    async def _media(self, seg: Image | Voice | Video | Audio | File, name: str) -> MessageSegment:
+    @export
+    async def media(self, seg: Image | Voice | Video | Audio | File, bot: Bot | None) -> MessageSegment:
+        name = seg.__class__.__name__.lower()
         method = {
             "image": MessageSegment.image,
             "voice": MessageSegment.audio,
@@ -81,10 +83,6 @@ class VocechatMessageExporter(MessageExporter[Message]):
         if seg.raw:
             return method(file=seg.raw_bytes, filename=filename, properties=properties)
         raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type=name, seg=seg))
-
-    @export
-    async def media(self, seg: Image | Voice | Video | Audio | File, bot: Bot | None) -> MessageSegment:
-        return await self._media(seg, seg.__class__.__name__.lower())
 
     def _pop_reply(self, message: Message) -> tuple[int | None, Message]:
         reply_id: int | None = None

@@ -5,16 +5,12 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.telegram.bot import Bot as TgBot
 from nonebot.adapters.telegram.event import Event as TgEvent
 from nonebot.adapters.telegram.event import EventWithChat, MessageEvent
-from nonebot.adapters.telegram.message import Entity
+from nonebot.adapters.telegram.message import Entity, Message, MessageSegment, UnCombinFile
 from nonebot.adapters.telegram.message import File as TgFile
-from nonebot.adapters.telegram.message import Message
 from nonebot.adapters.telegram.message import Message as TgMessage
-from nonebot.adapters.telegram.message import MessageSegment
 from nonebot.adapters.telegram.message import Reply as TgReply
-from nonebot.adapters.telegram.message import UnCombinFile
-from nonebot.adapters.telegram.model import InlineKeyboardButton, InlineKeyboardMarkup
+from nonebot.adapters.telegram.model import InlineKeyboardButton, InlineKeyboardMarkup, ReactionTypeEmoji
 from nonebot.adapters.telegram.model import Message as MessageModel
-from nonebot.adapters.telegram.model import ReactionTypeEmoji
 from tarina import lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope

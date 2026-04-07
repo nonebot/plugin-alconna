@@ -1,3 +1,4 @@
+import _string  # type: ignore
 import functools
 import re
 from collections.abc import Mapping, Sequence
@@ -5,7 +6,6 @@ from string import Formatter
 from typing import TYPE_CHECKING, Any, Callable, TypeVar, Union, cast
 from typing_extensions import TypeAlias
 
-import _string  # type: ignore
 from tarina import lang
 from tarina.tools import gen_subclass
 

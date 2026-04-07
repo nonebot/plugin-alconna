@@ -3,9 +3,8 @@ from typing import TYPE_CHECKING, Any, Sequence, cast
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.discord.api import SnowflakeType
-from nonebot.adapters.discord.api.model import ActionRow
+from nonebot.adapters.discord.api.model import ActionRow, Channel, MessageGet, TextInput
 from nonebot.adapters.discord.api.model import Button as ButtonModel
-from nonebot.adapters.discord.api.model import Channel, MessageGet, TextInput
 from nonebot.adapters.discord.api.types import ButtonStyle, ChannelType, TextInputStyle
 from nonebot.adapters.discord.bot import Bot as DiscordBot
 from nonebot.adapters.discord.event import DirectMessageCreateEvent, GuildMessageCreateEvent, MessageEvent

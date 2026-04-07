@@ -118,6 +118,7 @@ class SupportScope(str, Enum):
             "mail": SupportScope.mail,
             "heybox": SupportScope.heybox,
             "yunhu": SupportScope.yunhu,
+            "vocechat": SupportScope.vocechat,
         }.get(platform, SupportScope.satori_other)
 
 

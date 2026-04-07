@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import random
 import weakref
+from _weakref import _remove_dead_weakref  # type: ignore
 from collections.abc import Iterable
 from contextlib import contextmanager
 from datetime import datetime, timedelta
@@ -10,7 +11,6 @@ from types import FunctionType
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal, NoReturn, Protocol, TypeVar, cast, overload
 from typing_extensions import Self
 
-from _weakref import _remove_dead_weakref  # type: ignore
 from arclet.alconna import Alconna, Arg, Args, ShortcutArgs, command_manager
 from arclet.alconna.tools import AlconnaFormat
 from arclet.alconna.typing import ShortcutRegWrapper, _AllParamPattern

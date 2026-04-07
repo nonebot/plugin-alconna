@@ -26,9 +26,8 @@ async def test_button(app: App):
 
     async with app.test_matcher(matcher) as ctx:
         from nonebot.adapters.discord import Adapter, Bot, MessageSegment
-        from nonebot.adapters.discord.api import ActionRow
+        from nonebot.adapters.discord.api import ActionRow, ButtonStyle
         from nonebot.adapters.discord.api import Button as DCButton
-        from nonebot.adapters.discord.api import ButtonStyle
 
         from tests.fake import fake_message_event_discord
 
@@ -97,15 +96,15 @@ async def test_button(app: App):
 
     async with app.test_matcher(matcher) as ctx:
         from nonebot.adapters.qq import Adapter, Bot, Message, MessageSegment
-        from nonebot.adapters.qq.models import Action
-        from nonebot.adapters.qq.models import Button as QQButton
         from nonebot.adapters.qq.models import (
+            Action,
             InlineKeyboard,
             InlineKeyboardRow,
             MessageKeyboard,
             Permission,
             RenderData,
         )
+        from nonebot.adapters.qq.models import Button as QQButton
 
         from tests.fake import fake_message_event_guild
 

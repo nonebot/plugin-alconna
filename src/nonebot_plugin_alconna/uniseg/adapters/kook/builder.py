@@ -6,10 +6,8 @@ from nonebot.adapters import Bot, Event, Message
 from nonebot.adapters.kaiheila import Bot as KaiheilaBot
 from nonebot.adapters.kaiheila.event import MessageEvent
 from nonebot.adapters.kaiheila.message import Audio as AudioSegment
-from nonebot.adapters.kaiheila.message import Card
-from nonebot.adapters.kaiheila.message import File as FileSegment
-from nonebot.adapters.kaiheila.message import Image as ImageSegment
 from nonebot.adapters.kaiheila.message import (
+    Card,
     KMarkdown,
     Mention,
     MentionAll,
@@ -17,9 +15,11 @@ from nonebot.adapters.kaiheila.message import (
     MentionRole,
     MessageSegment,
     Quote,
+    VirtualMessageSegment,
 )
+from nonebot.adapters.kaiheila.message import File as FileSegment
+from nonebot.adapters.kaiheila.message import Image as ImageSegment
 from nonebot.adapters.kaiheila.message import Video as VideoSegment
-from nonebot.adapters.kaiheila.message import VirtualMessageSegment
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
 from nonebot_plugin_alconna.uniseg.constraint import SupportAdapter
