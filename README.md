@@ -19,7 +19,7 @@ _✨ All Receive in One, And One Send All ✨_
   <a href="https://pypi.python.org/pypi/nonebot-plugin-alconna">
     <img src="https://img.shields.io/pypi/v/nonebot-plugin-alconna.svg" alt="pypi">
   </a>
-  <img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="python">
+  <img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="python">
 </p>
 
 该插件提供了 [Alconna](https://github.com/ArcletProject/Alconna) 的 [NoneBot2](https://github.com/nonebot/nonebot2) 适配版本与工具
