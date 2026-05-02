@@ -87,7 +87,7 @@ async def test_send(app: App):
                             InlineKeyboardRow(
                                 buttons=[
                                     QQButton(
-                                        render_data=RenderData(label="再来一发", visited_label="再来一发", style=1),
+                                        render_data=RenderData(label="再来一发", visited_label="再来一发", style=0),
                                         action=Action(
                                             type=2,
                                             data="/十连",

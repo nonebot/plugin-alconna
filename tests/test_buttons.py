@@ -123,7 +123,7 @@ async def test_button(app: App):
                                     buttons=[
                                         QQButton(
                                             id="1",
-                                            render_data=RenderData(label="1", visited_label="1", style=1),
+                                            render_data=RenderData(label="1", visited_label="1", style=0),
                                             action=Action(
                                                 type=1,
                                                 permission=Permission(type=2),
@@ -132,7 +132,7 @@ async def test_button(app: App):
                                         ),
                                         QQButton(
                                             id="2",
-                                            render_data=RenderData(label="2", visited_label="2", style=1),
+                                            render_data=RenderData(label="2", visited_label="2", style=0),
                                             action=Action(
                                                 type=1,
                                                 permission=Permission(type=2),
@@ -141,7 +141,7 @@ async def test_button(app: App):
                                         ),
                                         QQButton(
                                             id="3",
-                                            render_data=RenderData(label="3", visited_label="3", style=1),
+                                            render_data=RenderData(label="3", visited_label="3", style=0),
                                             action=Action(
                                                 type=1,
                                                 permission=Permission(type=2),
@@ -154,7 +154,7 @@ async def test_button(app: App):
                                     buttons=[
                                         QQButton(
                                             id="4",
-                                            render_data=RenderData(label="4", visited_label="4", style=1),
+                                            render_data=RenderData(label="4", visited_label="4", style=0),
                                             action=Action(
                                                 type=1,
                                                 permission=Permission(type=2),
@@ -163,7 +163,7 @@ async def test_button(app: App):
                                         ),
                                         QQButton(
                                             id="5",
-                                            render_data=RenderData(label="5", visited_label="5", style=1),
+                                            render_data=RenderData(label="5", visited_label="5", style=0),
                                             action=Action(
                                                 type=1,
                                                 permission=Permission(type=2),
@@ -172,7 +172,7 @@ async def test_button(app: App):
                                         ),
                                         QQButton(
                                             id="6",
-                                            render_data=RenderData(label="6", visited_label="6", style=1),
+                                            render_data=RenderData(label="6", visited_label="6", style=0),
                                             action=Action(
                                                 type=1,
                                                 permission=Permission(type=2),
@@ -185,7 +185,7 @@ async def test_button(app: App):
                                     buttons=[
                                         QQButton(
                                             id="7",
-                                            render_data=RenderData(label="7", visited_label="7", style=1),
+                                            render_data=RenderData(label="7", visited_label="7", style=0),
                                             action=Action(
                                                 type=1,
                                                 permission=Permission(type=2),
@@ -194,7 +194,7 @@ async def test_button(app: App):
                                         ),
                                         QQButton(
                                             id="8",
-                                            render_data=RenderData(label="8", visited_label="8", style=1),
+                                            render_data=RenderData(label="8", visited_label="8", style=0),
                                             action=Action(
                                                 type=1,
                                                 permission=Permission(type=2),
@@ -203,7 +203,7 @@ async def test_button(app: App):
                                         ),
                                         QQButton(
                                             id="9",
-                                            render_data=RenderData(label="9", visited_label="9", style=1),
+                                            render_data=RenderData(label="9", visited_label="9", style=0),
                                             action=Action(
                                                 type=1,
                                                 permission=Permission(type=2),

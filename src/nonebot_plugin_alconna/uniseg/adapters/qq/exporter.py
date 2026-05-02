@@ -296,12 +296,23 @@ class QQMessageExporter(MessageExporter[Message]):
         else:
             perm = Permission(type=0, specify_user_ids=[i.target for i in seg.permission])
         label = str(seg.label)
+        style_dict = {
+            "grey": 0,
+            "secondary": 0,
+            "blue": 1,
+            "primary": 1,
+            "success": 1,
+            "info": 2,
+            "warning": 3,
+            "danger": 3,
+            "link": 4,
+        }
         return ButtonModel(
             id=seg.id or (label if seg.flag == "action" else None),
             render_data=RenderData(
                 label=label,
                 visited_label=seg.clicked_label or label,
-                style=0 if seg.style == "secondary" else 1,
+                style=style_dict[seg.style] if seg.style else 0,
             ),
             action=Action(
                 type=0 if seg.flag == "link" else 1 if seg.flag == "action" else 2,
