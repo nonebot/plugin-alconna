@@ -11,7 +11,7 @@ from nonebot.adapters.qq.event import (
     DirectMessageCreateEvent,
     ForumEvent,
     FriendRobotEvent,
-    GroupAtMessageCreateEvent,
+    GroupMessageCreateEvent,
     GroupRobotEvent,
     GuildEvent,
     GuildMemberEvent,
@@ -33,7 +33,7 @@ from nonebot.adapters.qq.models.common import (
 )
 from nonebot.adapters.qq.models.common import Button as ButtonModel
 from nonebot.adapters.qq.models.guild import Message as GuildMessage
-from tarina import lang
+from tarina import LRU, lang
 
 from nonebot_plugin_alconna.uniseg.constraint import SupportScope
 from nonebot_plugin_alconna.uniseg.exporter import MessageExporter, SerializeFailed, SupportAdapter, Target, export
@@ -53,6 +53,19 @@ from nonebot_plugin_alconna.uniseg.segment import (
 )
 
 
+style_dict = {
+    "grey": 0,
+    "secondary": 0,
+    "blue": 1,
+    "primary": 1,
+    "success": 1,
+    "info": 2,
+    "warning": 3,
+    "danger": 3,
+    "link": 4,
+}
+
+
 @dataclass
 class ButtonSegment(MessageSegment):
     @override
@@ -68,6 +81,10 @@ class ButtonRowSegment(MessageSegment):
 
 
 class QQMessageExporter(MessageExporter[Message]):
+    def __init__(self):
+        super().__init__()
+        self.id_ref_cache = LRU(16)
+
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
         return SupportAdapter.qq
@@ -160,7 +177,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 extra={"qq.reply_seq": event._reply_seq},
                 scope=SupportScope.qq_api,
             )
-        if isinstance(event, GroupAtMessageCreateEvent):
+        if isinstance(event, GroupMessageCreateEvent):
             return Target(
                 event.group_openid,
                 source=str(event.id),
@@ -217,7 +234,7 @@ class QQMessageExporter(MessageExporter[Message]):
     def get_message_id(self, event: Event) -> str:
         assert isinstance(
             event,
-            (InteractionCreateEvent, GuildMessageEvent, C2CMessageCreateEvent, GroupAtMessageCreateEvent),
+            (InteractionCreateEvent, GuildMessageEvent, C2CMessageCreateEvent, GroupMessageCreateEvent),
         )
         return str(event.id)
 
@@ -296,17 +313,7 @@ class QQMessageExporter(MessageExporter[Message]):
         else:
             perm = Permission(type=0, specify_user_ids=[i.target for i in seg.permission])
         label = str(seg.label)
-        style_dict = {
-            "grey": 0,
-            "secondary": 0,
-            "blue": 1,
-            "primary": 1,
-            "success": 1,
-            "info": 2,
-            "warning": 3,
-            "danger": 3,
-            "link": 4,
-        }
+
         return ButtonModel(
             id=seg.id or (label if seg.flag == "action" else None),
             render_data=RenderData(
@@ -369,8 +376,18 @@ class QQMessageExporter(MessageExporter[Message]):
 
         if isinstance(target, Event):
             assert isinstance(target, QQEvent)
-            if isinstance(target, (C2CMessageCreateEvent, GroupAtMessageCreateEvent)):
-                message = message.exclude("mention_channel", "mention_user", "mention_everyone", "reference")
+            if isinstance(target, (C2CMessageCreateEvent, GroupMessageCreateEvent)) and target.message_scene:
+                ref_idx = next(
+                    (
+                        ext.partition("=")[-1]
+                        for ext in target.message_scene.ext
+                        if ext.startswith("msg_idx=")
+                    ),
+                    "",
+                )
+                self.id_ref_cache[target.id] = ref_idx
+            if isinstance(target, (C2CMessageCreateEvent, GroupMessageCreateEvent)):
+                message = message.exclude("mention_channel")
             return await bot.send(event=target, message=message, **kwargs)
 
         if target.extra.get("qq.reply_seq") is not None:
@@ -390,7 +407,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     **kwargs,  # type: ignore
                 )
             return await bot.send_to_channel(channel_id=target.id, message=message, msg_id=target.source, **kwargs)
-        message = message.exclude("mention_channel", "mention_user", "mention_everyone", "reference")
+        message = message.exclude("mention_channel")
         if target.private:
             res = await bot.send_to_c2c(
                 openid=target.id,
@@ -442,7 +459,7 @@ class QQMessageExporter(MessageExporter[Message]):
                         group_openid=context.id,
                         message_id=mid.id,  # type: ignore
                     )
-            elif isinstance(context, GroupAtMessageCreateEvent):
+            elif isinstance(context, GroupMessageCreateEvent):
                 await bot.delete_group_message(
                     group_openid=context.group_openid,
                     message_id=mid.id,  # type: ignore
@@ -470,7 +487,7 @@ class QQMessageExporter(MessageExporter[Message]):
                     openid=context.author.id,
                     message_id=mid,
                 )
-            elif isinstance(context, GroupAtMessageCreateEvent):
+            elif isinstance(context, GroupMessageCreateEvent):
                 await bot.delete_group_message(
                     group_openid=context.group_openid,
                     message_id=mid,
@@ -515,4 +532,10 @@ class QQMessageExporter(MessageExporter[Message]):
     def get_reply(self, mid: Any):
         if isinstance(mid, GuildMessage):
             return Reply(mid.id)
+        if isinstance(mid, (PostGroupMessagesReturn, PostC2CMessagesReturn)):
+            ref_idx = self.id_ref_cache.get(mid.id) if mid.id else None
+            if ref_idx:
+                return Reply(ref_idx)
+        if isinstance(mid, str):
+            return Reply(self.id_ref_cache.get(mid, mid))
         raise NotImplementedError

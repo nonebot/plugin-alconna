@@ -7,11 +7,13 @@ from nonebot.adapters.qq.message import Attachment as AttachmentSegment
 from nonebot.adapters.qq.message import Emoji as EmojiSegment
 from nonebot.adapters.qq.message import Keyboard as KeyboardSegment
 from nonebot.adapters.qq.message import Markdown as MarkdownSegment
+from nonebot.adapters.qq.message import Message as QQMessage
 from nonebot.adapters.qq.message import MentionChannel as MentionChannelSegment
 from nonebot.adapters.qq.message import MentionEveryone as MentionEveryoneSegment
 from nonebot.adapters.qq.message import MentionUser as MentionUserSegment
 from nonebot.adapters.qq.message import Reference as ReferenceSegment
 from nonebot.adapters.qq.models import Message as GuildMessage
+from nonebot.adapters.qq.models import QQReplyMessage
 from nonebot.compat import model_dump
 
 from nonebot_plugin_alconna.uniseg.builder import MessageBuilder, build
@@ -32,6 +34,15 @@ from nonebot_plugin_alconna.uniseg.segment import (
 )
 
 
+style_dict = {
+    0: "secondary", 
+    1: "primary",
+    2: "info",
+    3: "danger",
+    4: "link",
+}
+
+
 class QQMessageBuilder(MessageBuilder):
     @classmethod
     def get_adapter(cls) -> SupportAdapter:
@@ -45,7 +56,7 @@ class QQMessageBuilder(MessageBuilder):
 
     @build("mention_user")
     def mention(self, seg: MentionUserSegment):
-        return At("user", seg.data["user_id"])
+        return At("user", seg.data["user_id"], seg.data.get("username"))
 
     @build("mention_channel")
     def mention_channel(self, seg: MentionChannelSegment):
@@ -157,7 +168,7 @@ class QQMessageBuilder(MessageBuilder):
                         clicked_label=button.render_data.visited_label,
                         url=button.action.data if button.action.type == 0 else None,
                         text=button.action.data if button.action.type == 2 else None,
-                        style="grey" if button.render_data.style == 0 else "blue",
+                        style=style_dict.get(button.render_data.style or 0, "grey"),
                         permission=perm,
                     )
                 )
@@ -167,11 +178,8 @@ class QQMessageBuilder(MessageBuilder):
         if TYPE_CHECKING:
             assert isinstance(event, (GuildMessageEvent, QQMessageEvent))
         if rpl := getattr(event, "reply", None):
-            if TYPE_CHECKING:
-                assert isinstance(rpl, GuildMessage)
-            return Reply(
-                str(rpl.id),
-                rpl.content,
-                rpl,
-            )
+            if isinstance(rpl, GuildMessage):
+                return Reply(str(rpl.id), rpl.content, origin=rpl)
+            if isinstance(rpl, QQReplyMessage):
+                return Reply(str(rpl.msg_idx), QQMessage.from_qq_message(rpl), origin=rpl)
         return None

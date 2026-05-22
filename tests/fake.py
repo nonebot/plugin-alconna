@@ -211,12 +211,15 @@ def fake_message_event_guild(**field) -> "MessageCreateEvent":
         guild_id: str = "efgh"
         content: str = "test"
         author: User = User(id=field.pop("user_id", "123456789"), username=field.pop("username", "foobar"))
-        _message = field.pop("message", Message("test"))
 
         class Config:
-            extra = "forbid"
+            extra = "allow"
+    message = field.pop("message", Message("test"))
 
-    return FakeEvent(id=str(get_msg_id() + 5555), **field)
+    event = FakeEvent(id=str(get_msg_id() + 5555), **field)
+    event.message = message
+    event.original_message = message
+    return event
 
 
 def fake_satori_bot_params(self_id: str = "test", platform: str = "test") -> dict:

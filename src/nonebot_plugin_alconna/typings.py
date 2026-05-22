@@ -130,8 +130,8 @@ class Style(BasePattern[Text, str | Text, Literal[MatchMode.VALUE_OPERATE]]):
             origin=Text,
             previous=text,
             converter=lambda _, x: (
-                x if x.styles and all(set(style).issuperset(_.expected) for style in x.styles.values()) else None
-            ),  # type: ignore  # noqa: E501
+                x if x.styles and all(set(style).issuperset(_.expected) for style in x.styles.values()) else None  # type: ignore  # noqa: E501
+            ),
             alias=expect.capitalize(),
         )
         self.pattern = expect

@@ -1,8 +1,8 @@
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.github.event import (
-    CommitCommentCreated,  # type: ignore
-    IssueCommentCreated,  # type: ignore
-    PullRequestReviewCommentCreated,  # type: ignore
+from nonebot.adapters.github.event import (  # type: ignore
+    CommitCommentCreated,
+    IssueCommentCreated,
+    PullRequestReviewCommentCreated,
 )
 from nonebot.adapters.github.message import Message, MessageSegment  # type: ignore
 
