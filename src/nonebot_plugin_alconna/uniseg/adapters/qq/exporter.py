@@ -52,7 +52,6 @@ from nonebot_plugin_alconna.uniseg.segment import (
     Voice,
 )
 
-
 style_dict = {
     "grey": 0,
     "secondary": 0,
@@ -378,11 +377,7 @@ class QQMessageExporter(MessageExporter[Message]):
             assert isinstance(target, QQEvent)
             if isinstance(target, (C2CMessageCreateEvent, GroupMessageCreateEvent)) and target.message_scene:
                 ref_idx = next(
-                    (
-                        ext.partition("=")[-1]
-                        for ext in target.message_scene.ext
-                        if ext.startswith("msg_idx=")
-                    ),
+                    (ext.partition("=")[-1] for ext in target.message_scene.ext if ext.startswith("msg_idx=")),
                     "",
                 )
                 self.id_ref_cache[target.id] = ref_idx

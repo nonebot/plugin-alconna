@@ -214,6 +214,7 @@ def fake_message_event_guild(**field) -> "MessageCreateEvent":
 
         class Config:
             extra = "allow"
+
     message = field.pop("message", Message("test"))
 
     event = FakeEvent(id=str(get_msg_id() + 5555), **field)
