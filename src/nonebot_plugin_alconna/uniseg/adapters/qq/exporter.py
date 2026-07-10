@@ -27,6 +27,10 @@ from nonebot.adapters.qq.models.common import (
     Action,
     InlineKeyboard,
     InlineKeyboardRow,
+    MessageArk,
+    MessageArkKv,
+    MessageArkObj,
+    MessageArkObjKv,
     MessageKeyboard,
     Permission,
     RenderData,
@@ -44,6 +48,7 @@ from nonebot_plugin_alconna.uniseg.segment import (
     Button,
     Emoji,
     File,
+    Hyper,
     Image,
     Keyboard,
     Reply,
@@ -349,6 +354,30 @@ class QQMessageExporter(MessageExporter[Message]):
         ]
         return MessageSegment.keyboard(MessageKeyboard(content=InlineKeyboard(rows=rows)))
 
+    @export
+    async def hyper(self, seg: Hyper, bot: Bot | None):
+        if seg.format == "xml":
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg))
+        data = seg.content
+        if not isinstance(data, dict):
+            raise SerializeFailed(lang.require("nbp-uniseg", "invalid_segment").format(type="hyper", seg=seg))
+        return MessageSegment.ark(
+            MessageArk(
+                template_id=data["template_id"],
+                kv=[
+                    (
+                        MessageArkKv(key=key, value=value)
+                        if isinstance(value, str)
+                        else MessageArkKv(
+                            key=key,
+                            obj=[MessageArkObj(obj_kv=[MessageArkObjKv(key=k, value=v) for k, v in value.items()])],
+                        )
+                    )
+                    for key, value in data["kv"].items()
+                ],
+            )
+        )
+
     async def send_to(self, target: Target | Event, bot: Bot, message: Message, **kwargs):
         assert isinstance(bot, QQBot)
         if TYPE_CHECKING:
@@ -409,6 +438,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 message=message,
                 msg_id=target.source,
                 msg_seq=target.extra.get("qq.reply_seq"),
+                msg_ref_id=self.id_ref_cache.get(target.source),
                 **kwargs,
             )
         elif target.extra.get("qq.interaction", False):
@@ -419,6 +449,7 @@ class QQMessageExporter(MessageExporter[Message]):
                 message=message,
                 msg_id=target.source,
                 msg_seq=target.extra.get("qq.reply_seq"),
+                msg_ref_id=self.id_ref_cache.get(target.source),
                 **kwargs,
             )
         return res
