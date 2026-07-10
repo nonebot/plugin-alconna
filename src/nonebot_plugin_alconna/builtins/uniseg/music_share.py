@@ -178,8 +178,8 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot | No
                 MessageArkKv(key="#METADESC#", value=seg.content or seg.summary or ""),
                 MessageArkKv(key="#IMG#", value=seg.thumbnail or ""),
                 MessageArkKv(key="#LINK#", value=seg.url or seg.audio or ""),
-                MessageArkKv(key="#SUBTITLE#", value=platform)
-            ]
+                MessageArkKv(key="#SUBTITLE#", value=platform),
+            ],
         )
         return MessageSegment.ark(ark)
 
