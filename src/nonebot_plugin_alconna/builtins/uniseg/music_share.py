@@ -156,4 +156,31 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot | No
         )
         res.data["subtype"] = platform
         return res
+
+    if exporter.get_adapter() is SupportAdapter.qq:
+        from nonebot.adapters.qq.message import MessageSegment
+        from nonebot.adapters.qq.models.common import MessageArk, MessageArkKv
+
+        platform = {
+            MusicShareKind.NeteaseCloudMusic: "网易云音乐",
+            MusicShareKind.QQMusic: "QQ 音乐",
+            MusicShareKind.MiguMusic: "咪咕音乐",
+            MusicShareKind.KugouMusic: "酷狗音乐",
+            MusicShareKind.KuwoMusic: "酷我音乐",
+        }.get(seg.kind, "QQ 音乐")
+
+        ark = MessageArk(
+            template_id=24,
+            kv=[
+                MessageArkKv(key="#DESC#", value=seg.summary or seg.content or "[音乐分享]"),
+                MessageArkKv(key="#PROMPT#", value=f"[音乐分享:{seg.title or ''}]"),
+                MessageArkKv(key="#TITLE#", value=seg.title or ""),
+                MessageArkKv(key="#METADESC#", value=seg.content or seg.summary or ""),
+                MessageArkKv(key="#IMG#", value=seg.thumbnail or ""),
+                MessageArkKv(key="#LINK#", value=seg.url or seg.audio or ""),
+                MessageArkKv(key="#SUBTITLE#", value=platform)
+            ]
+        )
+        return MessageSegment.ark(ark)
+
     return None
