@@ -954,8 +954,8 @@ class AlconnaMatcher(Matcher, metaclass=AlconnaMatcherMeta):
 
 def on_alconna(
     command: Alconna | str,
-    rule: None | Rule | T_RuleChecker = None,
-    after_rule: None | Rule | T_RuleChecker = None,
+    rule: Rule | T_RuleChecker | None = None,
+    after_rule: Rule | T_RuleChecker | None = None,
     skip_for_unmatch: bool = True,
     auto_send_output: bool | None = None,
     aliases: set[str] | tuple[str, ...] | None = None,
@@ -966,7 +966,7 @@ def on_alconna(
     use_cmd_start: bool | None = None,
     use_cmd_sep: bool | None = None,
     response_self: bool | None = None,
-    permission: None | Permission | T_PermissionChecker = None,
+    permission: Permission | T_PermissionChecker | None = None,
     *,
     handlers: list[T_Handler | Dependent] | None = None,
     temp: bool = False,
