@@ -310,8 +310,14 @@ class MilkyMessageExporter(MessageExporter["Message"]):
                     return
         else:
             return
+        assert emoji.id.isdigit()
+        # Follow the QQ adapter's classification of numeric emoji IDs.
         await bot.send_group_message_reaction(
-            group_id=group_id, message_seq=message_seq, reaction=emoji.id, is_add=not delete
+            group_id=group_id,
+            message_seq=message_seq,
+            reaction=emoji.id,
+            reaction_type="face" if int(emoji.id) < 5000 else "emoji",
+            is_add=not delete,
         )
 
     def get_reply(self, mid: Any):
