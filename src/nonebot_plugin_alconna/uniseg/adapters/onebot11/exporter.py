@@ -238,7 +238,14 @@ class Onebot11MessageExporter(MessageExporter["Message"]):
                 code=emoji.id,
                 is_add=not delete,
             )
-        elif app_name == "NapCat.Onebot":
+        elif app_name in ("NapCat.Onebot", "SnowLuma"):
+            if app_name == "SnowLuma":
+                # SnowLuma implements the NapCat reaction API for group messages only.
+                if isinstance(context, Target):
+                    if context.private or context.channel:
+                        return
+                elif getattr(context, "group_id", None) is None:
+                    return
             await bot.call_api(
                 "set_msg_emoji_like",
                 message_id=int(message_id),
