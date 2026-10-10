@@ -120,6 +120,7 @@ ignore = [
     "PLC0415", # 你别管我为什么不在顶层 import
     "PLC0105", # 我们已经用 R 表示协变，Q 表示逆变了
     "PLR0913", # 参数就那么多的，你用 builder 什么的不是更逆天？
+    "PLR0917", # Preserve positional arguments in the existing public API.
     "SIM108",  # 迫真 simplicy
     "RUF001",  # String contains ambiguous `，` (FULLWIDTH COMMA). Did you mean `,` (COMMA)?
     "RUF002",  # Docstring contains ambiguous `，` (FULLWIDTH COMMA). Did you mean `,` (COMMA)?

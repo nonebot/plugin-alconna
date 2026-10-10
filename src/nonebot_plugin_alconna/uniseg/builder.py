@@ -29,7 +29,7 @@ class MessageBuilder(Generic[TS], metaclass=ABCMeta):
     @abstractmethod
     def get_adapter(cls) -> SupportAdapter: ...
 
-    def wildcard_build(self, seg: TS) -> Segment | None | list[Segment]:
+    def wildcard_build(self, seg: TS) -> Segment | list[Segment] | None:
         return None
 
     def __init__(self):

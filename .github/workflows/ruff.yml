@@ -15,3 +15,5 @@ jobs:
 
       - name: Run Ruff Lint
         uses: chartboost/ruff-action@v1
+        with:
+          version: "0.16.2"

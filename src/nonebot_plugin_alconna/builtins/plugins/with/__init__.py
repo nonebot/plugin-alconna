@@ -1,5 +1,5 @@
 import asyncio
-import datetime
+import datetime as dt
 import json
 
 from arclet.alconna import namespace
@@ -55,7 +55,7 @@ with namespace("builtin/with") as ns:
         await with_.finish("取消设置成功")
 
     @with_.handle()
-    async def _(name: Match[str], target: MsgTarget, time: Match[datetime.datetime]):
+    async def _(name: Match[str], target: MsgTarget, time: Match[dt.datetime]):
         key = json.dumps(target.dump(only_scope=True), ensure_ascii=False)
         if not name.available:
             if key not in data:
@@ -66,7 +66,7 @@ with namespace("builtin/with") as ns:
         data[key] = name.result
         if time.available:
             asyncio.get_running_loop().call_later(
-                abs((time.result - datetime.datetime.now()).total_seconds()), remove, key  # noqa: DTZ005
+                abs((time.result - dt.datetime.now()).total_seconds()), remove, key  # noqa: DTZ005
             )
 
         await with_.finish("设置前缀成功")
