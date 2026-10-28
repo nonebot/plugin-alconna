@@ -137,13 +137,14 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot | No
     if exporter.get_adapter() is SupportAdapter.onebot11:
         from nonebot.adapters.onebot.v11.message import MessageSegment
 
-        platform = {
+        platforms = {
             MusicShareKind.NeteaseCloudMusic: "163",
             MusicShareKind.QQMusic: "qq",
             MusicShareKind.MiguMusic: "migu",
             MusicShareKind.KugouMusic: "kugou",
             MusicShareKind.KuwoMusic: "kuwo",
-        }.get(seg.kind, "qq")
+        }
+        platform = platforms.get(seg.kind, "qq")
 
         if seg.id:
             return MessageSegment.music(platform, int(seg.id))
@@ -154,7 +155,11 @@ async def music_export(exporter: MessageExporter, seg: MusicShare, bot: Bot | No
             content=seg.content or seg.summary or "",
             img_url=seg.thumbnail or "",
         )
-        res.data["subtype"] = platform
+        if seg.kind in platforms:
+            res.data["type"] = platform
+        else:
+            # 保留自定义音乐消息原有的 QQ subtype。
+            res.data["subtype"] = platform
         return res
 
     if exporter.get_adapter() is SupportAdapter.qq:
