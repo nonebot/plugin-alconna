@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 from .builder import MessageBuilder
 from .constraint import SupportAdapter
 from .exporter import MessageExporter
+from .interaction import ButtonInteractionAdapter
 from .target import TargetFetcher
 
 
@@ -17,4 +18,7 @@ class BaseLoader(metaclass=ABCMeta):
     def get_exporter(self) -> MessageExporter: ...
 
     def get_fetcher(self) -> TargetFetcher:
+        raise NotImplementedError
+
+    def get_interaction(self) -> ButtonInteractionAdapter:
         raise NotImplementedError

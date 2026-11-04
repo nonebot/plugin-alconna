@@ -20,3 +20,8 @@ class Loader(BaseLoader):
         from .target import QQTargetFetcher
 
         return QQTargetFetcher()
+
+    def get_interaction(self):
+        from .interaction import QQButtonInteractionAdapter
+
+        return QQButtonInteractionAdapter()

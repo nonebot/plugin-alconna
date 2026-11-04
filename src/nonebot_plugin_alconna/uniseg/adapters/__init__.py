@@ -13,6 +13,7 @@ from ..constraint import SupportAdapter
 if TYPE_CHECKING:
     from ..builder import MessageBuilder
     from ..exporter import MessageExporter
+    from ..interaction import ButtonInteractionAdapter
     from ..loader import BaseLoader
     from ..target import TargetFetcher
 
@@ -49,6 +50,7 @@ BUILDER_MAPPING: dict[str, "MessageBuilder"] = {
     SupportAdapter.nonebug.value: loaders[SupportAdapter.nonebug.value].get_builder()
 }
 FETCHER_MAPPING: dict[str, "TargetFetcher"] = {}
+INTERACTION_MAPPING: dict[str, "ButtonInteractionAdapter | None"] = {}
 adapters = {}
 try:
     adapters = get_adapters()
@@ -146,3 +148,16 @@ def alter_get_fetcher(adapter_name: str):
         6,
     )
     return None
+
+
+def alter_get_interaction(adapter_name: str):
+    if adapter_name in INTERACTION_MAPPING:
+        return INTERACTION_MAPPING[adapter_name]
+    if adapter_name not in loaders:
+        return None
+    try:
+        interaction = loaders[adapter_name].get_interaction()
+    except NotImplementedError:
+        interaction = None
+    INTERACTION_MAPPING[adapter_name] = interaction
+    return interaction

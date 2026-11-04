@@ -95,6 +95,8 @@ from .uniseg import At as At
 from .uniseg import AtAll as AtAll
 from .uniseg import Audio as Audio
 from .uniseg import Button as Button
+from .uniseg import ButtonCallback as ButtonCallback
+from .uniseg import ButtonInteraction as ButtonInteraction
 from .uniseg import CustomNode as CustomNode
 from .uniseg import Emoji as Emoji
 from .uniseg import FallbackStrategy as FallbackStrategy
@@ -120,6 +122,7 @@ from .uniseg import Target as Target
 from .uniseg import Text as Text
 from .uniseg import UniMessage as UniMessage
 from .uniseg import UniMsg as UniMsg
+from .uniseg import UniversalButtonInteraction as UniversalButtonInteraction
 from .uniseg import UniversalMessage as UniversalMessage
 from .uniseg import UniversalSegment as UniversalSegment
 from .uniseg import Video as Video
@@ -129,15 +132,18 @@ from .uniseg import apply_filehost as apply_filehost
 from .uniseg import apply_media_to_url as apply_media_to_url
 from .uniseg import at_in as at_in
 from .uniseg import at_me as at_me
+from .uniseg import button_rule as button_rule
 from .uniseg import custom_handler as custom_handler
 from .uniseg import custom_register as custom_register
 from .uniseg import get_bot as get_bot
+from .uniseg import get_button_interaction as get_button_interaction
 from .uniseg import get_message_id as get_message_id
 from .uniseg import get_target as get_target
 from .uniseg import image_fetch as image_fetch
 from .uniseg import message_edit as message_edit
 from .uniseg import message_reaction as message_reaction
 from .uniseg import message_recall as message_recall
+from .uniseg import on_button as on_button
 from .uniseg import patch_matcher_send as patch_matcher_send
 from .uniseg import patch_saa as patch_saa
 
