@@ -8,6 +8,7 @@ from nonebot.typing import T_State
 from .constraint import UNISEG_MESSAGE, UNISEG_MESSAGE_ID, UNISEG_TARGET
 from .exporter import SerializeFailed, Target
 from .functions import get_message_id, get_target
+from .interaction import ButtonInteraction, _require_button_interaction
 from .message import UniMessage
 from .segment import TS
 
@@ -78,7 +79,12 @@ def UniversalSegment(t: type[TS], index: int = 0) -> TS:
     return Depends(_uni_seg, use_cache=True)
 
 
+def UniversalButtonInteraction() -> ButtonInteraction:
+    return Depends(_require_button_interaction, use_cache=True)
+
+
 UniMsg = Annotated[UniMessage, UniversalMessage()]
 OriginalUniMsg = Annotated[UniMessage, UniversalMessage(origin=True)]
 MsgId = Annotated[str, MessageId()]
 MsgTarget = Annotated[Target, MessageTarget()]
+ButtonCallback = Annotated[ButtonInteraction, UniversalButtonInteraction()]

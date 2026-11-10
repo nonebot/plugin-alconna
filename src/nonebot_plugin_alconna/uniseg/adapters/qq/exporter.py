@@ -194,7 +194,7 @@ class QQMessageExporter(MessageExporter[Message]):
             if event.group_openid:
                 return Target(
                     event.group_openid,
-                    source=str(event.id),
+                    source=event.event_id or "",
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                     scope=SupportScope.qq_api,
@@ -205,19 +205,34 @@ class QQMessageExporter(MessageExporter[Message]):
                     event.channel_id,
                     event.guild_id or "",
                     channel=True,
-                    source=str(event.id),
+                    source=event.event_id or "",
                     adapter=self.get_adapter(),
                     self_id=bot.self_id if bot else None,
                     scope=SupportScope.qq_api,
+                    extra={"qq.interaction": True},
                 )
-            return Target(
-                event.get_user_id(),
-                private=True,
-                source=str(event.id),
-                adapter=self.get_adapter(),
-                self_id=bot.self_id if bot else None,
-                scope=SupportScope.qq_api,
-            )
+            if event.user_openid:
+                return Target(
+                    event.user_openid,
+                    private=True,
+                    source=event.event_id or "",
+                    adapter=self.get_adapter(),
+                    self_id=bot.self_id if bot else None,
+                    scope=SupportScope.qq_api,
+                    extra={"qq.interaction": True},
+                )
+            if event.guild_id:
+                return Target(
+                    event.guild_id,
+                    channel=True,
+                    private=True,
+                    source=event.event_id or "",
+                    adapter=self.get_adapter(),
+                    self_id=bot.self_id if bot else None,
+                    scope=SupportScope.qq_api,
+                    extra={"qq.interaction": True},
+                )
+            raise NotImplementedError("QQ interaction has no reply destination")
         if isinstance(event, FriendRobotEvent):
             return Target(
                 event.openid,
@@ -236,9 +251,13 @@ class QQMessageExporter(MessageExporter[Message]):
         raise NotImplementedError
 
     def get_message_id(self, event: Event) -> str:
+        if isinstance(event, InteractionCreateEvent):
+            if event.data.resolved.message_id is None:
+                raise NotImplementedError("QQ interaction has no source message ID")
+            return event.data.resolved.message_id
         assert isinstance(
             event,
-            (InteractionCreateEvent, GuildMessageEvent, C2CMessageCreateEvent, GroupMessageCreateEvent),
+            (GuildMessageEvent, C2CMessageCreateEvent, GroupMessageCreateEvent),
         )
         return str(event.id)
 
@@ -414,6 +433,24 @@ class QQMessageExporter(MessageExporter[Message]):
                 message = message.exclude("mention_channel")
             return await bot.send(event=target, message=message, **kwargs)
 
+        if target.extra.get("qq.interaction", False):
+            if target.channel:
+                if target.private:
+                    return await bot.send_to_dms(
+                        guild_id=target.id, message=message, event_id=target.source or None, **kwargs
+                    )
+                return await bot.send_to_channel(
+                    channel_id=target.id, message=message, event_id=target.source or None, **kwargs
+                )
+            message = message.exclude("mention_channel")
+            if target.private:
+                return await bot.send_to_c2c(
+                    openid=target.id, message=message, event_id=target.source or None, **kwargs
+                )
+            return await bot.send_to_group(
+                group_openid=target.id, message=message, event_id=target.source or None, **kwargs
+            )
+
         if target.extra.get("qq.reply_seq") is not None:
             target.extra["qq.reply_seq"] += 1
 
@@ -441,8 +478,6 @@ class QQMessageExporter(MessageExporter[Message]):
                 msg_ref_id=self.id_ref_cache.get(target.source),
                 **kwargs,
             )
-        elif target.extra.get("qq.interaction", False):
-            return await bot.send_to_group(group_openid=target.id, message=message, event_id=target.source, **kwargs)
         else:
             res = await bot.send_to_group(
                 group_openid=target.id,
