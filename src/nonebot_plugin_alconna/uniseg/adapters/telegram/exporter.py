@@ -3,8 +3,8 @@ from typing import Any, Sequence, cast
 
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.telegram.bot import Bot as TgBot
+from nonebot.adapters.telegram.event import CallbackQueryEvent, EventWithChat, MessageEvent
 from nonebot.adapters.telegram.event import Event as TgEvent
-from nonebot.adapters.telegram.event import EventWithChat, MessageEvent
 from nonebot.adapters.telegram.message import Entity, Message, MessageSegment, UnCombinFile
 from nonebot.adapters.telegram.message import File as TgFile
 from nonebot.adapters.telegram.message import Message as TgMessage
@@ -74,17 +74,29 @@ class TelegramMessageExporter(MessageExporter[Message]):
         return SupportAdapter.telegram
 
     def get_target(self, event: Event, bot: Bot | None = None) -> Target:
-        assert isinstance(event, EventWithChat)
+        if isinstance(event, CallbackQueryEvent):
+            if event.message is None:
+                raise ValueError("Telegram inline callback has no chat target")
+            chat = event.message.chat
+            message_thread_id = getattr(event.message, "message_thread_id", None)
+        else:
+            assert isinstance(event, EventWithChat)
+            chat = event.chat
+            message_thread_id = getattr(event, "message_thread_id", None)
         return Target(
-            str(event.chat.id),
-            private=event.chat.type == "private",
+            str(chat.id),
+            private=chat.type == "private",
             adapter=self.get_adapter(),
             self_id=bot.self_id if bot else None,
             scope=SupportScope.telegram,
-            extra={"message_thread_id": getattr(event, "message_thread_id", None)},
+            extra={"message_thread_id": message_thread_id},
         )
 
     def get_message_id(self, event: Event) -> str:
+        if isinstance(event, CallbackQueryEvent):
+            if event.message is None:
+                raise ValueError("Telegram inline callback has no chat message ID")
+            return str(event.message.message_id)
         assert isinstance(event, MessageEvent)
         return f"{event.message_id}"
 
@@ -185,6 +197,8 @@ class TelegramMessageExporter(MessageExporter[Message]):
                 reply_markup.inline_keyboard += kb[0].data["buttons"]
             else:
                 reply_markup = InlineKeyboardMarkup(inline_keyboard=kb[0].data["buttons"])
+        if isinstance(target, CallbackQueryEvent):
+            target = self.get_target(target, bot)
         if isinstance(target, Event):
             assert isinstance(target, TgEvent)
             return await bot.send(event=target, message=message, reply_markup=reply_markup, **kwargs)

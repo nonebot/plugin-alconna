@@ -17,33 +17,35 @@ from .constraint import UNISEG_BUTTON_INTERACTION
 
 
 class ButtonInteraction:
-    """已完成必要平台回执的按钮事件。
+    """ButtonInteraction对象，表示一类按钮回调
 
-    ``id`` 对应发送时的 ``Button.id``；平台未提供时为 ``None``。
-    ``data`` 保留平台提供的回调文本，不从按钮标题或 ID 推测额外数据。
+    Args:
+        bot: 当前 Bot
+        event: 原始事件
+        id: 按钮 id
+        data: 按钮回调数据
+        user_id: 点击按钮的用户 id
     """
 
-    def __init__(self, bot: Bot, event: Event, id: str | None, data: str | None = None):
+    def __init__(self, bot: Bot, event: Event, id: str | None, data: str | None = None, *, user_id: str):
         self.bot = bot
         self.event = event
         self.id = id
         self.data = data
+        self.user_id = user_id
 
 
 class ButtonInteractionAdapter(ABC):
-    """平台按钮回调适配：完成平台回执后返回统一事件。"""
+    """按钮回调适配器。"""
 
     @abstractmethod
     async def extract_button(self, bot: Bot, event: Event) -> ButtonInteraction | None:
-        """完成必要 ACK 并返回按钮上下文；其他事件返回 None。"""
+        """应答按钮回调并返回 ButtonInteraction，其他事件返回 None。"""
         raise NotImplementedError
 
 
 async def get_button_interaction(bot: Bot, event: Event, state: T_State) -> ButtonInteraction | None:
-    """取得本次事件分发的按钮上下文，不支持的平台或非按钮事件返回 None。
-
-    上下文保存在事件 state，普通 matcher 与嵌套 Waiter 共享同一次解析和 ACK。
-    """
+    """获取按钮回调，非按钮事件或不支持的平台返回 None。"""
     if UNISEG_BUTTON_INTERACTION in state:
         return state[UNISEG_BUTTON_INTERACTION]
     from .adapters import alter_get_interaction
@@ -58,7 +60,6 @@ async def get_button_interaction(bot: Bot, event: Event, state: T_State) -> Butt
 async def _require_button_interaction(
     interaction: ButtonInteraction | None = Depends(get_button_interaction),
 ) -> ButtonInteraction:
-    """预处理与业务注入共用依赖缓存，避免并发重复 ACK。"""
     if interaction is None:
         raise SkippedException
     return interaction
@@ -76,10 +77,7 @@ class _ButtonRule:
 
 
 def button_rule(*ids: str) -> Rule:
-    """匹配原生按钮回调，不提供 ID 时匹配所有已支持的按钮事件。
-
-    规则只做匹配，不 ACK；可以组合其他 NoneBot 规则以及 Waiter。
-    """
+    """匹配指定 id 的按钮回调，不传入 id 时匹配所有按钮。"""
     return Rule(_ButtonRule(ids))
 
 
@@ -95,14 +93,18 @@ def on_button(
     state: T_State | None = None,
     _depth: int = 0,
 ) -> type[Matcher]:
-    """监听原生按钮点击，不经过命令解析，也不创建伪造消息事件。
+    """注册一个按钮事件响应器。
 
-    handler、规则和 Waiter 统一通过 ``ButtonCallback`` 或
-    ``UniversalButtonInteraction()`` 注入按钮上下文。
-
-    平台 ACK 已在事件预处理中完成，不受 ID、权限和业务规则匹配结果影响。
-    业务只判断是否执行操作，不管理平台回执。
-    其余参数与 NoneBot ``on()`` 相同；默认阻止继续传播。
+    参数:
+        ids: 按钮 id，不传入则响应所有按钮
+        rule: 事件响应规则
+        permission: 事件响应权限
+        handlers: 事件处理函数列表
+        temp: 是否为临时事件响应器（仅执行一次）
+        expire_time: 事件响应器最终有效时间点，过时即被删除
+        priority: 事件响应器优先级
+        block: 是否阻止事件向更低优先级传递
+        state: 默认 state
     """
     matcher = Matcher.new(
         type_="",

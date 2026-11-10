@@ -689,6 +689,46 @@ class Target:
 
 同样的，你可以通过依赖注入的方式在响应器中直接获取它们.
 
+#### 按钮回调
+
+`on_button` 用于响应指定 id 的按钮回调，不传入 id 时响应所有按钮:
+
+```python
+from nonebot import require
+
+require("nonebot_plugin_alconna")
+
+from nonebot_plugin_alconna import Button, ButtonCallback, Keyboard, Text, UniMessage, on_alconna, on_button
+
+menu = on_alconna("button-demo")
+
+
+@menu.handle()
+async def send_menu():
+    await (
+        UniMessage(Text("请选择操作").markdown())
+        + Keyboard(buttons=[Button("action", "确认", id="demo.confirm", text="confirmed")], row=1)
+    ).send()
+
+
+confirmed = on_button("demo.confirm")
+
+
+@confirmed.handle()
+async def handle_confirm(interaction: ButtonCallback):
+    await UniMessage("已确认").send(target=interaction.event, bot=interaction.bot)
+```
+
+`ButtonCallback` 提供以下属性:
+
+- `bot`: 当前 Bot
+- `event`: 原始事件
+- `id`: 按钮 id
+- `data`: 按钮回调数据，Telegram 与 `id` 相同，Discord 为 `None`
+- `user_id`: 点击按钮的用户 id
+
+目前支持 QQ-API、Telegram 和 Discord。按钮回调会自动应答，无需在响应函数中再次处理。
+
 ### 条件控制
 
 本插件可以通过 `assign` 来控制一个具体的响应函数是否在不满足条件时跳过响应

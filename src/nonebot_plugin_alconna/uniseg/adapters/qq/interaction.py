@@ -13,4 +13,4 @@ class QQButtonInteractionAdapter(ButtonInteractionAdapter):
         await bot.put_interaction(interaction_id=event.id, code=0)
 
         resolved = event.data.resolved
-        return ButtonInteraction(bot, event, resolved.button_id, resolved.button_data)
+        return ButtonInteraction(bot, event, resolved.button_id, resolved.button_data, user_id=event.get_user_id())

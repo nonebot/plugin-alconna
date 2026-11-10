@@ -5,9 +5,14 @@ from nonebot.adapters import Bot, Event
 from nonebot.adapters.discord.api import SnowflakeType
 from nonebot.adapters.discord.api.model import ActionRow, Channel, MessageGet, TextInput
 from nonebot.adapters.discord.api.model import Button as ButtonModel
-from nonebot.adapters.discord.api.types import ButtonStyle, ChannelType, TextInputStyle
+from nonebot.adapters.discord.api.types import ButtonStyle, ChannelType, ComponentType, TextInputStyle, is_unset
 from nonebot.adapters.discord.bot import Bot as DiscordBot
-from nonebot.adapters.discord.event import DirectMessageCreateEvent, GuildMessageCreateEvent, MessageEvent
+from nonebot.adapters.discord.event import (
+    DirectMessageCreateEvent,
+    GuildMessageCreateEvent,
+    MessageComponentInteractionEvent,
+    MessageEvent,
+)
 from nonebot.adapters.discord.message import Message, MessageSegment, parse_message
 from nonebot.internal.driver import Request
 from tarina import lang
@@ -40,10 +45,22 @@ class DiscordMessageExporter(MessageExporter[Message]):
         return SupportAdapter.discord
 
     def get_message_id(self, event: Event) -> str:
+        if isinstance(event, MessageComponentInteractionEvent):
+            return str(event.message.id)
         assert isinstance(event, MessageEvent)
         return str(event.message_id)
 
     def get_target(self, event: Event, bot: Bot | None = None) -> Target:
+        if isinstance(event, MessageComponentInteractionEvent):
+            return Target(
+                str(event.message.channel_id),
+                "" if is_unset(event.guild_id) else str(event.guild_id),
+                channel=True,
+                private=is_unset(event.guild_id),
+                adapter=self.get_adapter(),
+                self_id=bot.self_id if bot else None,
+                scope=SupportScope.discord,
+            )
         if isinstance(event, MessageEvent):
             if isinstance(event, GuildMessageCreateEvent):
                 return Target(
@@ -173,9 +190,11 @@ class DiscordMessageExporter(MessageExporter[Message]):
         if TYPE_CHECKING:
             assert isinstance(message, self.get_message_type())
 
+        if isinstance(target, MessageComponentInteractionEvent) and target.data.component_type == ComponentType.Button:
+            return await bot.send_to(channel_id=target.message.channel_id, message=message, **kwargs)
         if isinstance(target, Event):
             return await bot.send(target, message, **kwargs)  # type: ignore
-        if target.private:
+        if target.private and not target.channel:
             dm = await bot.create_DM(recipient_id=int(target.id))
             return await bot.send_to(channel_id=dm.id, message=message, **kwargs)
         return await bot.send_to(channel_id=int(target.id), message=message, **kwargs)

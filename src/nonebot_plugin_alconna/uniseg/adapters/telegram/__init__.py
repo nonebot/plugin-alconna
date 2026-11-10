@@ -15,3 +15,8 @@ class Loader(BaseLoader):
         from .exporter import TelegramMessageExporter
 
         return TelegramMessageExporter()
+
+    def get_interaction(self):
+        from .interaction import TelegramButtonInteractionAdapter
+
+        return TelegramButtonInteractionAdapter()

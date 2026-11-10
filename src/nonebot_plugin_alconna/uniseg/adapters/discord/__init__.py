@@ -20,3 +20,8 @@ class Loader(BaseLoader):
         from .target import DiscordTargetFetcher
 
         return DiscordTargetFetcher()
+
+    def get_interaction(self):
+        from .interaction import DiscordButtonInteractionAdapter
+
+        return DiscordButtonInteractionAdapter()

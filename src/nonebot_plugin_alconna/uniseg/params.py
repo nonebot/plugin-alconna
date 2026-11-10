@@ -80,7 +80,6 @@ def UniversalSegment(t: type[TS], index: int = 0) -> TS:
 
 
 def UniversalButtonInteraction() -> ButtonInteraction:
-    """在任意 matcher、规则或 Waiter 中注入已由平台适配层应答的按钮上下文。"""
     return Depends(_require_button_interaction, use_cache=True)
 
 
